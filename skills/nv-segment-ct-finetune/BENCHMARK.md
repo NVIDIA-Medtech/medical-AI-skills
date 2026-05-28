@@ -40,15 +40,15 @@ Tier 3 dimension rollup was not available in this report.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 6 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 9 total findings.
 
 Top findings:
 
 - LOW SCHEMA/unexpected_file: Unexpected 'BENCHMARK.md' in skill root (`skills/nv-segment-ct-finetune/BENCHMARK.md`)
 - LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct-finetune/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct-finetune/skill_manifest.yaml`)
-- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct-finetune/validators`)
-- LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-segment-ct-finetune/tests`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill.oms.sig' in skill root (`skills/nv-segment-ct-finetune/skill.oms.sig`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill-card.md' in skill root (`skills/nv-segment-ct-finetune/skill-card.md`)
 
 ## Tier 2: Deduplication Summary
 

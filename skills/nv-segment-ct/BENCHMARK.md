@@ -40,15 +40,15 @@ Tier 3 dimension rollup was not available in this report.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 7 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 11 total findings.
 
 Top findings:
 
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`fixtures/generate_preflight_fixture.py:37`)
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-segment-ct/SKILL.md`)
 - LOW SCHEMA/unexpected_file: Unexpected 'BENCHMARK.md' in skill root (`skills/nv-segment-ct/BENCHMARK.md`)
 - LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct/skill_manifest.yaml`)
-- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct/validators`)
 
 ## Tier 2: Deduplication Summary
 
@@ -56,7 +56,7 @@ Tier 2 validation passed. NVSkills-Eval ran 2 checks and found 0 total findings.
 
 Notable observations:
 
-- Context Deduplication: Collected 4 file(s)
+- Context Deduplication: Collected 5 file(s)
 - Inter-Skill Deduplication: Parsed skill 'nv-segment-ct': 92 char description
 
 ## Publication Recommendation

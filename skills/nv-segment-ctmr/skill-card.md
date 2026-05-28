@@ -1,7 +1,7 @@
 ## Description: <br>
-Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels. Not for clinical validation. <br>
+Used for running NV-Segment-CTMR on CT or MRI NIfTI volumes and recording label-map evidence. Not for clinical interpretation. <br>
 
-This skill is for research and development only. <br>
+This skill is ready for commercial/non-commercial use. <br>
 
 ## Owner
 NVIDIA <br>
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the NV-Segment-CT VISTA3D segmentation model on their own CT datasets for engineering verification and research purposes. <br>
+Developers and engineers use this skill to run VISTA3D-based CT and MRI segmentation on NIfTI volumes via the upstream MONAI bundle and record structured label-map evidence for engineering verification. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,14 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Task06 and Results Reference](references/task06-and-results.md) <br>
+- [NVIDIA-Medtech/NV-Segment-CTMR upstream bundle](https://github.com/NVIDIA-Medtech/NV-Segment-CTMR/tree/main/NV-Segment-CTMR) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Configuration files, JSON] <br>
-**Output Format:** [JSON (structured output.json with validation metrics and checkpoint paths)] <br>
+**Output Type(s):** [Shell commands, JSON] <br>
+**Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Writes finetuned checkpoint, auto-generated bundle configs under bundle/configs/, and structured output.json with Dice scores and runtime metadata] <br>
+**Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>

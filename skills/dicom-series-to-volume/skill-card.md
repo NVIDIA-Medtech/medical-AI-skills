@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels. Not for clinical validation. <br>
+Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. Not for multi-frame DICOM or clinical use. <br>
 
 This skill is for research and development only. <br>
 
@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the NV-Segment-CT VISTA3D segmentation model on their own CT datasets for engineering verification and research purposes. <br>
+Developers and engineers performing engineering-time conversion of a single-series CT DICOM directory to a HU-scaled NIfTI volume with affine and axcodes derived from DICOM headers. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,15 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Task06 and Results Reference](references/task06-and-results.md) <br>
+- [skill_manifest.yaml](skill_manifest.yaml) <br>
+- [Output JSON Schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Configuration files, JSON] <br>
-**Output Format:** [JSON (structured output.json with validation metrics and checkpoint paths)] <br>
+**Output Type(s):** [Files, JSON] <br>
+**Output Format:** [NIfTI volume (.nii.gz) and JSON summary on stdout] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Writes finetuned checkpoint, auto-generated bundle configs under bundle/configs/, and structured output.json with Dice scores and runtime metadata] <br>
+**Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -39,7 +40,7 @@ Reported benchmark dimensions: <br>
 
 
 ## Skill Version(s): <br>
-58b9ee3 (source: git SHA, committed 2026-05-28) <br>
+0.1.0 (source: skill_manifest.yaml) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels. Not for clinical validation. <br>
+Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting. <br>
 
 This skill is for research and development only. <br>
 
@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the NV-Segment-CT VISTA3D segmentation model on their own CT datasets for engineering verification and research purposes. <br>
+Developers and medtech engineers use this skill to run NV-Reason-CXR-3B chest X-ray inference for research and development, producing structured JSON engineering evidence. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,18 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Task06 and Results Reference](references/task06-and-results.md) <br>
+- [NV-Reason-CXR GitHub Repository](https://github.com/NVIDIA-Medtech/NV-Reason-CXR) <br>
+- [NV-Reason-CXR-3B Hugging Face Model](https://huggingface.co/nvidia/NV-Reason-CXR-3B) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Configuration files, JSON] <br>
-**Output Format:** [JSON (structured output.json with validation metrics and checkpoint paths)] <br>
+**Output Type(s):** [JSON] <br>
+**Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Writes finetuned checkpoint, auto-generated bundle configs under bundle/configs/, and structured output.json with Dice scores and runtime metadata] <br>
+**Other Properties Related to Output:** [Structured response with input image metadata, prompt, response text, runtime identity, and limitations] <br>
+
+## Evaluation Tasks: <br>
+NVSkills-Eval external profile: 9 Tier 1 static validation checks and 2 Tier 2 deduplication checks. Overall verdict: PASS. Tier 3 live agent evaluation not available in this report. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -39,7 +43,7 @@ Reported benchmark dimensions: <br>
 
 
 ## Skill Version(s): <br>
-58b9ee3 (source: git SHA, committed 2026-05-28) <br>
+0.1.0 (source: skill_manifest.yaml) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

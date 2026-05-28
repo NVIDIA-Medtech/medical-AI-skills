@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels. Not for clinical validation. <br>
+Used for generating synthetic CT volumes and masks with NV-Generate-CTMR rflow-ct. Not for production training data without review. <br>
 
 This skill is for research and development only. <br>
 
@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the NV-Segment-CT VISTA3D segmentation model on their own CT datasets for engineering verification and research purposes. <br>
+Developers and researchers use this skill to generate synthetic CT volumes and paired segmentation masks for medical imaging research, algorithm development, and data augmentation workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,17 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Task06 and Results Reference](references/task06-and-results.md) <br>
+- [NV-Generate-CTMR upstream repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [FOV and download references](references/fov-and-downloads.md) <br>
+- [CT mask label space](references/ct-mask-label-space.md) <br>
+- [CT from mask format](references/ct-from-mask-format.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Configuration files, JSON] <br>
-**Output Format:** [JSON (structured output.json with validation metrics and checkpoint paths)] <br>
+**Output Type(s):** [Files, JSON] <br>
+**Output Format:** [NIfTI volumes and structured JSON result with HTML summary card] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Writes finetuned checkpoint, auto-generated bundle configs under bundle/configs/, and structured output.json with Dice scores and runtime metadata] <br>
+**Other Properties Related to Output:** [Paired CT image and mask NIfTI volumes, result JSON with label mapping, geometry metadata, and verifier guidance] <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
