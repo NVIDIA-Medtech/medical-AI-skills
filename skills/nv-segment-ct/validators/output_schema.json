@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Shared envelope (invocation, output, runtime) converged with holohub_imaging_ai_segmentator. Canonical intersection spec: spec/segmentation_output.schema.json. The eval_engine loads this file without an out-of-tree $ref resolver, so the shared required block is reproduced inline here rather than via $ref.",
+  "$comment": "Shared segmentation envelope (invocation, output, runtime). Canonical spec: spec/segmentation_output.schema.json. The eval_engine loads this file without an out-of-tree $ref resolver, so the shared required block is reproduced inline here rather than via $ref.",
   "title": "NVSegmentCTOutput",
   "type": "object",
   "required": ["skill", "model", "model_repo", "input", "output", "invocation", "runtime", "intended_use_disclaimer"],

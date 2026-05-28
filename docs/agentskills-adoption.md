@@ -33,13 +33,13 @@ npx skills add NVIDIA-Medtech/medical-AI-skills
 
 # Non-interactive — exact skill, exact agent
 npx skills add NVIDIA-Medtech/medical-AI-skills \
-  --skill radiology-note-summarizer \
+  --skill nv-segment-ct \
   --agent claude-code \
   --yes
 ```
 
 `--skill` values are the kebab-case `name:` frontmatter of each `SKILL.md`
-(e.g. `nv-segment-ct`, `dicom-series-preflight`, `find-skills`). `--agent`
+(e.g. `nv-segment-ct`, `dicom-series-preflight`). `--agent`
 accepts `claude-code`, `codex`, `cursor`, `kiro-cli`, and the rest of the
 [supported clients](https://github.com/vercel-labs/skills#supported-agents).
 
@@ -63,8 +63,6 @@ Current authored examples:
 
 | Skill | Why it has `evals/` |
 |---|---|
-| `radiology_note_summarizer` | LLM-bearing; the with_skill vs without_skill delta IS the trust contract |
-| `find_skills` | A meta-tool, fundamentally prompt-driven |
 | `dicom_metadata_extract` | Reference skill; agent must surface the PHI flag, not just dump tags |
 | `dicom_series_preflight` | A1 onboarding; agent must use the gates to make a go/no-go call, not bypass them |
 
@@ -118,14 +116,8 @@ different artifacts.
 
 ## Open follow-ups
 
-- Run the with_skill vs without_skill comparison for
-  `radiology_note_summarizer` and record the delta in the skill's evidence
-  trail. Experiment design is fully specified in
-  [`docs/with-vs-without-skill-experiment.md`](with-vs-without-skill-experiment.md):
-  Path A (NAT agent harness, primary) and Path B (parallel live-call,
-  ablation). Both paths reuse existing Medical AI Skills infrastructure
-  (`tools/nat_audit/` and `skills/radiology-note-summarizer/scripts/`
-  respectively).
-- Investigate whether `make verify-mock-gates` should be extended to grade
-  `evals/evals.json` assertions in addition to the existing pack-level
-  gates. Optional — the two lanes are independent by design.
+- Keep the `nv-*` with-vs-without comparison artifacts current when skill
+  instructions or backend configuration changes.
+- Investigate whether `evals/evals.json` assertions should be graded in
+  addition to pack-level gates. Optional — the two lanes are independent by
+  design.

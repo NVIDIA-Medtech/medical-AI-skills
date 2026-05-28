@@ -90,16 +90,9 @@ claims because they cover the main artifact families and risk profiles:
 4. Generated CT/MR skills with the `*_trusted_inventory_pass/` anchors:
    trusted inventory evidence for generated outputs, with generated volumes
    referenced rather than bundled.
-5. `totalsegmentator` with
-   `examples/evidence_packs/totalsegmentator_trusted_pass/`: CUDA multilabel
-   segmentation anchor with TotalSegmentator-specific verifier coverage.
-6. HoloHub skills with the `holohub_*_trusted_*_pass/` anchors: stream,
-   benchmark, and detection artifacts, with performance claims kept scoped to
-   what the committed evidence actually proves.
-7. Structured LLM skills with the trusted mock anchors:
-   `nv_reason_cxr_trusted_mock_pass/` and
-   `radiology_note_summarizer_trusted_mock_pass/`. Treat these as plumbing and
-   contract evidence, not clinical-quality evidence.
+5. `nv-reason-cxr` with
+   `examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/`: structured mock
+   CXR reasoning evidence with image/hash binding and forbidden-phrase guards.
 
 ## Review packets
 

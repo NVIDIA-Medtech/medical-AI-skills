@@ -276,6 +276,30 @@ def _resolve_fixture(spec_dir: Path, fixture_decl: str | None) -> Path | None:
     return fixture.resolve()
 
 
+def _resolve_fixture_builder(spec_dir: Path, builder_decl: str | None) -> Path | None:
+    if not builder_decl:
+        return None
+    builder = Path(builder_decl)
+    if builder.is_absolute():
+        return None
+    resolved = (spec_dir / builder).resolve()
+    try:
+        resolved.relative_to(spec_dir.resolve())
+    except ValueError:
+        return None
+    return resolved
+
+
+def _run_fixture_builder(builder: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(builder)],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=300,
+    )
+
+
 def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
     label = _target_label(spec_dir)
     manifest_path = spec_dir / "skill_manifest.yaml"
@@ -306,6 +330,30 @@ def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
     if fixture is None:
         row["issues"].append("validation.reproducibility.fixture missing")
         return row
+    builder_decl = repro.get("fixture_builder")
+    if builder_decl:
+        builder = _resolve_fixture_builder(spec_dir, builder_decl)
+        if builder is None:
+            row["issues"].append("validation.reproducibility.fixture_builder must be relative and stay under the spec dir")
+            return row
+        row["fixture_builder"] = _public_rel(builder)
+        if not builder.is_file():
+            row["issues"].append(f"fixture builder does not exist: {_public_rel(builder)}")
+            return row
+        proc = _run_fixture_builder(builder)
+        row["fixture_builder_returncode"] = proc.returncode
+        if proc.returncode != 0:
+            stderr = (proc.stderr or proc.stdout or "").strip()
+            row["issues"].append(
+                f"fixture builder failed: {_public_rel(builder)}"
+                + (f": {stderr[:300]}" if stderr else "")
+            )
+            return row
+        if not fixture.exists():
+            row["issues"].append(
+                f"fixture builder did not create declared fixture: {_public_rel(fixture)}"
+            )
+            return row
     if not fixture.exists():
         row["issues"].append(f"fixture does not exist: {_public_rel(fixture)}")
         return row

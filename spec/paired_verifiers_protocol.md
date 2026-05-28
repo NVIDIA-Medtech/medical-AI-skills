@@ -5,12 +5,12 @@ one or more verifier specs.
 
 ```yaml
 paired_verifiers:
-  - id: medagent.verifiers.endoscopy_tool_detection_quality_v1
+  - id: medagent.verifiers.ct_segmentation_quality_v1
     status: implemented
     checks:
-      - decoded detections exist
-      - tools_detected_count > 0
-      - bbox sanity is in-frame and non-degenerate
+      - output label map exists
+      - geometry matches source image
+      - anatomy volumes are plausible
 ```
 
 - `implemented`: a matching manifest must exist under `verifiers/`.

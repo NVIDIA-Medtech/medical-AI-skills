@@ -162,27 +162,27 @@ def test_trusted_run_reads_nested_verifier_pack(tmp_path: Path) -> None:
 def test_trusted_run_summarizes_verifier_artifact_integrity(tmp_path: Path) -> None:
     root = tmp_path / "trusted"
     _write_minimal_pack(root / "skill_run")
-    verifier_pack = root / "verifiers" / "endoscopy_quality"
+    verifier_pack = root / "verifiers" / "ct_segmentation_quality"
     _write_minimal_pack(
         verifier_pack,
-        skill_id="medagent.verifiers.endoscopy_tool_detection_quality_v1",
+        skill_id="medagent.verifiers.ct_segmentation_quality_v1",
         overall="failed",
     )
     _write_json(
         verifier_pack / "output.json",
         {
             "verifier": {
-                "id": "medagent.verifiers.endoscopy_tool_detection_quality_v1",
+                "id": "medagent.verifiers.ct_segmentation_quality_v1",
                 "version": "0.1.0",
             },
             "artifact_inventory": {
-                "recording_file_count": 2,
-                "usable_recording_file_count": 0,
+                "label_map_count": 1,
+                "usable_label_map_count": 0,
                 "hash_mismatch_count": 2,
-                "detection_artifact_count": 0,
+                "reference_artifact_count": 0,
             },
             "domain_floor": {"verdict": "fail", "checks": []},
-            "detection_metrics": {"verdict": "skipped", "checks": []},
+            "dice_metrics": {"verdict": "skipped", "checks": []},
             "overall": "fail",
         },
     )
@@ -190,14 +190,14 @@ def test_trusted_run_summarizes_verifier_artifact_integrity(tmp_path: Path) -> N
         root / "trust_summary.json",
         {
             "trust_format_version": "1.0.0",
-            "skill_id": "holohub_endoscopy_tool_tracking",
+            "skill_id": "nv_segment_ct",
             "skill_pack": "skill_run",
             "skill_overall": "passed",
             "verifiers": [
                 {
-                    "id": "medagent.verifiers.endoscopy_tool_detection_quality_v1",
+                    "id": "medagent.verifiers.ct_segmentation_quality_v1",
                     "declared_status": "implemented",
-                    "pack": "verifiers/endoscopy_quality",
+                    "pack": "verifiers/ct_segmentation_quality",
                     "overall": "failed",
                     "hard_failure_count": 1,
                     "warning_count": 0,
@@ -212,7 +212,7 @@ def test_trusted_run_summarizes_verifier_artifact_integrity(tmp_path: Path) -> N
     markdown = render_review_packet(root)
 
     assert "hash_mismatch_count=2" in markdown
-    assert "usable_recording_file_count=0" in markdown
-    assert "detection_artifact_count=0" in markdown
+    assert "usable_label_map_count=0" in markdown
+    assert "reference_artifact_count=0" in markdown
     assert "domain_floor=fail" in markdown
-    assert "detection_metrics=skipped" in markdown
+    assert "dice_metrics=skipped" in markdown

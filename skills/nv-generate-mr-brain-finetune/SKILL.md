@@ -4,7 +4,7 @@ description: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a
 license: Apache-2.0
 allowed-tools: Bash
 metadata:
-  author: "NVIDIA MedTech <noreply@nvidia.com>"
+  author: NVIDIA MedTech Team
   tags:
     - medtech
     - mri

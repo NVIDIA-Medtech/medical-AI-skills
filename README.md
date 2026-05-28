@@ -2,8 +2,8 @@
 
 **Medical AI Skills** publishes agent-callable **medtech skills** —
 small wrappers around medical AI tools, models, and pipelines. The committed
-catalog today is mostly medical imaging (CT segmentation, DICOM conversion,
-MONAI bundles, NVIDIA-Medtech models, HoloHub applications, and similar).
+catalog today is focused on medical imaging DICOM utilities and
+NVIDIA-Medtech `nv-*` model wrappers.
 
 Medtech engineers use these skills in their own environment with their own data.
 Manifests, fixtures, evidence packs, verifiers, and the eval engine make those
@@ -60,7 +60,7 @@ npx skills add nvidia/skills
 
 # Non-interactive
 npx skills add NVIDIA-Medtech/medical-AI-skills \
-  --skill radiology-note-summarizer \
+  --skill nv-segment-ct \
   --agent claude-code \
   --yes
 ```
@@ -80,9 +80,9 @@ location. Engineering verification only — for the full trust harness
 Example (direct script — no eval engine required):
 
 ```bash
-python skills/nv-segment-ct/scripts/run_segment.py \
-  --input /path/to/volume.nii.gz \
-  --output /path/to/out_dir
+python skills/nv-segment-ct/scripts/run_vista3d.py \
+  /path/to/volume.nii.gz \
+  --output-dir /path/to/out_dir
 ```
 
 To generate an **evidence pack** (audit record for CI, review, or publication),
@@ -97,18 +97,12 @@ make run-skill SKILL=nv-segment-ct \
 Evidence packs are optional for day-to-day use. They are the trust layer when
 you need reproducibility, gate status, environment locks, and replay.
 
-## Find a skill
+## Browse skills
 
 Browse the committed catalog:
 
 ```bash
 make list-skills    # regenerates SKILL_INDEX.md at repo root
-```
-
-Rank skills for a concrete task (local selector over committed manifests):
-
-```bash
-make find-skills QUERY="segment a CT NIfTI volume"
 ```
 
 The index filters by declared shape and observed gate behavior. It does not
@@ -238,29 +232,15 @@ make verify
 | [`skills/nv-generate-mr-brain-finetune`](skills/nv-generate-mr-brain-finetune/) | NV-Generate-CTMR rflow-mr-brain diffusion-UNet finetuning from a user datalist |
 | [`skills/nv-generate-vae-finetune`](skills/nv-generate-vae-finetune/) | NV-Generate-CTMR MAISI VAE finetuning from CT/MRI datalists |
 | [`skills/nv-reason-cxr`](skills/nv-reason-cxr/) | NV-Reason-CXR-3B inference on a user-provided chest X-ray PNG/JPEG |
-| [`skills/holohub-imaging-ai-segmentator`](skills/holohub-imaging-ai-segmentator/) | HoloHub CT segmentation app through `./holohub run` |
-| [`skills/holohub-endoscopy-tool-tracking`](skills/holohub-endoscopy-tool-tracking/) | HoloHub surgical tool-tracking app through `./holohub run` |
-| [`skills/holohub-flow-benchmark`](skills/holohub-flow-benchmark/) | HoloHub Holoscan Flow Benchmarking for any HoloHub app |
-| [`skills/radiology-note-summarizer`](skills/radiology-note-summarizer/) | hosted-LLM skill with model identity and factual-echo gates |
-| [`skills/totalsegmentator`](skills/totalsegmentator/) | TotalSegmentator CT/MR multilabel segmentation wrapper |
-| [`skills/find-skills`](skills/find-skills/) | local selector that ranks committed skills for a task |
 | [`verifiers/skill_completeness_v1`](verifiers/skill_completeness_v1/) | structural and manifest-spec verifier |
-| [`verifiers/find_skills_quality_v1`](verifiers/find_skills_quality_v1/) | paired verifier for local selector evidence packs |
 | [`verifiers/dicom_metadata_quality_v1`](verifiers/dicom_metadata_quality_v1/) | paired verifier for DICOM metadata evidence packs and PHI-scope disclosure |
 | [`verifiers/dicom_preflight_quality_v1`](verifiers/dicom_preflight_quality_v1/) | paired verifier for DICOM preflight evidence packs |
 | [`verifiers/dicom_volume_quality_v1`](verifiers/dicom_volume_quality_v1/) | paired verifier for DICOM-to-NIfTI geometry and voxel evidence |
-| [`verifiers/endoscopy_tool_detection_quality_v1`](verifiers/endoscopy_tool_detection_quality_v1/) | paired verifier for decoded endoscopy detections |
-| [`verifiers/holohub_flow_benchmark_quality_v1`](verifiers/holohub_flow_benchmark_quality_v1/) | paired verifier for HoloHub flow benchmark logger hashes, scheduler coverage, latency samples, and contract assertions |
 | [`verifiers/ct_segmentation_quality_v1`](verifiers/ct_segmentation_quality_v1/) | paired verifier for nv_segment_ct anatomy plausibility + optional GT Dice |
 | [`verifiers/ct_segmentation_finetune_quality_v1`](verifiers/ct_segmentation_finetune_quality_v1/) | paired verifier for nv_segment_ct_finetune checkpoint + training trajectory + dataset audit |
 | [`verifiers/ct_synthesis_quality_v1`](verifiers/ct_synthesis_quality_v1/) | paired verifier for nv_generate_ct_rflow image/mask pair geometry, HU plausibility, label-set sanity |
 | [`verifiers/mr_synthesis_quality_v1`](verifiers/mr_synthesis_quality_v1/) | paired verifier for nv_generate_mr and nv_generate_mr_brain image artifact geometry and numeric sanity |
-| [`verifiers/holohub_imaging_segmentation_quality_v1`](verifiers/holohub_imaging_segmentation_quality_v1/) | paired verifier for HoloHub imaging segmentation evidence packs |
 | [`verifiers/nv_reason_cxr_quality_v1`](verifiers/nv_reason_cxr_quality_v1/) | paired verifier for nv_reason_cxr image/hash binding, runtime identity, and forbidden-phrase guardrails |
-| [`verifiers/radiology_note_summary_quality_v1`](verifiers/radiology_note_summary_quality_v1/) | paired verifier for radiology_note_summarizer fact echo, prompt/model identity, and forbidden-phrase guardrails |
-| [`verifiers/totalsegmentator_quality_v1`](verifiers/totalsegmentator_quality_v1/) | paired verifier for TotalSegmentator anatomy plausibility + optional GT Dice |
-| [`verifiers/totalsegmentator_hu_consistency_v1`](verifiers/totalsegmentator_hu_consistency_v1/) | paired verifier for TotalSegmentator HU consistency checks |
-| [`verifiers/totalsegmentator_skeleton_topology_v1`](verifiers/totalsegmentator_skeleton_topology_v1/) | paired verifier for TotalSegmentator skeleton topology checks |
 
 ## Repository map
 
@@ -280,7 +260,6 @@ make verify
 ```bash
 make help            # common target list
 make help-all        # full target list
-make find-skills QUERY="convert DICOM series to NIfTI"
 make run-skill SKILL=dicom-metadata-extract \
   FIXTURE=skills/dicom-metadata-extract/fixtures/sample_ct.dcm \
   OUT=runs/demo
@@ -321,7 +300,6 @@ Each shipping spec declares its own license.
 
 ## References
 
-- HoloHub: <https://github.com/nvidia-holoscan/holohub>
 - Holoscan SDK: <https://docs.nvidia.com/holoscan/index.html>
 - MONAI: <https://github.com/Project-MONAI/MONAI>
 - NVIDIA-Medtech: <https://github.com/NVIDIA-Medtech>

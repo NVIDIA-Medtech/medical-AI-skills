@@ -27,7 +27,6 @@ from nat.data_models.function import FunctionBaseConfig
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SKILLS = REPO_ROOT / "skills"
 SKILL_PYTHON = os.environ.get("MEDICAL_AI_SKILLS_SKILL_PYTHON", sys.executable)
-HOLOHUB_ROOT_DEFAULT = os.environ.get("HOLOHUB_ROOT", "")
 READ_FILE_MAX_CHARS = 16000  # ~4000 tokens; covers a typical SKILL.md
 LIST_DIR_MAX_ENTRIES = 100
 
@@ -127,13 +126,6 @@ def _run(cmd: list[str], env_extra: dict[str, str] | None = None,
     }
 
 
-def _holohub_env(extra: dict[str, str] | None = None) -> dict[str, str]:
-    env = dict(extra or {})
-    if HOLOHUB_ROOT_DEFAULT:
-        env["HOLOHUB_ROOT"] = HOLOHUB_ROOT_DEFAULT
-    return env
-
-
 # --- finetune_smoke (already used in initial validation) -----------------------
 
 class FinetuneSmokeConfig(FunctionBaseConfig, name="finetune_smoke"):
@@ -147,7 +139,7 @@ async def finetune_smoke(config: FinetuneSmokeConfig, _builder: Builder) -> Asyn
         out_dir.mkdir(parents=True, exist_ok=True)
         r = _run([
             SKILL_PYTHON,
-            str(SKILLS / "nv_segment_ct_finetune/scripts/run_finetune.py"),
+            str(SKILLS / "nv-segment-ct-finetune/scripts/run_finetune.py"),
             "--smoke", "--output-dir", str(out_dir),
         ], timeout=300)
         if r["rc"] != 0:
@@ -172,8 +164,8 @@ async def dicom_meta_extract(_config, _builder) -> AsyncGenerator[FunctionInfo, 
     async def _fn(unused: str = "") -> str:
         r = _run([
             SKILL_PYTHON,
-            str(SKILLS / "dicom_metadata_extract/scripts/extract_metadata.py"),
-            str(SKILLS / "dicom_metadata_extract/fixtures/sample_ct.dcm"),
+            str(SKILLS / "dicom-metadata-extract/scripts/extract_metadata.py"),
+            str(SKILLS / "dicom-metadata-extract/fixtures/sample_ct.dcm"),
         ], timeout=60)
         if r["rc"] != 0:
             return json.dumps({"error": "failed", **r})
@@ -204,8 +196,8 @@ async def dicom_series_to_volume(_config, _builder) -> AsyncGenerator[FunctionIn
         out_dir.mkdir(parents=True, exist_ok=True)
         r = _run([
             SKILL_PYTHON,
-            str(SKILLS / "dicom_series_to_volume/scripts/series_to_volume.py"),
-            str(SKILLS / "dicom_series_to_volume/fixtures/clean_axial"),
+            str(SKILLS / "dicom-series-to-volume/scripts/series_to_volume.py"),
+            str(SKILLS / "dicom-series-to-volume/fixtures/clean_axial"),
             "--output", str(out_dir / "vol.nii.gz"),
         ], timeout=120)
         return json.dumps({"return_code": r["rc"], "stderr_tail": r["stderr_tail"][:200]})
@@ -214,36 +206,6 @@ async def dicom_series_to_volume(_config, _builder) -> AsyncGenerator[FunctionIn
         "Convert the bundled clean_axial DICOM series fixture to a NIfTI volume. "
         "Returns return_code."
     ))
-
-
-# --- find_skills ---------------------------------------------------------------
-
-class FindSkillsConfig(FunctionBaseConfig, name="find_skills"):
-    pass
-
-
-@register_function(config_type=FindSkillsConfig)
-async def find_skills_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, None]:
-    async def _fn(query: str = "segment a CT volume") -> str:
-        r = _run([
-            SKILL_PYTHON,
-            str(SKILLS / "find_skills/scripts/find_skills.py"),
-            "--json", "--limit", "3", query,
-        ], timeout=60)
-        if r["rc"] != 0:
-            return json.dumps({"error": "failed", **r})
-        try:
-            j = json.loads(r["stdout"])
-            return json.dumps({"return_code": 0,
-                               "top_match": j.get("matches", [{}])[0].get("id")})
-        except Exception:
-            return json.dumps({"return_code": 0, "stdout_head": r["stdout"][:200]})
-
-    yield FunctionInfo.from_fn(_fn, description=(
-        "Rank local Medical AI Skills skills for the given engineering task. Returns "
-        "return_code and top_match (skill id)."
-    ))
-
 
 # --- nv_segment_ct (VISTA3D) ---------------------------------------------------
 
@@ -258,8 +220,8 @@ async def nv_segment_ct_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, No
         out_dir.mkdir(parents=True, exist_ok=True)
         r = _run([
             SKILL_PYTHON,
-            str(SKILLS / "nv_segment_ct/scripts/run_vista3d.py"),
-            str(SKILLS / "nv_segment_ct/fixtures/spleen_03.nii.gz"),
+            str(SKILLS / "nv-segment-ct/scripts/run_vista3d.py"),
+            str(SKILLS / "nv-segment-ct/fixtures/spleen_03.nii.gz"),
             "--output-dir", str(out_dir),
         ], timeout=600)
         try:
@@ -276,136 +238,4 @@ async def nv_segment_ct_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, No
     yield FunctionInfo.from_fn(_fn, description=(
         "Run NV-Segment-CT (VISTA3D) on the bundled spleen_03 NIfTI fixture. "
         "Returns return_code, wall_seconds, n_masks."
-    ))
-
-
-# --- radiology_note_summarizer -------------------------------------------------
-
-class RadiologyConfig(FunctionBaseConfig, name="radiology_note_summarizer"):
-    pass
-
-
-@register_function(config_type=RadiologyConfig)
-async def radiology_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, None]:
-    async def _fn(unused: str = "") -> str:
-        # The skill itself makes an LLM call via NV_INFER_TOKEN. Source it
-        # from interactive bash since .bashrc may guard non-interactive.
-        token = subprocess.run(
-            ["bash", "-lic", "echo $NV_INFER_TOKEN"],
-            capture_output=True, text=True
-        ).stdout.strip()
-        r = _run([
-            SKILL_PYTHON,
-            str(SKILLS / "radiology_note_summarizer/scripts/summarize.py"),
-            str(SKILLS / "radiology_note_summarizer/fixtures/case_001_input.json"),
-        ], env_extra={"NV_INFER_TOKEN": token}, timeout=120)
-        try:
-            j = json.loads(r["stdout"])
-            return json.dumps({
-                "return_code": r["rc"],
-                "model": j.get("model"),
-                "summary_chars": len(j.get("output", {}).get("summary", "")),
-            })
-        except Exception:
-            return json.dumps({"return_code": r["rc"],
-                               "stderr_tail": r["stderr_tail"][:200]})
-
-    yield FunctionInfo.from_fn(_fn, description=(
-        "Summarize the case_001 radiology note fixture via the hosted LLM. "
-        "Returns return_code, model, summary_chars. Note: the skill itself "
-        "issues an LLM call; NAT will capture those tokens too."
-    ))
-
-
-# --- holohub_flow_benchmark ----------------------------------------------------
-
-class HoloFlowBenchConfig(FunctionBaseConfig, name="holohub_flow_benchmark"):
-    pass
-
-
-@register_function(config_type=HoloFlowBenchConfig)
-async def holohub_flow_bench_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, None]:
-    async def _fn(unused: str = "") -> str:
-        out_dir = REPO_ROOT / "runs" / "nat_holohub_flow_bench"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        r = _run([
-            SKILL_PYTHON,
-            str(SKILLS / "holohub_flow_benchmark/scripts/run_flow_benchmark.py"),
-            "--fixture", str(SKILLS / "holohub_flow_benchmark/fixtures/default"),
-            "--out", str(out_dir),
-        ], env_extra=_holohub_env({
-            "HOLOHUB_BENCHMARK_APP": "endoscopy_tool_tracking",
-            "HOLOHUB_BENCHMARK_LANGUAGE": "python",
-            "HOLOHUB_BENCHMARK_SCHEDULERS": "greedy",
-            "HOLOHUB_BENCHMARK_MESSAGES": "50",
-            "HOLOHUB_BENCHMARK_NO_DOCKER_BUILD": "true",
-            "DISPLAY": os.environ.get("DISPLAY", ":1"),
-        }), timeout=900)
-        try:
-            j = json.loads((out_dir / "output.json").read_text())
-            return json.dumps({
-                "return_code": r["rc"],
-                "wall_seconds": j.get("runtime", {}).get("wall_seconds"),
-                "schedulers": list(j.get("benchmark", {}).get("per_scheduler", {}).keys())[:3],
-            })
-        except Exception:
-            return json.dumps({"return_code": r["rc"],
-                               "stderr_tail": r["stderr_tail"][:300]})
-
-    yield FunctionInfo.from_fn(_fn, description=(
-        "Run HoloHub Holoscan Flow Benchmark for endoscopy_tool_tracking with "
-        "greedy scheduler, 50 messages. Requires HoloHub container; takes 1-3 min."
-    ))
-
-
-# --- holohub_endoscopy_tool_tracking ------------------------------------------
-
-class HoloEndoConfig(FunctionBaseConfig, name="holohub_endoscopy_tool_tracking"):
-    pass
-
-
-@register_function(config_type=HoloEndoConfig)
-async def holohub_endo_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, None]:
-    async def _fn(unused: str = "") -> str:
-        out_dir = REPO_ROOT / "runs" / "nat_holohub_endo"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        r = _run([
-            SKILL_PYTHON,
-            str(SKILLS / "holohub_endoscopy_tool_tracking/scripts/run_endoscopy_tool_tracking.py"),
-            "--fixture", str(SKILLS / "holohub_endoscopy_tool_tracking/fixtures/example_clip_stub"),
-            "--out", str(out_dir),
-        ], env_extra=_holohub_env({
-            "DISPLAY": os.environ.get("DISPLAY", ":1"),
-        }), timeout=900)
-        return json.dumps({"return_code": r["rc"],
-                           "stderr_tail": r["stderr_tail"][:200]})
-
-    yield FunctionInfo.from_fn(_fn, description=(
-        "Run the HoloHub endoscopy_tool_tracking app on the bundled clip stub. "
-        "Requires HoloHub container; takes 1-3 min."
-    ))
-
-
-# --- holohub_imaging_ai_segmentator -------------------------------------------
-
-class HoloImagingConfig(FunctionBaseConfig, name="holohub_imaging_ai_segmentator"):
-    pass
-
-
-@register_function(config_type=HoloImagingConfig)
-async def holohub_imaging_fn(_config, _builder) -> AsyncGenerator[FunctionInfo, None]:
-    async def _fn(unused: str = "") -> str:
-        out_dir = REPO_ROOT / "runs" / "nat_holohub_imaging"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        r = _run([
-            SKILL_PYTHON,
-            str(SKILLS / "holohub_imaging_ai_segmentator/scripts/run_holohub_app.py"),
-            "--out", str(out_dir),
-        ], env_extra=_holohub_env(), timeout=900)
-        return json.dumps({"return_code": r["rc"],
-                           "stderr_tail": r["stderr_tail"][:200]})
-
-    yield FunctionInfo.from_fn(_fn, description=(
-        "Run the HoloHub imaging_ai_segmentator CT segmentation app. "
-        "Requires HoloHub container; takes 2-5 min."
     ))

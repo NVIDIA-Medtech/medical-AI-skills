@@ -18,8 +18,8 @@ A new entry belongs in `skills/` only when it satisfies all of these:
    bundle, app, SDK, or library through its documented entry point. Do not
    reimplement inference or file-format logic just to make a skill.
 2. **Solves a medtech engineering task.** Examples: convert a DICOM series,
-   run a segmentation model, benchmark a HoloHub app, extract metadata, or
-   produce a structured engineering report. Clinical decisions do not qualify.
+   run a segmentation model, extract metadata, or produce a structured
+   engineering report. Clinical decisions do not qualify.
 3. **Has a contract-worthy failure mode.** The skill should expose something a
    generic command-success check might miss: orientation drift, empty masks,
    PHI leakage, dependency drift, model identity mismatch, invalid artifacts,
@@ -38,7 +38,6 @@ examples, but they do not belong in the publishable skill catalog.
 
 - DICOM, NIfTI, DICOM SEG, metadata, and conversion tooling.
 - MONAI bundles, NVIDIA-Medtech models, and other medical AI model wrappers.
-- Holoscan / HoloHub apps and edge-workflow wrappers.
 - Structured LLM-assisted medtech engineering utilities when they emit
   checkable JSON and declare model identity / factual-echo gates.
 - Domain verifiers under `verifiers/` when a claim needs a second pass over an
@@ -67,8 +66,8 @@ NeMo Agent Toolkit, a deployment platform, or a private integration project.
 ## Selection, not ranking
 
 The catalog should help users select by declared capability and observed
-contract behavior, not rank by performance. `SKILL_INDEX.md`, `find_skills`,
-and `compare-skills` should answer:
+contract behavior, not rank by performance. `SKILL_INDEX.md` and
+`compare-skills` should answer:
 
 - Does this skill accept my input format?
 - What output artifacts does it produce?
@@ -76,4 +75,3 @@ and `compare-skills` should answer:
 - Which failure modes does its manifest or paired verifier cover?
 
 They should not crown a best model or present clinical performance claims.
-

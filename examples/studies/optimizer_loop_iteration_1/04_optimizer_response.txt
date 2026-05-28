@@ -1,1 +1,0 @@
-must always include dicom_metadata.Modality and BodyPartExamined verbatim in findings or impressions

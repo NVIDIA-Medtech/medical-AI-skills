@@ -1,22 +1,64 @@
-# nv-reason-cxr Benchmark
+# Evaluation Report
 
-## Scope
+Evaluation of the `nv-reason-cxr` skill before publication through NVSkills-Eval.
 
-This benchmark report covers `nv-reason-cxr`, Medical AI Skills skill for NV-Reason-CXR-3B chest X-ray inference wrapper. The skill is engineering verification only and is not clinical, diagnostic, regulatory, or patient-facing tooling.
+This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the skill. The goal is to document whether the skill is safe, discoverable, effective, and useful for agents before it is published for broader workflow use.
 
-## Current Evidence
+## Evaluation Summary
 
-- `SKILL.md` declares the external agent-facing trigger, wrapper command, prerequisites, and limitations.
-- `skill_manifest.yaml` declares inputs, outputs, runtime side effects, validation gates, and known limitations for Medical AI Skills trust harness.
-- `evals/evals.json` defines prompt-shaped behavior checks for agent routing, command construction, and scope boundaries.
+- Skill: `nv-reason-cxr`
+- Evaluation date: 2026-05-28
+- NVSkills-Eval profile: `external`
+- Overall verdict: PASS
+- Tier 3 live agent evaluation: not available in this report
 
-## With-Skill vs Without-Skill Evaluation
+## Agents Used
 
-| Arm | Document surface | Expected behavior | Status |
-|---|---|---|---|
-| With skill | `SKILL.md`, `scripts/`, and `evals/evals.json` | Agent should select this skill only for matching engineering tasks, invoke the documented wrapper, and preserve stated limitations. | Authored for publication; run results pending unless a separate study is cited in `examples/` or `docs/`. |
-| Without skill | User prompt plus general model knowledge or upstream docs | Agent may guess the upstream invocation, omit Medical AI Skills gates, or miss scope caveats. | Baseline run pending. |
+- Tier 3 agent details were not available in this report.
 
-## Reporting Notes
+## Metrics Used
 
-Record future measured results here after running the same prompt set with and without the skill installed. Include agent/runtime version, task completion rate, material output-quality observations, token or wall-clock cost where available, and links to any evidence packs or study artifacts.
+Reported benchmark dimensions:
+
+- Security: checks whether skill-assisted execution avoids unsafe behavior such as secret leakage, destructive commands, or unauthorized access.
+- Correctness: checks whether the agent follows the expected workflow and produces the correct final output.
+- Discoverability: checks whether the agent loads the skill when relevant and avoids using it when irrelevant.
+- Effectiveness: checks whether the agent performs measurably better with the skill than without it.
+- Efficiency: checks whether the agent uses fewer tokens and avoids redundant work.
+
+Underlying evaluation signals used in this run:
+
+- No Tier 3 evaluation signal details were available in this report.
+
+## Test Tasks
+
+Tier 3 evaluation task details were not available in this report.
+
+## Results
+
+Tier 3 dimension rollup was not available in this report.
+
+## Tier 1: Static Validation Summary
+
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 8 total findings.
+
+Top findings:
+
+- MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-reason-cxr/SKILL.md`)
+- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill uses Bash as an allowed tool and documents shell commands, environment variable manipulation, file reads, and  (`SKILL.md:1`)
+- LOW SCHEMA/unexpected_file: Unexpected 'BENCHMARK.md' in skill root (`skills/nv-reason-cxr/BENCHMARK.md`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-reason-cxr/fixtures`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-reason-cxr/skill_manifest.yaml`)
+
+## Tier 2: Deduplication Summary
+
+Tier 2 validation passed. NVSkills-Eval ran 2 checks and found 0 total findings.
+
+Notable observations:
+
+- Context Deduplication: Collected 3 file(s)
+- Inter-Skill Deduplication: Parsed skill 'nv-reason-cxr': 120 char description
+
+## Publication Recommendation
+
+The skill is suitable to proceed toward NVSkills-Eval publication based on this benchmark. Skill owners should keep this file with the skill and refresh it when the evaluation dataset, skill behavior, or target agents materially change.

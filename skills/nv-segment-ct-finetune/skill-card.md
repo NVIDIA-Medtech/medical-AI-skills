@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache 2.0 <br>
+Apache-2.0 <br>
 ## Use Case: <br>
-Developers and medical imaging engineers use this skill to fine-tune the NV-Segment-CT VISTA3D segmentation model on custom CT datasets for research and engineering validation. <br>
+Developers and engineers finetuning the NV-Segment-CT VISTA3D segmentation model on their own CT datasets for engineering verification and research purposes. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,17 +19,14 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Task06 Reference Details and Results](references/task06-and-results.md) <br>
+- [Task06 and Results Reference](references/task06-and-results.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, JSON] <br>
-**Output Format:** [JSON (output.json with Dice scores, checkpoint paths, and runtime metadata)] <br>
+**Output Type(s):** [Shell commands, Configuration files, JSON] <br>
+**Output Format:** [JSON (structured output.json with validation metrics and checkpoint paths)] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
-
-## Evaluation Tasks: <br>
-NVSkills-Eval 3-Tier evaluation (external profile); Tier 1 static validation (9 checks, 6 low-severity findings) and Tier 2 deduplication (2 checks, 0 findings) completed. Overall verdict: PASS. Tier 3 live agent evaluation not available in this report. <br>
+**Other Properties Related to Output:** [Writes finetuned checkpoint, auto-generated bundle configs under bundle/configs/, and structured output.json with Dice scores and runtime metadata] <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -42,7 +39,7 @@ Reported benchmark dimensions: <br>
 
 
 ## Skill Version(s): <br>
-8bc4ca9 (source: git SHA, committed 2026-05-28) <br>
+58b9ee3 (source: git SHA, committed 2026-05-28) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

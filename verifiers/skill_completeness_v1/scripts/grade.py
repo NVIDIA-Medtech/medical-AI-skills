@@ -210,6 +210,20 @@ def _scan_imports(scripts_dir: Path, skill_dir: Path) -> set[str]:
     return found
 
 
+def _external_asset_module_names(manifest: dict) -> set[str]:
+    """Module names declared as files supplied by runtime.external_assets."""
+    modules: set[str] = set()
+    runtime = manifest.get("runtime") or {}
+    for asset in runtime.get("external_assets") or []:
+        if not isinstance(asset, dict):
+            continue
+        for item in asset.get("contains") or []:
+            name = str(item).strip()
+            if name.endswith(".py"):
+                modules.add(Path(name).stem)
+    return modules
+
+
 def _parse_frontmatter(skill_md_text: str) -> tuple[bool, str | None, dict | None, str]:
     """Returns (ok, error_msg, parsed_dict, body_text). body_text is whatever
     follows the closing '---' (used for body-length and link checks). When
@@ -543,7 +557,19 @@ def _reproducibility_check_errors(manifest: dict, skill_dir: Path) -> list[str]:
     if not fixture_path.is_absolute():
         fixture_path = skill_dir / fixture_path
     if not fixture_path.exists():
-        return [f"validation.reproducibility.fixture does not exist: {fixture}"]
+        builder = repro.get("fixture_builder")
+        if not isinstance(builder, str) or not builder.strip():
+            return [f"validation.reproducibility.fixture does not exist: {fixture}"]
+        builder_path = Path(builder)
+        if builder_path.is_absolute():
+            return ["validation.reproducibility.fixture_builder must be relative to the skill dir"]
+        builder_path = (skill_dir / builder_path).resolve()
+        try:
+            builder_path.relative_to(skill_dir.resolve())
+        except ValueError:
+            return ["validation.reproducibility.fixture_builder must stay under the skill dir"]
+        if not builder_path.is_file():
+            return [f"validation.reproducibility.fixture_builder does not exist: {builder}"]
     runs = repro.get("runs", 2)
     if not isinstance(runs, int) or runs < 2:
         return ["validation.reproducibility.runs must be an integer >= 2"]
@@ -1052,7 +1078,11 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
     if isinstance(side_effects, dict):
         declared_pkgs = {_norm_pkg(s) for s in (side_effects.get("pip_packages") or [])}
         actual_imports = _scan_imports(skill_dir / "scripts", skill_dir)
-        third_party = {imp for imp in actual_imports if imp not in STDLIB_MODULES}
+        external_modules = _external_asset_module_names(manifest)
+        third_party = {
+            imp for imp in actual_imports
+            if imp not in STDLIB_MODULES and imp not in external_modules
+        }
         actual_pkgs = {IMPORT_TO_PIP.get(imp, imp.lower()) for imp in third_party}
         # safetensors is a separate package; numpy often comes via monai/torch but
         # callers should still declare it. We do not whitelist transitives.

@@ -96,7 +96,6 @@ only as a compatibility alias.
 
 - `nv-segment-ct` (noun phrase)
 - `dicom-metadata-extract` (action-oriented)
-- `holohub-endoscopy-tool-tracking` (noun phrase)
 - `ct-segmentation-quality-v1` (versioned verifier — keep the `-v1` suffix)
 
 **Avoid:**
@@ -134,12 +133,6 @@ description: Extracts selected metadata from one DICOM file, reports
   or detect burnt-in pixel PHI.
 ```
 
-```yaml
-description: Wraps HoloHub's imaging_ai_segmentator application through
-  the native `./holohub run` CLI and reports DICOM SEG/NIfTI artifacts plus
-  reproducibility fingerprints. Engineering verification only.
-```
-
 ### Avoid
 
 ```yaml
@@ -151,8 +144,8 @@ description: You can use this to summarize.     # second person
 ## Body length and progressive disclosure
 
 **Hard cap:** SKILL.md body ≤ 500 lines. Most Medical AI Skills skills are under 50
-lines; longer ones (`find_skills`, `nv_segment_ct_finetune`) are exceptions
-that still stay well under the cap.
+lines; longer ones such as `nv_segment_ct_finetune` are exceptions that still
+stay well under the cap.
 
 **Pattern for short skills (under ~80 lines):** put invocation, evidence-output
 summary, and limitations directly in SKILL.md. No reference files needed.
@@ -248,7 +241,7 @@ Match the level of specificity to how fragile the task is.
 
 | Task character                                                | Style          | Example in this repo                                                                                          |
 |---------------------------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------|
-| Many valid approaches; outcome depends on context             | High freedom — narrative steps  | `find_skills` (shortlists candidates from local manifests, then asks the agent to inspect the chosen spec)     |
+| Many valid approaches; outcome depends on context             | High freedom — narrative steps  | a troubleshooting or setup checklist that asks the agent to inspect the chosen spec before running commands    |
 | Preferred pattern with some variation                         | Medium freedom — script with parameters | `dicom_series_to_volume` (one entrypoint, configurable output dir)                                            |
 | Fragile / consistency-critical / specific sequence            | Low freedom — single exact command       | `nv_segment_ct` (one entrypoint via `HuggingFacePipelineHelper`; no alternative inference loop allowed)       |
 
@@ -323,7 +316,6 @@ For any skill that wraps an upstream model, CLI, or bundle:
 ## Workflows and feedback loops
 
 For multi-step skills, give Claude an explicit checklist and validation gate.
-See `skills/find-skills/SKILL.md` for an example of a workflow-style SKILL.md.
 
 ### Workflow pattern
 
@@ -547,7 +539,6 @@ Run before submitting:
 make verify
 make verify-skills
 make verify-negative-fixtures
-make verify-mock-gates
 make list-skills
 ```
 

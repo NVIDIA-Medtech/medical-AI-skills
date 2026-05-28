@@ -112,6 +112,12 @@ or deliberately test-synthesized binary fixture prevents honest repository-local
 execution. Preflight mode must include a reason so reviewers can distinguish a
 known boundary check from an end-to-end repeat.
 
+If the declared fixture is an intentionally gitignored binary artifact, add a
+repo-local `fixture_builder` script under `validation.reproducibility`. The
+reproducibility audit runs that script before checking the fixture path; the
+completeness verifier requires the builder to stay inside the skill or verifier
+directory.
+
 Verifiers are not trusted by name. They need manifests, schemas, positive and
 negative fixtures, tests, and their own evidence packs.
 
@@ -119,30 +125,25 @@ negative fixtures, tests, and their own evidence packs.
 
 **Canonical file:** `spec/segmentation_output.schema.json` (JSON Schema draft-07, `$id` version `v1.0.0`).
 
-### Deferral rationale
+### Envelope rationale
 
-The shared segmentation schema was held off until at least two skills agreed on a common shape. As of 2026-05-17, both `nv_segment_ct` and `holohub_imaging_ai_segmentator` are shipping, so the trigger condition is met.
+The shared segmentation schema captures the stable envelope used by
+`nv_segment_ct`-style segmentation wrappers: `invocation`, `output`, and
+`runtime` are required objects, while skill-specific detail stays in each
+skill-local validator.
 
-### Intersection and union
+### Required and optional fields
 
-The two skills were analysed against their emitted output payloads (not schema aspirations):
+| Field | Status |
+|---|---|
+| `invocation` | required object |
+| `output` | required object |
+| `runtime` | required object |
+| `skill`, `model`, `model_repo`, `license`, `input`, `intended_use_disclaimer`, `logs` | optional skill-specific fields |
 
-| Field | nv_segment_ct | holohub_imaging_ai_segmentator | Status |
-|---|---|---|---|
-| `invocation` | object (required) | object (required) | **REQUIRED — intersection** |
-| `output` | object (required) | object (required) | **REQUIRED — intersection** |
-| `runtime` | object (required) | object (required) | **REQUIRED — intersection** |
-| `skill` | string (required) | absent | optional (union) |
-| `model` | string (required) | absent | optional (union) |
-| `model_repo` | string (required) | absent | optional (union) |
-| `license` | string | absent | optional (union) |
-| `input` | object (required) | absent | optional (union) |
-| `intended_use_disclaimer` | string (required) | absent | optional (union) |
-| `logs` | absent | object (required) | optional (union) |
-
-The shared schema requires only the intersection (`invocation`, `output`, `runtime`). All union-only fields are declared as optional properties with `additionalProperties: true` so each skill can carry its full payload without conflict.
-
-The `invocation`, `output`, and `runtime` objects have incompatible internal shapes across the two skills — `nv_segment_ct` uses `invocation.official_helper` and `runtime.inference_seconds`/`device`, while `holohub_imaging_ai_segmentator` uses `invocation.holohub_root`/`exit_code` and `runtime.subprocess_seconds`. The shared schema therefore declares these three as opaque `"type": "object"` with no further required sub-properties; per-skill depth is enforced by each skill's own local validator.
+The shared schema requires only the common envelope. Optional fields are
+declared with `additionalProperties: true` so each skill can carry its full
+payload without conflict.
 
 ### Migration strategy
 
@@ -152,10 +153,11 @@ Because of this constraint, the migration uses the **inline-copy with comment** 
 
 | Skill | Validator path | Strategy |
 |---|---|---|
-| `nv_segment_ct` | `skills/nv-segment-ct/validators/output_schema.json` | `$comment` added; required block unchanged (superset of intersection) |
-| `holohub_imaging_ai_segmentator` | `skills/holohub-imaging-ai-segmentator/validators/output_schema.json` | `$comment` added; required block unchanged (superset of intersection) |
+| `nv_segment_ct` | `skills/nv-segment-ct/validators/output_schema.json` | `$comment` added; required block unchanged (superset of envelope) |
 
-Both paired verifiers (`ct_segmentation_quality_v1`, `holohub_imaging_segmentation_quality_v1`) have a one-line comment added at the site where they access `output_payload.get("output")` and `output_payload.get("invocation")`, referencing `spec/segmentation_output.schema.json`.
+The paired verifier `ct_segmentation_quality_v1` references the same envelope
+when it accesses `output_payload.get("output")` and
+`output_payload.get("invocation")`.
 
 ### Future upgrade path
 

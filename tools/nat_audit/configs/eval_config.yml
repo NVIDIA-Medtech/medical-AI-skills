@@ -3,8 +3,6 @@ functions:
     _type: read_file
   list_directory:
     _type: list_directory
-  find_skills:
-    _type: find_skills
   dicom_meta_extract:
     _type: dicom_meta_extract
   dicom_series_to_volume:
@@ -13,14 +11,6 @@ functions:
     _type: finetune_smoke
   nv_segment_ct:
     _type: nv_segment_ct
-  radiology_note_summarizer:
-    _type: radiology_note_summarizer
-  holohub_flow_benchmark:
-    _type: holohub_flow_benchmark
-  holohub_endoscopy_tool_tracking:
-    _type: holohub_endoscopy_tool_tracking
-  holohub_imaging_ai_segmentator:
-    _type: holohub_imaging_ai_segmentator
 
 llms:
   nim_llm:
@@ -34,15 +24,10 @@ workflow:
   tool_names:
     - read_file
     - list_directory
-    - find_skills
     - dicom_meta_extract
     - dicom_series_to_volume
     - finetune_smoke
     - nv_segment_ct
-    - radiology_note_summarizer
-    - holohub_flow_benchmark
-    - holohub_endoscopy_tool_tracking
-    - holohub_imaging_ai_segmentator
   llm_name: nim_llm
   verbose: true
   max_iterations: 8

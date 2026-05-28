@@ -74,12 +74,6 @@ Flagship workflows (see [`examples/README.md`](../examples/README.md)):
   no GPU).
 - **CT segmentation:** `examples/workflows/ct_dicom_to_segmentation_evidence.yaml`
   — convert + trusted `nv_segment_ct`.
-- **HoloHub imaging:** `examples/workflows/holohub_imaging_evidence.yaml`
-  — trusted `holohub_imaging_ai_segmentator` + flow benchmark + `stream` summary linkage.
-- **HoloHub endoscopy (variant):** `examples/workflows/holohub_endoscopy_evidence.yaml`
-  — trusted verifier; detection export via log/sidecar.
-- **Stream linkage:** `workflow_summary.json` → `stream` block aggregates
-  `holohub_flow_benchmark` latency paths, logger/gpu artifacts, and contract status.
 
 `trust_summary.overall` may be `warn` when a verifier reports advisory findings
 (e.g. PHI tags present) without hard failures.
@@ -162,6 +156,11 @@ reason. That mode repeats the declared input/env boundary check only; it is a
 visible gap, not proof that a GPU/model/container run is reproducible. Promote
 full evidence packs for those runs and compare their artifact hashes before
 making stronger claims.
+
+Specs may declare `validation.reproducibility.fixture_builder` for small
+synthetic binary fixtures that are generated locally and kept out of git. The
+builder must live under the skill or verifier directory and create the exact
+declared fixture path.
 
 ## Dependency drift
 

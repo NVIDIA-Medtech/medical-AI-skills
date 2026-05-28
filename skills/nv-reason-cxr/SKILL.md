@@ -4,7 +4,7 @@ description: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning 
 license: Apache-2.0
 allowed-tools: Bash
 metadata:
-  author: "NVIDIA MedTech <noreply@nvidia.com>"
+  author: NVIDIA MedTech Team
   tags:
     - medtech
     - cxr

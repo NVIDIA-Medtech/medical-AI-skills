@@ -4,7 +4,7 @@ description: Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT
 license: Apache-2.0
 allowed-tools: Bash
 metadata:
-  author: "NVIDIA MedTech <noreply@nvidia.com>"
+  author: NVIDIA MedTech Team
   tags:
     - medtech
     - CT

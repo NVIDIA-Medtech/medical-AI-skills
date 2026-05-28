@@ -4,7 +4,7 @@ description: Used for generating synthetic body MRI volumes with NV-Generate-CTM
 license: Apache-2.0
 allowed-tools: Bash
 metadata:
-  author: "NVIDIA MedTech <noreply@nvidia.com>"
+  author: NVIDIA MedTech Team
   tags:
     - medtech
     - mri

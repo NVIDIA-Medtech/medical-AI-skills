@@ -1,22 +1,65 @@
-# nv-generate-ct-rflow Benchmark
+# Evaluation Report
 
-## Scope
+Evaluation of the `nv-generate-ct-rflow` skill before publication through NVSkills-Eval.
 
-This benchmark report covers `nv-generate-ct-rflow`, Medical AI Skills skill for NV-Generate-CTMR rflow-ct synthetic CT generation. The skill is engineering verification only and is not clinical, diagnostic, regulatory, or patient-facing tooling.
+This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the skill. The goal is to document whether the skill is safe, discoverable, effective, and useful for agents before it is published for broader workflow use.
 
-## Current Evidence
+## Evaluation Summary
 
-- `SKILL.md` declares the external agent-facing trigger, wrapper command, prerequisites, and limitations.
-- `skill_manifest.yaml` declares inputs, outputs, runtime side effects, validation gates, and known limitations for Medical AI Skills trust harness.
-- `evals/evals.json` defines prompt-shaped behavior checks for agent routing, command construction, and scope boundaries.
+- Skill: `nv-generate-ct-rflow`
+- Evaluation date: 2026-05-28
+- NVSkills-Eval profile: `external`
+- Overall verdict: FAIL
+- Tier 3 live agent evaluation: not available in this report
 
-## With-Skill vs Without-Skill Evaluation
+## Agents Used
 
-| Arm | Document surface | Expected behavior | Status |
-|---|---|---|---|
-| With skill | `SKILL.md`, `scripts/`, and `evals/evals.json` | Agent should select this skill only for matching engineering tasks, invoke the documented wrapper, and preserve stated limitations. | Authored for publication; run results pending unless a separate study is cited in `examples/` or `docs/`. |
-| Without skill | User prompt plus general model knowledge or upstream docs | Agent may guess the upstream invocation, omit Medical AI Skills gates, or miss scope caveats. | Baseline run pending. |
+- Tier 3 agent details were not available in this report.
 
-## Reporting Notes
+## Metrics Used
 
-Record future measured results here after running the same prompt set with and without the skill installed. Include agent/runtime version, task completion rate, material output-quality observations, token or wall-clock cost where available, and links to any evidence packs or study artifacts.
+Reported benchmark dimensions:
+
+- Security: checks whether skill-assisted execution avoids unsafe behavior such as secret leakage, destructive commands, or unauthorized access.
+- Correctness: checks whether the agent follows the expected workflow and produces the correct final output.
+- Discoverability: checks whether the agent loads the skill when relevant and avoids using it when irrelevant.
+- Effectiveness: checks whether the agent performs measurably better with the skill than without it.
+- Efficiency: checks whether the agent uses fewer tokens and avoids redundant work.
+
+Underlying evaluation signals used in this run:
+
+- No Tier 3 evaluation signal details were available in this report.
+
+## Test Tasks
+
+Tier 3 evaluation task details were not available in this report.
+
+## Results
+
+Tier 3 dimension rollup was not available in this report.
+
+## Tier 1: Static Validation Summary
+
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 38 total findings.
+
+Top findings:
+
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:16`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:17`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:18`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:19`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:20`)
+
+## Tier 2: Deduplication Summary
+
+Tier 2 validation reported findings. NVSkills-Eval ran 2 checks and found 1 total findings.
+
+Top findings:
+
+- HIGH DUPLICATE/duplicate: Duplicate content found across scripts/run_ct_image.py and scripts/run_rflow_ct.py:
+  "_load_config_override()" in scripts/run_ct_image.py (lines 102-120)
+  vs "_load_config_override()" in scripts/run_rflow_ct.py (lines 97-116) (`scripts/run_ct_image.py:102`)
+
+## Publication Recommendation
+
+The skill should be reviewed before NVSkills-Eval publication. Skill owners should address the findings above and rerun NVSkills-Eval to refresh this benchmark.

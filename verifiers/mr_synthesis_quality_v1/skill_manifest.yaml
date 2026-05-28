@@ -87,4 +87,5 @@ validation:
   reproducibility:
     mode: repeat
     fixture: fixtures/pass_pack
+    fixture_builder: fixtures/build_fixtures.py
     runs: 2

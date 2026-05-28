@@ -6,7 +6,7 @@ Run after edits. Order matters: fast checks first.
 
 ```bash
 make lint          # repo policy + manifest schema
-make test          # pytest: eval_engine, find_skills, verifiers
+make test          # pytest: eval_engine, skills, verifiers, and tools
 make list-skills   # regenerate SKILL_INDEX.md if manifests changed
 ```
 
@@ -64,10 +64,9 @@ candidate pack with:
 make review-packet PACK=<pack-or-trusted-run-dir>
 ```
 
-## Optional (gates / LLM / negative fixtures)
+## Optional (negative fixtures)
 
 ```bash
-make verify-mock-gates
 make verify-negative-fixtures
 ```
 
@@ -85,12 +84,6 @@ python3 -m pytest verifiers/<name>/tests -q
 make run-skill SKILL=dicom_metadata_extract \
   FIXTURE=skills/dicom-metadata-extract/fixtures/sample_ct.dcm \
   OUT=runs/smoke
-```
-
-## Discovery smoke
-
-```bash
-make find-skills QUERY="extract DICOM metadata"
 ```
 
 See [`agent-tasks.md`](agent-tasks.md) for task-specific read lists.

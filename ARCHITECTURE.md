@@ -60,13 +60,11 @@ Readable deterministic files:
 | [`eval_engine/integrity.py`](eval_engine/integrity.py) | static integrity scan |
 | [`eval_engine/manifest.py`](eval_engine/manifest.py) | manifest loading, schema validation, spec discovery |
 | [`verifiers/skill_completeness_v1/scripts/grade.py`](verifiers/skill_completeness_v1/scripts/grade.py) | structural and manifest verifier |
-| [`verifiers/endoscopy_tool_detection_quality_v1/scripts/grade.py`](verifiers/endoscopy_tool_detection_quality_v1/scripts/grade.py) | domain verifier for decoded endoscopy detections |
 | [`verifiers/ct_segmentation_quality_v1/scripts/grade.py`](verifiers/ct_segmentation_quality_v1/scripts/grade.py) | domain verifier for CT-segmentation anatomy plausibility and optional Dice |
 | [`verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill/`](verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill/) | known-bad calibration fixture |
 
 `make verify` smoke-tests the harness against a canonical pack. `make verify-skills`,
-`make verify-negative-fixtures`, and `make verify-mock-gates` are broader local
-trust checks.
+and `make verify-negative-fixtures` are broader local trust checks.
 
 ## Entry points
 
