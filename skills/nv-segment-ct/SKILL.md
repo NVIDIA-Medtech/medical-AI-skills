@@ -1,6 +1,6 @@
 ---
 name: nv-segment-ct
-description: Used for running NV-Segment-CT VISTA3D on CT NIfTI volumes and recording label-map evidence. Not for clinical interpretation.
+description: Used for running NV-Segment-CT VISTA3D on CT NIfTI volumes and recording label-map evidence.
 license: Apache-2.0
 allowed-tools: Bash
 metadata:
