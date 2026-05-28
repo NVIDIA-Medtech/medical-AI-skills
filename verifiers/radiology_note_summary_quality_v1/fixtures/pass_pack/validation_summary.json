@@ -1,0 +1,231 @@
+{
+  "schema": "skills/radiology-note-summarizer/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/radiology-note-summarizer/fixtures/case_001_input.json",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "skills/radiology-note-summarizer/fixtures/case_001_input.json",
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "output.study_instance_uid",
+        "matches": "^(?:[0-9.]+|SYNTH-STUDY-[0-9]{3})$"
+      },
+      "actual": "SYNTH-STUDY-001",
+      "ok": true,
+      "reason": "matched '^(?:[0-9.]+|SYNTH-STUDY-[0-9]{3})$'"
+    },
+    {
+      "check": {
+        "path": "output.findings",
+        "length_gte": 1
+      },
+      "actual": [
+        "CT of the abdomen performed with contrast",
+        "mild hepatic steatosis noted",
+        "small simple right renal cyst, approximately 1.5 cm, likely incidental",
+        "no acute findings"
+      ],
+      "ok": true,
+      "reason": "len=4 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.impressions",
+        "matches": ".+"
+      },
+      "actual": "CT abdomen: mild hepatic steatosis and a small incidental right renal cyst. No acute process.",
+      "ok": true,
+      "reason": "matched '.+'"
+    },
+    {
+      "check": {
+        "path": "output.flags_for_followup",
+        "exists": true
+      },
+      "actual": [
+        "clinical follow-up if symptoms persist"
+      ],
+      "ok": true,
+      "reason": "present (expected)"
+    },
+    {
+      "check": {
+        "path": "runtime.model",
+        "eq": "nvidia/openai/gpt-oss-20b"
+      },
+      "actual": "nvidia/openai/gpt-oss-20b",
+      "ok": true,
+      "reason": "'nvidia/openai/gpt-oss-20b' == 'nvidia/openai/gpt-oss-20b'"
+    },
+    {
+      "check": {
+        "path": "runtime.temperature",
+        "eq": 0.0
+      },
+      "actual": 0.0,
+      "ok": true,
+      "reason": "0.0 == 0.0"
+    },
+    {
+      "check": {
+        "path": "runtime.endpoint",
+        "eq": "https://inference-api.nvidia.com/v1"
+      },
+      "actual": "https://inference-api.nvidia.com/v1",
+      "ok": true,
+      "reason": "'https://inference-api.nvidia.com/v1' == 'https://inference-api.nvidia.com/v1'"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 0.05279696699290071,
+      "min": null,
+      "max": 60,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 0.060052,
+      "min": null,
+      "max": 10,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 28.5,
+      "min": null,
+      "max": 500,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "llm_tokens_input",
+      "actual": 331,
+      "min": 50,
+      "max": 4000,
+      "ok": true,
+      "reason": null,
+      "source": "self_reported"
+    },
+    {
+      "key": "llm_tokens_output",
+      "actual": 101,
+      "min": 20,
+      "max": 1024,
+      "ok": true,
+      "reason": null,
+      "source": "self_reported"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "passed",
+  "factual_echo_results": [
+    {
+      "input_path": "dicom_metadata.StudyInstanceUID",
+      "mode": "exact",
+      "output_paths": [
+        "output.study_instance_uid"
+      ],
+      "input_value": "SYNTH-STUDY-001",
+      "case_insensitive": false,
+      "ok": true,
+      "reason": "input='SYNTH-STUDY-001' in ['output.study_instance_uid']"
+    },
+    {
+      "input_path": "dicom_metadata.Modality",
+      "mode": "any_contains",
+      "output_paths": [
+        "output.findings",
+        "output.impressions"
+      ],
+      "input_value": "CT",
+      "case_insensitive": true,
+      "ok": true,
+      "reason": "'CT' found in ['output.findings', 'output.impressions']"
+    },
+    {
+      "input_path": "dicom_metadata.BodyPartExamined",
+      "mode": "any_contains",
+      "output_paths": [
+        "output.findings",
+        "output.impressions"
+      ],
+      "input_value": "ABDOMEN",
+      "case_insensitive": true,
+      "ok": true,
+      "reason": "'ABDOMEN' found in ['output.findings', 'output.impressions']"
+    }
+  ],
+  "model_identity_status": "passed",
+  "model_identity_results": [
+    {
+      "field": "model",
+      "declared": "nvidia/openai/gpt-oss-20b",
+      "actual": "nvidia/openai/gpt-oss-20b",
+      "ok": true,
+      "reason": "'nvidia/openai/gpt-oss-20b' == 'nvidia/openai/gpt-oss-20b'"
+    },
+    {
+      "field": "endpoint",
+      "declared": "https://inference-api.nvidia.com/v1",
+      "actual": "https://inference-api.nvidia.com/v1",
+      "ok": true,
+      "reason": "'https://inference-api.nvidia.com/v1' == 'https://inference-api.nvidia.com/v1'"
+    },
+    {
+      "field": "temperature",
+      "declared": 0.0,
+      "actual": 0.0,
+      "ok": true,
+      "reason": "0.0 == 0.0"
+    }
+  ],
+  "runtime_integrity_status": "clean",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

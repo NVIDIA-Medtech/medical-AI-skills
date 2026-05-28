@@ -1,0 +1,12 @@
+{
+  "status": "minor",
+  "findings": [
+    {
+      "file": "validators/output_schema.json",
+      "type": "url_off_allowlist",
+      "host": "json-schema.org",
+      "match": "https://json-schema.org/draft/2020-12/schema\","
+    }
+  ],
+  "n_findings": 1
+}

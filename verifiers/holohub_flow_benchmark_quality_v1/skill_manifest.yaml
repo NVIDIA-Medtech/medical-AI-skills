@@ -1,0 +1,84 @@
+id: medagent.verifiers.holohub_flow_benchmark_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: holohub_flow_benchmark_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for holohub_flow_benchmark evidence packs. Audits
+    source-pack success, benchmark exit status, logger artifact inventory and
+    hashes, scheduler coverage, latency sample counts, benchmark-log
+    completion, optional GPU-utilization artifact consistency, contract
+    assertions, and non-clinical scope disclosure.
+  scope: development
+  not_for:
+    - clinical interpretation
+    - intra-operative guidance
+    - autonomous diagnosis
+    - regulatory submission
+    - model-output quality claims
+
+inputs:
+  - name: holohub_flow_benchmark_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by
+      skills/holohub-flow-benchmark. The verifier reads output.json,
+      validation_summary.json, manifest.json, and host-visible benchmark
+      logger artifacts.
+
+outputs:
+  - name: holohub_flow_benchmark_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    This verifier checks engineering-performance evidence and contract
+    assertions. It does not validate model correctness, surgical tool
+    detections, segmentation quality, or clinical utility.
+  - >
+    Latency budgets are only as meaningful as the source contract and target
+    hardware calibration. Passing this verifier does not imply cross-host
+    performance equivalence.
+  - >
+    The verifier rechecks committed/host-visible logger artifacts and hashes;
+    it does not re-run HoloHub or inspect container-internal state.
+
+validation:
+  expected_runtime_seconds:
+    max: 30.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.holohub_flow_benchmark_quality_v1}
+    - {path: target.skill_id, eq: medagent.holohub_flow_benchmark}
+    - {path: target.source_overall_status, eq: passed}
+    - {path: flow_quality.acceptable, eq: true}
+    - {path: flow_quality.logger_file_count, gte: 1}
+    - {path: flow_quality.scheduler_coverage_complete, eq: true}
+    - {path: flow_quality.total_latency_samples, gt: 0}
+    - {path: flow_quality.min_path_sample_count, gt: 0}
+    - {path: flow_quality.contract_assertions_passed, eq: true}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

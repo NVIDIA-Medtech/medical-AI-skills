@@ -1,0 +1,70 @@
+discussions/
+.workbench_data/
+runs/
+temp_work_dir/
+NV-Segment-CTMR/
+.claude/
+.pytest_cache/
+__pycache__/
+*.pyc
+.nvseg_ct_py311/
+
+# Real CT test data — downloadable, do not commit
+skills/dicom-metadata-extract/fixtures/real_ct/
+
+# Shared benchmark manifests may be committed; local benchmark cases/GT may not.
+/benchmarks/**/cases/
+/benchmarks/**/gt/
+/benchmarks/cases/
+/benchmarks/gt/
+/benchmarks/**/*.dcm
+/benchmarks/**/*.nii
+/benchmarks/**/*.nii.gz
+
+# Downloaded MONAI bundles (large, redownloadable)
+skills/*/bundles/
+
+# Downloaded HuggingFace model repos (`huggingface-cli download` lands here).
+# The skill manifest's external_assets / install_command pulls fresh copies;
+# nothing under bundle/ is project-authored code, so do not vendor it.
+skills/*/bundle/
+
+# Downloaded model weights (large, redownloadable)
+skills/*/bundle/**/*.safetensors
+skills/*/bundle/**/*.pt
+skills/*/bundle/**/*.pth
+
+# Regenerable verifier checkpoint stand-ins built by fixtures/build_fixtures.py
+# at test setup. Each is a 1.2 MB blob with no semantic content; the JSON
+# pack files (output.json, manifest.json, validation_summary.json) are
+# committed alongside them so developers can inspect the fixtures by eye.
+verifiers/*/fixtures/*/checkpoint.pt
+
+# Regenerable verifier synthetic NIfTI pairs (ct_synthesis_quality_v1).
+# 8x8x8 toy volumes; rebuild via conftest.py before tests run.
+verifiers/*/fixtures/*/*_image.nii.gz
+verifiers/*/fixtures/*/*_label.nii.gz
+
+# nat_audit local venv + setuptools build artifacts
+tools/nat_audit/.venv/
+tools/nat_audit/src/*.egg-info/
+
+# Local agent-run output captured under example study dirs (regenerable via
+# `make run-workflow ...` against the matching fixture). The summary JSONs at
+# the parent level are committed; the per-run evidence_pack/ artifacts under
+# *_artifacts/ contain raw absolute paths and aren't part of the public surface.
+examples/studies/**/with_skill_artifacts/
+examples/studies/**/without_skill_artifacts/
+
+# Stub dotfiles created by sandboxed `bash -lic` invocations that probe
+# for HOME-relative shell config (.bashrc, .zshrc, .gitconfig, .mcp.json,
+# etc.). Always 0 bytes, never authored by Medical AI Skills.
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.mcp.json
+/.profile
+/.ripgreprc
+/.zprofile
+/.zshrc

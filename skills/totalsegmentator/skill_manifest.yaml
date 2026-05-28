@@ -1,0 +1,207 @@
+id: medagent.totalsegmentator
+version: 0.1.0
+upstream_refs:
+  - kind: pypi_package
+    name: TotalSegmentator
+    version_constraint: ">=2.0"
+license: Apache-2.0
+intended_use:
+  summary: >
+    Engineering-time wrapper around Wasserthal et al.'s TotalSegmentator
+    (CT/MR multi-organ segmentation, 117 CT classes for the default
+    `total` task). Invokes `totalsegmentator.python_api.totalsegmentator`
+    exactly as the upstream README recommends, with `ml=True` so the
+    output is a single multilabel NIfTI rather than a folder of binary
+    masks.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+
+inputs:
+  - name: ct_or_mr_volume
+    type: file_path
+    formats:
+      - nifti
+
+outputs:
+  - name: label_map
+    type: file_path
+    formats:
+      - nifti
+  - name: result_json
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_totalsegmentator.py
+  args:
+    - "${python}"
+    - "${script}"
+    - "${fixture}"
+    - "--output-dir"
+    - "${out}/totalsegmentator_outputs"
+  dependencies:
+    TotalSegmentator: ">=2.0"
+    torch: ">=2.0"
+    nibabel: ">=4.0"
+    numpy: ">=1.23"
+    typer: ">=0.9"
+  side_effects:
+    pip_packages:
+      - TotalSegmentator>=2.0
+      - torch>=2.0
+      - nibabel>=4.0
+      - numpy>=1.23
+      - typer>=0.9
+    local_writes:
+      - {path: "<caller-provided --output-dir>", approx_mb_max: 4000}
+    home_writes:
+      - {path: ~/.totalsegmentator/, approx_mb_max: 3000}
+    network_endpoints:
+      - https://zenodo.org
+      - https://github.com
+    requires_docker: false
+    requires_gpu: cuda
+    gpu_fallback: cpu
+    environment:
+      clean_environment_required: false
+      clean_environment_recommended: true
+      modifies_active_python_environment: true
+      user_environment_modification_ok: true
+      recommended_isolation: fresh venv or container for benchmarks; caller-selected env for interactive use
+      notes: >
+        Runtime setup commands may install packages into the active Python
+        environment. That is acceptable only when the caller chooses that
+        environment; benchmark and evidence runs should use a fresh per-run
+        environment.
+    env_required: []
+
+# Per-task model-weight licensing. The wrapper itself is Apache-2.0; the
+# weights are downloaded from Zenodo and have task-specific terms. See
+# https://github.com/wasserth/TotalSegmentator#licence for canonical
+# table. Downstream tooling MAY gate on `weights_per_task[task]` before
+# invoking the wrapper.
+license_restrictions:
+  code: Apache-2.0
+  weights_default: "Free for non-commercial use (see upstream README)"
+  weights_per_task:
+    total: non_commercial
+    total_mr: non_commercial
+    body: non_commercial
+    body_mr: non_commercial
+    lung_vessels: non_commercial
+    cerebral_bleed: non_commercial
+    hip_implant: non_commercial
+    pleural_pericard_effusion: non_commercial
+    head_glands_cavities: non_commercial
+    head_muscles: non_commercial
+    headneck_bones_vessels: non_commercial
+    headneck_muscles: non_commercial
+    liver_vessels: non_commercial
+    oculomotor_muscles: non_commercial
+    lung_nodules: non_commercial
+    kidney_cysts: non_commercial
+    breasts: non_commercial
+    liver_segments: non_commercial
+    liver_segments_mr: non_commercial
+    craniofacial_structures: non_commercial
+    abdominal_muscles: non_commercial
+    teeth: non_commercial
+    trunk_cavities: non_commercial
+    ventricle_parts: non_commercial
+    liver_lesions: non_commercial
+    liver_lesions_mr: non_commercial
+    vertebrae_mr: non_commercial
+    # Below tasks ship under a separate "free academic" licence and
+    # require a free key from the upstream author for non-commercial
+    # research. Commercial use requires a paid licence.
+    heartchambers_highres: academic_only
+    appendicular_bones: academic_only
+    appendicular_bones_mr: academic_only
+    tissue_types: academic_only
+    tissue_types_mr: academic_only
+    tissue_4_types: academic_only
+    brain_structures: academic_only
+    vertebrae_body: academic_only
+    face: academic_only
+    face_mr: academic_only
+    thigh_shoulder_muscles: academic_only
+    thigh_shoulder_muscles_mr: academic_only
+    coronary_arteries: academic_only
+    aortic_sinuses: academic_only
+    brain_aneurysm: academic_only
+
+paired_verifiers:
+  - id: medagent.verifiers.totalsegmentator_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+    purpose: >
+      Converts this wrapper's geometry/label-set evidence into a
+      TotalSegmentator-quality floor. The verifier reads the produced
+      multilabel NIfTI, recomputes per-class physical volume from the
+      NIfTI header spacing plus connected-component statistics, checks
+      anatomy plausibility (organ volume bounds tuned to TotalSegmentator
+      label IDs, bilateral symmetry, liver > spleen), and optionally
+      computes per-class Dice / IoU if `input.ground_truth_path` is
+      present in the evidence pack.
+
+limitations:
+  - >
+    Thin wrapper. Inference, preprocessing, postprocessing, and weight
+    download are delegated entirely to `totalsegmentator.python_api`.
+    Do not modify the installed package.
+  - >
+    The wrapper always passes `ml=True` so the output is a single
+    multilabel NIfTI (one file containing all class IDs). The
+    upstream default (folder of per-class binary masks) is not
+    exposed by this wrapper.
+  - >
+    Anatomy bounds in
+    `verifiers/totalsegmentator_quality_v1/validators/anatomy_bounds_total.json`
+    are population-typical adult ranges. Pediatric, surgically-resected,
+    or pathologically-enlarged cases will fail intentionally; the
+    verifier is an engineering floor, not a clinical assessment.
+  - >
+    Output may be schema-valid but semantically empty (e.g. wrong-task
+    inference on a CT volume that doesn't contain the requested
+    anatomy). The verifier's `any_label_present` and per-class volume
+    bounds gates catch this.
+  - >
+    Licensing: TotalSegmentator code is Apache-2.0; this wrapper is
+    Apache-2.0. Model weights are non-commercial for most tasks and
+    academic-only for a few — see `license_restrictions.weights_per_task`
+    above and the upstream README.
+
+validation:
+  expected_runtime_seconds:
+    min: 0.05
+    max: 1800.0
+    inference_path: runtime.inference_seconds
+  sanity_checks:
+    - {path: input.ndim, eq: 3}
+    - {path: output.geometry.shape_match, eq: true}
+    - {path: output.geometry.affine_match, eq: true}
+    - {path: output.label_set_valid, eq: true}
+    - {path: output.any_label_present, eq: true}
+    - {path: invocation.python_api, eq: totalsegmentator.python_api.totalsegmentator}
+    - {path: invocation.ml, eq: true}
+  expected_cost:
+    wall_seconds:        {max: 1800}
+    cpu_seconds:         {max: 7200}
+    rss_mb_peak:         {min: 200, max: 16000}
+    gpu_seconds:         {max: 1800}
+    gpu_memory_mb_peak:  {max: 32000}
+  reproducibility:
+    mode: preflight
+    fixture: ../nv-segment-ct/fixtures/spleen_03.nii.gz
+    runs: 2
+    reason: >
+      End-to-end TotalSegmentator repeatability may download Zenodo weights and
+      can be CPU/GPU expensive. The repository audit repeats the declared NIfTI
+      input/env boundary check; promoted evidence packs must compare label-map
+      artifact hashes.

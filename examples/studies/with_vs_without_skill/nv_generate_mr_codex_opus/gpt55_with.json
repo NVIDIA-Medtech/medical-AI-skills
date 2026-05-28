@@ -1,0 +1,2107 @@
+{
+  "backend": "gpt55",
+  "backend_label": "GPT-5.5 / Codex",
+  "model": "openai/openai/gpt-5.5",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "openai/openai/gpt-5.5",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "with",
+  "skill": "nv_generate_mr",
+  "mode": "codex-opus",
+  "repeat_count": 3,
+  "max_correction_steps": 0,
+  "prompt_style": "minimal",
+  "clean_environment": {
+    "per_repeat_output_dir": true,
+    "per_attempt_fresh_venv": true,
+    "python_user_site_disabled": true,
+    "host_pythonpath_removed": true,
+    "output_dir_cleaned_before_each_attempt": true,
+    "dependency_and_model_caches_may_be_shared": true,
+    "shared_cache_root": ".workbench_data/with_vs_without_cache",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    }
+  },
+  "summary": {
+    "pass_count": 3,
+    "fail_count": 0,
+    "mean_score": 5.0,
+    "scores": [
+      5,
+      5,
+      5
+    ],
+    "steps_to_pass": {
+      "resolved_count": 3,
+      "unresolved_count": 0,
+      "mean_resolved": 0.0,
+      "min_resolved": 0,
+      "max_resolved": 0,
+      "values": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "repeats": [
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json. Generate one T1 MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr/SKILL.md ---\n---\nname: nv-generate-mr\ndescription: Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - generation\n---\n\n# NV-Generate-MR\n\n## Purpose\n- Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, and validation.\n- Manifest I/O: inputs are `model_config_override`; outputs are `synthetic_mr_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr.py` | Primary entrypoint declared by skill_manifest.yaml. | `MODEL_CONFIG.json --output-dir OUT_DIR --modality mri_t1 [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.diff_model_infer`. Do not modify code under $NV_GENERATE_ROOT or the repo-local fallback at .workbench_data/upstreams/NV-Generate-CTMR.\n- rflow-mr generates image-only synthetic MRI volumes. It does not emit paired segmentation masks.\n- The upstream README recommends `rflow-mr-brain` instead for brain MRI synthesis; use `skills/nv-generate-mr-brain` for that path.\n- NV-Generate-MR weights are listed by upstream as NVIDIA Non-Commercial. Do not use outputs as production training data without legal and quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation)\nMR image-only generation workflow. The wrapper does not reimplement diffusion\nsampling or autoencoder decoding. It stages config overrides, runs the\ndocumented `python -m scripts.diff_model_infer` command for `rflow-mr`, then\nsummarizes the generated NIfTI volume.\n\n\n## Exact Runnable Surface\n\nFor user run commands in a fresh benchmark environment, use this setup plus\nrepo-root wrapper command exactly:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py PATH_TO_MR_CONFIG.json --output-dir OUT_DIR --modality mri_t1 --random-seed 0\n```\n\nDo not invent `generate.sh`, `infer.py`, `Medical AI Skills run`, or `python -m nv_generate_mr` commands. `PATH_TO_MR_CONFIG.json` must be the user's supplied request path.\n\n## Preconditions\n\nClone and install the upstream repo once. In this Medical AI Skills checkout, prefer\nthe repo-local cache path when it exists:\n\n```bash\nmkdir -p .workbench_data/upstreams\ntest -d .workbench_data/upstreams/NV-Generate-CTMR/.git || \\\n  git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git \\\n    .workbench_data/upstreams/NV-Generate-CTMR\nexport NV_GENERATE_ROOT=.workbench_data/upstreams/NV-Generate-CTMR\npip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n```\n\nDownload the MR weights:\n\n```bash\ncd \"$NV_GENERATE_ROOT\"\npython -m scripts.download_model_data --version rflow-mr --root_dir ./ --model_only\n```\n\nRuntime needs an NVIDIA GPU with at least 16 GB VRAM. There is no CPU\nfallback in the upstream path.\n\nThe wrapper also searches `.workbench_data/upstreams/NV-Generate-CTMR` if\n`NV_GENERATE_ROOT` is unset or points at a stale clone.\n\nFor agent-generated user run commands, use the command in Usage. Do not prepend\nclone or model-download setup steps when the repo-local upstream cache already\nexists. In a fresh Python environment, still include\n`pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"` before the wrapper unless\nthe active environment has already proven those imports are available; cached\nweights do not imply cached Python packages. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-mr/scripts/run_mr.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py \\\n  PATH_TO_MR_CONFIG.json \\\n  --output-dir runs/nv_generate_mr_demo \\\n  --modality mri_t1 \\\n  --random-seed 0\n```\n\nReplace `PATH_TO_MR_CONFIG.json` with the user's actual request/config path.\nDo not copy the fixture path from this document unless the user explicitly\nasked to run that fixture. If the user says \"the request is at\n`runs/.../default_mri_t1.json`\", that exact path is the first positional\nargument to `scripts/run_mr.py`.\n\nSupported rflow-mr modality names are `mri`, `mri_t1`, `mri_t2`, and\n`mri_flair`, matching the upstream MR image-generation guide. The upstream\nREADME recommends `rflow-mr-brain` instead when synthesizing brain images;\nuse `skills/nv-generate-mr-brain` for that path.\nFor FOV and setup details, see `references/fov-and-downloads.md`.\n\nThe fixture argument is a small JSON override for\n`configs/config_maisi_diff_model_rflow-mr.json`. Pass `default` to use the\nupstream defaults plus the CLI modality and random seed. Common override keys\nare `dim`, `spacing`, `num_inference_steps`, `cfg_guidance_scale`, and\n`modality`.\n\nEach run records the staged config, model inventory, upstream command, output\ngeometry, spacing, affine, intensity range, and non-constant / finite-data\nchecks. Output volumes are synthetic and are not safe as production training\ndata without independent review.\n\nNot for clinical interpretation, production deployment, autonomous diagnosis,\nor regulatory submission.\n"
+        }
+      ],
+      "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --random-seed 0\n```",
+      "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --random-seed 0",
+      "usage": {
+        "completion_tokens": 326,
+        "prompt_tokens": 2014,
+        "total_tokens": 2340,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 201,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 44.31090021133423,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_1/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/config_maisi_diff_model_rflow-mr.json",
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz"
+        ],
+        "stdout_tail": " \"cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03\"\n        }\n      ]\n    },\n    \"rendered_model_config\": {\n      \"diffusion_unet_train\": {\n        \"batch_size\": 1,\n        \"cache_rate\": 0,\n        \"lr\": 1e-05,\n        \"n_epochs\": 1000\n      },\n      \"diffusion_unet_inference\": {\n        \"dim\": [\n          128,\n          256,\n          256\n        ],\n        \"spacing\": [\n          1.25,\n          1.0,\n          1.0\n        ],\n        \"top_region_index\": [\n          0,\n          1,\n          0,\n          0\n        ],\n        \"bottom_region_index\": [\n          0,\n          0,\n          1,\n          0\n        ],\n        \"random_seed\": 0,\n        \"num_inference_steps\": 30,\n        \"modality\": 9,\n        \"cfg_guidance_scale\": 15\n      }\n    },\n    \"rendered_env_output_dir\": \"runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1\",\n    \"rendered_env_output_prefix\": \"mr_mri_t1\"\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 6.803,\n    \"device\": \"cuda\"\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"[2026-05-27 07:38:30.048][ INFO](inference) - Using cuda:0 of 1 with random seed: 0\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] random_seed -> 0.\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_size -> (128, 256, 256).\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\\n[2026-05-27 07:38:30.202][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\\n[2026-05-27 07:38:31.333][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\\n[2026-05-27 07:38:31.334][ INFO](inference) - scale_factor -> 0.96240234375.\\n[2026-05-27 07:38:31.351][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\\n[2026-05-27 07:38:31.359][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  3%|\\u258e         | 1/30 [00:00<00:05,  5.26it/s]\\n 17%|\\u2588\\u258b        | 5/30 [00:00<00:01, 18.66it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:00, 22.34it/s]\\n 37%|\\u2588\\u2588\\u2588\\u258b      | 11/30 [00:00<00:00, 24.37it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 25.66it/s]\\n 57%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b    | 17/30 [00:00<00:00, 26.41it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:00<00:00, 26.89it/s]\\n 77%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b  | 23/30 [00:00<00:00, 27.25it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 27.52it/s]\\n 97%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b| 29/30 [00:01<00:00, 27.67it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 25.04it/s]\\n[2026-05-27 07:38:34.827][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz.\\n\"\n  },\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-mr\",\n      \"voxels_per_sample\": 8388608,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 60.0,\n      \"estimated_peak_vram_gb\": 16.0,\n      \"estimated_disk_mb\": 16.0\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding.\"\n}",
+        "stderr_tail": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+        "json": {
+          "skill": "nv_generate_mr",
+          "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+          "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+          "input": {
+            "model_config_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+            "model_config_override": {
+              "dim": [
+                128,
+                256,
+                256
+              ],
+              "spacing": [
+                1.25,
+                1.0,
+                1.0
+              ],
+              "num_inference_steps": 30,
+              "cfg_guidance_scale": 15
+            },
+            "modality_name": "mri_t1",
+            "modality_code": 9,
+            "dim_requested": [
+              128,
+              256,
+              256
+            ],
+            "spacing_requested": [
+              1.25,
+              1.0,
+              1.0
+            ],
+            "num_inference_steps_requested": 30,
+            "cfg_guidance_scale_requested": 15,
+            "random_seed": 0,
+            "version": "rflow-mr"
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1",
+            "samples": [
+              {
+                "image_path": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz",
+                "image_bytes": 7005195,
+                "image_sha256": "65469520512044444b58b9c47a32f4d16b92328dbeff326b224c884d0a705bf8",
+                "image_readable": true,
+                "image_shape": [
+                  128,
+                  256,
+                  256
+                ],
+                "requested_shape": [
+                  128,
+                  256,
+                  256
+                ],
+                "shape_match_requested": true,
+                "image_spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "requested_spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "spacing_match_requested": true,
+                "image_affine": [
+                  [
+                    1.25,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ],
+                "finite_fraction": 1.0,
+                "all_finite": true,
+                "intensity_min": 0.0,
+                "intensity_max": 1966.0,
+                "intensity_mean": 149.232,
+                "intensity_std": 263.206,
+                "image_nonconstant": true,
+                "image_nonnegative": true
+              }
+            ],
+            "num_samples": 1,
+            "all_images_readable": true,
+            "all_shapes_match_requested": true,
+            "all_spacing_match_requested": true,
+            "all_images_finite": true,
+            "all_images_nonconstant": true,
+            "all_images_nonnegative": true
+          },
+          "invocation": {
+            "official_entrypoint": "python -m scripts.diff_model_infer",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+              "-m",
+              "scripts.diff_model_infer",
+              "-t",
+              "./configs/config_network_rflow.json",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+              "-c",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 6.803,
+            "model_inventory": {
+              "all_present": true,
+              "files": [
+                {
+                  "path": "models/autoencoder_v2.pt",
+                  "present": true,
+                  "bytes": 83831932,
+                  "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+                },
+                {
+                  "path": "models/diff_unet_3d_rflow-mr.pt",
+                  "present": true,
+                  "bytes": 2166664552,
+                  "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+                }
+              ]
+            },
+            "rendered_model_config": {
+              "diffusion_unet_train": {
+                "batch_size": 1,
+                "cache_rate": 0,
+                "lr": 1e-05,
+                "n_epochs": 1000
+              },
+              "diffusion_unet_inference": {
+                "dim": [
+                  128,
+                  256,
+                  256
+                ],
+                "spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "top_region_index": [
+                  0,
+                  1,
+                  0,
+                  0
+                ],
+                "bottom_region_index": [
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "random_seed": 0,
+                "num_inference_steps": 30,
+                "modality": 9,
+                "cfg_guidance_scale": 15
+              }
+            },
+            "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1",
+            "rendered_env_output_prefix": "mr_mri_t1"
+          },
+          "runtime": {
+            "subprocess_seconds": 6.803,
+            "device": "cuda"
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "[2026-05-27 07:38:30.048][ INFO](inference) - Using cuda:0 of 1 with random seed: 0\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] random_seed -> 0.\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-27 07:38:30.202][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-27 07:38:31.333][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-27 07:38:31.334][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-27 07:38:31.351][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-27 07:38:31.359][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.26it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.66it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:00, 22.34it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.37it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.66it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 26.41it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.89it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.25it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.52it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.67it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 25.04it/s]\n[2026-05-27 07:38:34.827][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz.\n"
+          },
+          "preflight": {
+            "warnings": [],
+            "estimated_cost": {
+              "version": "rflow-mr",
+              "voxels_per_sample": 8388608,
+              "num_inference_steps": 30,
+              "estimated_wall_seconds": 60.0,
+              "estimated_peak_vram_gb": 16.0,
+              "estimated_disk_mb": 16.0
+            },
+            "cuda": {
+              "available": true,
+              "device_name": "NVIDIA RTX 6000 Ada Generation",
+              "total_memory_gb": 47.4,
+              "torch_version": "2.12.0+cu130",
+              "cuda_version": "13.0"
+            }
+          },
+          "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "shape=(128, 256, 256)"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "GPT-5.5 / Codex",
+      "attempts": [
+        {
+          "backend": "gpt55",
+          "model": "openai/openai/gpt-5.5",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "openai/openai/gpt-5.5",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json. Generate one T1 MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr/SKILL.md ---\n---\nname: nv-generate-mr\ndescription: Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - generation\n---\n\n# NV-Generate-MR\n\n## Purpose\n- Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, and validation.\n- Manifest I/O: inputs are `model_config_override`; outputs are `synthetic_mr_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr.py` | Primary entrypoint declared by skill_manifest.yaml. | `MODEL_CONFIG.json --output-dir OUT_DIR --modality mri_t1 [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.diff_model_infer`. Do not modify code under $NV_GENERATE_ROOT or the repo-local fallback at .workbench_data/upstreams/NV-Generate-CTMR.\n- rflow-mr generates image-only synthetic MRI volumes. It does not emit paired segmentation masks.\n- The upstream README recommends `rflow-mr-brain` instead for brain MRI synthesis; use `skills/nv-generate-mr-brain` for that path.\n- NV-Generate-MR weights are listed by upstream as NVIDIA Non-Commercial. Do not use outputs as production training data without legal and quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation)\nMR image-only generation workflow. The wrapper does not reimplement diffusion\nsampling or autoencoder decoding. It stages config overrides, runs the\ndocumented `python -m scripts.diff_model_infer` command for `rflow-mr`, then\nsummarizes the generated NIfTI volume.\n\n\n## Exact Runnable Surface\n\nFor user run commands in a fresh benchmark environment, use this setup plus\nrepo-root wrapper command exactly:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py PATH_TO_MR_CONFIG.json --output-dir OUT_DIR --modality mri_t1 --random-seed 0\n```\n\nDo not invent `generate.sh`, `infer.py`, `Medical AI Skills run`, or `python -m nv_generate_mr` commands. `PATH_TO_MR_CONFIG.json` must be the user's supplied request path.\n\n## Preconditions\n\nClone and install the upstream repo once. In this Medical AI Skills checkout, prefer\nthe repo-local cache path when it exists:\n\n```bash\nmkdir -p .workbench_data/upstreams\ntest -d .workbench_data/upstreams/NV-Generate-CTMR/.git || \\\n  git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git \\\n    .workbench_data/upstreams/NV-Generate-CTMR\nexport NV_GENERATE_ROOT=.workbench_data/upstreams/NV-Generate-CTMR\npip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n```\n\nDownload the MR weights:\n\n```bash\ncd \"$NV_GENERATE_ROOT\"\npython -m scripts.download_model_data --version rflow-mr --root_dir ./ --model_only\n```\n\nRuntime needs an NVIDIA GPU with at least 16 GB VRAM. There is no CPU\nfallback in the upstream path.\n\nThe wrapper also searches `.workbench_data/upstreams/NV-Generate-CTMR` if\n`NV_GENERATE_ROOT` is unset or points at a stale clone.\n\nFor agent-generated user run commands, use the command in Usage. Do not prepend\nclone or model-download setup steps when the repo-local upstream cache already\nexists. In a fresh Python environment, still include\n`pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"` before the wrapper unless\nthe active environment has already proven those imports are available; cached\nweights do not imply cached Python packages. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-mr/scripts/run_mr.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py \\\n  PATH_TO_MR_CONFIG.json \\\n  --output-dir runs/nv_generate_mr_demo \\\n  --modality mri_t1 \\\n  --random-seed 0\n```\n\nReplace `PATH_TO_MR_CONFIG.json` with the user's actual request/config path.\nDo not copy the fixture path from this document unless the user explicitly\nasked to run that fixture. If the user says \"the request is at\n`runs/.../default_mri_t1.json`\", that exact path is the first positional\nargument to `scripts/run_mr.py`.\n\nSupported rflow-mr modality names are `mri`, `mri_t1`, `mri_t2`, and\n`mri_flair`, matching the upstream MR image-generation guide. The upstream\nREADME recommends `rflow-mr-brain` instead when synthesizing brain images;\nuse `skills/nv-generate-mr-brain` for that path.\nFor FOV and setup details, see `references/fov-and-downloads.md`.\n\nThe fixture argument is a small JSON override for\n`configs/config_maisi_diff_model_rflow-mr.json`. Pass `default` to use the\nupstream defaults plus the CLI modality and random seed. Common override keys\nare `dim`, `spacing`, `num_inference_steps`, `cfg_guidance_scale`, and\n`modality`.\n\nEach run records the staged config, model inventory, upstream command, output\ngeometry, spacing, affine, intensity range, and non-constant / finite-data\nchecks. Output volumes are synthetic and are not safe as production training\ndata without independent review.\n\nNot for clinical interpretation, production deployment, autonomous diagnosis,\nor regulatory submission.\n"
+            }
+          ],
+          "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --random-seed 0\n```",
+          "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --random-seed 0",
+          "usage": {
+            "completion_tokens": 326,
+            "prompt_tokens": 2014,
+            "total_tokens": 2340,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 201,
+              "rejected_prediction_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cached_tokens": 0
+            }
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 44.31090021133423,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_1/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/config_maisi_diff_model_rflow-mr.json",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz"
+            ],
+            "stdout_tail": " \"cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03\"\n        }\n      ]\n    },\n    \"rendered_model_config\": {\n      \"diffusion_unet_train\": {\n        \"batch_size\": 1,\n        \"cache_rate\": 0,\n        \"lr\": 1e-05,\n        \"n_epochs\": 1000\n      },\n      \"diffusion_unet_inference\": {\n        \"dim\": [\n          128,\n          256,\n          256\n        ],\n        \"spacing\": [\n          1.25,\n          1.0,\n          1.0\n        ],\n        \"top_region_index\": [\n          0,\n          1,\n          0,\n          0\n        ],\n        \"bottom_region_index\": [\n          0,\n          0,\n          1,\n          0\n        ],\n        \"random_seed\": 0,\n        \"num_inference_steps\": 30,\n        \"modality\": 9,\n        \"cfg_guidance_scale\": 15\n      }\n    },\n    \"rendered_env_output_dir\": \"runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1\",\n    \"rendered_env_output_prefix\": \"mr_mri_t1\"\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 6.803,\n    \"device\": \"cuda\"\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"[2026-05-27 07:38:30.048][ INFO](inference) - Using cuda:0 of 1 with random seed: 0\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] random_seed -> 0.\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_size -> (128, 256, 256).\\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\\n[2026-05-27 07:38:30.202][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\\n[2026-05-27 07:38:31.333][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\\n[2026-05-27 07:38:31.334][ INFO](inference) - scale_factor -> 0.96240234375.\\n[2026-05-27 07:38:31.351][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\\n[2026-05-27 07:38:31.359][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  3%|\\u258e         | 1/30 [00:00<00:05,  5.26it/s]\\n 17%|\\u2588\\u258b        | 5/30 [00:00<00:01, 18.66it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:00, 22.34it/s]\\n 37%|\\u2588\\u2588\\u2588\\u258b      | 11/30 [00:00<00:00, 24.37it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 25.66it/s]\\n 57%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b    | 17/30 [00:00<00:00, 26.41it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:00<00:00, 26.89it/s]\\n 77%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b  | 23/30 [00:00<00:00, 27.25it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 27.52it/s]\\n 97%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b| 29/30 [00:01<00:00, 27.67it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 25.04it/s]\\n[2026-05-27 07:38:34.827][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz.\\n\"\n  },\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-mr\",\n      \"voxels_per_sample\": 8388608,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 60.0,\n      \"estimated_peak_vram_gb\": 16.0,\n      \"estimated_disk_mb\": 16.0\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding.\"\n}",
+            "stderr_tail": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+            "json": {
+              "skill": "nv_generate_mr",
+              "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+              "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+              "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+              "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+              "input": {
+                "model_config_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+                "model_config_override": {
+                  "dim": [
+                    128,
+                    256,
+                    256
+                  ],
+                  "spacing": [
+                    1.25,
+                    1.0,
+                    1.0
+                  ],
+                  "num_inference_steps": 30,
+                  "cfg_guidance_scale": 15
+                },
+                "modality_name": "mri_t1",
+                "modality_code": 9,
+                "dim_requested": [
+                  128,
+                  256,
+                  256
+                ],
+                "spacing_requested": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "num_inference_steps_requested": 30,
+                "cfg_guidance_scale_requested": 15,
+                "random_seed": 0,
+                "version": "rflow-mr"
+              },
+              "output": {
+                "directory": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1",
+                "samples": [
+                  {
+                    "image_path": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz",
+                    "image_bytes": 7005195,
+                    "image_sha256": "65469520512044444b58b9c47a32f4d16b92328dbeff326b224c884d0a705bf8",
+                    "image_readable": true,
+                    "image_shape": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "requested_shape": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "shape_match_requested": true,
+                    "image_spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "requested_spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "spacing_match_requested": true,
+                    "image_affine": [
+                      [
+                        1.25,
+                        0.0,
+                        0.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    ],
+                    "finite_fraction": 1.0,
+                    "all_finite": true,
+                    "intensity_min": 0.0,
+                    "intensity_max": 1966.0,
+                    "intensity_mean": 149.232,
+                    "intensity_std": 263.206,
+                    "image_nonconstant": true,
+                    "image_nonnegative": true
+                  }
+                ],
+                "num_samples": 1,
+                "all_images_readable": true,
+                "all_shapes_match_requested": true,
+                "all_spacing_match_requested": true,
+                "all_images_finite": true,
+                "all_images_nonconstant": true,
+                "all_images_nonnegative": true
+              },
+              "invocation": {
+                "official_entrypoint": "python -m scripts.diff_model_infer",
+                "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+                "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+                "command": [
+                  "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+                  "-m",
+                  "scripts.diff_model_infer",
+                  "-t",
+                  "./configs/config_network_rflow.json",
+                  "-e",
+                  "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+                  "-c",
+                  "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+                ],
+                "exit_code": 0,
+                "subprocess_seconds": 6.803,
+                "model_inventory": {
+                  "all_present": true,
+                  "files": [
+                    {
+                      "path": "models/autoencoder_v2.pt",
+                      "present": true,
+                      "bytes": 83831932,
+                      "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+                    },
+                    {
+                      "path": "models/diff_unet_3d_rflow-mr.pt",
+                      "present": true,
+                      "bytes": 2166664552,
+                      "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+                    }
+                  ]
+                },
+                "rendered_model_config": {
+                  "diffusion_unet_train": {
+                    "batch_size": 1,
+                    "cache_rate": 0,
+                    "lr": 1e-05,
+                    "n_epochs": 1000
+                  },
+                  "diffusion_unet_inference": {
+                    "dim": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "top_region_index": [
+                      0,
+                      1,
+                      0,
+                      0
+                    ],
+                    "bottom_region_index": [
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "random_seed": 0,
+                    "num_inference_steps": 30,
+                    "modality": 9,
+                    "cfg_guidance_scale": 15
+                  }
+                },
+                "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1",
+                "rendered_env_output_prefix": "mr_mri_t1"
+              },
+              "runtime": {
+                "subprocess_seconds": 6.803,
+                "device": "cuda"
+              },
+              "logs": {
+                "stdout_tail": "",
+                "stderr_tail": "[2026-05-27 07:38:30.048][ INFO](inference) - Using cuda:0 of 1 with random seed: 0\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] random_seed -> 0.\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-27 07:38:30.048][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-27 07:38:30.202][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-27 07:38:31.333][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-27 07:38:31.334][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-27 07:38:31.351][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-27 07:38:31.359][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.26it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.66it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:00, 22.34it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.37it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.66it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 26.41it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.89it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.25it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.52it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.67it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 25.04it/s]\n[2026-05-27 07:38:34.827][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260527073834_rank0_modality9.nii.gz.\n"
+              },
+              "preflight": {
+                "warnings": [],
+                "estimated_cost": {
+                  "version": "rflow-mr",
+                  "voxels_per_sample": 8388608,
+                  "num_inference_steps": 30,
+                  "estimated_wall_seconds": 60.0,
+                  "estimated_peak_vram_gb": 16.0,
+                  "estimated_disk_mb": 16.0
+                },
+                "cuda": {
+                  "available": true,
+                  "device_name": "NVIDIA RTX 6000 Ada Generation",
+                  "total_memory_gb": 47.4,
+                  "torch_version": "2.12.0+cu130",
+                  "cuda_version": "13.0"
+                }
+              },
+              "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "shape=(128, 256, 256)"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 1,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_1",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json. Generate one T1 MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr/SKILL.md ---\n---\nname: nv-generate-mr\ndescription: Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - generation\n---\n\n# NV-Generate-MR\n\n## Purpose\n- Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, and validation.\n- Manifest I/O: inputs are `model_config_override`; outputs are `synthetic_mr_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr.py` | Primary entrypoint declared by skill_manifest.yaml. | `MODEL_CONFIG.json --output-dir OUT_DIR --modality mri_t1 [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.diff_model_infer`. Do not modify code under $NV_GENERATE_ROOT or the repo-local fallback at .workbench_data/upstreams/NV-Generate-CTMR.\n- rflow-mr generates image-only synthetic MRI volumes. It does not emit paired segmentation masks.\n- The upstream README recommends `rflow-mr-brain` instead for brain MRI synthesis; use `skills/nv-generate-mr-brain` for that path.\n- NV-Generate-MR weights are listed by upstream as NVIDIA Non-Commercial. Do not use outputs as production training data without legal and quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation)\nMR image-only generation workflow. The wrapper does not reimplement diffusion\nsampling or autoencoder decoding. It stages config overrides, runs the\ndocumented `python -m scripts.diff_model_infer` command for `rflow-mr`, then\nsummarizes the generated NIfTI volume.\n\n\n## Exact Runnable Surface\n\nFor user run commands in a fresh benchmark environment, use this setup plus\nrepo-root wrapper command exactly:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py PATH_TO_MR_CONFIG.json --output-dir OUT_DIR --modality mri_t1 --random-seed 0\n```\n\nDo not invent `generate.sh`, `infer.py`, `Medical AI Skills run`, or `python -m nv_generate_mr` commands. `PATH_TO_MR_CONFIG.json` must be the user's supplied request path.\n\n## Preconditions\n\nClone and install the upstream repo once. In this Medical AI Skills checkout, prefer\nthe repo-local cache path when it exists:\n\n```bash\nmkdir -p .workbench_data/upstreams\ntest -d .workbench_data/upstreams/NV-Generate-CTMR/.git || \\\n  git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git \\\n    .workbench_data/upstreams/NV-Generate-CTMR\nexport NV_GENERATE_ROOT=.workbench_data/upstreams/NV-Generate-CTMR\npip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n```\n\nDownload the MR weights:\n\n```bash\ncd \"$NV_GENERATE_ROOT\"\npython -m scripts.download_model_data --version rflow-mr --root_dir ./ --model_only\n```\n\nRuntime needs an NVIDIA GPU with at least 16 GB VRAM. There is no CPU\nfallback in the upstream path.\n\nThe wrapper also searches `.workbench_data/upstreams/NV-Generate-CTMR` if\n`NV_GENERATE_ROOT` is unset or points at a stale clone.\n\nFor agent-generated user run commands, use the command in Usage. Do not prepend\nclone or model-download setup steps when the repo-local upstream cache already\nexists. In a fresh Python environment, still include\n`pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"` before the wrapper unless\nthe active environment has already proven those imports are available; cached\nweights do not imply cached Python packages. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-mr/scripts/run_mr.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py \\\n  PATH_TO_MR_CONFIG.json \\\n  --output-dir runs/nv_generate_mr_demo \\\n  --modality mri_t1 \\\n  --random-seed 0\n```\n\nReplace `PATH_TO_MR_CONFIG.json` with the user's actual request/config path.\nDo not copy the fixture path from this document unless the user explicitly\nasked to run that fixture. If the user says \"the request is at\n`runs/.../default_mri_t1.json`\", that exact path is the first positional\nargument to `scripts/run_mr.py`.\n\nSupported rflow-mr modality names are `mri`, `mri_t1`, `mri_t2`, and\n`mri_flair`, matching the upstream MR image-generation guide. The upstream\nREADME recommends `rflow-mr-brain` instead when synthesizing brain images;\nuse `skills/nv-generate-mr-brain` for that path.\nFor FOV and setup details, see `references/fov-and-downloads.md`.\n\nThe fixture argument is a small JSON override for\n`configs/config_maisi_diff_model_rflow-mr.json`. Pass `default` to use the\nupstream defaults plus the CLI modality and random seed. Common override keys\nare `dim`, `spacing`, `num_inference_steps`, `cfg_guidance_scale`, and\n`modality`.\n\nEach run records the staged config, model inventory, upstream command, output\ngeometry, spacing, affine, intensity range, and non-constant / finite-data\nchecks. Output volumes are synthetic and are not safe as production training\ndata without independent review.\n\nNot for clinical interpretation, production deployment, autonomous diagnosis,\nor regulatory submission.\n"
+        }
+      ],
+      "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --random-seed 2\n```",
+      "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --random-seed 2",
+      "usage": {
+        "completion_tokens": 637,
+        "prompt_tokens": 2014,
+        "total_tokens": 2651,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 512,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 43.04026222229004,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_2/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/config_maisi_diff_model_rflow-mr.json",
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz"
+        ],
+        "stdout_tail": " \"cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03\"\n        }\n      ]\n    },\n    \"rendered_model_config\": {\n      \"diffusion_unet_train\": {\n        \"batch_size\": 1,\n        \"cache_rate\": 0,\n        \"lr\": 1e-05,\n        \"n_epochs\": 1000\n      },\n      \"diffusion_unet_inference\": {\n        \"dim\": [\n          128,\n          256,\n          256\n        ],\n        \"spacing\": [\n          1.25,\n          1.0,\n          1.0\n        ],\n        \"top_region_index\": [\n          0,\n          1,\n          0,\n          0\n        ],\n        \"bottom_region_index\": [\n          0,\n          0,\n          1,\n          0\n        ],\n        \"random_seed\": 2,\n        \"num_inference_steps\": 30,\n        \"modality\": 9,\n        \"cfg_guidance_scale\": 15\n      }\n    },\n    \"rendered_env_output_dir\": \"runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2\",\n    \"rendered_env_output_prefix\": \"mr_mri_t1\"\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 6.815,\n    \"device\": \"cuda\"\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"[2026-05-27 07:53:14.690][ INFO](inference) - Using cuda:0 of 1 with random seed: 2\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] random_seed -> 2.\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_size -> (128, 256, 256).\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\\n[2026-05-27 07:53:14.844][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\\n[2026-05-27 07:53:15.976][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\\n[2026-05-27 07:53:15.977][ INFO](inference) - scale_factor -> 0.96240234375.\\n[2026-05-27 07:53:15.978][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\\n[2026-05-27 07:53:16.001][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  3%|\\u258e         | 1/30 [00:00<00:05,  5.36it/s]\\n 17%|\\u2588\\u258b        | 5/30 [00:00<00:01, 18.76it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:00, 22.33it/s]\\n 37%|\\u2588\\u2588\\u2588\\u258b      | 11/30 [00:00<00:00, 24.35it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 25.57it/s]\\n 57%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b    | 17/30 [00:00<00:00, 26.30it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:00<00:00, 26.83it/s]\\n 77%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b  | 23/30 [00:00<00:00, 27.18it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 27.46it/s]\\n 97%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b| 29/30 [00:01<00:00, 27.59it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 25.01it/s]\\n[2026-05-27 07:53:19.481][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz.\\n\"\n  },\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-mr\",\n      \"voxels_per_sample\": 8388608,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 60.0,\n      \"estimated_peak_vram_gb\": 16.0,\n      \"estimated_disk_mb\": 16.0\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding.\"\n}",
+        "stderr_tail": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+        "json": {
+          "skill": "nv_generate_mr",
+          "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+          "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+          "input": {
+            "model_config_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+            "model_config_override": {
+              "dim": [
+                128,
+                256,
+                256
+              ],
+              "spacing": [
+                1.25,
+                1.0,
+                1.0
+              ],
+              "num_inference_steps": 30,
+              "cfg_guidance_scale": 15
+            },
+            "modality_name": "mri_t1",
+            "modality_code": 9,
+            "dim_requested": [
+              128,
+              256,
+              256
+            ],
+            "spacing_requested": [
+              1.25,
+              1.0,
+              1.0
+            ],
+            "num_inference_steps_requested": 30,
+            "cfg_guidance_scale_requested": 15,
+            "random_seed": 2,
+            "version": "rflow-mr"
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2",
+            "samples": [
+              {
+                "image_path": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz",
+                "image_bytes": 6974927,
+                "image_sha256": "facf77674cc8b93ec6388806019a014cbc7fa306f9c9d2a58d410731c62f7950",
+                "image_readable": true,
+                "image_shape": [
+                  128,
+                  256,
+                  256
+                ],
+                "requested_shape": [
+                  128,
+                  256,
+                  256
+                ],
+                "shape_match_requested": true,
+                "image_spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "requested_spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "spacing_match_requested": true,
+                "image_affine": [
+                  [
+                    1.25,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ],
+                "finite_fraction": 1.0,
+                "all_finite": true,
+                "intensity_min": 0.0,
+                "intensity_max": 2450.0,
+                "intensity_mean": 155.67,
+                "intensity_std": 265.131,
+                "image_nonconstant": true,
+                "image_nonnegative": true
+              }
+            ],
+            "num_samples": 1,
+            "all_images_readable": true,
+            "all_shapes_match_requested": true,
+            "all_spacing_match_requested": true,
+            "all_images_finite": true,
+            "all_images_nonconstant": true,
+            "all_images_nonnegative": true
+          },
+          "invocation": {
+            "official_entrypoint": "python -m scripts.diff_model_infer",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+              "-m",
+              "scripts.diff_model_infer",
+              "-t",
+              "./configs/config_network_rflow.json",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+              "-c",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 6.815,
+            "model_inventory": {
+              "all_present": true,
+              "files": [
+                {
+                  "path": "models/autoencoder_v2.pt",
+                  "present": true,
+                  "bytes": 83831932,
+                  "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+                },
+                {
+                  "path": "models/diff_unet_3d_rflow-mr.pt",
+                  "present": true,
+                  "bytes": 2166664552,
+                  "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+                }
+              ]
+            },
+            "rendered_model_config": {
+              "diffusion_unet_train": {
+                "batch_size": 1,
+                "cache_rate": 0,
+                "lr": 1e-05,
+                "n_epochs": 1000
+              },
+              "diffusion_unet_inference": {
+                "dim": [
+                  128,
+                  256,
+                  256
+                ],
+                "spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "top_region_index": [
+                  0,
+                  1,
+                  0,
+                  0
+                ],
+                "bottom_region_index": [
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "random_seed": 2,
+                "num_inference_steps": 30,
+                "modality": 9,
+                "cfg_guidance_scale": 15
+              }
+            },
+            "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2",
+            "rendered_env_output_prefix": "mr_mri_t1"
+          },
+          "runtime": {
+            "subprocess_seconds": 6.815,
+            "device": "cuda"
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "[2026-05-27 07:53:14.690][ INFO](inference) - Using cuda:0 of 1 with random seed: 2\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] random_seed -> 2.\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-27 07:53:14.844][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-27 07:53:15.976][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-27 07:53:15.977][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-27 07:53:15.978][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-27 07:53:16.001][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.36it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.76it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:00, 22.33it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.35it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.57it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 26.30it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.83it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.18it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.46it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.59it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 25.01it/s]\n[2026-05-27 07:53:19.481][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz.\n"
+          },
+          "preflight": {
+            "warnings": [],
+            "estimated_cost": {
+              "version": "rflow-mr",
+              "voxels_per_sample": 8388608,
+              "num_inference_steps": 30,
+              "estimated_wall_seconds": 60.0,
+              "estimated_peak_vram_gb": 16.0,
+              "estimated_disk_mb": 16.0
+            },
+            "cuda": {
+              "available": true,
+              "device_name": "NVIDIA RTX 6000 Ada Generation",
+              "total_memory_gb": 47.4,
+              "torch_version": "2.12.0+cu130",
+              "cuda_version": "13.0"
+            }
+          },
+          "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "shape=(128, 256, 256)"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "GPT-5.5 / Codex",
+      "attempts": [
+        {
+          "backend": "gpt55",
+          "model": "openai/openai/gpt-5.5",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "openai/openai/gpt-5.5",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json. Generate one T1 MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr/SKILL.md ---\n---\nname: nv-generate-mr\ndescription: Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - generation\n---\n\n# NV-Generate-MR\n\n## Purpose\n- Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, and validation.\n- Manifest I/O: inputs are `model_config_override`; outputs are `synthetic_mr_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr.py` | Primary entrypoint declared by skill_manifest.yaml. | `MODEL_CONFIG.json --output-dir OUT_DIR --modality mri_t1 [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.diff_model_infer`. Do not modify code under $NV_GENERATE_ROOT or the repo-local fallback at .workbench_data/upstreams/NV-Generate-CTMR.\n- rflow-mr generates image-only synthetic MRI volumes. It does not emit paired segmentation masks.\n- The upstream README recommends `rflow-mr-brain` instead for brain MRI synthesis; use `skills/nv-generate-mr-brain` for that path.\n- NV-Generate-MR weights are listed by upstream as NVIDIA Non-Commercial. Do not use outputs as production training data without legal and quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation)\nMR image-only generation workflow. The wrapper does not reimplement diffusion\nsampling or autoencoder decoding. It stages config overrides, runs the\ndocumented `python -m scripts.diff_model_infer` command for `rflow-mr`, then\nsummarizes the generated NIfTI volume.\n\n\n## Exact Runnable Surface\n\nFor user run commands in a fresh benchmark environment, use this setup plus\nrepo-root wrapper command exactly:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py PATH_TO_MR_CONFIG.json --output-dir OUT_DIR --modality mri_t1 --random-seed 0\n```\n\nDo not invent `generate.sh`, `infer.py`, `Medical AI Skills run`, or `python -m nv_generate_mr` commands. `PATH_TO_MR_CONFIG.json` must be the user's supplied request path.\n\n## Preconditions\n\nClone and install the upstream repo once. In this Medical AI Skills checkout, prefer\nthe repo-local cache path when it exists:\n\n```bash\nmkdir -p .workbench_data/upstreams\ntest -d .workbench_data/upstreams/NV-Generate-CTMR/.git || \\\n  git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git \\\n    .workbench_data/upstreams/NV-Generate-CTMR\nexport NV_GENERATE_ROOT=.workbench_data/upstreams/NV-Generate-CTMR\npip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n```\n\nDownload the MR weights:\n\n```bash\ncd \"$NV_GENERATE_ROOT\"\npython -m scripts.download_model_data --version rflow-mr --root_dir ./ --model_only\n```\n\nRuntime needs an NVIDIA GPU with at least 16 GB VRAM. There is no CPU\nfallback in the upstream path.\n\nThe wrapper also searches `.workbench_data/upstreams/NV-Generate-CTMR` if\n`NV_GENERATE_ROOT` is unset or points at a stale clone.\n\nFor agent-generated user run commands, use the command in Usage. Do not prepend\nclone or model-download setup steps when the repo-local upstream cache already\nexists. In a fresh Python environment, still include\n`pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"` before the wrapper unless\nthe active environment has already proven those imports are available; cached\nweights do not imply cached Python packages. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-mr/scripts/run_mr.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py \\\n  PATH_TO_MR_CONFIG.json \\\n  --output-dir runs/nv_generate_mr_demo \\\n  --modality mri_t1 \\\n  --random-seed 0\n```\n\nReplace `PATH_TO_MR_CONFIG.json` with the user's actual request/config path.\nDo not copy the fixture path from this document unless the user explicitly\nasked to run that fixture. If the user says \"the request is at\n`runs/.../default_mri_t1.json`\", that exact path is the first positional\nargument to `scripts/run_mr.py`.\n\nSupported rflow-mr modality names are `mri`, `mri_t1`, `mri_t2`, and\n`mri_flair`, matching the upstream MR image-generation guide. The upstream\nREADME recommends `rflow-mr-brain` instead when synthesizing brain images;\nuse `skills/nv-generate-mr-brain` for that path.\nFor FOV and setup details, see `references/fov-and-downloads.md`.\n\nThe fixture argument is a small JSON override for\n`configs/config_maisi_diff_model_rflow-mr.json`. Pass `default` to use the\nupstream defaults plus the CLI modality and random seed. Common override keys\nare `dim`, `spacing`, `num_inference_steps`, `cfg_guidance_scale`, and\n`modality`.\n\nEach run records the staged config, model inventory, upstream command, output\ngeometry, spacing, affine, intensity range, and non-constant / finite-data\nchecks. Output volumes are synthetic and are not safe as production training\ndata without independent review.\n\nNot for clinical interpretation, production deployment, autonomous diagnosis,\nor regulatory submission.\n"
+            }
+          ],
+          "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --random-seed 2\n```",
+          "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --random-seed 2",
+          "usage": {
+            "completion_tokens": 637,
+            "prompt_tokens": 2014,
+            "total_tokens": 2651,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 512,
+              "rejected_prediction_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cached_tokens": 0
+            }
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 43.04026222229004,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_2/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/config_maisi_diff_model_rflow-mr.json",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz"
+            ],
+            "stdout_tail": " \"cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03\"\n        }\n      ]\n    },\n    \"rendered_model_config\": {\n      \"diffusion_unet_train\": {\n        \"batch_size\": 1,\n        \"cache_rate\": 0,\n        \"lr\": 1e-05,\n        \"n_epochs\": 1000\n      },\n      \"diffusion_unet_inference\": {\n        \"dim\": [\n          128,\n          256,\n          256\n        ],\n        \"spacing\": [\n          1.25,\n          1.0,\n          1.0\n        ],\n        \"top_region_index\": [\n          0,\n          1,\n          0,\n          0\n        ],\n        \"bottom_region_index\": [\n          0,\n          0,\n          1,\n          0\n        ],\n        \"random_seed\": 2,\n        \"num_inference_steps\": 30,\n        \"modality\": 9,\n        \"cfg_guidance_scale\": 15\n      }\n    },\n    \"rendered_env_output_dir\": \"runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2\",\n    \"rendered_env_output_prefix\": \"mr_mri_t1\"\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 6.815,\n    \"device\": \"cuda\"\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"[2026-05-27 07:53:14.690][ INFO](inference) - Using cuda:0 of 1 with random seed: 2\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] random_seed -> 2.\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_size -> (128, 256, 256).\\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\\n[2026-05-27 07:53:14.844][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\\n[2026-05-27 07:53:15.976][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\\n[2026-05-27 07:53:15.977][ INFO](inference) - scale_factor -> 0.96240234375.\\n[2026-05-27 07:53:15.978][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\\n[2026-05-27 07:53:16.001][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  3%|\\u258e         | 1/30 [00:00<00:05,  5.36it/s]\\n 17%|\\u2588\\u258b        | 5/30 [00:00<00:01, 18.76it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:00, 22.33it/s]\\n 37%|\\u2588\\u2588\\u2588\\u258b      | 11/30 [00:00<00:00, 24.35it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 25.57it/s]\\n 57%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b    | 17/30 [00:00<00:00, 26.30it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:00<00:00, 26.83it/s]\\n 77%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b  | 23/30 [00:00<00:00, 27.18it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 27.46it/s]\\n 97%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b| 29/30 [00:01<00:00, 27.59it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 25.01it/s]\\n[2026-05-27 07:53:19.481][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz.\\n\"\n  },\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-mr\",\n      \"voxels_per_sample\": 8388608,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 60.0,\n      \"estimated_peak_vram_gb\": 16.0,\n      \"estimated_disk_mb\": 16.0\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding.\"\n}",
+            "stderr_tail": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+            "json": {
+              "skill": "nv_generate_mr",
+              "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+              "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+              "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+              "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+              "input": {
+                "model_config_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+                "model_config_override": {
+                  "dim": [
+                    128,
+                    256,
+                    256
+                  ],
+                  "spacing": [
+                    1.25,
+                    1.0,
+                    1.0
+                  ],
+                  "num_inference_steps": 30,
+                  "cfg_guidance_scale": 15
+                },
+                "modality_name": "mri_t1",
+                "modality_code": 9,
+                "dim_requested": [
+                  128,
+                  256,
+                  256
+                ],
+                "spacing_requested": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "num_inference_steps_requested": 30,
+                "cfg_guidance_scale_requested": 15,
+                "random_seed": 2,
+                "version": "rflow-mr"
+              },
+              "output": {
+                "directory": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2",
+                "samples": [
+                  {
+                    "image_path": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz",
+                    "image_bytes": 6974927,
+                    "image_sha256": "facf77674cc8b93ec6388806019a014cbc7fa306f9c9d2a58d410731c62f7950",
+                    "image_readable": true,
+                    "image_shape": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "requested_shape": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "shape_match_requested": true,
+                    "image_spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "requested_spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "spacing_match_requested": true,
+                    "image_affine": [
+                      [
+                        1.25,
+                        0.0,
+                        0.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    ],
+                    "finite_fraction": 1.0,
+                    "all_finite": true,
+                    "intensity_min": 0.0,
+                    "intensity_max": 2450.0,
+                    "intensity_mean": 155.67,
+                    "intensity_std": 265.131,
+                    "image_nonconstant": true,
+                    "image_nonnegative": true
+                  }
+                ],
+                "num_samples": 1,
+                "all_images_readable": true,
+                "all_shapes_match_requested": true,
+                "all_spacing_match_requested": true,
+                "all_images_finite": true,
+                "all_images_nonconstant": true,
+                "all_images_nonnegative": true
+              },
+              "invocation": {
+                "official_entrypoint": "python -m scripts.diff_model_infer",
+                "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+                "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+                "command": [
+                  "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+                  "-m",
+                  "scripts.diff_model_infer",
+                  "-t",
+                  "./configs/config_network_rflow.json",
+                  "-e",
+                  "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+                  "-c",
+                  "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+                ],
+                "exit_code": 0,
+                "subprocess_seconds": 6.815,
+                "model_inventory": {
+                  "all_present": true,
+                  "files": [
+                    {
+                      "path": "models/autoencoder_v2.pt",
+                      "present": true,
+                      "bytes": 83831932,
+                      "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+                    },
+                    {
+                      "path": "models/diff_unet_3d_rflow-mr.pt",
+                      "present": true,
+                      "bytes": 2166664552,
+                      "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+                    }
+                  ]
+                },
+                "rendered_model_config": {
+                  "diffusion_unet_train": {
+                    "batch_size": 1,
+                    "cache_rate": 0,
+                    "lr": 1e-05,
+                    "n_epochs": 1000
+                  },
+                  "diffusion_unet_inference": {
+                    "dim": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "top_region_index": [
+                      0,
+                      1,
+                      0,
+                      0
+                    ],
+                    "bottom_region_index": [
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "random_seed": 2,
+                    "num_inference_steps": 30,
+                    "modality": 9,
+                    "cfg_guidance_scale": 15
+                  }
+                },
+                "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2",
+                "rendered_env_output_prefix": "mr_mri_t1"
+              },
+              "runtime": {
+                "subprocess_seconds": 6.815,
+                "device": "cuda"
+              },
+              "logs": {
+                "stdout_tail": "",
+                "stderr_tail": "[2026-05-27 07:53:14.690][ INFO](inference) - Using cuda:0 of 1 with random seed: 2\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] random_seed -> 2.\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-27 07:53:14.690][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-27 07:53:14.844][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-27 07:53:15.976][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-27 07:53:15.977][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-27 07:53:15.978][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-27 07:53:16.001][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.36it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.76it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:00, 22.33it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.35it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.57it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 26.30it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.83it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.18it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.46it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.59it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 25.01it/s]\n[2026-05-27 07:53:19.481][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2/mr_mri_t1_seed2_size128x256x256_spacing1.25x1.00x1.00_20260527075319_rank0_modality9.nii.gz.\n"
+              },
+              "preflight": {
+                "warnings": [],
+                "estimated_cost": {
+                  "version": "rflow-mr",
+                  "voxels_per_sample": 8388608,
+                  "num_inference_steps": 30,
+                  "estimated_wall_seconds": 60.0,
+                  "estimated_peak_vram_gb": 16.0,
+                  "estimated_disk_mb": 16.0
+                },
+                "cuda": {
+                  "available": true,
+                  "device_name": "NVIDIA RTX 6000 Ada Generation",
+                  "total_memory_gb": 47.4,
+                  "torch_version": "2.12.0+cu130",
+                  "cuda_version": "13.0"
+                }
+              },
+              "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "shape=(128, 256, 256)"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 2,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_2",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json. Generate one T1 MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr/SKILL.md ---\n---\nname: nv-generate-mr\ndescription: Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - generation\n---\n\n# NV-Generate-MR\n\n## Purpose\n- Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, and validation.\n- Manifest I/O: inputs are `model_config_override`; outputs are `synthetic_mr_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr.py` | Primary entrypoint declared by skill_manifest.yaml. | `MODEL_CONFIG.json --output-dir OUT_DIR --modality mri_t1 [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.diff_model_infer`. Do not modify code under $NV_GENERATE_ROOT or the repo-local fallback at .workbench_data/upstreams/NV-Generate-CTMR.\n- rflow-mr generates image-only synthetic MRI volumes. It does not emit paired segmentation masks.\n- The upstream README recommends `rflow-mr-brain` instead for brain MRI synthesis; use `skills/nv-generate-mr-brain` for that path.\n- NV-Generate-MR weights are listed by upstream as NVIDIA Non-Commercial. Do not use outputs as production training data without legal and quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation)\nMR image-only generation workflow. The wrapper does not reimplement diffusion\nsampling or autoencoder decoding. It stages config overrides, runs the\ndocumented `python -m scripts.diff_model_infer` command for `rflow-mr`, then\nsummarizes the generated NIfTI volume.\n\n\n## Exact Runnable Surface\n\nFor user run commands in a fresh benchmark environment, use this setup plus\nrepo-root wrapper command exactly:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py PATH_TO_MR_CONFIG.json --output-dir OUT_DIR --modality mri_t1 --random-seed 0\n```\n\nDo not invent `generate.sh`, `infer.py`, `Medical AI Skills run`, or `python -m nv_generate_mr` commands. `PATH_TO_MR_CONFIG.json` must be the user's supplied request path.\n\n## Preconditions\n\nClone and install the upstream repo once. In this Medical AI Skills checkout, prefer\nthe repo-local cache path when it exists:\n\n```bash\nmkdir -p .workbench_data/upstreams\ntest -d .workbench_data/upstreams/NV-Generate-CTMR/.git || \\\n  git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git \\\n    .workbench_data/upstreams/NV-Generate-CTMR\nexport NV_GENERATE_ROOT=.workbench_data/upstreams/NV-Generate-CTMR\npip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n```\n\nDownload the MR weights:\n\n```bash\ncd \"$NV_GENERATE_ROOT\"\npython -m scripts.download_model_data --version rflow-mr --root_dir ./ --model_only\n```\n\nRuntime needs an NVIDIA GPU with at least 16 GB VRAM. There is no CPU\nfallback in the upstream path.\n\nThe wrapper also searches `.workbench_data/upstreams/NV-Generate-CTMR` if\n`NV_GENERATE_ROOT` is unset or points at a stale clone.\n\nFor agent-generated user run commands, use the command in Usage. Do not prepend\nclone or model-download setup steps when the repo-local upstream cache already\nexists. In a fresh Python environment, still include\n`pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"` before the wrapper unless\nthe active environment has already proven those imports are available; cached\nweights do not imply cached Python packages. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-mr/scripts/run_mr.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py \\\n  PATH_TO_MR_CONFIG.json \\\n  --output-dir runs/nv_generate_mr_demo \\\n  --modality mri_t1 \\\n  --random-seed 0\n```\n\nReplace `PATH_TO_MR_CONFIG.json` with the user's actual request/config path.\nDo not copy the fixture path from this document unless the user explicitly\nasked to run that fixture. If the user says \"the request is at\n`runs/.../default_mri_t1.json`\", that exact path is the first positional\nargument to `scripts/run_mr.py`.\n\nSupported rflow-mr modality names are `mri`, `mri_t1`, `mri_t2`, and\n`mri_flair`, matching the upstream MR image-generation guide. The upstream\nREADME recommends `rflow-mr-brain` instead when synthesizing brain images;\nuse `skills/nv-generate-mr-brain` for that path.\nFor FOV and setup details, see `references/fov-and-downloads.md`.\n\nThe fixture argument is a small JSON override for\n`configs/config_maisi_diff_model_rflow-mr.json`. Pass `default` to use the\nupstream defaults plus the CLI modality and random seed. Common override keys\nare `dim`, `spacing`, `num_inference_steps`, `cfg_guidance_scale`, and\n`modality`.\n\nEach run records the staged config, model inventory, upstream command, output\ngeometry, spacing, affine, intensity range, and non-constant / finite-data\nchecks. Output volumes are synthetic and are not safe as production training\ndata without independent review.\n\nNot for clinical interpretation, production deployment, autonomous diagnosis,\nor regulatory submission.\n"
+        }
+      ],
+      "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3 --modality mri_t1 --random-seed 3\n```",
+      "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3 --modality mri_t1 --random-seed 3",
+      "usage": {
+        "completion_tokens": 346,
+        "prompt_tokens": 2014,
+        "total_tokens": 2360,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 221,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 42.648829221725464,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_3/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/config_maisi_diff_model_rflow-mr.json",
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+          "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz"
+        ],
+        "stdout_tail": " \"cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03\"\n        }\n      ]\n    },\n    \"rendered_model_config\": {\n      \"diffusion_unet_train\": {\n        \"batch_size\": 1,\n        \"cache_rate\": 0,\n        \"lr\": 1e-05,\n        \"n_epochs\": 1000\n      },\n      \"diffusion_unet_inference\": {\n        \"dim\": [\n          128,\n          256,\n          256\n        ],\n        \"spacing\": [\n          1.25,\n          1.0,\n          1.0\n        ],\n        \"top_region_index\": [\n          0,\n          1,\n          0,\n          0\n        ],\n        \"bottom_region_index\": [\n          0,\n          0,\n          1,\n          0\n        ],\n        \"random_seed\": 3,\n        \"num_inference_steps\": 30,\n        \"modality\": 9,\n        \"cfg_guidance_scale\": 15\n      }\n    },\n    \"rendered_env_output_dir\": \"runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3\",\n    \"rendered_env_output_prefix\": \"mr_mri_t1\"\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 6.776,\n    \"device\": \"cuda\"\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"[2026-05-27 08:02:24.293][ INFO](inference) - Using cuda:0 of 1 with random seed: 3\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] random_seed -> 3.\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_size -> (128, 256, 256).\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\\n[2026-05-27 08:02:24.439][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\\n[2026-05-27 08:02:25.538][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\\n[2026-05-27 08:02:25.539][ INFO](inference) - scale_factor -> 0.96240234375.\\n[2026-05-27 08:02:25.540][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\\n[2026-05-27 08:02:25.560][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  3%|\\u258e         | 1/30 [00:00<00:05,  5.05it/s]\\n 17%|\\u2588\\u258b        | 5/30 [00:00<00:01, 18.16it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:01, 21.89it/s]\\n 37%|\\u2588\\u2588\\u2588\\u258b      | 11/30 [00:00<00:00, 24.04it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 25.11it/s]\\n 57%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b    | 17/30 [00:00<00:00, 25.95it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:00<00:00, 26.70it/s]\\n 77%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b  | 23/30 [00:00<00:00, 27.08it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 27.31it/s]\\n 97%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b| 29/30 [00:01<00:00, 27.45it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 24.70it/s]\\n[2026-05-27 08:02:29.042][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz.\\n\"\n  },\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-mr\",\n      \"voxels_per_sample\": 8388608,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 60.0,\n      \"estimated_peak_vram_gb\": 16.0,\n      \"estimated_disk_mb\": 16.0\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding.\"\n}",
+        "stderr_tail": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+        "json": {
+          "skill": "nv_generate_mr",
+          "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+          "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+          "input": {
+            "model_config_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+            "model_config_override": {
+              "dim": [
+                128,
+                256,
+                256
+              ],
+              "spacing": [
+                1.25,
+                1.0,
+                1.0
+              ],
+              "num_inference_steps": 30,
+              "cfg_guidance_scale": 15
+            },
+            "modality_name": "mri_t1",
+            "modality_code": 9,
+            "dim_requested": [
+              128,
+              256,
+              256
+            ],
+            "spacing_requested": [
+              1.25,
+              1.0,
+              1.0
+            ],
+            "num_inference_steps_requested": 30,
+            "cfg_guidance_scale_requested": 15,
+            "random_seed": 3,
+            "version": "rflow-mr"
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3",
+            "samples": [
+              {
+                "image_path": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz",
+                "image_bytes": 6773129,
+                "image_sha256": "59f98e33c62314f8b9367d1bb21f0569fd35f9340d76224f7bea0a99ebf53685",
+                "image_readable": true,
+                "image_shape": [
+                  128,
+                  256,
+                  256
+                ],
+                "requested_shape": [
+                  128,
+                  256,
+                  256
+                ],
+                "shape_match_requested": true,
+                "image_spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "requested_spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "spacing_match_requested": true,
+                "image_affine": [
+                  [
+                    1.25,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ],
+                "finite_fraction": 1.0,
+                "all_finite": true,
+                "intensity_min": 0.0,
+                "intensity_max": 2346.0,
+                "intensity_mean": 157.606,
+                "intensity_std": 260.098,
+                "image_nonconstant": true,
+                "image_nonnegative": true
+              }
+            ],
+            "num_samples": 1,
+            "all_images_readable": true,
+            "all_shapes_match_requested": true,
+            "all_spacing_match_requested": true,
+            "all_images_finite": true,
+            "all_images_nonconstant": true,
+            "all_images_nonnegative": true
+          },
+          "invocation": {
+            "official_entrypoint": "python -m scripts.diff_model_infer",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+              "-m",
+              "scripts.diff_model_infer",
+              "-t",
+              "./configs/config_network_rflow.json",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+              "-c",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 6.776,
+            "model_inventory": {
+              "all_present": true,
+              "files": [
+                {
+                  "path": "models/autoencoder_v2.pt",
+                  "present": true,
+                  "bytes": 83831932,
+                  "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+                },
+                {
+                  "path": "models/diff_unet_3d_rflow-mr.pt",
+                  "present": true,
+                  "bytes": 2166664552,
+                  "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+                }
+              ]
+            },
+            "rendered_model_config": {
+              "diffusion_unet_train": {
+                "batch_size": 1,
+                "cache_rate": 0,
+                "lr": 1e-05,
+                "n_epochs": 1000
+              },
+              "diffusion_unet_inference": {
+                "dim": [
+                  128,
+                  256,
+                  256
+                ],
+                "spacing": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "top_region_index": [
+                  0,
+                  1,
+                  0,
+                  0
+                ],
+                "bottom_region_index": [
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "random_seed": 3,
+                "num_inference_steps": 30,
+                "modality": 9,
+                "cfg_guidance_scale": 15
+              }
+            },
+            "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3",
+            "rendered_env_output_prefix": "mr_mri_t1"
+          },
+          "runtime": {
+            "subprocess_seconds": 6.776,
+            "device": "cuda"
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "[2026-05-27 08:02:24.293][ INFO](inference) - Using cuda:0 of 1 with random seed: 3\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] random_seed -> 3.\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-27 08:02:24.439][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-27 08:02:25.538][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-27 08:02:25.539][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-27 08:02:25.540][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-27 08:02:25.560][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.05it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.16it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:01, 21.89it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.04it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.11it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 25.95it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.70it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.08it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.31it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.45it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 24.70it/s]\n[2026-05-27 08:02:29.042][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz.\n"
+          },
+          "preflight": {
+            "warnings": [],
+            "estimated_cost": {
+              "version": "rflow-mr",
+              "voxels_per_sample": 8388608,
+              "num_inference_steps": 30,
+              "estimated_wall_seconds": 60.0,
+              "estimated_peak_vram_gb": 16.0,
+              "estimated_disk_mb": 16.0
+            },
+            "cuda": {
+              "available": true,
+              "device_name": "NVIDIA RTX 6000 Ada Generation",
+              "total_memory_gb": 47.4,
+              "torch_version": "2.12.0+cu130",
+              "cuda_version": "13.0"
+            }
+          },
+          "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "shape=(128, 256, 256)"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "GPT-5.5 / Codex",
+      "attempts": [
+        {
+          "backend": "gpt55",
+          "model": "openai/openai/gpt-5.5",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "openai/openai/gpt-5.5",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json. Generate one T1 MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr/SKILL.md ---\n---\nname: nv-generate-mr\ndescription: Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - generation\n---\n\n# NV-Generate-MR\n\n## Purpose\n- Used for generating synthetic body MRI volumes with NV-Generate-CTMR rflow-mr. Not for paired masks or production training data.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, and validation.\n- Manifest I/O: inputs are `model_config_override`; outputs are `synthetic_mr_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr.py` | Primary entrypoint declared by skill_manifest.yaml. | `MODEL_CONFIG.json --output-dir OUT_DIR --modality mri_t1 [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.diff_model_infer`. Do not modify code under $NV_GENERATE_ROOT or the repo-local fallback at .workbench_data/upstreams/NV-Generate-CTMR.\n- rflow-mr generates image-only synthetic MRI volumes. It does not emit paired segmentation masks.\n- The upstream README recommends `rflow-mr-brain` instead for brain MRI synthesis; use `skills/nv-generate-mr-brain` for that path.\n- NV-Generate-MR weights are listed by upstream as NVIDIA Non-Commercial. Do not use outputs as production training data without legal and quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation)\nMR image-only generation workflow. The wrapper does not reimplement diffusion\nsampling or autoencoder decoding. It stages config overrides, runs the\ndocumented `python -m scripts.diff_model_infer` command for `rflow-mr`, then\nsummarizes the generated NIfTI volume.\n\n\n## Exact Runnable Surface\n\nFor user run commands in a fresh benchmark environment, use this setup plus\nrepo-root wrapper command exactly:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py PATH_TO_MR_CONFIG.json --output-dir OUT_DIR --modality mri_t1 --random-seed 0\n```\n\nDo not invent `generate.sh`, `infer.py`, `Medical AI Skills run`, or `python -m nv_generate_mr` commands. `PATH_TO_MR_CONFIG.json` must be the user's supplied request path.\n\n## Preconditions\n\nClone and install the upstream repo once. In this Medical AI Skills checkout, prefer\nthe repo-local cache path when it exists:\n\n```bash\nmkdir -p .workbench_data/upstreams\ntest -d .workbench_data/upstreams/NV-Generate-CTMR/.git || \\\n  git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git \\\n    .workbench_data/upstreams/NV-Generate-CTMR\nexport NV_GENERATE_ROOT=.workbench_data/upstreams/NV-Generate-CTMR\npip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n```\n\nDownload the MR weights:\n\n```bash\ncd \"$NV_GENERATE_ROOT\"\npython -m scripts.download_model_data --version rflow-mr --root_dir ./ --model_only\n```\n\nRuntime needs an NVIDIA GPU with at least 16 GB VRAM. There is no CPU\nfallback in the upstream path.\n\nThe wrapper also searches `.workbench_data/upstreams/NV-Generate-CTMR` if\n`NV_GENERATE_ROOT` is unset or points at a stale clone.\n\nFor agent-generated user run commands, use the command in Usage. Do not prepend\nclone or model-download setup steps when the repo-local upstream cache already\nexists. In a fresh Python environment, still include\n`pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"` before the wrapper unless\nthe active environment has already proven those imports are available; cached\nweights do not imply cached Python packages. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-mr/scripts/run_mr.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr/scripts/run_mr.py \\\n  PATH_TO_MR_CONFIG.json \\\n  --output-dir runs/nv_generate_mr_demo \\\n  --modality mri_t1 \\\n  --random-seed 0\n```\n\nReplace `PATH_TO_MR_CONFIG.json` with the user's actual request/config path.\nDo not copy the fixture path from this document unless the user explicitly\nasked to run that fixture. If the user says \"the request is at\n`runs/.../default_mri_t1.json`\", that exact path is the first positional\nargument to `scripts/run_mr.py`.\n\nSupported rflow-mr modality names are `mri`, `mri_t1`, `mri_t2`, and\n`mri_flair`, matching the upstream MR image-generation guide. The upstream\nREADME recommends `rflow-mr-brain` instead when synthesizing brain images;\nuse `skills/nv-generate-mr-brain` for that path.\nFor FOV and setup details, see `references/fov-and-downloads.md`.\n\nThe fixture argument is a small JSON override for\n`configs/config_maisi_diff_model_rflow-mr.json`. Pass `default` to use the\nupstream defaults plus the CLI modality and random seed. Common override keys\nare `dim`, `spacing`, `num_inference_steps`, `cfg_guidance_scale`, and\n`modality`.\n\nEach run records the staged config, model inventory, upstream command, output\ngeometry, spacing, affine, intensity range, and non-constant / finite-data\nchecks. Output volumes are synthetic and are not safe as production training\ndata without independent review.\n\nNot for clinical interpretation, production deployment, autonomous diagnosis,\nor regulatory submission.\n"
+            }
+          ],
+          "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3 --modality mri_t1 --random-seed 3\n```",
+          "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && python skills/nv-generate-mr/scripts/run_mr.py runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json --output-dir runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3 --modality mri_t1 --random-seed 3",
+          "usage": {
+            "completion_tokens": 346,
+            "prompt_tokens": 2014,
+            "total_tokens": 2360,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 221,
+              "rejected_prediction_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cached_tokens": 0
+            }
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 42.648829221725464,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_3/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/config_maisi_diff_model_rflow-mr.json",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+              "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz"
+            ],
+            "stdout_tail": " \"cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03\"\n        }\n      ]\n    },\n    \"rendered_model_config\": {\n      \"diffusion_unet_train\": {\n        \"batch_size\": 1,\n        \"cache_rate\": 0,\n        \"lr\": 1e-05,\n        \"n_epochs\": 1000\n      },\n      \"diffusion_unet_inference\": {\n        \"dim\": [\n          128,\n          256,\n          256\n        ],\n        \"spacing\": [\n          1.25,\n          1.0,\n          1.0\n        ],\n        \"top_region_index\": [\n          0,\n          1,\n          0,\n          0\n        ],\n        \"bottom_region_index\": [\n          0,\n          0,\n          1,\n          0\n        ],\n        \"random_seed\": 3,\n        \"num_inference_steps\": 30,\n        \"modality\": 9,\n        \"cfg_guidance_scale\": 15\n      }\n    },\n    \"rendered_env_output_dir\": \"runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3\",\n    \"rendered_env_output_prefix\": \"mr_mri_t1\"\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 6.776,\n    \"device\": \"cuda\"\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"[2026-05-27 08:02:24.293][ INFO](inference) - Using cuda:0 of 1 with random seed: 3\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] random_seed -> 3.\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_size -> (128, 256, 256).\\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\\n[2026-05-27 08:02:24.439][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\\n[2026-05-27 08:02:25.538][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\\n[2026-05-27 08:02:25.539][ INFO](inference) - scale_factor -> 0.96240234375.\\n[2026-05-27 08:02:25.540][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\\n[2026-05-27 08:02:25.560][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  3%|\\u258e         | 1/30 [00:00<00:05,  5.05it/s]\\n 17%|\\u2588\\u258b        | 5/30 [00:00<00:01, 18.16it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:01, 21.89it/s]\\n 37%|\\u2588\\u2588\\u2588\\u258b      | 11/30 [00:00<00:00, 24.04it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 25.11it/s]\\n 57%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b    | 17/30 [00:00<00:00, 25.95it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:00<00:00, 26.70it/s]\\n 77%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b  | 23/30 [00:00<00:00, 27.08it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 27.31it/s]\\n 97%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b| 29/30 [00:01<00:00, 27.45it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 24.70it/s]\\n[2026-05-27 08:02:29.042][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz.\\n\"\n  },\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-mr\",\n      \"voxels_per_sample\": 8388608,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 60.0,\n      \"estimated_peak_vram_gb\": 16.0,\n      \"estimated_disk_mb\": 16.0\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding.\"\n}",
+            "stderr_tail": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+            "json": {
+              "skill": "nv_generate_mr",
+              "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+              "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+              "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+              "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+              "input": {
+                "model_config_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+                "model_config_override": {
+                  "dim": [
+                    128,
+                    256,
+                    256
+                  ],
+                  "spacing": [
+                    1.25,
+                    1.0,
+                    1.0
+                  ],
+                  "num_inference_steps": 30,
+                  "cfg_guidance_scale": 15
+                },
+                "modality_name": "mri_t1",
+                "modality_code": 9,
+                "dim_requested": [
+                  128,
+                  256,
+                  256
+                ],
+                "spacing_requested": [
+                  1.25,
+                  1.0,
+                  1.0
+                ],
+                "num_inference_steps_requested": 30,
+                "cfg_guidance_scale_requested": 15,
+                "random_seed": 3,
+                "version": "rflow-mr"
+              },
+              "output": {
+                "directory": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3",
+                "samples": [
+                  {
+                    "image_path": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz",
+                    "image_bytes": 6773129,
+                    "image_sha256": "59f98e33c62314f8b9367d1bb21f0569fd35f9340d76224f7bea0a99ebf53685",
+                    "image_readable": true,
+                    "image_shape": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "requested_shape": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "shape_match_requested": true,
+                    "image_spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "requested_spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "spacing_match_requested": true,
+                    "image_affine": [
+                      [
+                        1.25,
+                        0.0,
+                        0.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0
+                      ],
+                      [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    ],
+                    "finite_fraction": 1.0,
+                    "all_finite": true,
+                    "intensity_min": 0.0,
+                    "intensity_max": 2346.0,
+                    "intensity_mean": 157.606,
+                    "intensity_std": 260.098,
+                    "image_nonconstant": true,
+                    "image_nonnegative": true
+                  }
+                ],
+                "num_samples": 1,
+                "all_images_readable": true,
+                "all_shapes_match_requested": true,
+                "all_spacing_match_requested": true,
+                "all_images_finite": true,
+                "all_images_nonconstant": true,
+                "all_images_nonnegative": true
+              },
+              "invocation": {
+                "official_entrypoint": "python -m scripts.diff_model_infer",
+                "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+                "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+                "command": [
+                  "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+                  "-m",
+                  "scripts.diff_model_infer",
+                  "-t",
+                  "./configs/config_network_rflow.json",
+                  "-e",
+                  "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+                  "-c",
+                  "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+                ],
+                "exit_code": 0,
+                "subprocess_seconds": 6.776,
+                "model_inventory": {
+                  "all_present": true,
+                  "files": [
+                    {
+                      "path": "models/autoencoder_v2.pt",
+                      "present": true,
+                      "bytes": 83831932,
+                      "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+                    },
+                    {
+                      "path": "models/diff_unet_3d_rflow-mr.pt",
+                      "present": true,
+                      "bytes": 2166664552,
+                      "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+                    }
+                  ]
+                },
+                "rendered_model_config": {
+                  "diffusion_unet_train": {
+                    "batch_size": 1,
+                    "cache_rate": 0,
+                    "lr": 1e-05,
+                    "n_epochs": 1000
+                  },
+                  "diffusion_unet_inference": {
+                    "dim": [
+                      128,
+                      256,
+                      256
+                    ],
+                    "spacing": [
+                      1.25,
+                      1.0,
+                      1.0
+                    ],
+                    "top_region_index": [
+                      0,
+                      1,
+                      0,
+                      0
+                    ],
+                    "bottom_region_index": [
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "random_seed": 3,
+                    "num_inference_steps": 30,
+                    "modality": 9,
+                    "cfg_guidance_scale": 15
+                  }
+                },
+                "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3",
+                "rendered_env_output_prefix": "mr_mri_t1"
+              },
+              "runtime": {
+                "subprocess_seconds": 6.776,
+                "device": "cuda"
+              },
+              "logs": {
+                "stdout_tail": "",
+                "stderr_tail": "[2026-05-27 08:02:24.293][ INFO](inference) - Using cuda:0 of 1 with random seed: 3\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] random_seed -> 3.\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-27 08:02:24.293][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-27 08:02:24.439][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-27 08:02:25.538][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-27 08:02:25.539][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-27 08:02:25.540][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-27 08:02:25.560][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.05it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.16it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:01, 21.89it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.04it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.11it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 25.95it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.70it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.08it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.31it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.45it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 24.70it/s]\n[2026-05-27 08:02:29.042][ INFO](inference) - Saved runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3/mr_mri_t1_seed3_size128x256x256_spacing1.25x1.00x1.00_20260527080228_rank0_modality9.nii.gz.\n"
+              },
+              "preflight": {
+                "warnings": [],
+                "estimated_cost": {
+                  "version": "rflow-mr",
+                  "voxels_per_sample": 8388608,
+                  "num_inference_steps": 30,
+                  "estimated_wall_seconds": 60.0,
+                  "estimated_peak_vram_gb": 16.0,
+                  "estimated_disk_mb": 16.0
+                },
+                "cuda": {
+                  "available": true,
+                  "device_name": "NVIDIA RTX 6000 Ada Generation",
+                  "total_memory_gb": 47.4,
+                  "torch_version": "2.12.0+cu130",
+                  "cuda_version": "13.0"
+                }
+              },
+              "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "shape=(128, 256, 256)"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 3,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_codex_opus/gpt55/with/repeat_3",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json",
+      "prompt_style": "minimal"
+    }
+  ]
+}

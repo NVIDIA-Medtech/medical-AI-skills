@@ -1,0 +1,16 @@
+{
+  "measured": {
+    "wall_seconds": 0.03757714500534348,
+    "cpu_seconds": 0.044654,
+    "rss_mb_peak": 28.25,
+    "gpu_seconds": 0.0,
+    "gpu_memory_mb_peak": 0.0,
+    "per_gpu": {},
+    "have_nvidia_smi": true
+  },
+  "self_reported": {},
+  "evaluation": {
+    "status": "skipped",
+    "results": []
+  }
+}

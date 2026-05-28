@@ -1,0 +1,43 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "01eec42b240c",
+  "skill_id": "medagent.nv_segment_ct",
+  "skill_version": "0.2.0",
+  "skill_dir": "skills/nv-segment-ct",
+  "repo_git_sha": "a9361c3e6c62276c02a6c4ca34517408df2679af",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/fetch_spleen_fixture.py",
+    "fixtures/spleen_03.nii.gz",
+    "fixtures/spleen_03_seg.nii.gz",
+    "fixtures/spleen_03_totalseg_out/spleen_03_totalseg.nii.gz",
+    "fixtures/spleen_03_vista3d_out/spleen_03/spleen_03_seg.nii.gz",
+    "requirements.txt",
+    "scripts/run_vista3d.py",
+    "skill_manifest.yaml",
+    "tests/test_run_vista3d.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+    "sha256": "18fcb3df7da91366440dc4e14a9cc814024fce4df73db999b1d32e659ad127f9",
+    "size_bytes": 11352181,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/nv-segment-ct/scripts/run_vista3d.py",
+    "skills/nv-segment-ct/fixtures/spleen_03.nii.gz"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

@@ -1,0 +1,855 @@
+{
+  "backend": "nemotron",
+  "model": "nvidia/nvidia/nemotron-3-super-v3",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "nvidia/nvidia/nemotron-3-super-v3",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "with",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+    },
+    {
+      "role": "user",
+      "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The case request is at runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json. Synthesize one paired 3D CT image and segmentation mask for a chest case with a lung tumor, and write the output pair under runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_ct_rflow; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-ct-rflow/SKILL.md ---\n---\nname: nv-generate-ct-rflow\ndescription: Used for generating synthetic CT volumes and masks with NV-Generate-CTMR rflow-ct. Not for production training data without review.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - ct\n    - generation\n---\n\n# NV-Generate-CT (rflow-ct)\n\n## Purpose\n- Used for generating synthetic CT volumes and masks with NV-Generate-CTMR rflow-ct. Not for production training data without review.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, label mapping evidence, and validation.\n- Manifest I/O: inputs are `config_infer_override`; outputs are `synthetic_ct_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_rflow_ct.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_rflow_ct.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/_anatomy.py` | Internal helper used by the primary entrypoint. | Imported only; do not call directly. |\n| `scripts/_summary_card.py` | Internal helper used by the primary entrypoint. | Imported only; do not call directly. |\n| `scripts/list_anatomies.py` | Helper command for catalog or anatomy lookup. | `[--region REGION] [--filter TEXT] [--controllable]` |\n| `scripts/run_rflow_ct.py` | Primary entrypoint declared by skill_manifest.yaml. | `CONFIG_INFER.json --output-dir OUT_DIR [--random-seed N] [--version rflow-ct] [--yes]` |\n| `scripts/run_ct_mask.py` | Advanced diagnostic helper for standalone raw MAISI mask generation. | `REQUEST.json --output-dir OUT_DIR [--random-seed N] [--preflight-only] [--yes]` |\n| `scripts/run_ct_from_mask.py` | Advanced helper for CT image generation from a MAISI label mask. | `REQUEST.json --output-dir OUT_DIR [--random-seed N] [--yes]` |\n| `scripts/run_ct_image.py` | Advanced helper for CT image-only generation without paired labels. | `MODEL_CONFIG.json --output-dir OUT_DIR [--version rflow-ct] [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Required environment variables: `NV_GENERATE_ROOT`.\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.inference`. Do not modify code under $NV_GENERATE_ROOT.\n- rflow-ct requires CUDA and \u2248 16 GB VRAM minimum for the default 256\u00b3 output_size. Larger output_size (e.g. 512\u00d7512\u00d7768) needs an A100/H100.\n- Output volumes are synthetic. They are not safe to use as training data for production medtech models without an independent quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR)\nrectified-flow synthesis pipeline. The wrapper does not reimplement diffusion,\nsampling, or autoencoder decoding \u2014 it shells out to the upstream\n`scripts.inference` entry point exactly as the project's README documents and\ninspects the produced image/mask pairs.\n\n## Preconditions\n\n1. Clone the upstream repo and point `NV_GENERATE_ROOT` at it (one-time):\n\n   ```bash\n   test -d \"$HOME/nv-generate-ctmr/.git\" || \\\n     git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git $HOME/nv-generate-ctmr\n   export NV_GENERATE_ROOT=$HOME/nv-generate-ctmr\n   pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n   ```\n\n2. Download the `rflow-ct` weights **and** the mask-candidate datasets\n   into the clone (one-time, \u2248 5.5 GB):\n\n   ```bash\n   cd \"$NV_GENERATE_ROOT\"\n   python -m scripts.download_model_data --version rflow-ct --root_dir \"./\"\n   ```\n\n   The mask candidates (`datasets/all_masks_flexible_size_and_spacing_4000`)\n   condition the diffusion sampler; omitting them via `--model_only` will\n   make the inference script fail with a missing-file error at startup.\n   The anatomy-size condition file is also part of the full CT download and is\n   needed for controllable mask generation.\n\n3. NVIDIA GPU with \u2265 16 GB VRAM and CUDA. There is no CPU fallback.\n\nFor agent-generated user run commands, prefer the short wrapper command in\nUsage. Do not prepend clone or model-download setup steps when `NV_GENERATE_ROOT`\nor the repo-local upstream cache is already present. In a fresh Python\nenvironment, still include `pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"`\nbefore the wrapper unless the active environment has already proven those\nimports are available; cached weights do not imply cached Python packages. Run\nthe wrapper from the medical-AI-skills repo root. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n  PATH_TO_CONFIG_INFER.json \\\n  --output-dir runs/nv_generate_ct_rflow_demo \\\n  --random-seed 0 \\\n  --version rflow-ct\n```\n\nReplace `PATH_TO_CONFIG_INFER.json` with the user's actual request/config\npath. Do not copy the fixture path from this document unless the user\nexplicitly asked to run that fixture. If the user says \"the case request is at\n`runs/.../chest_lung_tumor_controllable.json`\", that exact path is the first\npositional argument to `scripts/run_rflow_ct.py`.\n\nThe fixture argument is a `config_infer.json` override file: it can replace\n`num_output_samples`, `body_region`, `anatomy_list`, `controllable_anatomy_size`,\n`output_size`, and `spacing`. Pass `default` to use the upstream config\nverbatim. The wrapper stages the override into the upstream tree before\nrunning.\n\n### Fixture catalog\n\n`fixtures/` ships curated configs for common paired synthesis use cases: chest\nlung lobes, chest with controllable lung tumor, abdomen solid organs,\nabdomen with controllable hepatic tumor, head + cervical spine, pelvis.\nSee [`fixtures/README.md`](fixtures/README.md) for the full table.\n\n### Helper commands\n\n```bash\n# Browse the 132-class label_dict grouped by body region.\npython skills/nv-generate-ct-rflow/scripts/list_anatomies.py --region chest\npython skills/nv-generate-ct-rflow/scripts/list_anatomies.py --controllable\npython skills/nv-generate-ct-rflow/scripts/list_anatomies.py --filter tumor\n\n# Validate a fixture and preview cost without launching inference.\nNV_GENERATE_ROOT=$HOME/nv-generate-ctmr \\\n  python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n    skills/nv-generate-ct-rflow/fixtures/abdomen_liver_spleen.json \\\n    --output-dir runs/preview --preflight-only\n```\n\nAdvanced helpers stay inside this skill for debugging and less-common CT\ngeneration modes. Use them only when the user explicitly asks for that mode:\n\n```bash\n# Raw MAISI mask diagnostic, useful for checking lung tumor -> label 23.\npython skills/nv-generate-ct-rflow/scripts/run_ct_mask.py \\\n  skills/nv-generate-ct-rflow/fixtures/ct_mask_lung_tumor.json \\\n  --output-dir runs/ct_mask_debug --preflight-only\n\n# CT image from an existing MAISI label mask with body label 200.\npython skills/nv-generate-ct-rflow/scripts/run_ct_from_mask.py \\\n  skills/nv-generate-ct-rflow/fixtures/ct_from_mask_request_example.json \\\n  --output-dir runs/ct_from_mask_demo\n\n# CT image-only generation without paired labels.\npython skills/nv-generate-ct-rflow/scripts/run_ct_image.py \\\n  skills/nv-generate-ct-rflow/fixtures/ct_image_only_default.json \\\n  --output-dir runs/ct_image_only_demo --version rflow-ct\n```\n\nThe wrapper runs preflight on every invocation (regardless of\n`--preflight-only`): config-schema bounds, anatomy names matched\nagainst the upstream label_dict, body_region in the supported set,\ncontrollable_anatomy_size constraints, upstream CT output-size/spacing\ncontracts, body-region-aware x/y FOV minimums, dataset presence under\n`$NV_GENERATE_ROOT/datasets/`, CUDA available, and an estimated peak VRAM /\nwall-time. Runs estimated to exceed 5 min wall-time or 30 GB VRAM peak require\n`--yes` to proceed.\n\nEach invocation runs `python -m scripts.inference -t configs/config_network_rflow.json\n-i configs/config_infer.json -e configs/environment_rflow-ct.json --random-seed <s>\n--version rflow-ct`. Output evidence records the upstream git commit, model\ncheckpoint hashes, the rendered config, per-sample image/mask geometry, mask\nlabel set, image HU range summary, and per-class voxel volumes.\n\nWhen `controllable_anatomy_size` is non-empty, upstream ignores the broader\n`anatomy_list` for the saved paired label map and filters labels to the\ncontrollable anatomy names. The saved paired label values are local `1..N`\nordinals, not raw MAISI label IDs. Read `output.output_label_mapping` in\n`result_json` to map saved output labels back to source labels; for example,\noutput label `1` can represent MAISI label `23` (`lung tumor`).\n\nFor FOV and setup details, see `references/fov-and-downloads.md`. For\nadvanced helper label-space details, see\n`references/ct-mask-label-space.md` and `references/ct-from-mask-format.md`.\n\n### Visual sample card\n\nAlongside the NIfTI pairs, the wrapper writes `summary.html` to the\noutput directory: a per-sample mid-slice triptych (axial / coronal /\nsagittal) with label overlay, plus a table of the rendered config and\nverifier-facing aggregates. Lets you eyeball the result without firing\nup 3D Slicer. Pass `--no-summary-card` to skip.\n\nAnatomy plausibility (label-set sanity, voxel HU range as CT, image/mask\ngeometry match, declared output labels present, lung-lobe HU floor) is checked by\n`verifiers/ct_synthesis_quality_v1`.\n\nNot for clinical interpretation, training data for production deployment, or\nany non-synthetic-research use.\n"
+    }
+  ],
+  "response": "\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n  runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \\\n  --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3 \\\n  --random-seed 3 \\\n  --version rflow-ct\n```",
+  "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n  runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \\\n  --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3 \\\n  --random-seed 3 \\\n  --version rflow-ct",
+  "usage": {
+    "completion_tokens": 1445,
+    "prompt_tokens": 3131,
+    "total_tokens": 4576
+  },
+  "execution": {
+    "executed": true,
+    "exit_code": 0,
+    "elapsed_seconds": 113.91667485237122,
+    "isolated_exec_env": true,
+    "fresh_exec_env_created": true,
+    "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv",
+    "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/bin/python",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    },
+    "protected_upstream_env": {
+      "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+      "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+    },
+    "upstream_mutation_detected": false,
+    "upstream_mutation_restored": false,
+    "upstream_mutation_paths": [],
+    "generated_files": [
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_card/sample_0_slices.png",
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/config_infer.json",
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/environment_rflow-ct.json",
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_image.nii.gz",
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_label.nii.gz",
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/summary.html"
+    ],
+    "stdout_tail": "equence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\\n  win_data = inputs[unravel_slice[0]].to(sw_device)\\n\\n 25%|\\u2588\\u2588\\u258c       | 2/8 [00:03<00:08,  1.45s/it]\\n 38%|\\u2588\\u2588\\u2588\\u258a      | 3/8 [00:04<00:06,  1.28s/it]\\n 50%|\\u2588\\u2588\\u2588\\u2588\\u2588     | 4/8 [00:05<00:04,  1.20s/it]\\n 62%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e   | 5/8 [00:06<00:03,  1.16s/it]\\n 75%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258c  | 6/8 [00:07<00:02,  1.14s/it]\\n 88%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258a | 7/8 [00:08<00:01,  1.12s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:09<00:00,  1.11s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:09<00:00,  1.20s/it]\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  7%|\\u258b         | 2/30 [00:00<00:01, 19.26it/s]\\n 13%|\\u2588\\u258e        | 4/30 [00:00<00:01, 17.67it/s]\\n 20%|\\u2588\\u2588        | 6/30 [00:00<00:01, 17.06it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:01, 16.73it/s]\\n 33%|\\u2588\\u2588\\u2588\\u258e      | 10/30 [00:00<00:01, 16.55it/s]\\n 40%|\\u2588\\u2588\\u2588\\u2588      | 12/30 [00:00<00:01, 16.49it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 16.42it/s]\\n 53%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e    | 16/30 [00:00<00:00, 16.38it/s]\\n 60%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588    | 18/30 [00:01<00:00, 16.38it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:01<00:00, 16.32it/s]\\n 73%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e  | 22/30 [00:01<00:00, 16.32it/s]\\n 80%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588  | 24/30 [00:01<00:00, 16.29it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 16.28it/s]\\n 93%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e| 28/30 [00:01<00:00, 16.27it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 16.28it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 16.48it/s]\\n\\n  0%|          | 0/8 [00:00<?, ?it/s]\\n 12%|\\u2588\\u258e        | 1/8 [00:01<00:10,  1.47s/it]\\n 25%|\\u2588\\u2588\\u258c       | 2/8 [00:02<00:08,  1.43s/it]\\n 38%|\\u2588\\u2588\\u2588\\u258a      | 3/8 [00:04<00:07,  1.42s/it]\\n 50%|\\u2588\\u2588\\u2588\\u2588\\u2588     | 4/8 [00:05<00:05,  1.43s/it]\\n 62%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e   | 5/8 [00:07<00:04,  1.42s/it]\\n 75%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258c  | 6/8 [00:08<00:02,  1.42s/it]\\n 88%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258a | 7/8 [00:09<00:01,  1.43s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:11<00:00,  1.42s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:11<00:00,  1.43s/it]\\n\"\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is NOT clinically meaningful and is NOT suitable as training data for production deployment. This wrapper invokes the upstream scripts.inference entry point from the NV-Generate-CTMR README; it does not modify diffusion, sampling, or autoencoder decoding.\",\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-ct\",\n      \"voxels_per_sample\": 16777216,\n      \"num_samples\": 1,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 90.0,\n      \"estimated_wall_seconds_per_sample\": 90.0,\n      \"estimated_peak_vram_gb\": 24.0,\n      \"estimated_disk_mb\": 19.2\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  }\n}",
+    "stderr_tail": "[nv_generate_ct_rflow] preflight: output_size=[256, 256, 256] steps=30 samples=1\n[nv_generate_ct_rflow] cost estimate: ~90.0s wall, ~24.0 GB VRAM peak, ~19.2 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+    "json": {
+      "skill": "nv_generate_ct_rflow",
+      "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-ct)",
+      "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+      "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-CT",
+      "license": "NVIDIA Open Model License (commercial-friendly)",
+      "input": {
+        "config_infer_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json",
+        "config_infer_override": {
+          "num_output_samples": 1,
+          "body_region": [
+            "chest"
+          ],
+          "anatomy_list": [
+            "lung tumor",
+            "left lung upper lobe",
+            "left lung lower lobe",
+            "right lung upper lobe",
+            "right lung middle lobe",
+            "right lung lower lobe",
+            "heart"
+          ],
+          "controllable_anatomy_size": [
+            [
+              "lung tumor",
+              0.2
+            ]
+          ],
+          "output_size": [
+            256,
+            256,
+            256
+          ],
+          "spacing": [
+            1.5,
+            1.5,
+            2.0
+          ],
+          "num_inference_steps": 30,
+          "image_output_ext": ".nii.gz",
+          "label_output_ext": ".nii.gz"
+        },
+        "anatomy_list_requested": [
+          "lung tumor",
+          "left lung upper lobe",
+          "left lung lower lobe",
+          "right lung upper lobe",
+          "right lung middle lobe",
+          "right lung lower lobe",
+          "heart"
+        ],
+        "effective_anatomy_for_output": [
+          "lung tumor"
+        ],
+        "paired_output_label_semantics": "Saved paired labels are local 1..N output ids after upstream filter_mask_with_organs; use output.output_label_mapping to map them back to MAISI label ids such as lung tumor=23.",
+        "body_region_requested": [
+          "chest"
+        ],
+        "num_output_samples_requested": 1,
+        "output_size_requested": [
+          256,
+          256,
+          256
+        ],
+        "spacing_requested": [
+          1.5,
+          1.5,
+          2.0
+        ],
+        "random_seed": 3,
+        "version": "rflow-ct"
+      },
+      "output": {
+        "directory": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3",
+        "samples": [
+          {
+            "image_path": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_image.nii.gz",
+            "label_path": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_label.nii.gz",
+            "image_bytes": 9620699,
+            "label_bytes": 294571,
+            "image_sha256": "1842563670aa53736fafd4a4ebb24a3f5bf609d09f8333513b022659b542c3f5",
+            "label_sha256": "2095fec74bf0f426151ee395beb4a797a8c9d73608020a8eb0dba2a20593415d",
+            "image_readable": true,
+            "label_readable": true,
+            "image_shape": [
+              256,
+              256,
+              256
+            ],
+            "image_spacing": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "image_hu_min": -1000.0,
+            "image_hu_max": 1000.0,
+            "image_hu_mean": -751.942,
+            "image_hu_negative_present": true,
+            "image_hu_bone_present": true,
+            "image_nonconstant": true,
+            "image_affine": [
+              [
+                1.5,
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.5,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                2.0,
+                -64.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "label_shape": [
+              256,
+              256,
+              256
+            ],
+            "label_spacing": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "label_ids_present": [
+              1
+            ],
+            "label_id_count": 1,
+            "label_foreground_voxels": 2029,
+            "label_background_voxels": 16775187,
+            "shape_match": true,
+            "spacing_match": true,
+            "affine_max_abs_diff": 0.0,
+            "affine_match": true
+          }
+        ],
+        "num_samples": 1,
+        "all_pairs_readable": true,
+        "all_geometry_consistent": true,
+        "any_foreground_present": true,
+        "all_images_nonconstant": true,
+        "all_images_hu_like": true,
+        "union_label_ids_present": [
+          1
+        ],
+        "output_label_mapping": [
+          {
+            "anatomy": "lung tumor",
+            "maisi_label_id": 23,
+            "output_label_id": 1
+          }
+        ],
+        "expected_output_label_ids": [
+          1
+        ],
+        "expected_maisi_label_ids": [
+          23
+        ],
+        "missing_expected_output_label_ids": [],
+        "all_effective_anatomy_labels_present": true,
+        "summary_html": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/summary.html"
+      },
+      "invocation": {
+        "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+        "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+        "command": [
+          "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/bin/python",
+          "-m",
+          "scripts.inference",
+          "-t",
+          "configs/config_network_rflow.json",
+          "-i",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/config_infer.json",
+          "-e",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/environment_rflow-ct.json",
+          "--random-seed",
+          "3",
+          "--version",
+          "rflow-ct"
+        ],
+        "exit_code": 0,
+        "subprocess_seconds": 75.366,
+        "model_inventory": {
+          "all_present": true,
+          "files": [
+            {
+              "path": "models/autoencoder_v1.pt",
+              "present": true,
+              "bytes": 83831868,
+              "sha256": "1f8a7a056d0ebc00486edc43c26768bf1c12eaa6df9dd172e34598003be95eb3"
+            },
+            {
+              "path": "models/diff_unet_3d_rflow-ct.pt",
+              "present": true,
+              "bytes": 2166600232,
+              "sha256": "cfc1ec59782f5ac7c0d22dd501654732109a971b93cbaa6607c4106a7f29066f"
+            },
+            {
+              "path": "models/controlnet_3d_rflow-ct.pt",
+              "present": true,
+              "bytes": 288255799,
+              "sha256": "2f16d7a6b4d6a22d5ba9278e59fd51f9a17a45244f0f256946c34a762cc12914"
+            },
+            {
+              "path": "models/mask_generation_autoencoder.pt",
+              "present": true,
+              "bytes": 21072774,
+              "sha256": "539175f6ede3cb1e6f01bfd6347cd446d601cf4a508fc632a1e36362b1428a5d"
+            },
+            {
+              "path": "models/mask_generation_diffusion_unet.pt",
+              "present": true,
+              "bytes": 788941780,
+              "sha256": "b7d668b1356e9b94b8269decadf8f8116dc4ee2d365580d05349b4ddf6739155"
+            }
+          ]
+        },
+        "rendered_infer_config": {
+          "num_output_samples": 1,
+          "body_region": [
+            "chest"
+          ],
+          "anatomy_list": [
+            "lung tumor",
+            "left lung upper lobe",
+            "left lung lower lobe",
+            "right lung upper lobe",
+            "right lung middle lobe",
+            "right lung lower lobe",
+            "heart"
+          ],
+          "controllable_anatomy_size": [
+            [
+              "lung tumor",
+              0.2
+            ]
+          ],
+          "num_inference_steps": 30,
+          "mask_generation_num_inference_steps": 1000,
+          "output_size": [
+            256,
+            256,
+            256
+          ],
+          "image_output_ext": ".nii.gz",
+          "label_output_ext": ".nii.gz",
+          "spacing": [
+            1.5,
+            1.5,
+            2.0
+          ],
+          "autoencoder_sliding_window_infer_size": [
+            48,
+            48,
+            48
+          ],
+          "autoencoder_sliding_window_infer_overlap": 0.6666,
+          "controlnet": "$@controlnet_def",
+          "diffusion_unet": "$@diffusion_unet_def",
+          "autoencoder": "$@autoencoder_def",
+          "mask_generation_autoencoder": "$@mask_generation_autoencoder_def",
+          "mask_generation_diffusion": "$@mask_generation_diffusion_def",
+          "modality": 1,
+          "cfg_guidance_scale": 0,
+          "output_dir": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3"
+        },
+        "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3"
+      },
+      "runtime": {
+        "subprocess_seconds": 75.366,
+        "device": "cuda"
+      },
+      "logs": {
+        "stdout_tail": "...:56:55.834][ INFO](maisi.inference) - label_output_ext: .nii.gz\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - spacing: [1.5, 1.5, 2.0]\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - autoencoder_sliding_window_infer_size: [48, 48, 48]\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - autoencoder_sliding_window_infer_overlap: 0.6666\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - controlnet: $@controlnet_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - diffusion_unet: $@diffusion_unet_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - autoencoder: $@autoencoder_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - mask_generation_autoencoder: $@mask_generation_autoencoder_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - mask_generation_diffusion: $@mask_generation_diffusion_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - modality: 1\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - cfg_guidance_scale: 0\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - output_dir: runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3\n[2026-05-27 09:56:55.834][ INFO](root) - `controllable_anatomy_size` is not empty.\nWe will ignore `body_region` and `anatomy_list` and synthesize based on `controllable_anatomy_size`: ([['lung tumor', 0.2]]).\n[2026-05-27 09:56:55.834][ INFO](root) - The generate results will have voxel size to be [1.5, 1.5, 2.0]mm, volume size to be [256, 256, 256].\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - Network definition and inference inputs have been loaded.\n2026-05-27 09:56:57,653 - INFO - 'dst' model updated: 180 of 231 variables.\n[2026-05-27 09:56:58.442][ INFO](maisi.inference) - All the trained model weights have been loaded.\n[2026-05-27 09:56:58.443][ INFO](root) - controllable_anatomy_size is given, mask generation is triggered!\n[2026-05-27 09:56:58.453][ INFO](root) - LDM sampler initialized.\n[2026-05-27 09:56:58.453][ INFO](maisi.inference) - The generated image/mask pairs will be saved in runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3.\n[2026-05-27 09:56:58.453][ INFO](root) - controllable_anatomy_size: [['lung tumor', 0.2]]\n[2026-05-27 09:56:58.455][ INFO](root) - ---- Start preparing masks... ----\n[2026-05-27 09:57:43.629][ INFO](root) - target_tumor_label for postprocess:23\nCurrent model does not support hepatic vessel by size control, so we treat generated hepatic vessel as part of liver for better visiaulization.\n[2026-05-27 09:57:52.223][ INFO](root) - Resampling mask to target shape and spacing\n[2026-05-27 09:57:52.224][ INFO](root) - Resize Spacing: [tensor(1.5000, dtype=torch.float64), tensor(1.5000, dtype=torch.float64), tensor(1.5000, dtype=torch.float64)] -> [1.5, 1.5, 2.0]\n[2026-05-27 09:57:52.224][ INFO](root) - Output size: [256, 256, 256] -> [256, 256, 256]\n[2026-05-27 09:57:52.515][ INFO](root) - ---- Mask preparation time: 54.06034016609192 seconds ----\n[2026-05-27 09:57:52.633][ INFO](root) - ---- Start generating latent features... ----\n[2026-05-27 09:57:54.458][ INFO](root) - ---- DM/ControlNet Latent features generation time: 1.8241448402404785 seconds ----\n[2026-05-27 09:57:54.747][ INFO](root) - ---- Start decoding latent features into images... ----\n[2026-05-27 09:58:06.155][ INFO](root) - ---- Image VAE decoding time: 11.40817904472351 seconds ----\n2026-05-27 09:58:06,446 INFO image_writer.py:197 - writing: runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_image.nii.gz\n2026-05-27 09:58:06,924 INFO image_writer.py:197 - writing: runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_label.nii.gz\n[2026-05-27 09:58:07.117][ INFO](maisi.inference) - MAISI image/mask generation finished\nPeak GPU memory usage: 12.95 GB\n",
+        "stderr_tail": "...1000 [00:32<00:00, 29.82it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 980/1000 [00:32<00:00, 29.84it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 983/1000 [00:32<00:00, 29.79it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 986/1000 [00:32<00:00, 29.81it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 989/1000 [00:32<00:00, 29.79it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 992/1000 [00:32<00:00, 29.79it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 995/1000 [00:32<00:00, 29.76it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 998/1000 [00:32<00:00, 29.78it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1000/1000 [00:32<00:00, 30.42it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\nruns/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n\n 12%|\u2588\u258e        | 1/8 [00:01<00:13,  1.99s/it]runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\n\n 25%|\u2588\u2588\u258c       | 2/8 [00:03<00:08,  1.45s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:04<00:06,  1.28s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:05<00:04,  1.20s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:06<00:03,  1.16s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:07<00:02,  1.14s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:08<00:01,  1.12s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:09<00:00,  1.11s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:09<00:00,  1.20s/it]\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  7%|\u258b         | 2/30 [00:00<00:01, 19.26it/s]\n 13%|\u2588\u258e        | 4/30 [00:00<00:01, 17.67it/s]\n 20%|\u2588\u2588        | 6/30 [00:00<00:01, 17.06it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:01, 16.73it/s]\n 33%|\u2588\u2588\u2588\u258e      | 10/30 [00:00<00:01, 16.55it/s]\n 40%|\u2588\u2588\u2588\u2588      | 12/30 [00:00<00:01, 16.49it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 16.42it/s]\n 53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 16/30 [00:00<00:00, 16.38it/s]\n 60%|\u2588\u2588\u2588\u2588\u2588\u2588    | 18/30 [00:01<00:00, 16.38it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:01<00:00, 16.32it/s]\n 73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 22/30 [00:01<00:00, 16.32it/s]\n 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 24/30 [00:01<00:00, 16.29it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 16.28it/s]\n 93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 28/30 [00:01<00:00, 16.27it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 16.28it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 16.48it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]\n 12%|\u2588\u258e        | 1/8 [00:01<00:10,  1.47s/it]\n 25%|\u2588\u2588\u258c       | 2/8 [00:02<00:08,  1.43s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:04<00:07,  1.42s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:05<00:05,  1.43s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:07<00:04,  1.42s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:08<00:02,  1.42s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:09<00:01,  1.43s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.42s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.43s/it]\n"
+      },
+      "intended_use_disclaimer": "Engineering verification only. Output is NOT clinically meaningful and is NOT suitable as training data for production deployment. This wrapper invokes the upstream scripts.inference entry point from the NV-Generate-CTMR README; it does not modify diffusion, sampling, or autoencoder decoding.",
+      "preflight": {
+        "warnings": [],
+        "estimated_cost": {
+          "version": "rflow-ct",
+          "voxels_per_sample": 16777216,
+          "num_samples": 1,
+          "num_inference_steps": 30,
+          "estimated_wall_seconds": 90.0,
+          "estimated_wall_seconds_per_sample": 90.0,
+          "estimated_peak_vram_gb": 24.0,
+          "estimated_disk_mb": 19.2
+        },
+        "cuda": {
+          "available": true,
+          "device_name": "NVIDIA RTX 6000 Ada Generation",
+          "total_memory_gb": 47.4,
+          "torch_version": "2.12.0+cu130",
+          "cuda_version": "13.0"
+        }
+      }
+    }
+  },
+  "score": {
+    "score": 5,
+    "tiers": [
+      {
+        "tier": 1,
+        "pass": true,
+        "reason": "entrypoint marker"
+      },
+      {
+        "tier": 2,
+        "pass": true,
+        "reason": "user input path marker"
+      },
+      {
+        "tier": 3,
+        "pass": true,
+        "reason": "model/modality/control marker"
+      },
+      {
+        "tier": 4,
+        "pass": true,
+        "reason": "output dir marker"
+      },
+      {
+        "tier": 5,
+        "pass": true,
+        "reason": "image shape=(256, 256, 256); label shape=(256, 256, 256)"
+      }
+    ],
+    "passed": true
+  },
+  "failure_analysis": [],
+  "step": 0,
+  "backend_label": "Nemotron",
+  "attempts": [
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The case request is at runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json. Synthesize one paired 3D CT image and segmentation mask for a chest case with a lung tumor, and write the output pair under runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_ct_rflow; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-ct-rflow/SKILL.md ---\n---\nname: nv-generate-ct-rflow\ndescription: Used for generating synthetic CT volumes and masks with NV-Generate-CTMR rflow-ct. Not for production training data without review.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - ct\n    - generation\n---\n\n# NV-Generate-CT (rflow-ct)\n\n## Purpose\n- Used for generating synthetic CT volumes and masks with NV-Generate-CTMR rflow-ct. Not for production training data without review.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Do not write custom inference code for normal runs. The wrapper owns config staging, output paths, label mapping evidence, and validation.\n- Manifest I/O: inputs are `config_infer_override`; outputs are `synthetic_ct_volumes` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_rflow_ct.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_rflow_ct.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/_anatomy.py` | Internal helper used by the primary entrypoint. | Imported only; do not call directly. |\n| `scripts/_summary_card.py` | Internal helper used by the primary entrypoint. | Imported only; do not call directly. |\n| `scripts/list_anatomies.py` | Helper command for catalog or anatomy lookup. | `[--region REGION] [--filter TEXT] [--controllable]` |\n| `scripts/run_rflow_ct.py` | Primary entrypoint declared by skill_manifest.yaml. | `CONFIG_INFER.json --output-dir OUT_DIR [--random-seed N] [--version rflow-ct] [--yes]` |\n| `scripts/run_ct_mask.py` | Advanced diagnostic helper for standalone raw MAISI mask generation. | `REQUEST.json --output-dir OUT_DIR [--random-seed N] [--preflight-only] [--yes]` |\n| `scripts/run_ct_from_mask.py` | Advanced helper for CT image generation from a MAISI label mask. | `REQUEST.json --output-dir OUT_DIR [--random-seed N] [--yes]` |\n| `scripts/run_ct_image.py` | Advanced helper for CT image-only generation without paired labels. | `MODEL_CONFIG.json --output-dir OUT_DIR [--version rflow-ct] [--random-seed N] [--yes]` |\n\n## Prerequisites\n- Required environment variables: `NV_GENERATE_ROOT`.\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes generated outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` during setup.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, sampling, and decoding are delegated entirely to NVIDIA-Medtech/NV-Generate-CTMR's `scripts.inference`. Do not modify code under $NV_GENERATE_ROOT.\n- rflow-ct requires CUDA and \u2248 16 GB VRAM minimum for the default 256\u00b3 output_size. Larger output_size (e.g. 512\u00d7512\u00d7768) needs an A100/H100.\n- Output volumes are synthetic. They are not safe to use as training data for production medtech models without an independent quality review.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream\n[`NVIDIA-Medtech/NV-Generate-CTMR`](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR)\nrectified-flow synthesis pipeline. The wrapper does not reimplement diffusion,\nsampling, or autoencoder decoding \u2014 it shells out to the upstream\n`scripts.inference` entry point exactly as the project's README documents and\ninspects the produced image/mask pairs.\n\n## Preconditions\n\n1. Clone the upstream repo and point `NV_GENERATE_ROOT` at it (one-time):\n\n   ```bash\n   test -d \"$HOME/nv-generate-ctmr/.git\" || \\\n     git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git $HOME/nv-generate-ctmr\n   export NV_GENERATE_ROOT=$HOME/nv-generate-ctmr\n   pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"\n   ```\n\n2. Download the `rflow-ct` weights **and** the mask-candidate datasets\n   into the clone (one-time, \u2248 5.5 GB):\n\n   ```bash\n   cd \"$NV_GENERATE_ROOT\"\n   python -m scripts.download_model_data --version rflow-ct --root_dir \"./\"\n   ```\n\n   The mask candidates (`datasets/all_masks_flexible_size_and_spacing_4000`)\n   condition the diffusion sampler; omitting them via `--model_only` will\n   make the inference script fail with a missing-file error at startup.\n   The anatomy-size condition file is also part of the full CT download and is\n   needed for controllable mask generation.\n\n3. NVIDIA GPU with \u2265 16 GB VRAM and CUDA. There is no CPU fallback.\n\nFor agent-generated user run commands, prefer the short wrapper command in\nUsage. Do not prepend clone or model-download setup steps when `NV_GENERATE_ROOT`\nor the repo-local upstream cache is already present. In a fresh Python\nenvironment, still include `pip install -r \"$NV_GENERATE_ROOT/requirements.txt\"`\nbefore the wrapper unless the active environment has already proven those\nimports are available; cached weights do not imply cached Python packages. Run\nthe wrapper from the medical-AI-skills repo root. If setup requires `cd \"$NV_GENERATE_ROOT\"`, return to the Medical AI Skills repo before invoking\n`skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py`.\n\n## Usage\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n  PATH_TO_CONFIG_INFER.json \\\n  --output-dir runs/nv_generate_ct_rflow_demo \\\n  --random-seed 0 \\\n  --version rflow-ct\n```\n\nReplace `PATH_TO_CONFIG_INFER.json` with the user's actual request/config\npath. Do not copy the fixture path from this document unless the user\nexplicitly asked to run that fixture. If the user says \"the case request is at\n`runs/.../chest_lung_tumor_controllable.json`\", that exact path is the first\npositional argument to `scripts/run_rflow_ct.py`.\n\nThe fixture argument is a `config_infer.json` override file: it can replace\n`num_output_samples`, `body_region`, `anatomy_list`, `controllable_anatomy_size`,\n`output_size`, and `spacing`. Pass `default` to use the upstream config\nverbatim. The wrapper stages the override into the upstream tree before\nrunning.\n\n### Fixture catalog\n\n`fixtures/` ships curated configs for common paired synthesis use cases: chest\nlung lobes, chest with controllable lung tumor, abdomen solid organs,\nabdomen with controllable hepatic tumor, head + cervical spine, pelvis.\nSee [`fixtures/README.md`](fixtures/README.md) for the full table.\n\n### Helper commands\n\n```bash\n# Browse the 132-class label_dict grouped by body region.\npython skills/nv-generate-ct-rflow/scripts/list_anatomies.py --region chest\npython skills/nv-generate-ct-rflow/scripts/list_anatomies.py --controllable\npython skills/nv-generate-ct-rflow/scripts/list_anatomies.py --filter tumor\n\n# Validate a fixture and preview cost without launching inference.\nNV_GENERATE_ROOT=$HOME/nv-generate-ctmr \\\n  python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n    skills/nv-generate-ct-rflow/fixtures/abdomen_liver_spleen.json \\\n    --output-dir runs/preview --preflight-only\n```\n\nAdvanced helpers stay inside this skill for debugging and less-common CT\ngeneration modes. Use them only when the user explicitly asks for that mode:\n\n```bash\n# Raw MAISI mask diagnostic, useful for checking lung tumor -> label 23.\npython skills/nv-generate-ct-rflow/scripts/run_ct_mask.py \\\n  skills/nv-generate-ct-rflow/fixtures/ct_mask_lung_tumor.json \\\n  --output-dir runs/ct_mask_debug --preflight-only\n\n# CT image from an existing MAISI label mask with body label 200.\npython skills/nv-generate-ct-rflow/scripts/run_ct_from_mask.py \\\n  skills/nv-generate-ct-rflow/fixtures/ct_from_mask_request_example.json \\\n  --output-dir runs/ct_from_mask_demo\n\n# CT image-only generation without paired labels.\npython skills/nv-generate-ct-rflow/scripts/run_ct_image.py \\\n  skills/nv-generate-ct-rflow/fixtures/ct_image_only_default.json \\\n  --output-dir runs/ct_image_only_demo --version rflow-ct\n```\n\nThe wrapper runs preflight on every invocation (regardless of\n`--preflight-only`): config-schema bounds, anatomy names matched\nagainst the upstream label_dict, body_region in the supported set,\ncontrollable_anatomy_size constraints, upstream CT output-size/spacing\ncontracts, body-region-aware x/y FOV minimums, dataset presence under\n`$NV_GENERATE_ROOT/datasets/`, CUDA available, and an estimated peak VRAM /\nwall-time. Runs estimated to exceed 5 min wall-time or 30 GB VRAM peak require\n`--yes` to proceed.\n\nEach invocation runs `python -m scripts.inference -t configs/config_network_rflow.json\n-i configs/config_infer.json -e configs/environment_rflow-ct.json --random-seed <s>\n--version rflow-ct`. Output evidence records the upstream git commit, model\ncheckpoint hashes, the rendered config, per-sample image/mask geometry, mask\nlabel set, image HU range summary, and per-class voxel volumes.\n\nWhen `controllable_anatomy_size` is non-empty, upstream ignores the broader\n`anatomy_list` for the saved paired label map and filters labels to the\ncontrollable anatomy names. The saved paired label values are local `1..N`\nordinals, not raw MAISI label IDs. Read `output.output_label_mapping` in\n`result_json` to map saved output labels back to source labels; for example,\noutput label `1` can represent MAISI label `23` (`lung tumor`).\n\nFor FOV and setup details, see `references/fov-and-downloads.md`. For\nadvanced helper label-space details, see\n`references/ct-mask-label-space.md` and `references/ct-from-mask-format.md`.\n\n### Visual sample card\n\nAlongside the NIfTI pairs, the wrapper writes `summary.html` to the\noutput directory: a per-sample mid-slice triptych (axial / coronal /\nsagittal) with label overlay, plus a table of the rendered config and\nverifier-facing aggregates. Lets you eyeball the result without firing\nup 3D Slicer. Pass `--no-summary-card` to skip.\n\nAnatomy plausibility (label-set sanity, voxel HU range as CT, image/mask\ngeometry match, declared output labels present, lung-lobe HU floor) is checked by\n`verifiers/ct_synthesis_quality_v1`.\n\nNot for clinical interpretation, training data for production deployment, or\nany non-synthetic-research use.\n"
+        }
+      ],
+      "response": "\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n  runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \\\n  --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3 \\\n  --random-seed 3 \\\n  --version rflow-ct\n```",
+      "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \\\n  runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \\\n  --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3 \\\n  --random-seed 3 \\\n  --version rflow-ct",
+      "usage": {
+        "completion_tokens": 1445,
+        "prompt_tokens": 3131,
+        "total_tokens": 4576
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 113.91667485237122,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_card/sample_0_slices.png",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/config_infer.json",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/environment_rflow-ct.json",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_image.nii.gz",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_label.nii.gz",
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/summary.html"
+        ],
+        "stdout_tail": "equence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\\n  win_data = inputs[unravel_slice[0]].to(sw_device)\\n\\n 25%|\\u2588\\u2588\\u258c       | 2/8 [00:03<00:08,  1.45s/it]\\n 38%|\\u2588\\u2588\\u2588\\u258a      | 3/8 [00:04<00:06,  1.28s/it]\\n 50%|\\u2588\\u2588\\u2588\\u2588\\u2588     | 4/8 [00:05<00:04,  1.20s/it]\\n 62%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e   | 5/8 [00:06<00:03,  1.16s/it]\\n 75%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258c  | 6/8 [00:07<00:02,  1.14s/it]\\n 88%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258a | 7/8 [00:08<00:01,  1.12s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:09<00:00,  1.11s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:09<00:00,  1.20s/it]\\n\\n  0%|          | 0/30 [00:00<?, ?it/s]\\n  7%|\\u258b         | 2/30 [00:00<00:01, 19.26it/s]\\n 13%|\\u2588\\u258e        | 4/30 [00:00<00:01, 17.67it/s]\\n 20%|\\u2588\\u2588        | 6/30 [00:00<00:01, 17.06it/s]\\n 27%|\\u2588\\u2588\\u258b       | 8/30 [00:00<00:01, 16.73it/s]\\n 33%|\\u2588\\u2588\\u2588\\u258e      | 10/30 [00:00<00:01, 16.55it/s]\\n 40%|\\u2588\\u2588\\u2588\\u2588      | 12/30 [00:00<00:01, 16.49it/s]\\n 47%|\\u2588\\u2588\\u2588\\u2588\\u258b     | 14/30 [00:00<00:00, 16.42it/s]\\n 53%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e    | 16/30 [00:00<00:00, 16.38it/s]\\n 60%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588    | 18/30 [00:01<00:00, 16.38it/s]\\n 67%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b   | 20/30 [00:01<00:00, 16.32it/s]\\n 73%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e  | 22/30 [00:01<00:00, 16.32it/s]\\n 80%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588  | 24/30 [00:01<00:00, 16.29it/s]\\n 87%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258b | 26/30 [00:01<00:00, 16.28it/s]\\n 93%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e| 28/30 [00:01<00:00, 16.27it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 16.28it/s]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 30/30 [00:01<00:00, 16.48it/s]\\n\\n  0%|          | 0/8 [00:00<?, ?it/s]\\n 12%|\\u2588\\u258e        | 1/8 [00:01<00:10,  1.47s/it]\\n 25%|\\u2588\\u2588\\u258c       | 2/8 [00:02<00:08,  1.43s/it]\\n 38%|\\u2588\\u2588\\u2588\\u258a      | 3/8 [00:04<00:07,  1.42s/it]\\n 50%|\\u2588\\u2588\\u2588\\u2588\\u2588     | 4/8 [00:05<00:05,  1.43s/it]\\n 62%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258e   | 5/8 [00:07<00:04,  1.42s/it]\\n 75%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258c  | 6/8 [00:08<00:02,  1.42s/it]\\n 88%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u258a | 7/8 [00:09<00:01,  1.43s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:11<00:00,  1.42s/it]\\n100%|\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588\\u2588| 8/8 [00:11<00:00,  1.43s/it]\\n\"\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is NOT clinically meaningful and is NOT suitable as training data for production deployment. This wrapper invokes the upstream scripts.inference entry point from the NV-Generate-CTMR README; it does not modify diffusion, sampling, or autoencoder decoding.\",\n  \"preflight\": {\n    \"warnings\": [],\n    \"estimated_cost\": {\n      \"version\": \"rflow-ct\",\n      \"voxels_per_sample\": 16777216,\n      \"num_samples\": 1,\n      \"num_inference_steps\": 30,\n      \"estimated_wall_seconds\": 90.0,\n      \"estimated_wall_seconds_per_sample\": 90.0,\n      \"estimated_peak_vram_gb\": 24.0,\n      \"estimated_disk_mb\": 19.2\n    },\n    \"cuda\": {\n      \"available\": true,\n      \"device_name\": \"NVIDIA RTX 6000 Ada Generation\",\n      \"total_memory_gb\": 47.4,\n      \"torch_version\": \"2.12.0+cu130\",\n      \"cuda_version\": \"13.0\"\n    }\n  }\n}",
+        "stderr_tail": "[nv_generate_ct_rflow] preflight: output_size=[256, 256, 256] steps=30 samples=1\n[nv_generate_ct_rflow] cost estimate: ~90.0s wall, ~24.0 GB VRAM peak, ~19.2 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n",
+        "json": {
+          "skill": "nv_generate_ct_rflow",
+          "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-ct)",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-CT",
+          "license": "NVIDIA Open Model License (commercial-friendly)",
+          "input": {
+            "config_infer_override_path": "runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json",
+            "config_infer_override": {
+              "num_output_samples": 1,
+              "body_region": [
+                "chest"
+              ],
+              "anatomy_list": [
+                "lung tumor",
+                "left lung upper lobe",
+                "left lung lower lobe",
+                "right lung upper lobe",
+                "right lung middle lobe",
+                "right lung lower lobe",
+                "heart"
+              ],
+              "controllable_anatomy_size": [
+                [
+                  "lung tumor",
+                  0.2
+                ]
+              ],
+              "output_size": [
+                256,
+                256,
+                256
+              ],
+              "spacing": [
+                1.5,
+                1.5,
+                2.0
+              ],
+              "num_inference_steps": 30,
+              "image_output_ext": ".nii.gz",
+              "label_output_ext": ".nii.gz"
+            },
+            "anatomy_list_requested": [
+              "lung tumor",
+              "left lung upper lobe",
+              "left lung lower lobe",
+              "right lung upper lobe",
+              "right lung middle lobe",
+              "right lung lower lobe",
+              "heart"
+            ],
+            "effective_anatomy_for_output": [
+              "lung tumor"
+            ],
+            "paired_output_label_semantics": "Saved paired labels are local 1..N output ids after upstream filter_mask_with_organs; use output.output_label_mapping to map them back to MAISI label ids such as lung tumor=23.",
+            "body_region_requested": [
+              "chest"
+            ],
+            "num_output_samples_requested": 1,
+            "output_size_requested": [
+              256,
+              256,
+              256
+            ],
+            "spacing_requested": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "random_seed": 3,
+            "version": "rflow-ct"
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3",
+            "samples": [
+              {
+                "image_path": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_image.nii.gz",
+                "label_path": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_label.nii.gz",
+                "image_bytes": 9620699,
+                "label_bytes": 294571,
+                "image_sha256": "1842563670aa53736fafd4a4ebb24a3f5bf609d09f8333513b022659b542c3f5",
+                "label_sha256": "2095fec74bf0f426151ee395beb4a797a8c9d73608020a8eb0dba2a20593415d",
+                "image_readable": true,
+                "label_readable": true,
+                "image_shape": [
+                  256,
+                  256,
+                  256
+                ],
+                "image_spacing": [
+                  1.5,
+                  1.5,
+                  2.0
+                ],
+                "image_hu_min": -1000.0,
+                "image_hu_max": 1000.0,
+                "image_hu_mean": -751.942,
+                "image_hu_negative_present": true,
+                "image_hu_bone_present": true,
+                "image_nonconstant": true,
+                "image_affine": [
+                  [
+                    1.5,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    1.5,
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    2.0,
+                    -64.0
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ],
+                "label_shape": [
+                  256,
+                  256,
+                  256
+                ],
+                "label_spacing": [
+                  1.5,
+                  1.5,
+                  2.0
+                ],
+                "label_ids_present": [
+                  1
+                ],
+                "label_id_count": 1,
+                "label_foreground_voxels": 2029,
+                "label_background_voxels": 16775187,
+                "shape_match": true,
+                "spacing_match": true,
+                "affine_max_abs_diff": 0.0,
+                "affine_match": true
+              }
+            ],
+            "num_samples": 1,
+            "all_pairs_readable": true,
+            "all_geometry_consistent": true,
+            "any_foreground_present": true,
+            "all_images_nonconstant": true,
+            "all_images_hu_like": true,
+            "union_label_ids_present": [
+              1
+            ],
+            "output_label_mapping": [
+              {
+                "anatomy": "lung tumor",
+                "maisi_label_id": 23,
+                "output_label_id": 1
+              }
+            ],
+            "expected_output_label_ids": [
+              1
+            ],
+            "expected_maisi_label_ids": [
+              23
+            ],
+            "missing_expected_output_label_ids": [],
+            "all_effective_anatomy_labels_present": true,
+            "summary_html": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/summary.html"
+          },
+          "invocation": {
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/bin/python",
+              "-m",
+              "scripts.inference",
+              "-t",
+              "configs/config_network_rflow.json",
+              "-i",
+              "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/config_infer.json",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/_staged_configs/environment_rflow-ct.json",
+              "--random-seed",
+              "3",
+              "--version",
+              "rflow-ct"
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 75.366,
+            "model_inventory": {
+              "all_present": true,
+              "files": [
+                {
+                  "path": "models/autoencoder_v1.pt",
+                  "present": true,
+                  "bytes": 83831868,
+                  "sha256": "1f8a7a056d0ebc00486edc43c26768bf1c12eaa6df9dd172e34598003be95eb3"
+                },
+                {
+                  "path": "models/diff_unet_3d_rflow-ct.pt",
+                  "present": true,
+                  "bytes": 2166600232,
+                  "sha256": "cfc1ec59782f5ac7c0d22dd501654732109a971b93cbaa6607c4106a7f29066f"
+                },
+                {
+                  "path": "models/controlnet_3d_rflow-ct.pt",
+                  "present": true,
+                  "bytes": 288255799,
+                  "sha256": "2f16d7a6b4d6a22d5ba9278e59fd51f9a17a45244f0f256946c34a762cc12914"
+                },
+                {
+                  "path": "models/mask_generation_autoencoder.pt",
+                  "present": true,
+                  "bytes": 21072774,
+                  "sha256": "539175f6ede3cb1e6f01bfd6347cd446d601cf4a508fc632a1e36362b1428a5d"
+                },
+                {
+                  "path": "models/mask_generation_diffusion_unet.pt",
+                  "present": true,
+                  "bytes": 788941780,
+                  "sha256": "b7d668b1356e9b94b8269decadf8f8116dc4ee2d365580d05349b4ddf6739155"
+                }
+              ]
+            },
+            "rendered_infer_config": {
+              "num_output_samples": 1,
+              "body_region": [
+                "chest"
+              ],
+              "anatomy_list": [
+                "lung tumor",
+                "left lung upper lobe",
+                "left lung lower lobe",
+                "right lung upper lobe",
+                "right lung middle lobe",
+                "right lung lower lobe",
+                "heart"
+              ],
+              "controllable_anatomy_size": [
+                [
+                  "lung tumor",
+                  0.2
+                ]
+              ],
+              "num_inference_steps": 30,
+              "mask_generation_num_inference_steps": 1000,
+              "output_size": [
+                256,
+                256,
+                256
+              ],
+              "image_output_ext": ".nii.gz",
+              "label_output_ext": ".nii.gz",
+              "spacing": [
+                1.5,
+                1.5,
+                2.0
+              ],
+              "autoencoder_sliding_window_infer_size": [
+                48,
+                48,
+                48
+              ],
+              "autoencoder_sliding_window_infer_overlap": 0.6666,
+              "controlnet": "$@controlnet_def",
+              "diffusion_unet": "$@diffusion_unet_def",
+              "autoencoder": "$@autoencoder_def",
+              "mask_generation_autoencoder": "$@mask_generation_autoencoder_def",
+              "mask_generation_diffusion": "$@mask_generation_diffusion_def",
+              "modality": 1,
+              "cfg_guidance_scale": 0,
+              "output_dir": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3"
+            },
+            "rendered_env_output_dir": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3"
+          },
+          "runtime": {
+            "subprocess_seconds": 75.366,
+            "device": "cuda"
+          },
+          "logs": {
+            "stdout_tail": "...:56:55.834][ INFO](maisi.inference) - label_output_ext: .nii.gz\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - spacing: [1.5, 1.5, 2.0]\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - autoencoder_sliding_window_infer_size: [48, 48, 48]\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - autoencoder_sliding_window_infer_overlap: 0.6666\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - controlnet: $@controlnet_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - diffusion_unet: $@diffusion_unet_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - autoencoder: $@autoencoder_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - mask_generation_autoencoder: $@mask_generation_autoencoder_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - mask_generation_diffusion: $@mask_generation_diffusion_def\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - modality: 1\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - cfg_guidance_scale: 0\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - output_dir: runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3\n[2026-05-27 09:56:55.834][ INFO](root) - `controllable_anatomy_size` is not empty.\nWe will ignore `body_region` and `anatomy_list` and synthesize based on `controllable_anatomy_size`: ([['lung tumor', 0.2]]).\n[2026-05-27 09:56:55.834][ INFO](root) - The generate results will have voxel size to be [1.5, 1.5, 2.0]mm, volume size to be [256, 256, 256].\n[2026-05-27 09:56:55.834][ INFO](maisi.inference) - Network definition and inference inputs have been loaded.\n2026-05-27 09:56:57,653 - INFO - 'dst' model updated: 180 of 231 variables.\n[2026-05-27 09:56:58.442][ INFO](maisi.inference) - All the trained model weights have been loaded.\n[2026-05-27 09:56:58.443][ INFO](root) - controllable_anatomy_size is given, mask generation is triggered!\n[2026-05-27 09:56:58.453][ INFO](root) - LDM sampler initialized.\n[2026-05-27 09:56:58.453][ INFO](maisi.inference) - The generated image/mask pairs will be saved in runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3.\n[2026-05-27 09:56:58.453][ INFO](root) - controllable_anatomy_size: [['lung tumor', 0.2]]\n[2026-05-27 09:56:58.455][ INFO](root) - ---- Start preparing masks... ----\n[2026-05-27 09:57:43.629][ INFO](root) - target_tumor_label for postprocess:23\nCurrent model does not support hepatic vessel by size control, so we treat generated hepatic vessel as part of liver for better visiaulization.\n[2026-05-27 09:57:52.223][ INFO](root) - Resampling mask to target shape and spacing\n[2026-05-27 09:57:52.224][ INFO](root) - Resize Spacing: [tensor(1.5000, dtype=torch.float64), tensor(1.5000, dtype=torch.float64), tensor(1.5000, dtype=torch.float64)] -> [1.5, 1.5, 2.0]\n[2026-05-27 09:57:52.224][ INFO](root) - Output size: [256, 256, 256] -> [256, 256, 256]\n[2026-05-27 09:57:52.515][ INFO](root) - ---- Mask preparation time: 54.06034016609192 seconds ----\n[2026-05-27 09:57:52.633][ INFO](root) - ---- Start generating latent features... ----\n[2026-05-27 09:57:54.458][ INFO](root) - ---- DM/ControlNet Latent features generation time: 1.8241448402404785 seconds ----\n[2026-05-27 09:57:54.747][ INFO](root) - ---- Start decoding latent features into images... ----\n[2026-05-27 09:58:06.155][ INFO](root) - ---- Image VAE decoding time: 11.40817904472351 seconds ----\n2026-05-27 09:58:06,446 INFO image_writer.py:197 - writing: runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_image.nii.gz\n2026-05-27 09:58:06,924 INFO image_writer.py:197 - writing: runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/sample_20260527_095806_441705_label.nii.gz\n[2026-05-27 09:58:07.117][ INFO](maisi.inference) - MAISI image/mask generation finished\nPeak GPU memory usage: 12.95 GB\n",
+            "stderr_tail": "...1000 [00:32<00:00, 29.82it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 980/1000 [00:32<00:00, 29.84it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 983/1000 [00:32<00:00, 29.79it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 986/1000 [00:32<00:00, 29.81it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 989/1000 [00:32<00:00, 29.79it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 992/1000 [00:32<00:00, 29.79it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 995/1000 [00:32<00:00, 29.76it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 998/1000 [00:32<00:00, 29.78it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1000/1000 [00:32<00:00, 30.42it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\nruns/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n\n 12%|\u2588\u258e        | 1/8 [00:01<00:13,  1.99s/it]runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/with/repeat_3/venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\n\n 25%|\u2588\u2588\u258c       | 2/8 [00:03<00:08,  1.45s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:04<00:06,  1.28s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:05<00:04,  1.20s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:06<00:03,  1.16s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:07<00:02,  1.14s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:08<00:01,  1.12s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:09<00:00,  1.11s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:09<00:00,  1.20s/it]\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  7%|\u258b         | 2/30 [00:00<00:01, 19.26it/s]\n 13%|\u2588\u258e        | 4/30 [00:00<00:01, 17.67it/s]\n 20%|\u2588\u2588        | 6/30 [00:00<00:01, 17.06it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:01, 16.73it/s]\n 33%|\u2588\u2588\u2588\u258e      | 10/30 [00:00<00:01, 16.55it/s]\n 40%|\u2588\u2588\u2588\u2588      | 12/30 [00:00<00:01, 16.49it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 16.42it/s]\n 53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 16/30 [00:00<00:00, 16.38it/s]\n 60%|\u2588\u2588\u2588\u2588\u2588\u2588    | 18/30 [00:01<00:00, 16.38it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:01<00:00, 16.32it/s]\n 73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 22/30 [00:01<00:00, 16.32it/s]\n 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 24/30 [00:01<00:00, 16.29it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 16.28it/s]\n 93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 28/30 [00:01<00:00, 16.27it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 16.28it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 16.48it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]\n 12%|\u2588\u258e        | 1/8 [00:01<00:10,  1.47s/it]\n 25%|\u2588\u2588\u258c       | 2/8 [00:02<00:08,  1.43s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:04<00:07,  1.42s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:05<00:05,  1.43s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:07<00:04,  1.42s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:08<00:02,  1.42s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:09<00:01,  1.43s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.42s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.43s/it]\n"
+          },
+          "intended_use_disclaimer": "Engineering verification only. Output is NOT clinically meaningful and is NOT suitable as training data for production deployment. This wrapper invokes the upstream scripts.inference entry point from the NV-Generate-CTMR README; it does not modify diffusion, sampling, or autoencoder decoding.",
+          "preflight": {
+            "warnings": [],
+            "estimated_cost": {
+              "version": "rflow-ct",
+              "voxels_per_sample": 16777216,
+              "num_samples": 1,
+              "num_inference_steps": 30,
+              "estimated_wall_seconds": 90.0,
+              "estimated_wall_seconds_per_sample": 90.0,
+              "estimated_peak_vram_gb": 24.0,
+              "estimated_disk_mb": 19.2
+            },
+            "cuda": {
+              "available": true,
+              "device_name": "NVIDIA RTX 6000 Ada Generation",
+              "total_memory_gb": 47.4,
+              "torch_version": "2.12.0+cu130",
+              "cuda_version": "13.0"
+            }
+          }
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "image shape=(256, 256, 256); label shape=(256, 256, 256)"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0
+    }
+  ],
+  "steps_to_pass": 0,
+  "max_correction_steps": 0,
+  "repeat": 3,
+  "output_dir": "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3",
+  "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json",
+  "prompt_style": "minimal"
+}

@@ -1,0 +1,23 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "nat_audit"
+version = "0.0.1"
+requires-python = ">=3.11,<3.14"
+description = "NAT workflow that wraps nv_segment_ct_finetune to profile per-call LLM token cost"
+dependencies = [
+  "nvidia-nat[langchain] >=1.6,<2",
+  # httpx's SOCKS support is optional; NAT's openai/litellm providers
+  # share a global httpx client that picks up ALL_PROXY at import time.
+  # Without socksio the client constructor raises ImportError in
+  # SOCKS-proxied environments (NVIDIA corp network).
+  "socksio >=1.0,<2",
+]
+
+[project.entry-points.'nat.components']
+nat_audit = "nat_audit.register"

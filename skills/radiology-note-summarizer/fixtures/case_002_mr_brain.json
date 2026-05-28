@@ -1,0 +1,11 @@
+{
+  "dicom_metadata": {
+    "StudyInstanceUID": "SYNTH-STUDY-002",
+    "PatientID": "SYNTH-002",
+    "Modality": "MR",
+    "BodyPartExamined": "BRAIN",
+    "StudyDate": "20240612",
+    "StudyDescription": "MRI BRAIN W/O CONTRAST"
+  },
+  "radiologist_note": "42-year-old female with chronic headaches. MRI brain without contrast demonstrates no acute intracranial findings. Mild nonspecific T2 hyperintensities in periventricular white matter, likely chronic small vessel disease for age. No mass effect. No hemorrhage. Recommend clinical correlation."
+}

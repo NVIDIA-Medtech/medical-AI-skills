@@ -1,0 +1,2 @@
+{"ts": "2026-05-26T05:02:54.656342+00:00", "kind": "tool_call_start", "tool": "run_endoscopy_tool_tracking.py", "args": ["default"], "timestamp": "2026-05-26T05:02:54.656342+00:00", "event_type": "tool_call_start", "inputs": ["default"], "trace_schema_version": "0.1.0"}
+{"ts": "2026-05-26T05:03:03.500155+00:00", "kind": "tool_call_end", "exit_code": 0, "elapsed_s": 8.843789436999941, "stdout_bytes": 16793, "stderr_bytes": 0, "timestamp": "2026-05-26T05:03:03.500155+00:00", "event_type": "tool_call_end", "duration_seconds": 8.843789436999941, "trace_schema_version": "0.1.0"}

@@ -1,0 +1,8 @@
+{
+  "skill_id": "medagent.find_skills",
+  "skill_version": "0.2.0",
+  "fixture": {
+    "path": "skills/find-skills/fixtures/example_task.txt",
+    "is_dir": false
+  }
+}

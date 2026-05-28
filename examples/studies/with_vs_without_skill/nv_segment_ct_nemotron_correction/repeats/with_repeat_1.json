@@ -1,0 +1,413 @@
+{
+  "backend": "nemotron",
+  "model": "nvidia/nvidia/nemotron-3-super-v3",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "nvidia/nvidia/nemotron-3-super-v3",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "with",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+    },
+    {
+      "role": "user",
+      "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The input CT volume is at runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz. Segment the spleen, liver, right kidney, and left kidney, and write outputs under runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_segment_ct; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-segment-ct/SKILL.md ---\n---\nname: nv-segment-ct\ndescription: Used for running NV-Segment-CT VISTA3D on CT NIfTI volumes and recording label-map evidence. Not for clinical interpretation.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - ct\n    - segmentation\n---\n\n# NV-Segment-CT\n\n## Purpose\n- Used for running NV-Segment-CT VISTA3D on CT NIfTI volumes and recording label-map evidence. Not for clinical interpretation.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `ct_volume`; outputs are `label_map` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_vista3d.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_vista3d.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_vista3d.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CT.nii.gz [--output-dir OUT_DIR] [--label-prompts IDS]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes the downloaded bundle under `skills/nv-segment-ct/bundle/`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` during first setup; the optional spleen fixture fetcher downloads MSD09 from `https://msd-for-monai.s3-us-west-2.amazonaws.com`.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, preprocessing, and postprocessing are delegated entirely to the official `hugging_face_pipeline.HuggingFacePipelineHelper` in bundle/. Do not modify code under bundle/.\n- transformers must be a 4.x release; the HF model code uses pre-5.x idioms (e.g. `_tied_weights_keys`).\n- Device auto-detected (cuda if available, else cpu); `--device` flag overrides.\n- Output may be schema-valid but semantically empty (e.g. label prompts that do not match the input anatomy). Sanity gates assert at least one foreground voxel per requested anatomy.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream `nvidia/NV-Segment-CT` helper. The wrapper does not\nreimplement VISTA3D inference.\n\n\n## Exact Runnable Surface\n\nFor CT segmentation user runs, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-segment-ct/scripts/run_vista3d.py PATH_TO_CT.nii.gz --label-prompts \"1,3,5,14\" --output-dir OUT_DIR\n```\n\nDo not invent `infer.py`, `Medical AI Skills run`, `python -m nv_segment_ct`, or anatomy-name-only flags. For spleen, liver, right kidney, and left kidney, the required VISTA3D label IDs are exactly `1,3,5,14`.\n\n## Preconditions\n\nThe skill assumes a Python 3.12 environment with **no pre-installed\nruntime deps** \u2014 its documented command installs everything it needs.\nPinned dep list is at [`requirements.txt`](./requirements.txt).\n\nTwo one-time downloads (the documented command does the first one; the\nfixture fetch is a separate step you run when bootstrapping):\n\n```bash\n# Spleen example fixture from Decathlon MSD09 (~1.5 GB tar, ~11 MB\n# fixture extracted into skills/nv-segment-ct/fixtures/spleen_03.nii.gz):\npython skills/nv-segment-ct/fixtures/fetch_spleen_fixture.py\n```\n\nBoth downloads (the bundle below, and the fixture) are gitignored\n(Medical AI Skills policy: no medical data or model weights in git). The fetch\nscript is idempotent and caches the tar under\n`.workbench_data/datasets/` so re-runs are no-ops.\n\nRuntime needs an NVIDIA GPU with CUDA. CPU fallback is supported but slow.\n\n## Usage\n\nFrom Medical AI Skills repo root, run all steps in a single command so the\nskill is self-bootstrapping against a fresh Python 3.12 venv:\n\n```bash\npip install -r skills/nv-segment-ct/requirements.txt && \\\nhuggingface-cli download nvidia/NV-Segment-CT \\\n  --local-dir skills/nv-segment-ct/bundle/ && \\\npython skills/nv-segment-ct/scripts/run_vista3d.py PATH_TO_CT.nii.gz \\\n  --label-prompts \"1,3,5,14\" \\\n  --output-dir vista3d_outputs\n```\n\nWhen the user names anatomies, translate them to VISTA3D class IDs before\nrunning. For the common abdominal CT request:\n\n| Anatomy | VISTA3D class ID |\n|---|---:|\n| liver | 1 |\n| spleen | 3 |\n| right kidney | 5 |\n| left kidney | 14 |\n\nFor \"segment the spleen, liver, right kidney, and left kidney\", the correct\n`--label-prompts` value is exactly `\"1,3,5,14\"`. Do not substitute kidney\nIDs from another label dictionary; the wrapper validates the requested label\nset and will mark the run invalid if the emitted mask contains labels outside\nthe requested set.\n\nThe `pip install` step is load-bearing: do not assume monai/torch/etc.\nare already in the active environment. The `huggingface-cli download`\nstep is also part of the contract \u2014 it pulls the ~832 MB model bundle\ninto `skills/nv-segment-ct/bundle/` (cached after first run; subsequent\ncalls are no-ops).\n\n`label-prompts` are VISTA3D class IDs. The evidence output records input\ngeometry, output mask path, observed label IDs, unexpected labels,\nper-class voxel counts, per-class physical volumes computed from the output\nmask header spacing, runtime, model identity, and fixed code-derived artifact\nchecks such as mask shape, affine match, label set, foreground count, and\nclass-volume bounds.\n\nPass `--ground-truth PATH` to record a reference label-map path under\n`input.ground_truth_path`. The skill does not compute Dice; that is the\npaired verifier's job.\n\nAnatomy plausibility (per-class volume bounds, fragmentation, bilateral\nsymmetry, liver larger than spleen) and optional per-class Dice/IoU against\nthe recorded ground truth are checked by\n`verifiers/ct_segmentation_quality_v1`.\n\nNot for clinical interpretation, production deployment, or non-CT modalities.\n"
+    }
+  ],
+  "response": "\n\n```bash\npip install -r skills/nv-segment-ct/requirements.txt && huggingface-cli download nvidia/NV-Segment-CT --local-dir skills/nv-segment-ct/bundle/ && python skills/nv-segment-ct/scripts/run_vista3d.py runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz --label-prompts \"1,3,5,14\" --output-dir runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1\n```",
+  "command": "pip install -r skills/nv-segment-ct/requirements.txt && huggingface-cli download nvidia/NV-Segment-CT --local-dir skills/nv-segment-ct/bundle/ && python skills/nv-segment-ct/scripts/run_vista3d.py runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz --label-prompts \"1,3,5,14\" --output-dir runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1",
+  "usage": {
+    "completion_tokens": 1489,
+    "prompt_tokens": 1981,
+    "total_tokens": 3470
+  },
+  "execution": {
+    "executed": true,
+    "exit_code": 0,
+    "elapsed_seconds": 45.075090646743774,
+    "isolated_exec_env": true,
+    "fresh_exec_env_created": true,
+    "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv",
+    "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/bin/python",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    },
+    "protected_upstream_env": {
+      "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+      "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+    },
+    "upstream_mutation_detected": false,
+    "upstream_mutation_restored": false,
+    "upstream_mutation_paths": [],
+    "generated_files": [
+      "runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz"
+    ],
+    "stdout_tail": "uda-toolkit, urllib3, typing-extensions, triton, tqdm, sympy, shellingham, setuptools, safetensors, regex, pyyaml, pygments, packaging, nvidia-nvtx, nvidia-nvshmem-cu13, nvidia-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, numpy, networkx, mdurl, MarkupSafe, idna, hf-xet, fsspec, filelock, cuda-pathfinder, charset_normalizer, certifi, annotated-doc, requests, nvidia-cusparse, nvidia-cufft, nvidia-cublas, nibabel, markdown-it-py, jinja2, cuda-bindings, rich, nvidia-cusolver, nvidia-cudnn-cu13, huggingface_hub, typer, tokenizers, transformers, torch, monai\nSuccessfully installed MarkupSafe-3.0.3 annotated-doc-0.0.4 certifi-2026.5.20 charset_normalizer-3.4.7 cuda-bindings-13.3.0 cuda-pathfinder-1.5.5 cuda-toolkit-13.0.2 filelock-3.29.0 fsspec-2026.4.0 hf-xet-1.5.0 huggingface_hub-0.36.2 idna-3.16 jinja2-3.1.6 markdown-it-py-4.2.0 mdurl-0.1.2 monai-1.5.2 mpmath-1.3.0 networkx-3.6.1 nibabel-5.4.2 numpy-2.4.6 nvidia-cublas-13.1.1.3 nvidia-cuda-cupti-13.0.85 nvidia-cuda-nvrtc-13.0.88 nvidia-cuda-runtime-13.0.96 nvidia-cudnn-cu13-9.20.0.48 nvidia-cufft-12.0.0.61 nvidia-cufile-1.15.1.6 nvidia-curand-10.4.0.35 nvidia-cusolver-12.0.4.66 nvidia-cusparse-12.6.3.3 nvidia-cusparselt-cu13-0.8.1 nvidia-nccl-cu13-2.29.7 nvidia-nvjitlink-13.0.88 nvidia-nvshmem-cu13-3.4.5 nvidia-nvtx-13.0.85 packaging-26.2 pygments-2.20.0 pyyaml-6.0.3 regex-2026.5.9 requests-2.34.2 rich-15.0.0 safetensors-0.7.0 setuptools-81.0.0 shellingham-1.5.4 sympy-1.14.0 tokenizers-0.22.2 torch-2.12.0 tqdm-4.67.3 transformers-4.57.6 triton-3.7.0 typer-0.26.1 typing-extensions-4.15.0 urllib3-2.7.0\n\u001b[33m\u26a0\ufe0f  Warning: 'huggingface-cli download' is deprecated. Use 'hf download' instead.\u001b[0m\nskills/nv-segment-ct/bundle\n{\n  \"skill\": \"nv_segment_ct\",\n  \"model\": \"NVIDIA-Medtech/NV-Segment-CT (VISTA3D)\",\n  \"model_repo\": \"https://huggingface.co/nvidia/NV-Segment-CT\",\n  \"license\": \"NVIDIA Open Model License (commercial-friendly)\",\n  \"input\": {\n    \"path\": \"runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz\",\n    \"shape\": [\n      512,\n      512,\n      40\n    ],\n    \"ndim\": 3,\n    \"spacing\": [\n      0.738281,\n      0.738281,\n      5.0\n    ],\n    \"ground_truth_path\": null\n  },\n  \"output\": {\n    \"shape\": [\n      512,\n      512,\n      40\n    ],\n    \"label_prompts_requested\": [\n      1,\n      3,\n      5,\n      14\n    ],\n    \"label_ids_present\": [\n      1,\n      3,\n      5,\n      14\n    ],\n    \"unexpected_label_ids\": [],\n    \"label_set_valid\": true,\n    \"class_counts\": {\n      \"label_id_1\": 456962,\n      \"label_id_3\": 60179,\n      \"label_id_5\": 51185,\n      \"label_id_14\": 49656\n    },\n    \"voxel_volume_ml\": 0.00272529,\n    \"class_volumes_ml\": {\n      \"label_id_1\": 1245.3558,\n      \"label_id_3\": 164.0055,\n      \"label_id_5\": 139.4942,\n      \"label_id_14\": 135.3272\n    },\n    \"any_label_present\": true,\n    \"geometry\": {\n      \"input_shape\": [\n        512,\n        512,\n        40\n      ],\n      \"output_shape\": [\n        512,\n        512,\n        40\n      ],\n      \"shape_match\": true,\n      \"input_spacing\": [\n        0.738281,\n        0.738281,\n        5.0\n      ],\n      \"output_spacing\": [\n        0.738281,\n        0.738281,\n        5.0\n      ],\n      \"spacing_match\": true,\n      \"affine_max_abs_diff\": 0.0,\n      \"affine_match\": true\n    },\n    \"path\": \"runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz\"\n  },\n  \"invocation\": {\n    \"official_helper\": \"hugging_face_pipeline.HuggingFacePipelineHelper\",\n    \"pipeline_name\": \"vista3d\",\n    \"weights_dir\": \"skills/nv-segment-ct/bundle/vista3d_pretrained_model\"\n  },\n  \"runtime\": {\n    \"model_load_seconds\": 0.727,\n    \"inference_seconds\": 1.183,\n    \"device\": \"cuda\"\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is NOT clinically meaningful. This wrapper invokes the official HuggingFace pipeline from the nvidia/NV-Segment-CT model card; it does not modify inference.\"\n}\n",
+    "stderr_tail": "\nFetching 20 files:   0%|          | 0/20 [00:00<?, ?it/s]\nFetching 20 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 20/20 [00:00<00:00, 4129.67it/s]\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\nDevice set to use cuda\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/monai/utils/deprecate_utils.py:321: FutureWarning: monai.transforms.spatial.dictionary Orientationd.__init__:labels: Current default value of argument `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` was changed in version None from `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` to `labels=None`. Default value changed to None meaning that the transform now uses the 'space' of a meta-tensor, if applicable, to determine appropriate axis labels.\n  warn_deprecated(argname, msg, warning_category)\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n2026-05-27 08:35:26,731 INFO image_writer.py:197 - writing: runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz\n",
+    "json": {
+      "skill": "nv_segment_ct",
+      "model": "NVIDIA-Medtech/NV-Segment-CT (VISTA3D)",
+      "model_repo": "https://huggingface.co/nvidia/NV-Segment-CT",
+      "license": "NVIDIA Open Model License (commercial-friendly)",
+      "input": {
+        "path": "runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz",
+        "shape": [
+          512,
+          512,
+          40
+        ],
+        "ndim": 3,
+        "spacing": [
+          0.738281,
+          0.738281,
+          5.0
+        ],
+        "ground_truth_path": null
+      },
+      "output": {
+        "shape": [
+          512,
+          512,
+          40
+        ],
+        "label_prompts_requested": [
+          1,
+          3,
+          5,
+          14
+        ],
+        "label_ids_present": [
+          1,
+          3,
+          5,
+          14
+        ],
+        "unexpected_label_ids": [],
+        "label_set_valid": true,
+        "class_counts": {
+          "label_id_1": 456962,
+          "label_id_3": 60179,
+          "label_id_5": 51185,
+          "label_id_14": 49656
+        },
+        "voxel_volume_ml": 0.00272529,
+        "class_volumes_ml": {
+          "label_id_1": 1245.3558,
+          "label_id_3": 164.0055,
+          "label_id_5": 139.4942,
+          "label_id_14": 135.3272
+        },
+        "any_label_present": true,
+        "geometry": {
+          "input_shape": [
+            512,
+            512,
+            40
+          ],
+          "output_shape": [
+            512,
+            512,
+            40
+          ],
+          "shape_match": true,
+          "input_spacing": [
+            0.738281,
+            0.738281,
+            5.0
+          ],
+          "output_spacing": [
+            0.738281,
+            0.738281,
+            5.0
+          ],
+          "spacing_match": true,
+          "affine_max_abs_diff": 0.0,
+          "affine_match": true
+        },
+        "path": "runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz"
+      },
+      "invocation": {
+        "official_helper": "hugging_face_pipeline.HuggingFacePipelineHelper",
+        "pipeline_name": "vista3d",
+        "weights_dir": "skills/nv-segment-ct/bundle/vista3d_pretrained_model"
+      },
+      "runtime": {
+        "model_load_seconds": 0.727,
+        "inference_seconds": 1.183,
+        "device": "cuda"
+      },
+      "intended_use_disclaimer": "Engineering verification only. Output is NOT clinically meaningful. This wrapper invokes the official HuggingFace pipeline from the nvidia/NV-Segment-CT model card; it does not modify inference."
+    }
+  },
+  "score": {
+    "score": 5,
+    "tiers": [
+      {
+        "tier": 1,
+        "pass": true,
+        "reason": "entrypoint marker"
+      },
+      {
+        "tier": 2,
+        "pass": true,
+        "reason": "user input path marker"
+      },
+      {
+        "tier": 3,
+        "pass": true,
+        "reason": "model/modality/control marker"
+      },
+      {
+        "tier": 4,
+        "pass": true,
+        "reason": "output dir marker"
+      },
+      {
+        "tier": 5,
+        "pass": true,
+        "reason": "shape=(512, 512, 40)"
+      }
+    ],
+    "passed": true
+  },
+  "failure_analysis": [],
+  "step": 0,
+  "backend_label": "Nemotron",
+  "attempts": [
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The input CT volume is at runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz. Segment the spleen, liver, right kidney, and left kidney, and write outputs under runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_segment_ct; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-segment-ct/SKILL.md ---\n---\nname: nv-segment-ct\ndescription: Used for running NV-Segment-CT VISTA3D on CT NIfTI volumes and recording label-map evidence. Not for clinical interpretation.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - ct\n    - segmentation\n---\n\n# NV-Segment-CT\n\n## Purpose\n- Used for running NV-Segment-CT VISTA3D on CT NIfTI volumes and recording label-map evidence. Not for clinical interpretation.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `ct_volume`; outputs are `label_map` and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_vista3d.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_vista3d.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_vista3d.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CT.nii.gz [--output-dir OUT_DIR] [--label-prompts IDS]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes the downloaded bundle under `skills/nv-segment-ct/bundle/`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` during first setup; the optional spleen fixture fetcher downloads MSD09 from `https://msd-for-monai.s3-us-west-2.amazonaws.com`.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Inference, preprocessing, and postprocessing are delegated entirely to the official `hugging_face_pipeline.HuggingFacePipelineHelper` in bundle/. Do not modify code under bundle/.\n- transformers must be a 4.x release; the HF model code uses pre-5.x idioms (e.g. `_tied_weights_keys`).\n- Device auto-detected (cuda if available, else cpu); `--device` flag overrides.\n- Output may be schema-valid but semantically empty (e.g. label prompts that do not match the input anatomy). Sanity gates assert at least one foreground voxel per requested anatomy.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nWraps the upstream `nvidia/NV-Segment-CT` helper. The wrapper does not\nreimplement VISTA3D inference.\n\n\n## Exact Runnable Surface\n\nFor CT segmentation user runs, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-segment-ct/scripts/run_vista3d.py PATH_TO_CT.nii.gz --label-prompts \"1,3,5,14\" --output-dir OUT_DIR\n```\n\nDo not invent `infer.py`, `Medical AI Skills run`, `python -m nv_segment_ct`, or anatomy-name-only flags. For spleen, liver, right kidney, and left kidney, the required VISTA3D label IDs are exactly `1,3,5,14`.\n\n## Preconditions\n\nThe skill assumes a Python 3.12 environment with **no pre-installed\nruntime deps** \u2014 its documented command installs everything it needs.\nPinned dep list is at [`requirements.txt`](./requirements.txt).\n\nTwo one-time downloads (the documented command does the first one; the\nfixture fetch is a separate step you run when bootstrapping):\n\n```bash\n# Spleen example fixture from Decathlon MSD09 (~1.5 GB tar, ~11 MB\n# fixture extracted into skills/nv-segment-ct/fixtures/spleen_03.nii.gz):\npython skills/nv-segment-ct/fixtures/fetch_spleen_fixture.py\n```\n\nBoth downloads (the bundle below, and the fixture) are gitignored\n(Medical AI Skills policy: no medical data or model weights in git). The fetch\nscript is idempotent and caches the tar under\n`.workbench_data/datasets/` so re-runs are no-ops.\n\nRuntime needs an NVIDIA GPU with CUDA. CPU fallback is supported but slow.\n\n## Usage\n\nFrom Medical AI Skills repo root, run all steps in a single command so the\nskill is self-bootstrapping against a fresh Python 3.12 venv:\n\n```bash\npip install -r skills/nv-segment-ct/requirements.txt && \\\nhuggingface-cli download nvidia/NV-Segment-CT \\\n  --local-dir skills/nv-segment-ct/bundle/ && \\\npython skills/nv-segment-ct/scripts/run_vista3d.py PATH_TO_CT.nii.gz \\\n  --label-prompts \"1,3,5,14\" \\\n  --output-dir vista3d_outputs\n```\n\nWhen the user names anatomies, translate them to VISTA3D class IDs before\nrunning. For the common abdominal CT request:\n\n| Anatomy | VISTA3D class ID |\n|---|---:|\n| liver | 1 |\n| spleen | 3 |\n| right kidney | 5 |\n| left kidney | 14 |\n\nFor \"segment the spleen, liver, right kidney, and left kidney\", the correct\n`--label-prompts` value is exactly `\"1,3,5,14\"`. Do not substitute kidney\nIDs from another label dictionary; the wrapper validates the requested label\nset and will mark the run invalid if the emitted mask contains labels outside\nthe requested set.\n\nThe `pip install` step is load-bearing: do not assume monai/torch/etc.\nare already in the active environment. The `huggingface-cli download`\nstep is also part of the contract \u2014 it pulls the ~832 MB model bundle\ninto `skills/nv-segment-ct/bundle/` (cached after first run; subsequent\ncalls are no-ops).\n\n`label-prompts` are VISTA3D class IDs. The evidence output records input\ngeometry, output mask path, observed label IDs, unexpected labels,\nper-class voxel counts, per-class physical volumes computed from the output\nmask header spacing, runtime, model identity, and fixed code-derived artifact\nchecks such as mask shape, affine match, label set, foreground count, and\nclass-volume bounds.\n\nPass `--ground-truth PATH` to record a reference label-map path under\n`input.ground_truth_path`. The skill does not compute Dice; that is the\npaired verifier's job.\n\nAnatomy plausibility (per-class volume bounds, fragmentation, bilateral\nsymmetry, liver larger than spleen) and optional per-class Dice/IoU against\nthe recorded ground truth are checked by\n`verifiers/ct_segmentation_quality_v1`.\n\nNot for clinical interpretation, production deployment, or non-CT modalities.\n"
+        }
+      ],
+      "response": "\n\n```bash\npip install -r skills/nv-segment-ct/requirements.txt && huggingface-cli download nvidia/NV-Segment-CT --local-dir skills/nv-segment-ct/bundle/ && python skills/nv-segment-ct/scripts/run_vista3d.py runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz --label-prompts \"1,3,5,14\" --output-dir runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1\n```",
+      "command": "pip install -r skills/nv-segment-ct/requirements.txt && huggingface-cli download nvidia/NV-Segment-CT --local-dir skills/nv-segment-ct/bundle/ && python skills/nv-segment-ct/scripts/run_vista3d.py runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz --label-prompts \"1,3,5,14\" --output-dir runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1",
+      "usage": {
+        "completion_tokens": 1489,
+        "prompt_tokens": 1981,
+        "total_tokens": 3470
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 45.075090646743774,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz"
+        ],
+        "stdout_tail": "uda-toolkit, urllib3, typing-extensions, triton, tqdm, sympy, shellingham, setuptools, safetensors, regex, pyyaml, pygments, packaging, nvidia-nvtx, nvidia-nvshmem-cu13, nvidia-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, numpy, networkx, mdurl, MarkupSafe, idna, hf-xet, fsspec, filelock, cuda-pathfinder, charset_normalizer, certifi, annotated-doc, requests, nvidia-cusparse, nvidia-cufft, nvidia-cublas, nibabel, markdown-it-py, jinja2, cuda-bindings, rich, nvidia-cusolver, nvidia-cudnn-cu13, huggingface_hub, typer, tokenizers, transformers, torch, monai\nSuccessfully installed MarkupSafe-3.0.3 annotated-doc-0.0.4 certifi-2026.5.20 charset_normalizer-3.4.7 cuda-bindings-13.3.0 cuda-pathfinder-1.5.5 cuda-toolkit-13.0.2 filelock-3.29.0 fsspec-2026.4.0 hf-xet-1.5.0 huggingface_hub-0.36.2 idna-3.16 jinja2-3.1.6 markdown-it-py-4.2.0 mdurl-0.1.2 monai-1.5.2 mpmath-1.3.0 networkx-3.6.1 nibabel-5.4.2 numpy-2.4.6 nvidia-cublas-13.1.1.3 nvidia-cuda-cupti-13.0.85 nvidia-cuda-nvrtc-13.0.88 nvidia-cuda-runtime-13.0.96 nvidia-cudnn-cu13-9.20.0.48 nvidia-cufft-12.0.0.61 nvidia-cufile-1.15.1.6 nvidia-curand-10.4.0.35 nvidia-cusolver-12.0.4.66 nvidia-cusparse-12.6.3.3 nvidia-cusparselt-cu13-0.8.1 nvidia-nccl-cu13-2.29.7 nvidia-nvjitlink-13.0.88 nvidia-nvshmem-cu13-3.4.5 nvidia-nvtx-13.0.85 packaging-26.2 pygments-2.20.0 pyyaml-6.0.3 regex-2026.5.9 requests-2.34.2 rich-15.0.0 safetensors-0.7.0 setuptools-81.0.0 shellingham-1.5.4 sympy-1.14.0 tokenizers-0.22.2 torch-2.12.0 tqdm-4.67.3 transformers-4.57.6 triton-3.7.0 typer-0.26.1 typing-extensions-4.15.0 urllib3-2.7.0\n\u001b[33m\u26a0\ufe0f  Warning: 'huggingface-cli download' is deprecated. Use 'hf download' instead.\u001b[0m\nskills/nv-segment-ct/bundle\n{\n  \"skill\": \"nv_segment_ct\",\n  \"model\": \"NVIDIA-Medtech/NV-Segment-CT (VISTA3D)\",\n  \"model_repo\": \"https://huggingface.co/nvidia/NV-Segment-CT\",\n  \"license\": \"NVIDIA Open Model License (commercial-friendly)\",\n  \"input\": {\n    \"path\": \"runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz\",\n    \"shape\": [\n      512,\n      512,\n      40\n    ],\n    \"ndim\": 3,\n    \"spacing\": [\n      0.738281,\n      0.738281,\n      5.0\n    ],\n    \"ground_truth_path\": null\n  },\n  \"output\": {\n    \"shape\": [\n      512,\n      512,\n      40\n    ],\n    \"label_prompts_requested\": [\n      1,\n      3,\n      5,\n      14\n    ],\n    \"label_ids_present\": [\n      1,\n      3,\n      5,\n      14\n    ],\n    \"unexpected_label_ids\": [],\n    \"label_set_valid\": true,\n    \"class_counts\": {\n      \"label_id_1\": 456962,\n      \"label_id_3\": 60179,\n      \"label_id_5\": 51185,\n      \"label_id_14\": 49656\n    },\n    \"voxel_volume_ml\": 0.00272529,\n    \"class_volumes_ml\": {\n      \"label_id_1\": 1245.3558,\n      \"label_id_3\": 164.0055,\n      \"label_id_5\": 139.4942,\n      \"label_id_14\": 135.3272\n    },\n    \"any_label_present\": true,\n    \"geometry\": {\n      \"input_shape\": [\n        512,\n        512,\n        40\n      ],\n      \"output_shape\": [\n        512,\n        512,\n        40\n      ],\n      \"shape_match\": true,\n      \"input_spacing\": [\n        0.738281,\n        0.738281,\n        5.0\n      ],\n      \"output_spacing\": [\n        0.738281,\n        0.738281,\n        5.0\n      ],\n      \"spacing_match\": true,\n      \"affine_max_abs_diff\": 0.0,\n      \"affine_match\": true\n    },\n    \"path\": \"runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz\"\n  },\n  \"invocation\": {\n    \"official_helper\": \"hugging_face_pipeline.HuggingFacePipelineHelper\",\n    \"pipeline_name\": \"vista3d\",\n    \"weights_dir\": \"skills/nv-segment-ct/bundle/vista3d_pretrained_model\"\n  },\n  \"runtime\": {\n    \"model_load_seconds\": 0.727,\n    \"inference_seconds\": 1.183,\n    \"device\": \"cuda\"\n  },\n  \"intended_use_disclaimer\": \"Engineering verification only. Output is NOT clinically meaningful. This wrapper invokes the official HuggingFace pipeline from the nvidia/NV-Segment-CT model card; it does not modify inference.\"\n}\n",
+        "stderr_tail": "\nFetching 20 files:   0%|          | 0/20 [00:00<?, ?it/s]\nFetching 20 files: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 20/20 [00:00<00:00, 4129.67it/s]\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.\n  warnings.warn(\nDevice set to use cuda\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/monai/utils/deprecate_utils.py:321: FutureWarning: monai.transforms.spatial.dictionary Orientationd.__init__:labels: Current default value of argument `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` was changed in version None from `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` to `labels=None`. Default value changed to None meaning that the transform now uses the 'space' of a meta-tensor, if applicable, to determine appropriate axis labels.\n  warn_deprecated(argname, msg, warning_category)\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\nruns/with_vs_without_nv/_exec_envs/nv_segment_ct_nemotron_correction/with/repeat_1/venv/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n2026-05-27 08:35:26,731 INFO image_writer.py:197 - writing: runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz\n",
+        "json": {
+          "skill": "nv_segment_ct",
+          "model": "NVIDIA-Medtech/NV-Segment-CT (VISTA3D)",
+          "model_repo": "https://huggingface.co/nvidia/NV-Segment-CT",
+          "license": "NVIDIA Open Model License (commercial-friendly)",
+          "input": {
+            "path": "runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz",
+            "shape": [
+              512,
+              512,
+              40
+            ],
+            "ndim": 3,
+            "spacing": [
+              0.738281,
+              0.738281,
+              5.0
+            ],
+            "ground_truth_path": null
+          },
+          "output": {
+            "shape": [
+              512,
+              512,
+              40
+            ],
+            "label_prompts_requested": [
+              1,
+              3,
+              5,
+              14
+            ],
+            "label_ids_present": [
+              1,
+              3,
+              5,
+              14
+            ],
+            "unexpected_label_ids": [],
+            "label_set_valid": true,
+            "class_counts": {
+              "label_id_1": 456962,
+              "label_id_3": 60179,
+              "label_id_5": 51185,
+              "label_id_14": 49656
+            },
+            "voxel_volume_ml": 0.00272529,
+            "class_volumes_ml": {
+              "label_id_1": 1245.3558,
+              "label_id_3": 164.0055,
+              "label_id_5": 139.4942,
+              "label_id_14": 135.3272
+            },
+            "any_label_present": true,
+            "geometry": {
+              "input_shape": [
+                512,
+                512,
+                40
+              ],
+              "output_shape": [
+                512,
+                512,
+                40
+              ],
+              "shape_match": true,
+              "input_spacing": [
+                0.738281,
+                0.738281,
+                5.0
+              ],
+              "output_spacing": [
+                0.738281,
+                0.738281,
+                5.0
+              ],
+              "spacing_match": true,
+              "affine_max_abs_diff": 0.0,
+              "affine_match": true
+            },
+            "path": "runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1/input/input_seg.nii.gz"
+          },
+          "invocation": {
+            "official_helper": "hugging_face_pipeline.HuggingFacePipelineHelper",
+            "pipeline_name": "vista3d",
+            "weights_dir": "skills/nv-segment-ct/bundle/vista3d_pretrained_model"
+          },
+          "runtime": {
+            "model_load_seconds": 0.727,
+            "inference_seconds": 1.183,
+            "device": "cuda"
+          },
+          "intended_use_disclaimer": "Engineering verification only. Output is NOT clinically meaningful. This wrapper invokes the official HuggingFace pipeline from the nvidia/NV-Segment-CT model card; it does not modify inference."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "shape=(512, 512, 40)"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0
+    }
+  ],
+  "steps_to_pass": 0,
+  "max_correction_steps": 0,
+  "repeat": 1,
+  "output_dir": "runs/with_vs_without_nv/nv_segment_ct_nemotron_correction/with/repeat_1",
+  "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz",
+  "prompt_style": "minimal"
+}

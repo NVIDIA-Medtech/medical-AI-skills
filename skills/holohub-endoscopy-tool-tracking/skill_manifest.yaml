@@ -1,0 +1,258 @@
+id: holohub_endoscopy_tool_tracking
+version: 0.1.0
+upstream_refs:
+  - kind: github_repo
+    name: nvidia-holoscan/holohub
+    repo_url: https://github.com/nvidia-holoscan/holohub
+    git_commit: 90e0af6b2fa938d2bfa93237d177c76e4763158a
+    notes: applications/endoscopy_tool_tracking
+license: Apache-2.0
+intended_use:
+  summary: >
+    Run the canonical NVIDIA HoloHub endoscopy_tool_tracking app via
+    its native `./holohub run endoscopy_tool_tracking` CLI; report
+    recording inventory (when --record_type is set), runtime, holohub
+    commit, container image id, and model.onnx sha256 so the eval_engine
+    can verify the run executed and detect drift between runs. The
+    skill does not decode GXF stream recordings and does not compute
+    per-frame detection metrics — those belong to a downstream
+    verifier.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+    - intra-operative guidance
+
+inputs:
+  - name: endoscopy_clip
+    type: directory_path
+    formats: [gxf_replayer_dir, default_sentinel]
+    description: >
+      Either the literal string "default" (use whatever HoloHub
+      provisioned at $HOLOHUB_ROOT/data/endoscopy/) or a directory
+      containing a GXF Stream Replayer pair (<clip>.gxf_index +
+      <clip>.gxf_entities). Holoscan's VideoStreamReplayerOp reads
+      the binary GXF tensor stream format, not raw mp4.
+    fixture_help: >
+      The committed fixtures/ directory contains only an instructive
+      stub directory and a README; runnable replayer fixtures are not
+      committed (the upstream sample is auto-fetched on first run by
+      `./holohub run endoscopy_tool_tracking`). For a real demo,
+      pass --fixture default to use the upstream-provisioned sample,
+      or point --fixture at a directory containing your own
+      `<clip>.gxf_index` + `<clip>.gxf_entities` pair (build one
+      offline with the Holoscan stream-recorder utilities documented
+      in the Holoscan SDK).
+
+outputs:
+  - name: recording_files
+    type: directory_path
+    formats: [gxf_index, gxf_entities, mp4, raw]
+  - name: result_json
+    type: json
+    schema: validators/output_schema.json
+
+paired_verifiers:
+  - id: medagent.verifiers.endoscopy_tool_detection_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+    purpose: >
+      Converts this wrapper's pipeline-execution evidence into a
+      surgical-domain floor check. The verifier requires non-empty
+      recording artifacts plus a decoded detection JSON/JSONL/CSV
+      artifact, then verifies tools_detected_count > 0, frame coverage,
+      mean detections per frame, bbox sanity, and observed tool classes.
+    current_gap: >
+      Detection export uses log-parse or a recording sidecar (tool_detections.jsonl).
+      Full GXF tensor decode is not implemented; GPU runs without log labels may
+      still gap until upstream instrumentation emits decoded detections.
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_endoscopy_tool_tracking.py
+  # Eval engine invokes: `python <script> <fixture>`. All other configuration
+  # comes from environment variables so the uniform eval_engine invocation
+  # pattern still works. The eval_engine captures these into replay.sh.
+  # HOLOHUB_ROOT is required; the others are optional pass-throughs.
+  env_required:
+    - HOLOHUB_ROOT
+  env_optional:
+    - HOLOHUB_RUN_MODE              # container (default) | local
+    - HOLOHUB_LANGUAGE              # cpp (default) | python
+    - HOLOHUB_SOURCE                # replayer (default) | aja | deltacast | yuan
+    - HOLOHUB_RECORD_TYPE           # none (default) | input | visualizer
+    - HOLOHUB_POSTPROCESSOR         # tool_tracking_postprocessor (default) | slang_shader
+    - HOLOHUB_CONFIG                # optional YAML path, passed as -c
+    - HOLOHUB_DATA_DIR              # optional data dir, passed as -d
+    - HOLOHUB_RECORDING_OUTPUT_DIR  # optional override of recording scan dir
+    - HOLOHUB_TIMEOUT_SECONDS       # default 1800
+  external_assets:
+    - kind: github_app
+      repo: nvidia-holoscan/holohub
+      path: applications/endoscopy_tool_tracking
+      install_command: |
+        git clone https://github.com/nvidia-holoscan/holohub.git $HOLOHUB_ROOT
+        cd $HOLOHUB_ROOT
+        ./holohub run endoscopy_tool_tracking
+    - kind: docker_image
+      reference: holohub-endoscopy_tool_tracking:main
+      pulled_by: ./holohub run endoscopy_tool_tracking (first invocation)
+    - kind: onnx_model
+      name: tool_loc_convlstm.onnx
+      source: NVIDIA HoloHub data manager (auto-fetched on first run)
+      downloaded_by: ./holohub run (cmake data fetch)
+    - kind: bundled_sample_video
+      name: endoscopy sample (GXF stream replayer pair)
+      source: NVIDIA HoloHub data manager
+      downloaded_by: ./holohub run (cmake data fetch)
+  side_effects:
+    pip_packages: []                 # All deps live inside the container
+    local_writes:
+      - {path: $HOLOHUB_ROOT, approx_mb_max: 10000}     # holohub clone + build artefacts + sample data
+      - {path: $HOLOHUB_ROOT/build/endoscopy_tool_tracking/recording_output, approx_mb_max: 5000}
+      - {path: $HOLOHUB_RECORDING_OUTPUT_DIR, approx_mb_max: 5000}
+    home_writes:
+      - {path: /var/lib/docker/, approx_mb_max: 20000}  # Holoscan SDK image
+    network_endpoints:
+      - https://github.com
+      - https://nvcr.io
+    requires_docker: true
+    requires_gpu: cuda
+    env_required:
+      - HOLOHUB_ROOT
+    env_optional:
+      - HOLOHUB_RUN_MODE
+      - HOLOHUB_LANGUAGE
+      - HOLOHUB_SOURCE
+      - HOLOHUB_RECORD_TYPE
+      - HOLOHUB_POSTPROCESSOR
+      - HOLOHUB_CONFIG
+      - HOLOHUB_DATA_DIR
+      - HOLOHUB_RECORDING_OUTPUT_DIR
+      - HOLOHUB_TIMEOUT_SECONDS
+
+cost:
+  # Per-invocation agent-overhead token cost measured by NeMo Agent Toolkit
+  # (NAT) profiler — the cost an LLM-driven agent pays to call this skill
+  # once. The skill itself emits zero tokens. See tools/nat_audit/README.md
+  # for methodology (pinned model, agent type, tool registry size).
+  token_estimate:
+    common:
+      model: meta/llama-3.3-70b-instruct
+      agent_type: tool_calling_agent
+      measured_at: 2026-05-16
+      methodology: tools/nat_audit/README.md
+    isolated_tool_call:
+      prompt_tokens: 2270
+      completion_tokens: 47
+      total_tokens: 2317
+      llm_calls: 2
+      n_tools_in_workflow: 9
+    end_to_end_workflow:
+      prompt_tokens: 5114
+      completion_tokens: 104
+      total_tokens: 5218
+      llm_calls: 3
+      n_tools_in_workflow: 11
+      scenario: realistic_user_workflow
+
+limitations:
+  - >
+    The upstream baseline `endoscopy_tool_tracking` application does
+    NOT emit FPS or frame-count signals on stdout. The skill therefore
+    does not parse one and does not gate on throughput — that gap is
+    declared honestly rather than filled with homegrown logic. A
+    sibling skill that adds an instrumented Holoscan operator could
+    expose the metric upstream, after which a future revision of this
+    manifest could pin against it.
+  - >
+    The recording output path is config-dependent (the recorder
+    operator's `directory` field in the YAML). The default scan path
+    `<HOLOHUB_ROOT>/build/endoscopy_tool_tracking/recording_output/`
+    is Medical AI Skills convention and is overrideable via
+    HOLOHUB_RECORDING_OUTPUT_DIR. If your YAML writes elsewhere,
+    override or the recording inventory will be empty.
+  - >
+    Container mode requires Docker, an NVIDIA GPU, and the Holoscan
+    SDK container (~several GB). First-run pull/build takes minutes;
+    subsequent runs reuse the cached image.
+  - >
+    Custom fixtures must be in the GXF Stream Replayer format
+    (`.gxf_index` + matching `.gxf_entities`). Raw mp4/mkv is not
+    accepted by `VideoStreamReplayerOp`.
+  - >
+    The skill does not reimplement Holoscan operators or decode
+    GXF tensor streams. Per-frame detection-quality assessment
+    (bbox sanity, tool-count distribution, mean detections per frame)
+    belongs to a separate verifier that consumes this evidence
+    pack.
+  - >
+    A non-interactive run (CI, evidence-pack regeneration) needs an
+    application-config YAML with three overrides vs. the upstream
+    defaults: replayer.repeat=false + replayer.count=<finite N>
+    (otherwise the replayer loops forever); holoviz.headless=true
+    (otherwise the visualizer fails with "Failed to initialize glfw"
+    on a host with no X11 display); and recorder.directory pointing
+    inside the bind-mounted /workspace/holohub tree so the host can
+    scan the recording. Pass via HOLOHUB_CONFIG (forwarded as -c
+    through --run-args). These are upstream-application
+    preconditions; the wrapper deliberately does not synthesise the
+    YAML for you. See SKILL.md "Preconditions for a non-interactive
+    run".
+
+validation:
+  # Subprocess envelope is wide because container mode includes
+  # docker pull + image build + first-run sample-data download. Once
+  # the image and data are cached, a 60s sample clip should complete
+  # in roughly 60s wall.
+  expected_runtime_seconds:
+    min: 5.0
+    max: 1800.0
+
+  sanity_checks:
+    # The upstream CLI must have exited cleanly.
+    - {path: invocation.exit_code, eq: 0}
+
+    # The holohub clone must be a real repo with a resolvable commit.
+    # This is the drift fingerprint compare_skills.py keys on.
+    - {path: invocation.holohub_commit, ne: ""}
+
+    # Run mode must be one of the documented values.
+    - {path: invocation.mode, matches: "^(container|local)$"}
+
+    # Language must be one of the upstream's documented values.
+    - {path: invocation.language, matches: "^(cpp|python)$"}
+
+    # Source must be one of the upstream's documented values.
+    - {path: invocation.source, matches: "^(replayer|aja|deltacast|yuan)$"}
+
+    # Record type must be one of the upstream's documented values.
+    - {path: invocation.record_type, matches: "^(none|input|visualizer)$"}
+
+    # Postprocessor must be one of the upstream's documented values.
+    - {path: invocation.postprocessor, matches: "^(tool_tracking_postprocessor|slang_shader)$"}
+
+    # If recording was requested, at least one artifact must be found.
+    # record_type=none remains a valid wrapper smoke path.
+    - {path: output.recording_written_ok, eq: true}
+
+  expected_cost:
+    wall_seconds:        {min: 5,    max: 1800}
+    cpu_seconds:         {max: 600}
+    gpu_seconds:         {min: 0.0,  max: 600}     # zero-min: real-time pipelines may not register sustained sm-util on coarse polling
+    # Cached headless smoke runs can complete between evaluator GPU-memory
+    # polling intervals even though the upstream graph used TensorRT/Holoviz.
+    gpu_memory_mb_peak:  {min: 0,    max: 25000}
+    rss_mb_peak:         {max: 8000}
+  reproducibility:
+    mode: preflight
+    fixture: fixtures/example_clip_stub
+    runs: 2
+    reason: >
+      End-to-end repeatability requires a HoloHub checkout, model artifacts,
+      and a real GXF replayer clip. The repository-level reproducibility
+      audit repeats the declared input/env boundary check; promoted evidence
+      packs carry the full artifact hashes.

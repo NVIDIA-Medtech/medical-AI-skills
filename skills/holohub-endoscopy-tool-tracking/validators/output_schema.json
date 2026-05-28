@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "holohub_endoscopy_tool_tracking output",
+  "type": "object",
+  "required": ["invocation", "output", "runtime", "logs"],
+  "additionalProperties": false,
+  "properties": {
+    "detection_export": {"type": "object"},
+    "invocation": {
+      "type": "object",
+      "required": [
+        "holohub_root",
+        "holohub_commit",
+        "mode",
+        "language",
+        "source",
+        "record_type",
+        "postprocessor",
+        "config_path",
+        "data_dir",
+        "command",
+        "exit_code",
+        "container_image",
+        "container_image_id",
+        "model_path",
+        "model_sha256",
+        "fixture",
+        "recording_output_dir"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "holohub_root":         {"type": "string"},
+        "holohub_commit":       {"type": "string"},
+        "mode":                 {"type": "string", "enum": ["container", "local"]},
+        "language":             {"type": "string", "enum": ["cpp", "python"]},
+        "source":               {"type": "string", "enum": ["replayer", "aja", "deltacast", "yuan"]},
+        "record_type":          {"type": "string", "enum": ["none", "input", "visualizer"]},
+        "postprocessor":        {"type": "string", "enum": ["tool_tracking_postprocessor", "slang_shader"]},
+        "config_path":          {"type": ["string", "null"]},
+        "data_dir":             {"type": "string"},
+        "command":              {"type": "array", "items": {"type": "string"}},
+        "exit_code":            {"type": "integer"},
+        "container_image":      {"type": ["string", "null"]},
+        "container_image_id":   {"type": ["string", "null"]},
+        "model_path":           {"type": "string"},
+        "model_sha256":         {"type": "string"},
+        "fixture":              {"type": "string"},
+        "recording_output_dir": {"type": "string"},
+        "container_provenance": {"type": "object"}
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "gxf",
+        "video",
+        "other",
+        "recording_file_count",
+        "recording_total_bytes",
+        "recording_written_ok"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "gxf":   {"$ref": "#/$defs/file_group"},
+        "video": {"$ref": "#/$defs/file_group"},
+        "other": {"$ref": "#/$defs/file_group"},
+        "recording_file_count": {"type": "integer"},
+        "recording_total_bytes": {"type": "integer"},
+        "recording_written_ok": {"type": "boolean"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["subprocess_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "subprocess_seconds": {"type": "number"}
+      }
+    },
+    "logs": {
+      "type": "object",
+      "required": ["stdout_tail", "stderr_tail"],
+      "additionalProperties": false,
+      "properties": {
+        "stdout_tail": {"type": "string"},
+        "stderr_tail": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "file_group": {
+      "type": "object",
+      "required": ["count", "total_bytes", "files"],
+      "additionalProperties": false,
+      "properties": {
+        "count":       {"type": "integer"},
+        "total_bytes": {"type": "integer"},
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "bytes", "sha256"],
+            "additionalProperties": false,
+            "properties": {
+              "path":   {"type": "string"},
+              "bytes":  {"type": "integer"},
+              "sha256": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

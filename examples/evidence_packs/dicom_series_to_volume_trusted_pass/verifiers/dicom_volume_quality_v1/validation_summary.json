@@ -1,0 +1,92 @@
+{
+  "schema": "verifiers/dicom_volume_quality_v1/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run",
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "verifier.id",
+        "eq": "medagent.verifiers.dicom_volume_quality_v1"
+      },
+      "actual": "medagent.verifiers.dicom_volume_quality_v1",
+      "ok": true,
+      "reason": "'medagent.verifiers.dicom_volume_quality_v1' == 'medagent.verifiers.dicom_volume_quality_v1'"
+    },
+    {
+      "check": {
+        "path": "target.skill_id",
+        "matches": "dicom_series_to_volume"
+      },
+      "actual": "medagent.dicom_series_to_volume",
+      "ok": true,
+      "reason": "matched 'dicom_series_to_volume'"
+    },
+    {
+      "check": {
+        "path": "volume_quality.n_fail",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "volume_quality.acceptable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "volume_quality.axcodes",
+        "eq": [
+          "L",
+          "P",
+          "S"
+        ]
+      },
+      "actual": [
+        "L",
+        "P",
+        "S"
+      ],
+      "ok": true,
+      "reason": "['L', 'P', 'S'] == ['L', 'P', 'S']"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "skipped",
+  "cost_results": [],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

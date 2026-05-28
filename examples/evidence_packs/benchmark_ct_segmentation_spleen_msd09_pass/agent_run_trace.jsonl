@@ -1,0 +1,2 @@
+{"ts": "2026-05-18T10:26:09.359846+00:00", "kind": "benchmark_start", "cases": 5, "jobs": 1}
+{"ts": "2026-05-18T10:26:45.874816+00:00", "kind": "benchmark_end", "elapsed_s": 36.51495685998816, "pass_count": 5, "fail_count": 0}

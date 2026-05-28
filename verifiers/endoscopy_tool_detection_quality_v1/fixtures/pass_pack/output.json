@@ -1,0 +1,33 @@
+{
+  "invocation": {
+    "record_type": "visualizer",
+    "recording_output_dir": "recordings"
+  },
+  "output": {
+    "gxf": {
+      "count": 2,
+      "total_bytes": 30,
+      "files": [
+        {"path": "clip.gxf_index", "bytes": 14, "sha256": "fixture"},
+        {"path": "clip.gxf_entities", "bytes": 16, "sha256": "fixture"}
+      ]
+    },
+    "video": {
+      "count": 1,
+      "total_bytes": 18,
+      "files": [
+        {"path": "overlay.mp4", "bytes": 18, "sha256": "fixture"}
+      ]
+    },
+    "other": {
+      "count": 1,
+      "total_bytes": 384,
+      "files": [
+        {"path": "tool_detections.jsonl", "bytes": 384, "sha256": "fixture"}
+      ]
+    },
+    "recording_file_count": 4,
+    "recording_total_bytes": 432,
+    "recording_written_ok": true
+  }
+}

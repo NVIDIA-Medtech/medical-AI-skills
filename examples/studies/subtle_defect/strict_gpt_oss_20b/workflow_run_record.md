@@ -1,0 +1,62 @@
+# Workflow Run Record
+
+- run id: 84eb8cf2828c
+- skill: radiology_note_summarizer v0.1.0
+- started: 2026-05-09T22:10:15.492969+00:00
+- finished: 2026-05-09T22:10:18.239330+00:00
+- elapsed: 2.746s
+- exit code: 0
+
+## Skill
+- dir: skills/radiology-note-summarizer
+- entrypoint: scripts/summarize.py
+
+## Fixture
+- path: skills/radiology-note-summarizer/fixtures/case_001_input.json
+- sha256: 3865a75b981fba0f5bcc4154def492bd6d590d36a1ada8e8e2e02eb09d9ee2f3
+- size: 537 bytes
+
+## Validation
+- overall: passed
+- schema: passed
+- sanity: passed
+- runtime: within_envelope
+- cost: passed
+- integrity: clean
+
+## Output (excerpt)
+```json
+{
+  "output": {
+    "study_instance_uid": "1.2.826.0.1.3680043.8.498.79927183420192038472634851012345",
+    "findings": [
+      "CT abdomen with contrast shows mild hepatic steatosis",
+      "Small simple cyst in the right kidney measuring ~1.5 cm, likely incidental",
+      "No acute findings"
+    ],
+    "impressions": "CT abdomen with contrast demonstrates mild hepatic steatosis and a 1.5 cm simple cyst in the right kidney; no acute findings.",
+    "flags_for_followup": [
+      "Follow up if symptoms persist."
+    ]
+  },
+  "runtime": {
+    "model": "nvidia/openai/gpt-oss-20b",
+    "requested_model": "nvidia/openai/gpt-oss-20b",
+    "system_fingerprint": null,
+    "endpoint": "https://inference-api.nvidia.com/v1",
+    "temperature": 0.0,
+    "max_tokens": 1024,
+    "seed": 42,
+    "request_id": "chatcmpl-852ac6dde2aa4dc7",
+    "prompt_template_sha256": "b745fefb9a043f9527efdc5ef4854735053294d28bf9c2dec0e5a9b7c5b38a33",
+    "system_prompt_sha256": "9420615cdcaa060fdff0af906a08828f151ff9583c9e9a5ce5c4fa1054095e04",
+    "llm_tokens_input": 588,
+    "llm_tokens_output": 736,
+    "elapsed_seconds": 2.6202
+  }
+}
+```
+
+## Caveats
+- Best-effort replay only; not deterministic across env changes.
+- Engineering-time evidence; not clinical or regulatory artefact.

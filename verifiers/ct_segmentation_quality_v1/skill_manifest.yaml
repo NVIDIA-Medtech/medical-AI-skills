@@ -1,0 +1,99 @@
+id: medagent.verifiers.ct_segmentation_quality_v1
+version: 0.1.0
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for CT segmentation evidence packs from
+    nv_segment_ct or CT-body nv_segment_ctmr runs. Loads the produced
+    label-map NIfTI, recomputes per-class voxel counts and volumes, then
+    checks anatomy plausibility (volume bounds, largest connected
+    component dominance, fragmentation cap, bilateral symmetry, liver >
+    spleen). If `input.ground_truth_path` is recorded in the evidence
+    pack and is readable, also computes per-class Dice and IoU against
+    the reference.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+
+inputs:
+  - name: nv_segment_ct_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by
+      skills/nv-segment-ct or a CT_BODY run from skills/nv-segment-ctmr.
+      The verifier reads output.json, validation_summary.json,
+      manifest.json, the referenced label-map NIfTI, and (optionally)
+      input.ground_truth_path.
+
+outputs:
+  - name: ct_segmentation_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies:
+    nibabel: ">=4.0"
+    numpy: ">=1.23"
+    scipy: ">=1.10"
+  side_effects:
+    pip_packages:
+      - nibabel>=4.0
+      - numpy>=1.23
+      - scipy>=1.10
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    Per-class volume bounds in validators/anatomy_bounds.json are
+    population-typical adult ranges. Pediatric, surgically-resected,
+    or pathologically-enlarged cases can fail intentionally; the
+    verifier is an engineering floor, not a clinical assessment.
+  - >
+    Connected-component analysis uses 26-connectivity via
+    scipy.ndimage if scipy is installed, else a slower numpy
+    fallback. Bilateral symmetry check splits the volume on the
+    label-map's mid-sagittal index, not on an anatomical landmark.
+  - >
+    The gt_metrics tier runs only when the evidence pack records
+    `input.ground_truth_path` and that file is readable and shape-
+    compatible with the predicted mask. Otherwise it returns
+    verdict=skipped and gt_metrics.acceptable=true so single-pack
+    runs without ground truth still pass.
+  - >
+    nv_segment_ctmr support is limited to CT_BODY evidence packs. MRI_BODY
+    and MRI_BRAIN outputs need modality-specific anatomy plausibility
+    verifiers before claims beyond wrapper execution and geometry.
+
+validation:
+  expected_runtime_seconds:
+    max: 30.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.ct_segmentation_quality_v1}
+    - {path: target.skill_id, contains_any_of: [nv_segment_ct, medagent.nv_segment_ct, nv_segment_ctmr, medagent.nv_segment_ctmr]}
+    - {path: target.modality_supported, eq: true}
+    - {path: artifact_inventory.label_map_readable, eq: true}
+    - {path: artifact_inventory.affine_match, eq: true}
+    - {path: artifact_inventory.shape_match, eq: true}
+    - {path: anatomy_plausibility.verdict, eq: pass}
+    - {path: anatomy_plausibility.classes_failing_volume_bounds, length_eq: 0}
+    - {path: anatomy_plausibility.classes_overfragmented, length_eq: 0}
+    - {path: label_set_subset.verdict, contains_any_of: ["pass", "skipped"]}
+    - {path: gt_metrics.acceptable, eq: true}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

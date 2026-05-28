@@ -1,0 +1,29 @@
+format: benchmark_dataset
+source: tcia
+dataset: abdomen_panc_b31f
+case_count: 50
+ground_truth: gt/
+inclusion:
+  modality: CT
+  body_part: abdomen
+  slice_count: ">=80"
+license: TCIA Restricted
+
+# Local-only case entries go here. Do not commit patient data, DICOM volumes,
+# NIfTI volumes, or label maps. Paths are resolved relative to this manifest.
+#
+# cases:
+#   - id: PANC_0001
+#     input: cases/PANC_0001/image.nii.gz
+#     ground_truth: gt/PANC_0001.nii.gz
+#     label: 1
+cases: []
+
+prediction:
+  path: output.path
+
+sanity_checks:
+  - {path: output.dice.mean, gte: 0.85}
+  - {path: output.dice.p10, gte: 0.70}
+  - {path: output.fail_count, eq: 0}
+  - {path: output.coverage_pct, gte: 100}

@@ -1,0 +1,847 @@
+{
+  "backend": "opus",
+  "backend_label": "Opus 4.7",
+  "model": "aws/anthropic/bedrock-claude-opus-4-7",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "without",
+  "skill": "nv_generate_mr_brain",
+  "mode": "codex-opus",
+  "repeat_count": 3,
+  "max_correction_steps": 0,
+  "prompt_style": "minimal",
+  "clean_environment": {
+    "per_repeat_output_dir": true,
+    "per_attempt_fresh_venv": true,
+    "python_user_site_disabled": true,
+    "host_pythonpath_removed": true,
+    "output_dir_cleaned_before_each_attempt": true,
+    "dependency_and_model_caches_may_be_shared": true,
+    "shared_cache_root": ".workbench_data/with_vs_without_cache",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    }
+  },
+  "summary": {
+    "pass_count": 0,
+    "fail_count": 3,
+    "mean_score": 3.6666666666666665,
+    "scores": [
+      4,
+      4,
+      3
+    ],
+    "steps_to_pass": {
+      "resolved_count": 0,
+      "unresolved_count": 3,
+      "mean_resolved": null,
+      "min_resolved": null,
+      "max_resolved": null,
+      "values": [
+        "unresolved",
+        "unresolved",
+        "unresolved"
+      ]
+    }
+  },
+  "repeats": [
+    {
+      "backend": "opus",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "aws/anthropic/bedrock-claude-opus-4-7",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "without",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md ---\n---\nname: infer_image-only\ndescription: How to run image-only inference (no mask, no ControlNet) with NV-Generate-CTMR. Covers picking the right model variant (rflow-ct / rflow-mr / rflow-mr-brain / ddpm-ct), choosing dim/spacing for a target field-of-view, and the modality + body-region knobs. Trigger when the user asks \"how do I generate a CT image\", \"what dim/spacing should I use\", \"how do I set the FOV\", \"which model variant for brain MRI / abdomen CT / chest CT\", or wants help running the README \u00a72.2, \u00a72.4, \u00a72.5 commands.\n---\n\n# Image-only inference (no mask)\n\n> ## \u26a0\ufe0f Why FOV matters (read this first)\n>\n> **FOV = `dim \u00d7 spacing`** (mm per axis). This is the single biggest knob for output quality. The model has only seen FOVs from the **training-data distribution** for its target anatomy \u2014 asking it to synthesize at a numerically-valid but out-of-distribution FOV produces unrealistic output, even when `check_input_ct`/`check_input_mr` accept the inputs.\n>\n> **The \"Recommended (dim, spacing) by anatomical target\" table below is not a list of preferences** \u2014 those values are where the training data actually lives. Stay close to them; the further you deviate the worse the output.\n>\n> **Common failure mode**: user picks `dim=(256,256,256), spacing=(0.5,0.5,0.5)` to \"make a high-res small volume.\" Validator accepts it (FOV=128mm cube). The DM produces noise because it never saw 128 mm body FOVs at training. **Fix**: match a row in the recommended table below.\n\nThis skill covers running the **image-only** diffusion model \u2014 no ControlNet, no mask input. The CLI is `scripts.diff_model_infer`. Three Quick Start subsections of the README use this path:\n\n- \u00a72.2 MR Brain Image Generation (`rflow-mr-brain`)\n- \u00a72.4 CT Image Generation (`rflow-ct` or `ddpm-ct`)\n- \u00a72.5 MR Image Generation (`rflow-mr`)\n\nThis is distinct from the mask-image-paired pipeline in \u00a72.3, which uses `scripts.inference` and the `LDMSampler` orchestrator (see the `infer_mask-image-paired` skill).\n\n## Picking a model variant\n\n| Variant | Modality | Architecture | Inference steps | Body region input? | Max volume | Use case |\n|---|---|---|---|---|---|---|\n| `rflow-mr-brain` | MRI (brain) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7256 | T1/T2/FLAIR/SWI whole-brain and skull-stripped |\n| `rflow-mr` | MRI (other) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7128 | T2 prostate, T1 breast, T1/T2 abdomen, etc. Recommend fine-tuning. |\n| `rflow-ct` | CT | MAISI-v2 (Rectified Flow) | **30** (33\u00d7 faster) | No | **512\u00d7512\u00d7768** | Whole-body CT |\n| `ddpm-ct` | CT | MAISI-v1 (DDPM) | 1000 | **Yes** | 512\u00d7512\u00d7768 | Whole-body CT with explicit body-region indices |\n\nPick the variant by:\n\n1. Modality + anatomy (brain MRI \u2192 `rflow-mr-brain`; CT \u2192 `rflow-ct`; other MRI \u2192 `rflow-mr`).\n2. Whether you need explicit body-region conditioning (use `ddpm-ct` if you want `top_region_index` / `bottom_region_index` as inputs; else prefer `rflow-ct` \u2014 33\u00d7 faster, similar FID).\n\n## Quick Start commands\n\nEach variant follows the same two-step pattern: download weights, then run inference.\n\n```bash\nnetwork=\"rflow\"   # or \"ddpm\" for ddpm-ct\ngenerate_version=\"rflow-mr-brain\"   # or rflow-ct / rflow-mr / ddpm-ct\n\npython -m scripts.download_model_data --version ${generate_version} --root_dir \"./\" --model_only\n\npython -m scripts.diff_model_infer \\\n    -t ./configs/config_network_${network}.json \\\n    -e ./configs/environment_maisi_diff_model_${generate_version}.json \\\n    -c ./configs/config_maisi_diff_model_${generate_version}.json\n```\n\nFor `ddpm-ct`: use `network=\"ddpm\"` and the corresponding `config_network_ddpm.json` / `environment_maisi_diff_model_ddpm-ct.json` / `config_maisi_diff_model_ddpm-ct.json`.\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct` / `rflow-mr*`). Lower values silently degrade output \u2014 the DDPM scheduler emits a warning but still runs. This makes `ddpm-ct` ~33\u00d7 slower than `rflow-ct`. Prefer `rflow-ct` unless you specifically need body-region indices.\n\n## Choosing `dim` and `spacing` \u2014 the FOV knob\n\nThe two most important knobs are **`dim`** (voxel grid size) and **`spacing`** (voxel size in mm). They live in the `diffusion_unet_inference` block of `configs/config_maisi_diff_model_<variant>.json`:\n\n```json\n\"diffusion_unet_inference\": {\n    \"dim\": [256, 256, 256],\n    \"spacing\": [1, 1, 1],\n    ...\n}\n```\n\nThe **field of view (FOV)** in each axis is `dim[i] \u00d7 spacing[i]` mm. Pick the pair so the FOV covers your target anatomy plus ~10% margin.\n\n### Hard constraints (validated by `check_input_ct` / `check_input_mr`)\n\nFor CT (`rflow-ct`, `ddpm-ct`):\n\n- `dim[0] == dim[1]`\n- `dim[0] \u2208 {256, 384, 512}`\n- `dim[2] \u2208 {128, 256, 384, 512, 640, 768}`\n- `spacing[0] == spacing[1]`\n- `spacing[0] \u2208 [0.5, 3.0]` mm, `spacing[2] \u2208 [0.5, 5.0]` mm\n- Recommended `FOV_xy \u2265 256` mm for head, `\u2265 384` mm for abdomen/body\n\nFor MR (`rflow-mr`, `rflow-mr-brain`):\n\n- At least two of `dim[0..2]` must be equal\n- If `dim[2]=128`: `dim[0]=dim[1] \u2208 {128, 256, 384, 512}`\n- If `dim[2]=256`: `dim \u2208 {[128,256,256], [256,128,256], [256,256,256]}`\n- `spacing \u2208 [0.4, 5.0]` mm per axis\n\n### Recommended `(dim, spacing)` by anatomical target\n\n| Target | `dim` | `spacing` (mm) | Resulting FOV (mm) | Variant |\n|---|---|---|---|---|\n| Brain (whole-brain, T1/T2/FLAIR/SWI) | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Brain skull-stripped | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Chest (single-slice axial coverage) | `(512, 512, 128)` | `(0.78, 0.78, 4.0)` | `400 \u00d7 400 \u00d7 512` | `rflow-ct` |\n| Abdomen | `(512, 512, 256)` | `(1.0, 1.0, 1.5)` | `512 \u00d7 512 \u00d7 384` | `rflow-ct` |\n| Whole body (torso \u2192 mid-femur) | `(512, 512, 512)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 768` | `rflow-ct` |\n| Long-axis whole-body (head \u2192 feet) | `(512, 512, 768)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 1152` | `rflow-ct` (max supported) |\n\n### Quick formula\n\n1. Pick `spacing` first to control voxel anisotropy and resolution.\n2. Pick `dim` so `dim \u00d7 spacing` covers your target anatomy plus ~10% margin.\n3. Round `dim` to the nearest allowed value (constraints above).\n4. Check the resulting FOV with `print([dim[i]*spacing[i] for i in range(3)])` before running.\n\nSee `docs/inference.md` for the full per-modality table.\n\n## Modality codes\n\nSet `\"modality\"` in the variant's `config_maisi_diff_model_<variant>.json`. Codes from `configs/modality_mapping.json`:\n\n| Code | Modality | Notes |\n|---|---|---|\n| 1 | CT | always set for `rflow-ct` / `ddpm-ct` |\n| 8 | MRI (no contrast specified) | |\n| 9 | mri_t1 | T1w whole-brain |\n| 10 | mri_t2 | T2w whole-brain |\n| 11 | mri_flair | FLAIR whole-brain |\n| 20 | mri_swi | SWI whole-brain |\n| 29 | mri_t1_skull_stripped | T1w skull-stripped |\n| 30 | mri_t2_skull_stripped | T2w skull-stripped |\n| 31 | mri_flair_skull_stripped | FLAIR skull-stripped |\n| 32 | mri_swi_skull_stripped | SWI skull-stripped |\n\n## Body-region indices (`ddpm-ct` only)\n\nFor `ddpm-ct`, the UNet also accepts one-hot body-region indices:\n\n```json\n\"top_region_index\":    [0, 1, 0, 0],   // chest\n\"bottom_region_index\": [0, 0, 1, 0]    // abdomen\n```\n\nSlots correspond to `[head, chest, abdomen, pelvis]`. `rflow-ct` / `rflow-mr` / `rflow-mr-brain` do **not** use these \u2014 their `include_top_region_index_input` is False.\n\n## Workflow summary\n\n1. Decide variant (CT vs MR vs MR-brain; RFlow vs DDPM).\n2. Download model weights: `python -m scripts.download_model_data --version <variant> --root_dir ./ --model_only`.\n3. Edit `config_maisi_diff_model_<variant>.json`:\n   - Set `dim` and `spacing` per the FOV table above.\n   - Set `modality` per the table above (CT \u2192 1; MR variants \u2192 8..32).\n   - For `ddpm-ct` only: set `top_region_index` / `bottom_region_index`.\n   - Optional: `random_seed`, `num_inference_steps`, `cfg_guidance_scale`.\n4. Run `python -m scripts.diff_model_infer -t ... -e ... -c ...`.\n5. Output written to the `output_dir` in the environment config.\n\n## Related skills\n\n- `download-models` \u2014 fetch the right checkpoints.\n- `infer_mask-generation` \u2014 generate a mask from scratch (the other algorithm in this repo).\n- `infer_image-from-mask` \u2014 generate an image FROM an existing mask (uses ControlNet).\n- `infer_mask-image-paired` \u2014 full mask + image paired pipeline (chains both).\n"
+        }
+      ],
+      "response": "```bash\nset -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1 && REQ=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json && SRC=\"${NV_GENERATE_ROOT:?NV_GENERATE_ROOT must be set}\" && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cp \"$SRC/configs/config_network_rflow.json\" \"$OUT/configs/\" && cp \"$SRC/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && cp \"$SRC/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && python -c \"\nimport json, os, pathlib\nreq = json.load(open('$REQ'))\ncfg_path = '$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'\nenv_path = '$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'\ncfg = json.load(open(cfg_path))\nenv = json.load(open(env_path))\ninfer = cfg['diffusion_unet_inference']\ninfer['dim'] = req.get('dim', [256,256,256])\ninfer['spacing'] = req.get('spacing', [1.0,1.0,1.0])\ninfer['modality'] = req.get('modality', 9)\ninfer['num_output_samples'] = req.get('num_output_samples', 1)\nif 'random_seed' in req: infer['random_seed'] = req['random_seed']\nif 'num_inference_steps' in req: infer['num_inference_steps'] = req['num_inference_steps']\nif 'cfg_guidance_scale' in req: infer['cfg_guidance_scale'] = req['cfg_guidance_scale']\nout_abs = str(pathlib.Path('$OUT/output').resolve())\nfor k in ('output_dir','prediction_dir','results_dir'):\n    if k in env: env[k] = out_abs\njson.dump(cfg, open(cfg_path,'w'), indent=2)\njson.dump(env, open(env_path,'w'), indent=2)\nprint('output_dir =', out_abs)\n\" && cd \"$SRC\" && (ls models/*rflow-mr-brain* >/dev/null 2>&1 || python -m scripts.download_model_data --version rflow-mr-brain --root_dir ./ --model_only) && cd - >/dev/null && (cd \"$SRC\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\")\n```",
+      "command": "set -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1 && REQ=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json && SRC=\"${NV_GENERATE_ROOT:?NV_GENERATE_ROOT must be set}\" && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cp \"$SRC/configs/config_network_rflow.json\" \"$OUT/configs/\" && cp \"$SRC/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && cp \"$SRC/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && python -c \"\nimport json, os, pathlib\nreq = json.load(open('$REQ'))\ncfg_path = '$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'\nenv_path = '$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'\ncfg = json.load(open(cfg_path))\nenv = json.load(open(env_path))\ninfer = cfg['diffusion_unet_inference']\ninfer['dim'] = req.get('dim', [256,256,256])\ninfer['spacing'] = req.get('spacing', [1.0,1.0,1.0])\ninfer['modality'] = req.get('modality', 9)\ninfer['num_output_samples'] = req.get('num_output_samples', 1)\nif 'random_seed' in req: infer['random_seed'] = req['random_seed']\nif 'num_inference_steps' in req: infer['num_inference_steps'] = req['num_inference_steps']\nif 'cfg_guidance_scale' in req: infer['cfg_guidance_scale'] = req['cfg_guidance_scale']\nout_abs = str(pathlib.Path('$OUT/output').resolve())\nfor k in ('output_dir','prediction_dir','results_dir'):\n    if k in env: env[k] = out_abs\njson.dump(cfg, open(cfg_path,'w'), indent=2)\njson.dump(env, open(env_path,'w'), indent=2)\nprint('output_dir =', out_abs)\n\" && cd \"$SRC\" && (ls models/*rflow-mr-brain* >/dev/null 2>&1 || python -m scripts.download_model_data --version rflow-mr-brain --root_dir ./ --model_only) && cd - >/dev/null && (cd \"$SRC\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\")",
+      "usage": {
+        "completion_tokens": 1017,
+        "prompt_tokens": 4398,
+        "total_tokens": 5415,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 1017
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 4398,
+          "cache_creation_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 1,
+        "elapsed_seconds": 0.04001927375793457,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/configs/config_maisi_diff_model_rflow-mr-brain.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/configs/config_network_rflow.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/configs/environment_maisi_diff_model_rflow-mr-brain.json"
+        ],
+        "stdout_tail": "output_dir = runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/output\n",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+        "json": null
+      },
+      "score": {
+        "score": 4,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": false,
+            "reason": "exit 1"
+          }
+        ],
+        "passed": false
+      },
+      "failure_analysis": [
+        {
+          "kind": "tier_5",
+          "reason": "exit 1",
+          "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+        },
+        {
+          "kind": "nonzero_exit",
+          "reason": "Command exited 1.",
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+          "stdout_tail": "output_dir = runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/output\n",
+          "repair_hint": "Use stderr/stdout to repair setup, paths, arguments, or runtime package installation."
+        }
+      ],
+      "step": 0,
+      "backend_label": "Opus 4.7",
+      "attempts": [
+        {
+          "backend": "opus",
+          "model": "aws/anthropic/bedrock-claude-opus-4-7",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "aws/anthropic/bedrock-claude-opus-4-7",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "without",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md ---\n---\nname: infer_image-only\ndescription: How to run image-only inference (no mask, no ControlNet) with NV-Generate-CTMR. Covers picking the right model variant (rflow-ct / rflow-mr / rflow-mr-brain / ddpm-ct), choosing dim/spacing for a target field-of-view, and the modality + body-region knobs. Trigger when the user asks \"how do I generate a CT image\", \"what dim/spacing should I use\", \"how do I set the FOV\", \"which model variant for brain MRI / abdomen CT / chest CT\", or wants help running the README \u00a72.2, \u00a72.4, \u00a72.5 commands.\n---\n\n# Image-only inference (no mask)\n\n> ## \u26a0\ufe0f Why FOV matters (read this first)\n>\n> **FOV = `dim \u00d7 spacing`** (mm per axis). This is the single biggest knob for output quality. The model has only seen FOVs from the **training-data distribution** for its target anatomy \u2014 asking it to synthesize at a numerically-valid but out-of-distribution FOV produces unrealistic output, even when `check_input_ct`/`check_input_mr` accept the inputs.\n>\n> **The \"Recommended (dim, spacing) by anatomical target\" table below is not a list of preferences** \u2014 those values are where the training data actually lives. Stay close to them; the further you deviate the worse the output.\n>\n> **Common failure mode**: user picks `dim=(256,256,256), spacing=(0.5,0.5,0.5)` to \"make a high-res small volume.\" Validator accepts it (FOV=128mm cube). The DM produces noise because it never saw 128 mm body FOVs at training. **Fix**: match a row in the recommended table below.\n\nThis skill covers running the **image-only** diffusion model \u2014 no ControlNet, no mask input. The CLI is `scripts.diff_model_infer`. Three Quick Start subsections of the README use this path:\n\n- \u00a72.2 MR Brain Image Generation (`rflow-mr-brain`)\n- \u00a72.4 CT Image Generation (`rflow-ct` or `ddpm-ct`)\n- \u00a72.5 MR Image Generation (`rflow-mr`)\n\nThis is distinct from the mask-image-paired pipeline in \u00a72.3, which uses `scripts.inference` and the `LDMSampler` orchestrator (see the `infer_mask-image-paired` skill).\n\n## Picking a model variant\n\n| Variant | Modality | Architecture | Inference steps | Body region input? | Max volume | Use case |\n|---|---|---|---|---|---|---|\n| `rflow-mr-brain` | MRI (brain) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7256 | T1/T2/FLAIR/SWI whole-brain and skull-stripped |\n| `rflow-mr` | MRI (other) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7128 | T2 prostate, T1 breast, T1/T2 abdomen, etc. Recommend fine-tuning. |\n| `rflow-ct` | CT | MAISI-v2 (Rectified Flow) | **30** (33\u00d7 faster) | No | **512\u00d7512\u00d7768** | Whole-body CT |\n| `ddpm-ct` | CT | MAISI-v1 (DDPM) | 1000 | **Yes** | 512\u00d7512\u00d7768 | Whole-body CT with explicit body-region indices |\n\nPick the variant by:\n\n1. Modality + anatomy (brain MRI \u2192 `rflow-mr-brain`; CT \u2192 `rflow-ct`; other MRI \u2192 `rflow-mr`).\n2. Whether you need explicit body-region conditioning (use `ddpm-ct` if you want `top_region_index` / `bottom_region_index` as inputs; else prefer `rflow-ct` \u2014 33\u00d7 faster, similar FID).\n\n## Quick Start commands\n\nEach variant follows the same two-step pattern: download weights, then run inference.\n\n```bash\nnetwork=\"rflow\"   # or \"ddpm\" for ddpm-ct\ngenerate_version=\"rflow-mr-brain\"   # or rflow-ct / rflow-mr / ddpm-ct\n\npython -m scripts.download_model_data --version ${generate_version} --root_dir \"./\" --model_only\n\npython -m scripts.diff_model_infer \\\n    -t ./configs/config_network_${network}.json \\\n    -e ./configs/environment_maisi_diff_model_${generate_version}.json \\\n    -c ./configs/config_maisi_diff_model_${generate_version}.json\n```\n\nFor `ddpm-ct`: use `network=\"ddpm\"` and the corresponding `config_network_ddpm.json` / `environment_maisi_diff_model_ddpm-ct.json` / `config_maisi_diff_model_ddpm-ct.json`.\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct` / `rflow-mr*`). Lower values silently degrade output \u2014 the DDPM scheduler emits a warning but still runs. This makes `ddpm-ct` ~33\u00d7 slower than `rflow-ct`. Prefer `rflow-ct` unless you specifically need body-region indices.\n\n## Choosing `dim` and `spacing` \u2014 the FOV knob\n\nThe two most important knobs are **`dim`** (voxel grid size) and **`spacing`** (voxel size in mm). They live in the `diffusion_unet_inference` block of `configs/config_maisi_diff_model_<variant>.json`:\n\n```json\n\"diffusion_unet_inference\": {\n    \"dim\": [256, 256, 256],\n    \"spacing\": [1, 1, 1],\n    ...\n}\n```\n\nThe **field of view (FOV)** in each axis is `dim[i] \u00d7 spacing[i]` mm. Pick the pair so the FOV covers your target anatomy plus ~10% margin.\n\n### Hard constraints (validated by `check_input_ct` / `check_input_mr`)\n\nFor CT (`rflow-ct`, `ddpm-ct`):\n\n- `dim[0] == dim[1]`\n- `dim[0] \u2208 {256, 384, 512}`\n- `dim[2] \u2208 {128, 256, 384, 512, 640, 768}`\n- `spacing[0] == spacing[1]`\n- `spacing[0] \u2208 [0.5, 3.0]` mm, `spacing[2] \u2208 [0.5, 5.0]` mm\n- Recommended `FOV_xy \u2265 256` mm for head, `\u2265 384` mm for abdomen/body\n\nFor MR (`rflow-mr`, `rflow-mr-brain`):\n\n- At least two of `dim[0..2]` must be equal\n- If `dim[2]=128`: `dim[0]=dim[1] \u2208 {128, 256, 384, 512}`\n- If `dim[2]=256`: `dim \u2208 {[128,256,256], [256,128,256], [256,256,256]}`\n- `spacing \u2208 [0.4, 5.0]` mm per axis\n\n### Recommended `(dim, spacing)` by anatomical target\n\n| Target | `dim` | `spacing` (mm) | Resulting FOV (mm) | Variant |\n|---|---|---|---|---|\n| Brain (whole-brain, T1/T2/FLAIR/SWI) | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Brain skull-stripped | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Chest (single-slice axial coverage) | `(512, 512, 128)` | `(0.78, 0.78, 4.0)` | `400 \u00d7 400 \u00d7 512` | `rflow-ct` |\n| Abdomen | `(512, 512, 256)` | `(1.0, 1.0, 1.5)` | `512 \u00d7 512 \u00d7 384` | `rflow-ct` |\n| Whole body (torso \u2192 mid-femur) | `(512, 512, 512)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 768` | `rflow-ct` |\n| Long-axis whole-body (head \u2192 feet) | `(512, 512, 768)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 1152` | `rflow-ct` (max supported) |\n\n### Quick formula\n\n1. Pick `spacing` first to control voxel anisotropy and resolution.\n2. Pick `dim` so `dim \u00d7 spacing` covers your target anatomy plus ~10% margin.\n3. Round `dim` to the nearest allowed value (constraints above).\n4. Check the resulting FOV with `print([dim[i]*spacing[i] for i in range(3)])` before running.\n\nSee `docs/inference.md` for the full per-modality table.\n\n## Modality codes\n\nSet `\"modality\"` in the variant's `config_maisi_diff_model_<variant>.json`. Codes from `configs/modality_mapping.json`:\n\n| Code | Modality | Notes |\n|---|---|---|\n| 1 | CT | always set for `rflow-ct` / `ddpm-ct` |\n| 8 | MRI (no contrast specified) | |\n| 9 | mri_t1 | T1w whole-brain |\n| 10 | mri_t2 | T2w whole-brain |\n| 11 | mri_flair | FLAIR whole-brain |\n| 20 | mri_swi | SWI whole-brain |\n| 29 | mri_t1_skull_stripped | T1w skull-stripped |\n| 30 | mri_t2_skull_stripped | T2w skull-stripped |\n| 31 | mri_flair_skull_stripped | FLAIR skull-stripped |\n| 32 | mri_swi_skull_stripped | SWI skull-stripped |\n\n## Body-region indices (`ddpm-ct` only)\n\nFor `ddpm-ct`, the UNet also accepts one-hot body-region indices:\n\n```json\n\"top_region_index\":    [0, 1, 0, 0],   // chest\n\"bottom_region_index\": [0, 0, 1, 0]    // abdomen\n```\n\nSlots correspond to `[head, chest, abdomen, pelvis]`. `rflow-ct` / `rflow-mr` / `rflow-mr-brain` do **not** use these \u2014 their `include_top_region_index_input` is False.\n\n## Workflow summary\n\n1. Decide variant (CT vs MR vs MR-brain; RFlow vs DDPM).\n2. Download model weights: `python -m scripts.download_model_data --version <variant> --root_dir ./ --model_only`.\n3. Edit `config_maisi_diff_model_<variant>.json`:\n   - Set `dim` and `spacing` per the FOV table above.\n   - Set `modality` per the table above (CT \u2192 1; MR variants \u2192 8..32).\n   - For `ddpm-ct` only: set `top_region_index` / `bottom_region_index`.\n   - Optional: `random_seed`, `num_inference_steps`, `cfg_guidance_scale`.\n4. Run `python -m scripts.diff_model_infer -t ... -e ... -c ...`.\n5. Output written to the `output_dir` in the environment config.\n\n## Related skills\n\n- `download-models` \u2014 fetch the right checkpoints.\n- `infer_mask-generation` \u2014 generate a mask from scratch (the other algorithm in this repo).\n- `infer_image-from-mask` \u2014 generate an image FROM an existing mask (uses ControlNet).\n- `infer_mask-image-paired` \u2014 full mask + image paired pipeline (chains both).\n"
+            }
+          ],
+          "response": "```bash\nset -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1 && REQ=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json && SRC=\"${NV_GENERATE_ROOT:?NV_GENERATE_ROOT must be set}\" && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cp \"$SRC/configs/config_network_rflow.json\" \"$OUT/configs/\" && cp \"$SRC/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && cp \"$SRC/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && python -c \"\nimport json, os, pathlib\nreq = json.load(open('$REQ'))\ncfg_path = '$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'\nenv_path = '$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'\ncfg = json.load(open(cfg_path))\nenv = json.load(open(env_path))\ninfer = cfg['diffusion_unet_inference']\ninfer['dim'] = req.get('dim', [256,256,256])\ninfer['spacing'] = req.get('spacing', [1.0,1.0,1.0])\ninfer['modality'] = req.get('modality', 9)\ninfer['num_output_samples'] = req.get('num_output_samples', 1)\nif 'random_seed' in req: infer['random_seed'] = req['random_seed']\nif 'num_inference_steps' in req: infer['num_inference_steps'] = req['num_inference_steps']\nif 'cfg_guidance_scale' in req: infer['cfg_guidance_scale'] = req['cfg_guidance_scale']\nout_abs = str(pathlib.Path('$OUT/output').resolve())\nfor k in ('output_dir','prediction_dir','results_dir'):\n    if k in env: env[k] = out_abs\njson.dump(cfg, open(cfg_path,'w'), indent=2)\njson.dump(env, open(env_path,'w'), indent=2)\nprint('output_dir =', out_abs)\n\" && cd \"$SRC\" && (ls models/*rflow-mr-brain* >/dev/null 2>&1 || python -m scripts.download_model_data --version rflow-mr-brain --root_dir ./ --model_only) && cd - >/dev/null && (cd \"$SRC\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\")\n```",
+          "command": "set -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1 && REQ=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json && SRC=\"${NV_GENERATE_ROOT:?NV_GENERATE_ROOT must be set}\" && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cp \"$SRC/configs/config_network_rflow.json\" \"$OUT/configs/\" && cp \"$SRC/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && cp \"$SRC/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/\" && python -c \"\nimport json, os, pathlib\nreq = json.load(open('$REQ'))\ncfg_path = '$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'\nenv_path = '$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'\ncfg = json.load(open(cfg_path))\nenv = json.load(open(env_path))\ninfer = cfg['diffusion_unet_inference']\ninfer['dim'] = req.get('dim', [256,256,256])\ninfer['spacing'] = req.get('spacing', [1.0,1.0,1.0])\ninfer['modality'] = req.get('modality', 9)\ninfer['num_output_samples'] = req.get('num_output_samples', 1)\nif 'random_seed' in req: infer['random_seed'] = req['random_seed']\nif 'num_inference_steps' in req: infer['num_inference_steps'] = req['num_inference_steps']\nif 'cfg_guidance_scale' in req: infer['cfg_guidance_scale'] = req['cfg_guidance_scale']\nout_abs = str(pathlib.Path('$OUT/output').resolve())\nfor k in ('output_dir','prediction_dir','results_dir'):\n    if k in env: env[k] = out_abs\njson.dump(cfg, open(cfg_path,'w'), indent=2)\njson.dump(env, open(env_path,'w'), indent=2)\nprint('output_dir =', out_abs)\n\" && cd \"$SRC\" && (ls models/*rflow-mr-brain* >/dev/null 2>&1 || python -m scripts.download_model_data --version rflow-mr-brain --root_dir ./ --model_only) && cd - >/dev/null && (cd \"$SRC\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\")",
+          "usage": {
+            "completion_tokens": 1017,
+            "prompt_tokens": 4398,
+            "total_tokens": 5415,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 1017
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 4398,
+              "cache_creation_tokens": 0
+            },
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 1,
+            "elapsed_seconds": 0.04001927375793457,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/configs/config_maisi_diff_model_rflow-mr-brain.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/configs/config_network_rflow.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/configs/environment_maisi_diff_model_rflow-mr-brain.json"
+            ],
+            "stdout_tail": "output_dir = runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/output\n",
+            "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+            "json": null
+          },
+          "score": {
+            "score": 4,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": false,
+                "reason": "exit 1"
+              }
+            ],
+            "passed": false
+          },
+          "failure_analysis": [
+            {
+              "kind": "tier_5",
+              "reason": "exit 1",
+              "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+            },
+            {
+              "kind": "nonzero_exit",
+              "reason": "Command exited 1.",
+              "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+              "stdout_tail": "output_dir = runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1/output\n",
+              "repair_hint": "Use stderr/stdout to repair setup, paths, arguments, or runtime package installation."
+            }
+          ],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": Infinity,
+      "max_correction_steps": 0,
+      "repeat": 1,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "opus",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "aws/anthropic/bedrock-claude-opus-4-7",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "without",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md ---\n---\nname: infer_image-only\ndescription: How to run image-only inference (no mask, no ControlNet) with NV-Generate-CTMR. Covers picking the right model variant (rflow-ct / rflow-mr / rflow-mr-brain / ddpm-ct), choosing dim/spacing for a target field-of-view, and the modality + body-region knobs. Trigger when the user asks \"how do I generate a CT image\", \"what dim/spacing should I use\", \"how do I set the FOV\", \"which model variant for brain MRI / abdomen CT / chest CT\", or wants help running the README \u00a72.2, \u00a72.4, \u00a72.5 commands.\n---\n\n# Image-only inference (no mask)\n\n> ## \u26a0\ufe0f Why FOV matters (read this first)\n>\n> **FOV = `dim \u00d7 spacing`** (mm per axis). This is the single biggest knob for output quality. The model has only seen FOVs from the **training-data distribution** for its target anatomy \u2014 asking it to synthesize at a numerically-valid but out-of-distribution FOV produces unrealistic output, even when `check_input_ct`/`check_input_mr` accept the inputs.\n>\n> **The \"Recommended (dim, spacing) by anatomical target\" table below is not a list of preferences** \u2014 those values are where the training data actually lives. Stay close to them; the further you deviate the worse the output.\n>\n> **Common failure mode**: user picks `dim=(256,256,256), spacing=(0.5,0.5,0.5)` to \"make a high-res small volume.\" Validator accepts it (FOV=128mm cube). The DM produces noise because it never saw 128 mm body FOVs at training. **Fix**: match a row in the recommended table below.\n\nThis skill covers running the **image-only** diffusion model \u2014 no ControlNet, no mask input. The CLI is `scripts.diff_model_infer`. Three Quick Start subsections of the README use this path:\n\n- \u00a72.2 MR Brain Image Generation (`rflow-mr-brain`)\n- \u00a72.4 CT Image Generation (`rflow-ct` or `ddpm-ct`)\n- \u00a72.5 MR Image Generation (`rflow-mr`)\n\nThis is distinct from the mask-image-paired pipeline in \u00a72.3, which uses `scripts.inference` and the `LDMSampler` orchestrator (see the `infer_mask-image-paired` skill).\n\n## Picking a model variant\n\n| Variant | Modality | Architecture | Inference steps | Body region input? | Max volume | Use case |\n|---|---|---|---|---|---|---|\n| `rflow-mr-brain` | MRI (brain) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7256 | T1/T2/FLAIR/SWI whole-brain and skull-stripped |\n| `rflow-mr` | MRI (other) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7128 | T2 prostate, T1 breast, T1/T2 abdomen, etc. Recommend fine-tuning. |\n| `rflow-ct` | CT | MAISI-v2 (Rectified Flow) | **30** (33\u00d7 faster) | No | **512\u00d7512\u00d7768** | Whole-body CT |\n| `ddpm-ct` | CT | MAISI-v1 (DDPM) | 1000 | **Yes** | 512\u00d7512\u00d7768 | Whole-body CT with explicit body-region indices |\n\nPick the variant by:\n\n1. Modality + anatomy (brain MRI \u2192 `rflow-mr-brain`; CT \u2192 `rflow-ct`; other MRI \u2192 `rflow-mr`).\n2. Whether you need explicit body-region conditioning (use `ddpm-ct` if you want `top_region_index` / `bottom_region_index` as inputs; else prefer `rflow-ct` \u2014 33\u00d7 faster, similar FID).\n\n## Quick Start commands\n\nEach variant follows the same two-step pattern: download weights, then run inference.\n\n```bash\nnetwork=\"rflow\"   # or \"ddpm\" for ddpm-ct\ngenerate_version=\"rflow-mr-brain\"   # or rflow-ct / rflow-mr / ddpm-ct\n\npython -m scripts.download_model_data --version ${generate_version} --root_dir \"./\" --model_only\n\npython -m scripts.diff_model_infer \\\n    -t ./configs/config_network_${network}.json \\\n    -e ./configs/environment_maisi_diff_model_${generate_version}.json \\\n    -c ./configs/config_maisi_diff_model_${generate_version}.json\n```\n\nFor `ddpm-ct`: use `network=\"ddpm\"` and the corresponding `config_network_ddpm.json` / `environment_maisi_diff_model_ddpm-ct.json` / `config_maisi_diff_model_ddpm-ct.json`.\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct` / `rflow-mr*`). Lower values silently degrade output \u2014 the DDPM scheduler emits a warning but still runs. This makes `ddpm-ct` ~33\u00d7 slower than `rflow-ct`. Prefer `rflow-ct` unless you specifically need body-region indices.\n\n## Choosing `dim` and `spacing` \u2014 the FOV knob\n\nThe two most important knobs are **`dim`** (voxel grid size) and **`spacing`** (voxel size in mm). They live in the `diffusion_unet_inference` block of `configs/config_maisi_diff_model_<variant>.json`:\n\n```json\n\"diffusion_unet_inference\": {\n    \"dim\": [256, 256, 256],\n    \"spacing\": [1, 1, 1],\n    ...\n}\n```\n\nThe **field of view (FOV)** in each axis is `dim[i] \u00d7 spacing[i]` mm. Pick the pair so the FOV covers your target anatomy plus ~10% margin.\n\n### Hard constraints (validated by `check_input_ct` / `check_input_mr`)\n\nFor CT (`rflow-ct`, `ddpm-ct`):\n\n- `dim[0] == dim[1]`\n- `dim[0] \u2208 {256, 384, 512}`\n- `dim[2] \u2208 {128, 256, 384, 512, 640, 768}`\n- `spacing[0] == spacing[1]`\n- `spacing[0] \u2208 [0.5, 3.0]` mm, `spacing[2] \u2208 [0.5, 5.0]` mm\n- Recommended `FOV_xy \u2265 256` mm for head, `\u2265 384` mm for abdomen/body\n\nFor MR (`rflow-mr`, `rflow-mr-brain`):\n\n- At least two of `dim[0..2]` must be equal\n- If `dim[2]=128`: `dim[0]=dim[1] \u2208 {128, 256, 384, 512}`\n- If `dim[2]=256`: `dim \u2208 {[128,256,256], [256,128,256], [256,256,256]}`\n- `spacing \u2208 [0.4, 5.0]` mm per axis\n\n### Recommended `(dim, spacing)` by anatomical target\n\n| Target | `dim` | `spacing` (mm) | Resulting FOV (mm) | Variant |\n|---|---|---|---|---|\n| Brain (whole-brain, T1/T2/FLAIR/SWI) | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Brain skull-stripped | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Chest (single-slice axial coverage) | `(512, 512, 128)` | `(0.78, 0.78, 4.0)` | `400 \u00d7 400 \u00d7 512` | `rflow-ct` |\n| Abdomen | `(512, 512, 256)` | `(1.0, 1.0, 1.5)` | `512 \u00d7 512 \u00d7 384` | `rflow-ct` |\n| Whole body (torso \u2192 mid-femur) | `(512, 512, 512)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 768` | `rflow-ct` |\n| Long-axis whole-body (head \u2192 feet) | `(512, 512, 768)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 1152` | `rflow-ct` (max supported) |\n\n### Quick formula\n\n1. Pick `spacing` first to control voxel anisotropy and resolution.\n2. Pick `dim` so `dim \u00d7 spacing` covers your target anatomy plus ~10% margin.\n3. Round `dim` to the nearest allowed value (constraints above).\n4. Check the resulting FOV with `print([dim[i]*spacing[i] for i in range(3)])` before running.\n\nSee `docs/inference.md` for the full per-modality table.\n\n## Modality codes\n\nSet `\"modality\"` in the variant's `config_maisi_diff_model_<variant>.json`. Codes from `configs/modality_mapping.json`:\n\n| Code | Modality | Notes |\n|---|---|---|\n| 1 | CT | always set for `rflow-ct` / `ddpm-ct` |\n| 8 | MRI (no contrast specified) | |\n| 9 | mri_t1 | T1w whole-brain |\n| 10 | mri_t2 | T2w whole-brain |\n| 11 | mri_flair | FLAIR whole-brain |\n| 20 | mri_swi | SWI whole-brain |\n| 29 | mri_t1_skull_stripped | T1w skull-stripped |\n| 30 | mri_t2_skull_stripped | T2w skull-stripped |\n| 31 | mri_flair_skull_stripped | FLAIR skull-stripped |\n| 32 | mri_swi_skull_stripped | SWI skull-stripped |\n\n## Body-region indices (`ddpm-ct` only)\n\nFor `ddpm-ct`, the UNet also accepts one-hot body-region indices:\n\n```json\n\"top_region_index\":    [0, 1, 0, 0],   // chest\n\"bottom_region_index\": [0, 0, 1, 0]    // abdomen\n```\n\nSlots correspond to `[head, chest, abdomen, pelvis]`. `rflow-ct` / `rflow-mr` / `rflow-mr-brain` do **not** use these \u2014 their `include_top_region_index_input` is False.\n\n## Workflow summary\n\n1. Decide variant (CT vs MR vs MR-brain; RFlow vs DDPM).\n2. Download model weights: `python -m scripts.download_model_data --version <variant> --root_dir ./ --model_only`.\n3. Edit `config_maisi_diff_model_<variant>.json`:\n   - Set `dim` and `spacing` per the FOV table above.\n   - Set `modality` per the table above (CT \u2192 1; MR variants \u2192 8..32).\n   - For `ddpm-ct` only: set `top_region_index` / `bottom_region_index`.\n   - Optional: `random_seed`, `num_inference_steps`, `cfg_guidance_scale`.\n4. Run `python -m scripts.diff_model_infer -t ... -e ... -c ...`.\n5. Output written to the `output_dir` in the environment config.\n\n## Related skills\n\n- `download-models` \u2014 fetch the right checkpoints.\n- `infer_mask-generation` \u2014 generate a mask from scratch (the other algorithm in this repo).\n- `infer_image-from-mask` \u2014 generate an image FROM an existing mask (uses ControlNet).\n- `infer_mask-image-paired` \u2014 full mask + image paired pipeline (chains both).\n"
+        }
+      ],
+      "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2 && OUT_DIR=\"$(pwd)/runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2\" && STAGE_DIR=\"${OUT_DIR}/_staged_configs\" && mkdir -p \"${STAGE_DIR}\" && cd \"${NV_GENERATE_ROOT}\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && python - <<'PY'\nimport json, os, shutil\nreq = json.load(open(os.path.join(os.environ['OLDPWD'], 'runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json')))\nstage = os.environ['STAGE_DIR']\nsrc_env = 'configs/environment_maisi_diff_model_rflow-mr-brain.json'\nsrc_cfg = 'configs/config_maisi_diff_model_rflow-mr-brain.json'\ndst_env = os.path.join(stage, 'environment_maisi_diff_model_rflow-mr-brain.json')\ndst_cfg = os.path.join(stage, 'config_maisi_diff_model_rflow-mr-brain.json')\nshutil.copy(src_env, dst_env)\nshutil.copy(src_cfg, dst_cfg)\nenv = json.load(open(dst_env))\nenv['output_dir'] = os.environ['OUT_DIR']\njson.dump(env, open(dst_env, 'w'), indent=2)\ncfg = json.load(open(dst_cfg))\ndmi = cfg['diffusion_unet_inference']\ndmi['dim'] = [256, 256, 256]\ndmi['spacing'] = [1.0, 1.0, 1.0]\ndmi['num_output_samples'] = 1\ncfg['modality'] = 9\nfor k in ('random_seed','num_inference_steps','cfg_guidance_scale','modality','dim','spacing','num_output_samples'):\n    if k in req:\n        if k in ('dim','spacing','num_output_samples','num_inference_steps','cfg_guidance_scale','random_seed'):\n            dmi[k] = req[k]\n        else:\n            cfg[k] = req[k]\njson.dump(cfg, open(dst_cfg, 'w'), indent=2)\nPY\n export OLDPWD && python -m scripts.diff_model_infer -t ./configs/config_network_rflow.json -e \"${STAGE_DIR}/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"${STAGE_DIR}/config_maisi_diff_model_rflow-mr-brain.json\"\n```",
+      "command": "mkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2 && OUT_DIR=\"$(pwd)/runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2\" && STAGE_DIR=\"${OUT_DIR}/_staged_configs\" && mkdir -p \"${STAGE_DIR}\" && cd \"${NV_GENERATE_ROOT}\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && python - <<'PY'\nimport json, os, shutil\nreq = json.load(open(os.path.join(os.environ['OLDPWD'], 'runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json')))\nstage = os.environ['STAGE_DIR']\nsrc_env = 'configs/environment_maisi_diff_model_rflow-mr-brain.json'\nsrc_cfg = 'configs/config_maisi_diff_model_rflow-mr-brain.json'\ndst_env = os.path.join(stage, 'environment_maisi_diff_model_rflow-mr-brain.json')\ndst_cfg = os.path.join(stage, 'config_maisi_diff_model_rflow-mr-brain.json')\nshutil.copy(src_env, dst_env)\nshutil.copy(src_cfg, dst_cfg)\nenv = json.load(open(dst_env))\nenv['output_dir'] = os.environ['OUT_DIR']\njson.dump(env, open(dst_env, 'w'), indent=2)\ncfg = json.load(open(dst_cfg))\ndmi = cfg['diffusion_unet_inference']\ndmi['dim'] = [256, 256, 256]\ndmi['spacing'] = [1.0, 1.0, 1.0]\ndmi['num_output_samples'] = 1\ncfg['modality'] = 9\nfor k in ('random_seed','num_inference_steps','cfg_guidance_scale','modality','dim','spacing','num_output_samples'):\n    if k in req:\n        if k in ('dim','spacing','num_output_samples','num_inference_steps','cfg_guidance_scale','random_seed'):\n            dmi[k] = req[k]\n        else:\n            cfg[k] = req[k]\njson.dump(cfg, open(dst_cfg, 'w'), indent=2)\nPY\n export OLDPWD && python -m scripts.diff_model_infer -t ./configs/config_network_rflow.json -e \"${STAGE_DIR}/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"${STAGE_DIR}/config_maisi_diff_model_rflow-mr-brain.json\"",
+      "usage": {
+        "completion_tokens": 961,
+        "prompt_tokens": 4398,
+        "total_tokens": 5359,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 961
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 4398,
+          "cache_creation_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 1,
+        "elapsed_seconds": 0.03768730163574219,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_2/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_2/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [],
+        "stdout_tail": "",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/download_model_data.py\", line 6, in <module>\n    from huggingface_hub import hf_hub_download\nModuleNotFoundError: No module named 'huggingface_hub'\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+        "json": null
+      },
+      "score": {
+        "score": 4,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": false,
+            "reason": "exit 1"
+          }
+        ],
+        "passed": false
+      },
+      "failure_analysis": [
+        {
+          "kind": "tier_5",
+          "reason": "exit 1",
+          "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+        },
+        {
+          "kind": "nonzero_exit",
+          "reason": "Command exited 1.",
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/download_model_data.py\", line 6, in <module>\n    from huggingface_hub import hf_hub_download\nModuleNotFoundError: No module named 'huggingface_hub'\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+          "stdout_tail": "",
+          "repair_hint": "Use stderr/stdout to repair setup, paths, arguments, or runtime package installation."
+        }
+      ],
+      "step": 0,
+      "backend_label": "Opus 4.7",
+      "attempts": [
+        {
+          "backend": "opus",
+          "model": "aws/anthropic/bedrock-claude-opus-4-7",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "aws/anthropic/bedrock-claude-opus-4-7",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "without",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md ---\n---\nname: infer_image-only\ndescription: How to run image-only inference (no mask, no ControlNet) with NV-Generate-CTMR. Covers picking the right model variant (rflow-ct / rflow-mr / rflow-mr-brain / ddpm-ct), choosing dim/spacing for a target field-of-view, and the modality + body-region knobs. Trigger when the user asks \"how do I generate a CT image\", \"what dim/spacing should I use\", \"how do I set the FOV\", \"which model variant for brain MRI / abdomen CT / chest CT\", or wants help running the README \u00a72.2, \u00a72.4, \u00a72.5 commands.\n---\n\n# Image-only inference (no mask)\n\n> ## \u26a0\ufe0f Why FOV matters (read this first)\n>\n> **FOV = `dim \u00d7 spacing`** (mm per axis). This is the single biggest knob for output quality. The model has only seen FOVs from the **training-data distribution** for its target anatomy \u2014 asking it to synthesize at a numerically-valid but out-of-distribution FOV produces unrealistic output, even when `check_input_ct`/`check_input_mr` accept the inputs.\n>\n> **The \"Recommended (dim, spacing) by anatomical target\" table below is not a list of preferences** \u2014 those values are where the training data actually lives. Stay close to them; the further you deviate the worse the output.\n>\n> **Common failure mode**: user picks `dim=(256,256,256), spacing=(0.5,0.5,0.5)` to \"make a high-res small volume.\" Validator accepts it (FOV=128mm cube). The DM produces noise because it never saw 128 mm body FOVs at training. **Fix**: match a row in the recommended table below.\n\nThis skill covers running the **image-only** diffusion model \u2014 no ControlNet, no mask input. The CLI is `scripts.diff_model_infer`. Three Quick Start subsections of the README use this path:\n\n- \u00a72.2 MR Brain Image Generation (`rflow-mr-brain`)\n- \u00a72.4 CT Image Generation (`rflow-ct` or `ddpm-ct`)\n- \u00a72.5 MR Image Generation (`rflow-mr`)\n\nThis is distinct from the mask-image-paired pipeline in \u00a72.3, which uses `scripts.inference` and the `LDMSampler` orchestrator (see the `infer_mask-image-paired` skill).\n\n## Picking a model variant\n\n| Variant | Modality | Architecture | Inference steps | Body region input? | Max volume | Use case |\n|---|---|---|---|---|---|---|\n| `rflow-mr-brain` | MRI (brain) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7256 | T1/T2/FLAIR/SWI whole-brain and skull-stripped |\n| `rflow-mr` | MRI (other) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7128 | T2 prostate, T1 breast, T1/T2 abdomen, etc. Recommend fine-tuning. |\n| `rflow-ct` | CT | MAISI-v2 (Rectified Flow) | **30** (33\u00d7 faster) | No | **512\u00d7512\u00d7768** | Whole-body CT |\n| `ddpm-ct` | CT | MAISI-v1 (DDPM) | 1000 | **Yes** | 512\u00d7512\u00d7768 | Whole-body CT with explicit body-region indices |\n\nPick the variant by:\n\n1. Modality + anatomy (brain MRI \u2192 `rflow-mr-brain`; CT \u2192 `rflow-ct`; other MRI \u2192 `rflow-mr`).\n2. Whether you need explicit body-region conditioning (use `ddpm-ct` if you want `top_region_index` / `bottom_region_index` as inputs; else prefer `rflow-ct` \u2014 33\u00d7 faster, similar FID).\n\n## Quick Start commands\n\nEach variant follows the same two-step pattern: download weights, then run inference.\n\n```bash\nnetwork=\"rflow\"   # or \"ddpm\" for ddpm-ct\ngenerate_version=\"rflow-mr-brain\"   # or rflow-ct / rflow-mr / ddpm-ct\n\npython -m scripts.download_model_data --version ${generate_version} --root_dir \"./\" --model_only\n\npython -m scripts.diff_model_infer \\\n    -t ./configs/config_network_${network}.json \\\n    -e ./configs/environment_maisi_diff_model_${generate_version}.json \\\n    -c ./configs/config_maisi_diff_model_${generate_version}.json\n```\n\nFor `ddpm-ct`: use `network=\"ddpm\"` and the corresponding `config_network_ddpm.json` / `environment_maisi_diff_model_ddpm-ct.json` / `config_maisi_diff_model_ddpm-ct.json`.\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct` / `rflow-mr*`). Lower values silently degrade output \u2014 the DDPM scheduler emits a warning but still runs. This makes `ddpm-ct` ~33\u00d7 slower than `rflow-ct`. Prefer `rflow-ct` unless you specifically need body-region indices.\n\n## Choosing `dim` and `spacing` \u2014 the FOV knob\n\nThe two most important knobs are **`dim`** (voxel grid size) and **`spacing`** (voxel size in mm). They live in the `diffusion_unet_inference` block of `configs/config_maisi_diff_model_<variant>.json`:\n\n```json\n\"diffusion_unet_inference\": {\n    \"dim\": [256, 256, 256],\n    \"spacing\": [1, 1, 1],\n    ...\n}\n```\n\nThe **field of view (FOV)** in each axis is `dim[i] \u00d7 spacing[i]` mm. Pick the pair so the FOV covers your target anatomy plus ~10% margin.\n\n### Hard constraints (validated by `check_input_ct` / `check_input_mr`)\n\nFor CT (`rflow-ct`, `ddpm-ct`):\n\n- `dim[0] == dim[1]`\n- `dim[0] \u2208 {256, 384, 512}`\n- `dim[2] \u2208 {128, 256, 384, 512, 640, 768}`\n- `spacing[0] == spacing[1]`\n- `spacing[0] \u2208 [0.5, 3.0]` mm, `spacing[2] \u2208 [0.5, 5.0]` mm\n- Recommended `FOV_xy \u2265 256` mm for head, `\u2265 384` mm for abdomen/body\n\nFor MR (`rflow-mr`, `rflow-mr-brain`):\n\n- At least two of `dim[0..2]` must be equal\n- If `dim[2]=128`: `dim[0]=dim[1] \u2208 {128, 256, 384, 512}`\n- If `dim[2]=256`: `dim \u2208 {[128,256,256], [256,128,256], [256,256,256]}`\n- `spacing \u2208 [0.4, 5.0]` mm per axis\n\n### Recommended `(dim, spacing)` by anatomical target\n\n| Target | `dim` | `spacing` (mm) | Resulting FOV (mm) | Variant |\n|---|---|---|---|---|\n| Brain (whole-brain, T1/T2/FLAIR/SWI) | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Brain skull-stripped | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Chest (single-slice axial coverage) | `(512, 512, 128)` | `(0.78, 0.78, 4.0)` | `400 \u00d7 400 \u00d7 512` | `rflow-ct` |\n| Abdomen | `(512, 512, 256)` | `(1.0, 1.0, 1.5)` | `512 \u00d7 512 \u00d7 384` | `rflow-ct` |\n| Whole body (torso \u2192 mid-femur) | `(512, 512, 512)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 768` | `rflow-ct` |\n| Long-axis whole-body (head \u2192 feet) | `(512, 512, 768)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 1152` | `rflow-ct` (max supported) |\n\n### Quick formula\n\n1. Pick `spacing` first to control voxel anisotropy and resolution.\n2. Pick `dim` so `dim \u00d7 spacing` covers your target anatomy plus ~10% margin.\n3. Round `dim` to the nearest allowed value (constraints above).\n4. Check the resulting FOV with `print([dim[i]*spacing[i] for i in range(3)])` before running.\n\nSee `docs/inference.md` for the full per-modality table.\n\n## Modality codes\n\nSet `\"modality\"` in the variant's `config_maisi_diff_model_<variant>.json`. Codes from `configs/modality_mapping.json`:\n\n| Code | Modality | Notes |\n|---|---|---|\n| 1 | CT | always set for `rflow-ct` / `ddpm-ct` |\n| 8 | MRI (no contrast specified) | |\n| 9 | mri_t1 | T1w whole-brain |\n| 10 | mri_t2 | T2w whole-brain |\n| 11 | mri_flair | FLAIR whole-brain |\n| 20 | mri_swi | SWI whole-brain |\n| 29 | mri_t1_skull_stripped | T1w skull-stripped |\n| 30 | mri_t2_skull_stripped | T2w skull-stripped |\n| 31 | mri_flair_skull_stripped | FLAIR skull-stripped |\n| 32 | mri_swi_skull_stripped | SWI skull-stripped |\n\n## Body-region indices (`ddpm-ct` only)\n\nFor `ddpm-ct`, the UNet also accepts one-hot body-region indices:\n\n```json\n\"top_region_index\":    [0, 1, 0, 0],   // chest\n\"bottom_region_index\": [0, 0, 1, 0]    // abdomen\n```\n\nSlots correspond to `[head, chest, abdomen, pelvis]`. `rflow-ct` / `rflow-mr` / `rflow-mr-brain` do **not** use these \u2014 their `include_top_region_index_input` is False.\n\n## Workflow summary\n\n1. Decide variant (CT vs MR vs MR-brain; RFlow vs DDPM).\n2. Download model weights: `python -m scripts.download_model_data --version <variant> --root_dir ./ --model_only`.\n3. Edit `config_maisi_diff_model_<variant>.json`:\n   - Set `dim` and `spacing` per the FOV table above.\n   - Set `modality` per the table above (CT \u2192 1; MR variants \u2192 8..32).\n   - For `ddpm-ct` only: set `top_region_index` / `bottom_region_index`.\n   - Optional: `random_seed`, `num_inference_steps`, `cfg_guidance_scale`.\n4. Run `python -m scripts.diff_model_infer -t ... -e ... -c ...`.\n5. Output written to the `output_dir` in the environment config.\n\n## Related skills\n\n- `download-models` \u2014 fetch the right checkpoints.\n- `infer_mask-generation` \u2014 generate a mask from scratch (the other algorithm in this repo).\n- `infer_image-from-mask` \u2014 generate an image FROM an existing mask (uses ControlNet).\n- `infer_mask-image-paired` \u2014 full mask + image paired pipeline (chains both).\n"
+            }
+          ],
+          "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2 && OUT_DIR=\"$(pwd)/runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2\" && STAGE_DIR=\"${OUT_DIR}/_staged_configs\" && mkdir -p \"${STAGE_DIR}\" && cd \"${NV_GENERATE_ROOT}\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && python - <<'PY'\nimport json, os, shutil\nreq = json.load(open(os.path.join(os.environ['OLDPWD'], 'runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json')))\nstage = os.environ['STAGE_DIR']\nsrc_env = 'configs/environment_maisi_diff_model_rflow-mr-brain.json'\nsrc_cfg = 'configs/config_maisi_diff_model_rflow-mr-brain.json'\ndst_env = os.path.join(stage, 'environment_maisi_diff_model_rflow-mr-brain.json')\ndst_cfg = os.path.join(stage, 'config_maisi_diff_model_rflow-mr-brain.json')\nshutil.copy(src_env, dst_env)\nshutil.copy(src_cfg, dst_cfg)\nenv = json.load(open(dst_env))\nenv['output_dir'] = os.environ['OUT_DIR']\njson.dump(env, open(dst_env, 'w'), indent=2)\ncfg = json.load(open(dst_cfg))\ndmi = cfg['diffusion_unet_inference']\ndmi['dim'] = [256, 256, 256]\ndmi['spacing'] = [1.0, 1.0, 1.0]\ndmi['num_output_samples'] = 1\ncfg['modality'] = 9\nfor k in ('random_seed','num_inference_steps','cfg_guidance_scale','modality','dim','spacing','num_output_samples'):\n    if k in req:\n        if k in ('dim','spacing','num_output_samples','num_inference_steps','cfg_guidance_scale','random_seed'):\n            dmi[k] = req[k]\n        else:\n            cfg[k] = req[k]\njson.dump(cfg, open(dst_cfg, 'w'), indent=2)\nPY\n export OLDPWD && python -m scripts.diff_model_infer -t ./configs/config_network_rflow.json -e \"${STAGE_DIR}/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"${STAGE_DIR}/config_maisi_diff_model_rflow-mr-brain.json\"\n```",
+          "command": "mkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2 && OUT_DIR=\"$(pwd)/runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2\" && STAGE_DIR=\"${OUT_DIR}/_staged_configs\" && mkdir -p \"${STAGE_DIR}\" && cd \"${NV_GENERATE_ROOT}\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && python - <<'PY'\nimport json, os, shutil\nreq = json.load(open(os.path.join(os.environ['OLDPWD'], 'runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json')))\nstage = os.environ['STAGE_DIR']\nsrc_env = 'configs/environment_maisi_diff_model_rflow-mr-brain.json'\nsrc_cfg = 'configs/config_maisi_diff_model_rflow-mr-brain.json'\ndst_env = os.path.join(stage, 'environment_maisi_diff_model_rflow-mr-brain.json')\ndst_cfg = os.path.join(stage, 'config_maisi_diff_model_rflow-mr-brain.json')\nshutil.copy(src_env, dst_env)\nshutil.copy(src_cfg, dst_cfg)\nenv = json.load(open(dst_env))\nenv['output_dir'] = os.environ['OUT_DIR']\njson.dump(env, open(dst_env, 'w'), indent=2)\ncfg = json.load(open(dst_cfg))\ndmi = cfg['diffusion_unet_inference']\ndmi['dim'] = [256, 256, 256]\ndmi['spacing'] = [1.0, 1.0, 1.0]\ndmi['num_output_samples'] = 1\ncfg['modality'] = 9\nfor k in ('random_seed','num_inference_steps','cfg_guidance_scale','modality','dim','spacing','num_output_samples'):\n    if k in req:\n        if k in ('dim','spacing','num_output_samples','num_inference_steps','cfg_guidance_scale','random_seed'):\n            dmi[k] = req[k]\n        else:\n            cfg[k] = req[k]\njson.dump(cfg, open(dst_cfg, 'w'), indent=2)\nPY\n export OLDPWD && python -m scripts.diff_model_infer -t ./configs/config_network_rflow.json -e \"${STAGE_DIR}/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"${STAGE_DIR}/config_maisi_diff_model_rflow-mr-brain.json\"",
+          "usage": {
+            "completion_tokens": 961,
+            "prompt_tokens": 4398,
+            "total_tokens": 5359,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 961
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 4398,
+              "cache_creation_tokens": 0
+            },
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 1,
+            "elapsed_seconds": 0.03768730163574219,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_2/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_codex_opus/opus/without/repeat_2/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [],
+            "stdout_tail": "",
+            "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/download_model_data.py\", line 6, in <module>\n    from huggingface_hub import hf_hub_download\nModuleNotFoundError: No module named 'huggingface_hub'\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+            "json": null
+          },
+          "score": {
+            "score": 4,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": false,
+                "reason": "exit 1"
+              }
+            ],
+            "passed": false
+          },
+          "failure_analysis": [
+            {
+              "kind": "tier_5",
+              "reason": "exit 1",
+              "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+            },
+            {
+              "kind": "nonzero_exit",
+              "reason": "Command exited 1.",
+              "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/download_model_data.py\", line 6, in <module>\n    from huggingface_hub import hf_hub_download\nModuleNotFoundError: No module named 'huggingface_hub'\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \".workbench_data/upstreams/NV-Generate-CTMR/scripts/diff_model_infer.py\", line 20, in <module>\n    import nibabel as nib\nModuleNotFoundError: No module named 'nibabel'\n",
+              "stdout_tail": "",
+              "repair_hint": "Use stderr/stdout to repair setup, paths, arguments, or runtime package installation."
+            }
+          ],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": Infinity,
+      "max_correction_steps": 0,
+      "repeat": 2,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "opus",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "aws/anthropic/bedrock-claude-opus-4-7",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "without",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md ---\n---\nname: infer_image-only\ndescription: How to run image-only inference (no mask, no ControlNet) with NV-Generate-CTMR. Covers picking the right model variant (rflow-ct / rflow-mr / rflow-mr-brain / ddpm-ct), choosing dim/spacing for a target field-of-view, and the modality + body-region knobs. Trigger when the user asks \"how do I generate a CT image\", \"what dim/spacing should I use\", \"how do I set the FOV\", \"which model variant for brain MRI / abdomen CT / chest CT\", or wants help running the README \u00a72.2, \u00a72.4, \u00a72.5 commands.\n---\n\n# Image-only inference (no mask)\n\n> ## \u26a0\ufe0f Why FOV matters (read this first)\n>\n> **FOV = `dim \u00d7 spacing`** (mm per axis). This is the single biggest knob for output quality. The model has only seen FOVs from the **training-data distribution** for its target anatomy \u2014 asking it to synthesize at a numerically-valid but out-of-distribution FOV produces unrealistic output, even when `check_input_ct`/`check_input_mr` accept the inputs.\n>\n> **The \"Recommended (dim, spacing) by anatomical target\" table below is not a list of preferences** \u2014 those values are where the training data actually lives. Stay close to them; the further you deviate the worse the output.\n>\n> **Common failure mode**: user picks `dim=(256,256,256), spacing=(0.5,0.5,0.5)` to \"make a high-res small volume.\" Validator accepts it (FOV=128mm cube). The DM produces noise because it never saw 128 mm body FOVs at training. **Fix**: match a row in the recommended table below.\n\nThis skill covers running the **image-only** diffusion model \u2014 no ControlNet, no mask input. The CLI is `scripts.diff_model_infer`. Three Quick Start subsections of the README use this path:\n\n- \u00a72.2 MR Brain Image Generation (`rflow-mr-brain`)\n- \u00a72.4 CT Image Generation (`rflow-ct` or `ddpm-ct`)\n- \u00a72.5 MR Image Generation (`rflow-mr`)\n\nThis is distinct from the mask-image-paired pipeline in \u00a72.3, which uses `scripts.inference` and the `LDMSampler` orchestrator (see the `infer_mask-image-paired` skill).\n\n## Picking a model variant\n\n| Variant | Modality | Architecture | Inference steps | Body region input? | Max volume | Use case |\n|---|---|---|---|---|---|---|\n| `rflow-mr-brain` | MRI (brain) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7256 | T1/T2/FLAIR/SWI whole-brain and skull-stripped |\n| `rflow-mr` | MRI (other) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7128 | T2 prostate, T1 breast, T1/T2 abdomen, etc. Recommend fine-tuning. |\n| `rflow-ct` | CT | MAISI-v2 (Rectified Flow) | **30** (33\u00d7 faster) | No | **512\u00d7512\u00d7768** | Whole-body CT |\n| `ddpm-ct` | CT | MAISI-v1 (DDPM) | 1000 | **Yes** | 512\u00d7512\u00d7768 | Whole-body CT with explicit body-region indices |\n\nPick the variant by:\n\n1. Modality + anatomy (brain MRI \u2192 `rflow-mr-brain`; CT \u2192 `rflow-ct`; other MRI \u2192 `rflow-mr`).\n2. Whether you need explicit body-region conditioning (use `ddpm-ct` if you want `top_region_index` / `bottom_region_index` as inputs; else prefer `rflow-ct` \u2014 33\u00d7 faster, similar FID).\n\n## Quick Start commands\n\nEach variant follows the same two-step pattern: download weights, then run inference.\n\n```bash\nnetwork=\"rflow\"   # or \"ddpm\" for ddpm-ct\ngenerate_version=\"rflow-mr-brain\"   # or rflow-ct / rflow-mr / ddpm-ct\n\npython -m scripts.download_model_data --version ${generate_version} --root_dir \"./\" --model_only\n\npython -m scripts.diff_model_infer \\\n    -t ./configs/config_network_${network}.json \\\n    -e ./configs/environment_maisi_diff_model_${generate_version}.json \\\n    -c ./configs/config_maisi_diff_model_${generate_version}.json\n```\n\nFor `ddpm-ct`: use `network=\"ddpm\"` and the corresponding `config_network_ddpm.json` / `environment_maisi_diff_model_ddpm-ct.json` / `config_maisi_diff_model_ddpm-ct.json`.\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct` / `rflow-mr*`). Lower values silently degrade output \u2014 the DDPM scheduler emits a warning but still runs. This makes `ddpm-ct` ~33\u00d7 slower than `rflow-ct`. Prefer `rflow-ct` unless you specifically need body-region indices.\n\n## Choosing `dim` and `spacing` \u2014 the FOV knob\n\nThe two most important knobs are **`dim`** (voxel grid size) and **`spacing`** (voxel size in mm). They live in the `diffusion_unet_inference` block of `configs/config_maisi_diff_model_<variant>.json`:\n\n```json\n\"diffusion_unet_inference\": {\n    \"dim\": [256, 256, 256],\n    \"spacing\": [1, 1, 1],\n    ...\n}\n```\n\nThe **field of view (FOV)** in each axis is `dim[i] \u00d7 spacing[i]` mm. Pick the pair so the FOV covers your target anatomy plus ~10% margin.\n\n### Hard constraints (validated by `check_input_ct` / `check_input_mr`)\n\nFor CT (`rflow-ct`, `ddpm-ct`):\n\n- `dim[0] == dim[1]`\n- `dim[0] \u2208 {256, 384, 512}`\n- `dim[2] \u2208 {128, 256, 384, 512, 640, 768}`\n- `spacing[0] == spacing[1]`\n- `spacing[0] \u2208 [0.5, 3.0]` mm, `spacing[2] \u2208 [0.5, 5.0]` mm\n- Recommended `FOV_xy \u2265 256` mm for head, `\u2265 384` mm for abdomen/body\n\nFor MR (`rflow-mr`, `rflow-mr-brain`):\n\n- At least two of `dim[0..2]` must be equal\n- If `dim[2]=128`: `dim[0]=dim[1] \u2208 {128, 256, 384, 512}`\n- If `dim[2]=256`: `dim \u2208 {[128,256,256], [256,128,256], [256,256,256]}`\n- `spacing \u2208 [0.4, 5.0]` mm per axis\n\n### Recommended `(dim, spacing)` by anatomical target\n\n| Target | `dim` | `spacing` (mm) | Resulting FOV (mm) | Variant |\n|---|---|---|---|---|\n| Brain (whole-brain, T1/T2/FLAIR/SWI) | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Brain skull-stripped | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Chest (single-slice axial coverage) | `(512, 512, 128)` | `(0.78, 0.78, 4.0)` | `400 \u00d7 400 \u00d7 512` | `rflow-ct` |\n| Abdomen | `(512, 512, 256)` | `(1.0, 1.0, 1.5)` | `512 \u00d7 512 \u00d7 384` | `rflow-ct` |\n| Whole body (torso \u2192 mid-femur) | `(512, 512, 512)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 768` | `rflow-ct` |\n| Long-axis whole-body (head \u2192 feet) | `(512, 512, 768)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 1152` | `rflow-ct` (max supported) |\n\n### Quick formula\n\n1. Pick `spacing` first to control voxel anisotropy and resolution.\n2. Pick `dim` so `dim \u00d7 spacing` covers your target anatomy plus ~10% margin.\n3. Round `dim` to the nearest allowed value (constraints above).\n4. Check the resulting FOV with `print([dim[i]*spacing[i] for i in range(3)])` before running.\n\nSee `docs/inference.md` for the full per-modality table.\n\n## Modality codes\n\nSet `\"modality\"` in the variant's `config_maisi_diff_model_<variant>.json`. Codes from `configs/modality_mapping.json`:\n\n| Code | Modality | Notes |\n|---|---|---|\n| 1 | CT | always set for `rflow-ct` / `ddpm-ct` |\n| 8 | MRI (no contrast specified) | |\n| 9 | mri_t1 | T1w whole-brain |\n| 10 | mri_t2 | T2w whole-brain |\n| 11 | mri_flair | FLAIR whole-brain |\n| 20 | mri_swi | SWI whole-brain |\n| 29 | mri_t1_skull_stripped | T1w skull-stripped |\n| 30 | mri_t2_skull_stripped | T2w skull-stripped |\n| 31 | mri_flair_skull_stripped | FLAIR skull-stripped |\n| 32 | mri_swi_skull_stripped | SWI skull-stripped |\n\n## Body-region indices (`ddpm-ct` only)\n\nFor `ddpm-ct`, the UNet also accepts one-hot body-region indices:\n\n```json\n\"top_region_index\":    [0, 1, 0, 0],   // chest\n\"bottom_region_index\": [0, 0, 1, 0]    // abdomen\n```\n\nSlots correspond to `[head, chest, abdomen, pelvis]`. `rflow-ct` / `rflow-mr` / `rflow-mr-brain` do **not** use these \u2014 their `include_top_region_index_input` is False.\n\n## Workflow summary\n\n1. Decide variant (CT vs MR vs MR-brain; RFlow vs DDPM).\n2. Download model weights: `python -m scripts.download_model_data --version <variant> --root_dir ./ --model_only`.\n3. Edit `config_maisi_diff_model_<variant>.json`:\n   - Set `dim` and `spacing` per the FOV table above.\n   - Set `modality` per the table above (CT \u2192 1; MR variants \u2192 8..32).\n   - For `ddpm-ct` only: set `top_region_index` / `bottom_region_index`.\n   - Optional: `random_seed`, `num_inference_steps`, `cfg_guidance_scale`.\n4. Run `python -m scripts.diff_model_infer -t ... -e ... -c ...`.\n5. Output written to the `output_dir` in the environment config.\n\n## Related skills\n\n- `download-models` \u2014 fetch the right checkpoints.\n- `infer_mask-generation` \u2014 generate a mask from scratch (the other algorithm in this repo).\n- `infer_image-from-mask` \u2014 generate an image FROM an existing mask (uses ControlNet).\n- `infer_mask-image-paired` \u2014 full mask + image paired pipeline (chains both).\n"
+        }
+      ],
+      "response": "Looking at the request, I need to:\n1. Check what's in the request.json (T1 brain MR)\n2. Use `rflow-mr-brain` variant\n3. Stage edited configs under the output dir (don't modify upstream)\n4. Output to the specified directory\n\n```bash\nset -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3 && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && cd - >/dev/null && cp \"$NV_GENERATE_ROOT/configs/config_network_rflow.json\" \"$OUT/configs/config_network_rflow.json\" && cp \"$NV_GENERATE_ROOT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" && cp \"$NV_GENERATE_ROOT/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\" && python -c \"import json,os; p='$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['output_dir']=os.path.abspath('$OUT/output'); json.dump(d,open(p,'w'),indent=2)\" && python -c \"import json; p='$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['diffusion_unet_inference']['dim']=[256,256,256]; d['diffusion_unet_inference']['spacing']=[1.0,1.0,1.0]; d['diffusion_unet_inference']['modality']=9; d['diffusion_unet_inference']['num_output_samples']=1; json.dump(d,open(p,'w'),indent=2)\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\"\n```",
+      "command": "set -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3 && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && cd - >/dev/null && cp \"$NV_GENERATE_ROOT/configs/config_network_rflow.json\" \"$OUT/configs/config_network_rflow.json\" && cp \"$NV_GENERATE_ROOT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" && cp \"$NV_GENERATE_ROOT/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\" && python -c \"import json,os; p='$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['output_dir']=os.path.abspath('$OUT/output'); json.dump(d,open(p,'w'),indent=2)\" && python -c \"import json; p='$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['diffusion_unet_inference']['dim']=[256,256,256]; d['diffusion_unet_inference']['spacing']=[1.0,1.0,1.0]; d['diffusion_unet_inference']['modality']=9; d['diffusion_unet_inference']['num_output_samples']=1; json.dump(d,open(p,'w'),indent=2)\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\"",
+      "usage": {
+        "completion_tokens": 873,
+        "prompt_tokens": 4398,
+        "total_tokens": 5271,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 873
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "text_tokens": 4398,
+          "cache_creation_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0
+      },
+      "execution": {
+        "executed": false,
+        "exit_code": null,
+        "reason": "command does not reference the neutral staged input path"
+      },
+      "score": {
+        "score": 3,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": false,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": false,
+            "reason": "command does not reference the neutral staged input path"
+          }
+        ],
+        "passed": false
+      },
+      "failure_analysis": [
+        {
+          "kind": "tier_2",
+          "reason": "user input path marker",
+          "repair_hint": "Use the staged user input path under runs/with_vs_without_nv/_inputs/."
+        },
+        {
+          "kind": "tier_5",
+          "reason": "command does not reference the neutral staged input path",
+          "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+        },
+        {
+          "kind": "not_executed",
+          "reason": "command does not reference the neutral staged input path",
+          "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+        }
+      ],
+      "step": 0,
+      "backend_label": "Opus 4.7",
+      "attempts": [
+        {
+          "backend": "opus",
+          "model": "aws/anthropic/bedrock-claude-opus-4-7",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "aws/anthropic/bedrock-claude-opus-4-7",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "without",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md ---\n---\nname: infer_image-only\ndescription: How to run image-only inference (no mask, no ControlNet) with NV-Generate-CTMR. Covers picking the right model variant (rflow-ct / rflow-mr / rflow-mr-brain / ddpm-ct), choosing dim/spacing for a target field-of-view, and the modality + body-region knobs. Trigger when the user asks \"how do I generate a CT image\", \"what dim/spacing should I use\", \"how do I set the FOV\", \"which model variant for brain MRI / abdomen CT / chest CT\", or wants help running the README \u00a72.2, \u00a72.4, \u00a72.5 commands.\n---\n\n# Image-only inference (no mask)\n\n> ## \u26a0\ufe0f Why FOV matters (read this first)\n>\n> **FOV = `dim \u00d7 spacing`** (mm per axis). This is the single biggest knob for output quality. The model has only seen FOVs from the **training-data distribution** for its target anatomy \u2014 asking it to synthesize at a numerically-valid but out-of-distribution FOV produces unrealistic output, even when `check_input_ct`/`check_input_mr` accept the inputs.\n>\n> **The \"Recommended (dim, spacing) by anatomical target\" table below is not a list of preferences** \u2014 those values are where the training data actually lives. Stay close to them; the further you deviate the worse the output.\n>\n> **Common failure mode**: user picks `dim=(256,256,256), spacing=(0.5,0.5,0.5)` to \"make a high-res small volume.\" Validator accepts it (FOV=128mm cube). The DM produces noise because it never saw 128 mm body FOVs at training. **Fix**: match a row in the recommended table below.\n\nThis skill covers running the **image-only** diffusion model \u2014 no ControlNet, no mask input. The CLI is `scripts.diff_model_infer`. Three Quick Start subsections of the README use this path:\n\n- \u00a72.2 MR Brain Image Generation (`rflow-mr-brain`)\n- \u00a72.4 CT Image Generation (`rflow-ct` or `ddpm-ct`)\n- \u00a72.5 MR Image Generation (`rflow-mr`)\n\nThis is distinct from the mask-image-paired pipeline in \u00a72.3, which uses `scripts.inference` and the `LDMSampler` orchestrator (see the `infer_mask-image-paired` skill).\n\n## Picking a model variant\n\n| Variant | Modality | Architecture | Inference steps | Body region input? | Max volume | Use case |\n|---|---|---|---|---|---|---|\n| `rflow-mr-brain` | MRI (brain) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7256 | T1/T2/FLAIR/SWI whole-brain and skull-stripped |\n| `rflow-mr` | MRI (other) | MAISI-v2 (Rectified Flow) | 30 | No | 512\u00d7512\u00d7128 | T2 prostate, T1 breast, T1/T2 abdomen, etc. Recommend fine-tuning. |\n| `rflow-ct` | CT | MAISI-v2 (Rectified Flow) | **30** (33\u00d7 faster) | No | **512\u00d7512\u00d7768** | Whole-body CT |\n| `ddpm-ct` | CT | MAISI-v1 (DDPM) | 1000 | **Yes** | 512\u00d7512\u00d7768 | Whole-body CT with explicit body-region indices |\n\nPick the variant by:\n\n1. Modality + anatomy (brain MRI \u2192 `rflow-mr-brain`; CT \u2192 `rflow-ct`; other MRI \u2192 `rflow-mr`).\n2. Whether you need explicit body-region conditioning (use `ddpm-ct` if you want `top_region_index` / `bottom_region_index` as inputs; else prefer `rflow-ct` \u2014 33\u00d7 faster, similar FID).\n\n## Quick Start commands\n\nEach variant follows the same two-step pattern: download weights, then run inference.\n\n```bash\nnetwork=\"rflow\"   # or \"ddpm\" for ddpm-ct\ngenerate_version=\"rflow-mr-brain\"   # or rflow-ct / rflow-mr / ddpm-ct\n\npython -m scripts.download_model_data --version ${generate_version} --root_dir \"./\" --model_only\n\npython -m scripts.diff_model_infer \\\n    -t ./configs/config_network_${network}.json \\\n    -e ./configs/environment_maisi_diff_model_${generate_version}.json \\\n    -c ./configs/config_maisi_diff_model_${generate_version}.json\n```\n\nFor `ddpm-ct`: use `network=\"ddpm\"` and the corresponding `config_network_ddpm.json` / `environment_maisi_diff_model_ddpm-ct.json` / `config_maisi_diff_model_ddpm-ct.json`.\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct` / `rflow-mr*`). Lower values silently degrade output \u2014 the DDPM scheduler emits a warning but still runs. This makes `ddpm-ct` ~33\u00d7 slower than `rflow-ct`. Prefer `rflow-ct` unless you specifically need body-region indices.\n\n## Choosing `dim` and `spacing` \u2014 the FOV knob\n\nThe two most important knobs are **`dim`** (voxel grid size) and **`spacing`** (voxel size in mm). They live in the `diffusion_unet_inference` block of `configs/config_maisi_diff_model_<variant>.json`:\n\n```json\n\"diffusion_unet_inference\": {\n    \"dim\": [256, 256, 256],\n    \"spacing\": [1, 1, 1],\n    ...\n}\n```\n\nThe **field of view (FOV)** in each axis is `dim[i] \u00d7 spacing[i]` mm. Pick the pair so the FOV covers your target anatomy plus ~10% margin.\n\n### Hard constraints (validated by `check_input_ct` / `check_input_mr`)\n\nFor CT (`rflow-ct`, `ddpm-ct`):\n\n- `dim[0] == dim[1]`\n- `dim[0] \u2208 {256, 384, 512}`\n- `dim[2] \u2208 {128, 256, 384, 512, 640, 768}`\n- `spacing[0] == spacing[1]`\n- `spacing[0] \u2208 [0.5, 3.0]` mm, `spacing[2] \u2208 [0.5, 5.0]` mm\n- Recommended `FOV_xy \u2265 256` mm for head, `\u2265 384` mm for abdomen/body\n\nFor MR (`rflow-mr`, `rflow-mr-brain`):\n\n- At least two of `dim[0..2]` must be equal\n- If `dim[2]=128`: `dim[0]=dim[1] \u2208 {128, 256, 384, 512}`\n- If `dim[2]=256`: `dim \u2208 {[128,256,256], [256,128,256], [256,256,256]}`\n- `spacing \u2208 [0.4, 5.0]` mm per axis\n\n### Recommended `(dim, spacing)` by anatomical target\n\n| Target | `dim` | `spacing` (mm) | Resulting FOV (mm) | Variant |\n|---|---|---|---|---|\n| Brain (whole-brain, T1/T2/FLAIR/SWI) | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Brain skull-stripped | `(256, 256, 256)` | `(1.0, 1.0, 1.0)` | `256 \u00d7 256 \u00d7 256` | `rflow-mr-brain` |\n| Chest (single-slice axial coverage) | `(512, 512, 128)` | `(0.78, 0.78, 4.0)` | `400 \u00d7 400 \u00d7 512` | `rflow-ct` |\n| Abdomen | `(512, 512, 256)` | `(1.0, 1.0, 1.5)` | `512 \u00d7 512 \u00d7 384` | `rflow-ct` |\n| Whole body (torso \u2192 mid-femur) | `(512, 512, 512)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 768` | `rflow-ct` |\n| Long-axis whole-body (head \u2192 feet) | `(512, 512, 768)` | `(1.5, 1.5, 1.5)` | `768 \u00d7 768 \u00d7 1152` | `rflow-ct` (max supported) |\n\n### Quick formula\n\n1. Pick `spacing` first to control voxel anisotropy and resolution.\n2. Pick `dim` so `dim \u00d7 spacing` covers your target anatomy plus ~10% margin.\n3. Round `dim` to the nearest allowed value (constraints above).\n4. Check the resulting FOV with `print([dim[i]*spacing[i] for i in range(3)])` before running.\n\nSee `docs/inference.md` for the full per-modality table.\n\n## Modality codes\n\nSet `\"modality\"` in the variant's `config_maisi_diff_model_<variant>.json`. Codes from `configs/modality_mapping.json`:\n\n| Code | Modality | Notes |\n|---|---|---|\n| 1 | CT | always set for `rflow-ct` / `ddpm-ct` |\n| 8 | MRI (no contrast specified) | |\n| 9 | mri_t1 | T1w whole-brain |\n| 10 | mri_t2 | T2w whole-brain |\n| 11 | mri_flair | FLAIR whole-brain |\n| 20 | mri_swi | SWI whole-brain |\n| 29 | mri_t1_skull_stripped | T1w skull-stripped |\n| 30 | mri_t2_skull_stripped | T2w skull-stripped |\n| 31 | mri_flair_skull_stripped | FLAIR skull-stripped |\n| 32 | mri_swi_skull_stripped | SWI skull-stripped |\n\n## Body-region indices (`ddpm-ct` only)\n\nFor `ddpm-ct`, the UNet also accepts one-hot body-region indices:\n\n```json\n\"top_region_index\":    [0, 1, 0, 0],   // chest\n\"bottom_region_index\": [0, 0, 1, 0]    // abdomen\n```\n\nSlots correspond to `[head, chest, abdomen, pelvis]`. `rflow-ct` / `rflow-mr` / `rflow-mr-brain` do **not** use these \u2014 their `include_top_region_index_input` is False.\n\n## Workflow summary\n\n1. Decide variant (CT vs MR vs MR-brain; RFlow vs DDPM).\n2. Download model weights: `python -m scripts.download_model_data --version <variant> --root_dir ./ --model_only`.\n3. Edit `config_maisi_diff_model_<variant>.json`:\n   - Set `dim` and `spacing` per the FOV table above.\n   - Set `modality` per the table above (CT \u2192 1; MR variants \u2192 8..32).\n   - For `ddpm-ct` only: set `top_region_index` / `bottom_region_index`.\n   - Optional: `random_seed`, `num_inference_steps`, `cfg_guidance_scale`.\n4. Run `python -m scripts.diff_model_infer -t ... -e ... -c ...`.\n5. Output written to the `output_dir` in the environment config.\n\n## Related skills\n\n- `download-models` \u2014 fetch the right checkpoints.\n- `infer_mask-generation` \u2014 generate a mask from scratch (the other algorithm in this repo).\n- `infer_image-from-mask` \u2014 generate an image FROM an existing mask (uses ControlNet).\n- `infer_mask-image-paired` \u2014 full mask + image paired pipeline (chains both).\n"
+            }
+          ],
+          "response": "Looking at the request, I need to:\n1. Check what's in the request.json (T1 brain MR)\n2. Use `rflow-mr-brain` variant\n3. Stage edited configs under the output dir (don't modify upstream)\n4. Output to the specified directory\n\n```bash\nset -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3 && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && cd - >/dev/null && cp \"$NV_GENERATE_ROOT/configs/config_network_rflow.json\" \"$OUT/configs/config_network_rflow.json\" && cp \"$NV_GENERATE_ROOT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" && cp \"$NV_GENERATE_ROOT/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\" && python -c \"import json,os; p='$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['output_dir']=os.path.abspath('$OUT/output'); json.dump(d,open(p,'w'),indent=2)\" && python -c \"import json; p='$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['diffusion_unet_inference']['dim']=[256,256,256]; d['diffusion_unet_inference']['spacing']=[1.0,1.0,1.0]; d['diffusion_unet_inference']['modality']=9; d['diffusion_unet_inference']['num_output_samples']=1; json.dump(d,open(p,'w'),indent=2)\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\"\n```",
+          "command": "set -euo pipefail && OUT=runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3 && mkdir -p \"$OUT/configs\" \"$OUT/output\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.download_model_data --version rflow-mr-brain --root_dir \"./\" --model_only && cd - >/dev/null && cp \"$NV_GENERATE_ROOT/configs/config_network_rflow.json\" \"$OUT/configs/config_network_rflow.json\" && cp \"$NV_GENERATE_ROOT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" && cp \"$NV_GENERATE_ROOT/configs/config_maisi_diff_model_rflow-mr-brain.json\" \"$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\" && python -c \"import json,os; p='$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['output_dir']=os.path.abspath('$OUT/output'); json.dump(d,open(p,'w'),indent=2)\" && python -c \"import json; p='$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json'; d=json.load(open(p)); d['diffusion_unet_inference']['dim']=[256,256,256]; d['diffusion_unet_inference']['spacing']=[1.0,1.0,1.0]; d['diffusion_unet_inference']['modality']=9; d['diffusion_unet_inference']['num_output_samples']=1; json.dump(d,open(p,'w'),indent=2)\" && cd \"$NV_GENERATE_ROOT\" && python -m scripts.diff_model_infer -t \"$OLDPWD/$OUT/configs/config_network_rflow.json\" -e \"$OLDPWD/$OUT/configs/environment_maisi_diff_model_rflow-mr-brain.json\" -c \"$OLDPWD/$OUT/configs/config_maisi_diff_model_rflow-mr-brain.json\"",
+          "usage": {
+            "completion_tokens": 873,
+            "prompt_tokens": 4398,
+            "total_tokens": 5271,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 873
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "text_tokens": 4398,
+              "cache_creation_tokens": 0
+            },
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0
+          },
+          "execution": {
+            "executed": false,
+            "exit_code": null,
+            "reason": "command does not reference the neutral staged input path"
+          },
+          "score": {
+            "score": 3,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": false,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": false,
+                "reason": "command does not reference the neutral staged input path"
+              }
+            ],
+            "passed": false
+          },
+          "failure_analysis": [
+            {
+              "kind": "tier_2",
+              "reason": "user input path marker",
+              "repair_hint": "Use the staged user input path under runs/with_vs_without_nv/_inputs/."
+            },
+            {
+              "kind": "tier_5",
+              "reason": "command does not reference the neutral staged input path",
+              "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+            },
+            {
+              "kind": "not_executed",
+              "reason": "command does not reference the neutral staged input path",
+              "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+            }
+          ],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": Infinity,
+      "max_correction_steps": 0,
+      "repeat": 3,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+      "prompt_style": "minimal"
+    }
+  ]
+}

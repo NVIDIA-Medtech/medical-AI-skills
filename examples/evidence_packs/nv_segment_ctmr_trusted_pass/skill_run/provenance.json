@@ -1,0 +1,106 @@
+{
+  "captured_at": "2026-05-26T04:44:18.413030+00:00",
+  "gpu": {
+    "available": true,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "uuid": "GPU-95d20cf6-6e5f-d0cd-7c5c-1caad640b18e",
+        "driver_version": "580.159.04",
+        "compute_cap": "8.9",
+        "memory_total_mb": 49140.0,
+        "memory_free_mb": 48342.0,
+        "memory_used_mb": 145.0,
+        "mig_mode_current": "[N/A]"
+      }
+    ],
+    "nvcc_release": "Cuda compilation tools, release 13.2, V13.2.78"
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container image inspect and optional in-container pip freeze (HoloHub docker workflow).",
+    "outer_command": [
+      "<home>/anaconda3/envs/py312/bin/python",
+      "-m",
+      "monai.bundle",
+      "run",
+      "--config_file",
+      "configs/inference.json",
+      "--input_dict",
+      "{'image': '<repo>/skills/nv-segment-ct/fixtures/spleen_03.nii.gz'}",
+      "--output_dir",
+      "<repo>/runs/nv_segment_ctmr_trusted_pass_current/skill_run/segment_ctmr_outputs",
+      "--modality",
+      "CT_BODY"
+    ],
+    "stdout_tail": "2026-05-26 05:44:12,720 - INFO - Setting logging properties based on config: configs/logging.conf.\n[nvseg] touched Hugging Face download counter for nvidia/NV-Segment-CTMR/config.json\n2026-05-26 05:44:13,877 - root - INFO - Restored all variables from .//models/model.pt\n2026-05-26 05:44:13,877 - INFO - --- input summary of monai.bundle.scripts.run ---\n2026-05-26 05:44:13,878 - INFO - > input_dict: {'image': '<repo>/skills/nv-segment-ct/fixtures/spleen_03.nii.gz'}\n2026-05-26 05:44:13,878 - INFO - > output_dir: '<repo>/runs/nv_segment_ctmr_trusted_pass_current/skill_run/segment_ctmr_outputs'\n2026-05-26 05:44:13,878 - INFO - > modality: 'CT_BODY'\n2026-05-26 05:44:13,878 - INFO - ---\n\n\n2026-05-26 05:44:13,878 - ignite.engine.engine.Vista3dEvaluator - INFO - Engine run resuming from iteration 0, epoch 0 until 1 epochs\n2026-05-26 05:44:16,907 INFO image_writer.py:197 - writing: <repo>/runs/nv_segment_ctmr_trusted_pass_current/skill_run/segment_ctmr_outputs/spleen_03/spleen_03_trans.nii.gz\n2026-05-26 05:44:17,165 - ignite.engine.engine.Vista3dEvaluator - INFO - Epoch[1] Complete. Time taken: 00:00:03.287\n2026-05-26 05:44:17,165 - ignite.engine.engine.Vista3dEvaluator - INFO - Engine run finished. Time taken: 00:00:03.287\n",
+    "stderr_tail": "<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/utils/deprecate_utils.py:321: FutureWarning: monai.transforms.spatial.dictionary Orientationd.__init__:labels: Current default value of argument `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` was changed in version None from `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` to `labels=None`. Default value changed to None meaning that the transform now uses the 'space' of a meta-tensor, if applicable, to determine appropriate axis labels.\n  warn_deprecated(argname, msg, warning_category)\n<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\n<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n"
+  },
+  "network": {
+    "declared_endpoints": [
+      "https://github.com",
+      "https://huggingface.co"
+    ],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level",
+        "change": "untracked"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schema": "verifiers/find_skills_quality_v1/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "examples/evidence_packs/find_skills_trusted_pass/skill_run",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "examples/evidence_packs/find_skills_trusted_pass/skill_run",
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "verifier.id",
+        "eq": "medagent.verifiers.find_skills_quality_v1"
+      },
+      "actual": "medagent.verifiers.find_skills_quality_v1",
+      "ok": true,
+      "reason": "'medagent.verifiers.find_skills_quality_v1' == 'medagent.verifiers.find_skills_quality_v1'"
+    },
+    {
+      "check": {
+        "path": "target.skill_id",
+        "matches": "find_skills"
+      },
+      "actual": "medagent.find_skills",
+      "ok": true,
+      "reason": "matched 'find_skills'"
+    },
+    {
+      "check": {
+        "path": "selector_quality.n_fail",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "selector_quality.acceptable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "selector_quality.top_id",
+        "eq": "medagent.nv_segment_ct"
+      },
+      "actual": "medagent.nv_segment_ct",
+      "ok": true,
+      "reason": "'medagent.nv_segment_ct' == 'medagent.nv_segment_ct'"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "skipped",
+  "cost_results": [],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

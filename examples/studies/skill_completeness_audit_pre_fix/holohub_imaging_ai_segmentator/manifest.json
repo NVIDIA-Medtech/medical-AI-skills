@@ -1,0 +1,35 @@
+{
+  "run_id": "dddd0f942783",
+  "skill_id": "medagent.verifiers.skill_completeness_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/skill_completeness_v1",
+  "environment": {
+    "fingerprint": "7b37b2170f57f5e7",
+    "pip_freeze_lines": 385,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/well_formed_target_skill/SKILL.md",
+    "fixtures/well_formed_target_skill/scripts/stub.py",
+    "fixtures/well_formed_target_skill/skill_manifest.yaml",
+    "fixtures/well_formed_target_skill/validators/output_schema.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/holohub-imaging-ai-segmentator",
+    "sha256": "091072c0e225edd2eb2dc751a1c889f95b81f6ff49478185eaeb29a03cfc3608",
+    "size_bytes": 24366,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/skill_completeness_v1/scripts/grade.py",
+    "skills/holohub-imaging-ai-segmentator"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

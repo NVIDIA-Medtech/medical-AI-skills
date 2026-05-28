@@ -1,0 +1,92 @@
+id: medagent.verifiers.ct_synthesis_quality_v1
+version: 0.1.0
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for nv_generate_ct_rflow evidence packs. Audits
+    the per-sample image/mask pairs for geometry consistency, CT-HU
+    plausibility, label-set sanity, declared output-label coverage, and
+    lung-lobe HU plausibility. CPU-only and does not re-run synthesis.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+    - quality endorsement of synthetic data for production training
+
+inputs:
+  - name: nv_generate_ct_rflow_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by
+      skills/nv-generate-ct-rflow. The verifier reads output.json,
+      validation_summary.json, and manifest.json from the pack, plus the
+      sample_*_image/_label NIfTI pairs referenced in
+      output.samples[*].{image_path, label_path}.
+
+outputs:
+  - name: ct_synthesis_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  dependencies:
+    nibabel: ">=4.0"
+    numpy: ">=1.23"
+  test_dependencies:
+    jsonschema: ">=4.0"
+  side_effects:
+    pip_packages:
+      - nibabel>=4.0
+      - numpy>=1.23
+    local_writes:
+      - {path: "<caller-provided --out>", approx_mb_max: 1}
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    Does not re-run synthesis. The pack's geometry and label statistics
+    are independently recomputed from the NIfTI headers, but the verifier
+    cannot tell whether the diffusion output is anatomically realistic
+    beyond the HU-range, label-set, and lung-lobe HU floors.
+  - >
+    Anatomy coverage is checked against the wrapper's declared
+    output_label_mapping. The verifier does not infer missing mapping
+    from raw anatomy_list because paired outputs use local output-label
+    ordinals after upstream filtering.
+  - >
+    Anatomy-specific HU plausibility is intentionally narrow. v1 enforces
+    only lung-lobe median HU because that bound is strong enough to catch
+    soft-tissue-valued lung masks without making broad organ-specific
+    claims.
+  - >
+    VISTA3D's 132-class schema is the assumed label space. Packs from a
+    different schema (e.g. a hypothetical future ddpm-mr release) need a
+    v2 of this verifier.
+
+validation:
+  expected_runtime_seconds:
+    max: 30.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.ct_synthesis_quality_v1}
+    - {path: target.skill_id, contains_any_of: [nv_generate_ct_rflow, medagent.nv_generate_ct_rflow]}
+    - {path: artifact_inventory.verdict, eq: pass}
+    - {path: geometry_consistency.verdict, eq: pass}
+    - {path: image_hu_plausibility.verdict, eq: pass}
+    - {path: label_set_sanity.verdict, eq: pass}
+    - {path: declared_anatomy_coverage.verdict, eq: pass}
+    - {path: anatomy_hu_plausibility.verdict, eq: pass}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

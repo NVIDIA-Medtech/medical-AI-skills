@@ -1,0 +1,35 @@
+{
+  "run_id": "5d00d0c8aa56",
+  "skill_id": "medagent.verifiers.skill_completeness_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/skill_completeness_v1",
+  "environment": {
+    "fingerprint": "7b37b2170f57f5e7",
+    "pip_freeze_lines": 385,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/well_formed_target_skill/SKILL.md",
+    "fixtures/well_formed_target_skill/scripts/stub.py",
+    "fixtures/well_formed_target_skill/skill_manifest.yaml",
+    "fixtures/well_formed_target_skill/validators/output_schema.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/dicom-series-to-volume",
+    "sha256": "07d3a0d4898c889e6bb1886ba5aa6052f9e9eb16fcd98a4a539deb937c79e622",
+    "size_bytes": 662339,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/skill_completeness_v1/scripts/grade.py",
+    "skills/dicom-series-to-volume"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

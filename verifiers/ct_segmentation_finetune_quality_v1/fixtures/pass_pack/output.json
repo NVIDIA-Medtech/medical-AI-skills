@@ -1,0 +1,133 @@
+{
+  "skill": "nv_segment_ct_finetune",
+  "model": "VISTA3D",
+  "model_repo": "nvidia/Medical-AI",
+  "version": "0.3.0",
+  "input": {
+    "dataset_dir": "<repo>/.workbench_data/datasets/Task09_Spleen",
+    "datalist": "skills/nv-segment-ct-finetune/fixtures/datalist_spleen_finetune.json",
+    "n_train_cases": 8,
+    "label_mappings": {
+      "default": [
+        [
+          1,
+          3
+        ]
+      ]
+    },
+    "label_mapping_resolution": {},
+    "dataset_audit": {
+      "datalist_source": "msd09_spleen",
+      "n_pairs": 8,
+      "shape_consistent": true,
+      "affine_max_drift_max": 1e-06,
+      "label_uniques_sampled": [
+        [
+          0,
+          1
+        ]
+      ],
+      "user_label_idx_present_in_sample": true,
+      "orientation_codes_seen": [
+        "LPS"
+      ],
+      "orientation_consistent": true,
+      "image_dtypes_seen": [
+        "float32"
+      ],
+      "label_dtypes_seen": [
+        "uint8"
+      ],
+      "image_hu_range_seen": [
+        -1024,
+        1500
+      ],
+      "image_looks_like_ct": true,
+      "fg_volumes_ml_seen": [
+        180.0,
+        210.5,
+        195.2
+      ],
+      "fg_components_seen": [
+        1,
+        1,
+        1
+      ],
+      "anatomy": "spleen",
+      "anatomy_volume_all_in_range": true,
+      "anatomy_components_all_match": true,
+      "per_sample": []
+    },
+    "smoke": false
+  },
+  "environment": {
+    "gpu_count": 1,
+    "gpu_total_mb": 48000,
+    "gpu_free_mb": 47000,
+    "host_ram_mb": 64000,
+    "cuda_available": true
+  },
+  "plan": {
+    "patch_size": [
+      96,
+      96,
+      96
+    ],
+    "train_dataset_cache_rate": 0.5,
+    "epochs": 3,
+    "learning_rate": 0.0001,
+    "nproc_per_node": 1,
+    "multi_gpu": false,
+    "rationale": [
+      "smoke build"
+    ]
+  },
+  "invocation": {
+    "command": "monai.bundle run training --config_file ...",
+    "command_prefix": "python -m",
+    "config_stack": [
+      "train.yaml",
+      "data.yaml",
+      "override.yaml"
+    ],
+    "multi_gpu": false,
+    "cwd": "/<home>/Medical AI Skills"
+  },
+  "output": {
+    "finetuned_ckpt": "checkpoint.pt",
+    "finetuned_ckpt_exists": true,
+    "pretrained_ckpt": "bundle/models/model.pt",
+    "recommended_ckpt": "checkpoint.pt",
+    "baseline_val_dice": 0.45,
+    "best_val_dice": 0.72,
+    "best_epoch_index": 2,
+    "improvement_over_baseline": 0.27,
+    "regressed": false,
+    "improved": true,
+    "sanity_recovery_demonstrated": null,
+    "val_dice_per_epoch": [
+      0.5,
+      0.65,
+      0.72
+    ],
+    "train_loss_first": 1.2,
+    "train_loss_last": 0.3,
+    "train_loss_finite": true,
+    "oom": false
+  },
+  "runtime": {
+    "wall_seconds": 33.0,
+    "peak_gpu_mb": 12000,
+    "return_code": 0
+  },
+  "cost": {
+    "steps": [
+      {
+        "step": "train",
+        "seconds": 30.0
+      }
+    ],
+    "total_seconds": 33.0
+  },
+  "intended_use_disclaimer": "Engineering verification only."
+}

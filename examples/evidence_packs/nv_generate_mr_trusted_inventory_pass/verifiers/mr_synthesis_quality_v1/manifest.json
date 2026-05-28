@@ -1,0 +1,44 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "8ac7e0a948ec",
+  "skill_id": "medagent.verifiers.mr_synthesis_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/mr_synthesis_quality_v1",
+  "repo_git_sha": "92cf4e8304f837df1129850550aaed5670493cdb",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/brain_pass_pack/manifest.json",
+    "fixtures/brain_pass_pack/output.json",
+    "fixtures/brain_pass_pack/validation_summary.json",
+    "fixtures/constant_image_pack/manifest.json",
+    "fixtures/constant_image_pack/output.json",
+    "fixtures/constant_image_pack/validation_summary.json",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/validation_summary.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_mr_synthesis_quality_grade.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "runs/nv_generate_mr_trusted_hash_current/skill_run",
+    "sha256": "51a858d643662c407cc6fd76917dc6988b9e80d81e910b2616e3958279651300",
+    "size_bytes": 7041949,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/mr_synthesis_quality_v1/scripts/grade.py",
+    "runs/nv_generate_mr_trusted_hash_current/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

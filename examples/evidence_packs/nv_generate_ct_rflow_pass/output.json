@@ -1,0 +1,237 @@
+{
+  "skill": "nv_generate_ct_rflow",
+  "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-ct)",
+  "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+  "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-CT",
+  "license": "NVIDIA Open Model License (commercial-friendly)",
+  "input": {
+    "config_infer_override_path": "/<home>/Documents/medical-AI-skills/skills/nv-generate-ct-rflow/fixtures/default_config_infer.json",
+    "config_infer_override": {
+      "num_output_samples": 1,
+      "body_region": [
+        "chest"
+      ],
+      "anatomy_list": [
+        "lung tumor"
+      ],
+      "controllable_anatomy_size": [],
+      "output_size": [
+        256,
+        256,
+        256
+      ],
+      "spacing": [
+        1.5,
+        1.5,
+        2.0
+      ],
+      "num_inference_steps": 30,
+      "image_output_ext": ".nii.gz",
+      "label_output_ext": ".nii.gz"
+    },
+    "anatomy_list_requested": [
+      "lung tumor"
+    ],
+    "body_region_requested": [
+      "chest"
+    ],
+    "num_output_samples_requested": 1,
+    "output_size_requested": [
+      256,
+      256,
+      256
+    ],
+    "spacing_requested": [
+      1.5,
+      1.5,
+      2.0
+    ],
+    "random_seed": 0,
+    "version": "rflow-ct"
+  },
+  "output": {
+    "directory": "/<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples",
+    "samples": [
+      {
+        "image_path": "/<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples/sample_20260519_095330_334858_image.nii.gz",
+        "label_path": "/<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples/sample_20260519_095330_334858_label.nii.gz",
+        "image_readable": true,
+        "label_readable": true,
+        "image_shape": [
+          256,
+          256,
+          256
+        ],
+        "image_spacing": [
+          1.5,
+          1.5,
+          2.0
+        ],
+        "image_hu_min": -1000.0,
+        "image_hu_max": 1000.0,
+        "image_hu_mean": -783.406,
+        "image_hu_negative_present": true,
+        "image_hu_bone_present": true,
+        "image_nonconstant": true,
+        "image_affine": [
+          [
+            1.5,
+            0.0,
+            0.0,
+            -191.2384033203125
+          ],
+          [
+            0.0,
+            1.5,
+            0.0,
+            -218.13839721679688
+          ],
+          [
+            0.0,
+            0.0,
+            2.0,
+            -388.7256774902344
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "label_shape": [
+          256,
+          256,
+          256
+        ],
+        "label_spacing": [
+          1.5,
+          1.5,
+          2.0
+        ],
+        "label_ids_present": [
+          1
+        ],
+        "label_id_count": 1,
+        "label_foreground_voxels": 812,
+        "label_background_voxels": 16776404,
+        "shape_match": true,
+        "spacing_match": true,
+        "affine_max_abs_diff": 0.0,
+        "affine_match": true
+      }
+    ],
+    "num_samples": 1,
+    "all_pairs_readable": true,
+    "all_geometry_consistent": true,
+    "any_foreground_present": true,
+    "all_images_nonconstant": true,
+    "all_images_hu_like": true,
+    "union_label_ids_present": [
+      1
+    ]
+  },
+  "invocation": {
+    "upstream_root": "/<home>/nv-generate-ctmr",
+    "upstream_commit": "40f5109dc77eaf01fbc5741809003f89ca3a36c7",
+    "command": [
+      "/<home>/anaconda3/envs/py312/bin/python",
+      "-m",
+      "scripts.inference",
+      "-t",
+      "configs/config_network_rflow.json",
+      "-i",
+      "/<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples/_staged_configs/config_infer.json",
+      "-e",
+      "/<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples/_staged_configs/environment_rflow-ct.json",
+      "--random-seed",
+      "0",
+      "--version",
+      "rflow-ct"
+    ],
+    "exit_code": 0,
+    "subprocess_seconds": 84.89,
+    "model_inventory": {
+      "all_present": true,
+      "files": [
+        {
+          "path": "models/autoencoder_v1.pt",
+          "present": true,
+          "bytes": 83831868,
+          "sha256": "1f8a7a056d0ebc00486edc43c26768bf1c12eaa6df9dd172e34598003be95eb3"
+        },
+        {
+          "path": "models/diff_unet_3d_rflow-ct.pt",
+          "present": true,
+          "bytes": 2166600232,
+          "sha256": "cfc1ec59782f5ac7c0d22dd501654732109a971b93cbaa6607c4106a7f29066f"
+        },
+        {
+          "path": "models/controlnet_3d_rflow-ct.pt",
+          "present": true,
+          "bytes": 288255799,
+          "sha256": "2f16d7a6b4d6a22d5ba9278e59fd51f9a17a45244f0f256946c34a762cc12914"
+        },
+        {
+          "path": "models/mask_generation_autoencoder.pt",
+          "present": true,
+          "bytes": 21072774,
+          "sha256": "539175f6ede3cb1e6f01bfd6347cd446d601cf4a508fc632a1e36362b1428a5d"
+        },
+        {
+          "path": "models/mask_generation_diffusion_unet.pt",
+          "present": true,
+          "bytes": 788941780,
+          "sha256": "b7d668b1356e9b94b8269decadf8f8116dc4ee2d365580d05349b4ddf6739155"
+        }
+      ]
+    },
+    "rendered_infer_config": {
+      "num_output_samples": 1,
+      "body_region": [
+        "chest"
+      ],
+      "anatomy_list": [
+        "lung tumor"
+      ],
+      "controllable_anatomy_size": [],
+      "num_inference_steps": 30,
+      "mask_generation_num_inference_steps": 1000,
+      "output_size": [
+        256,
+        256,
+        256
+      ],
+      "image_output_ext": ".nii.gz",
+      "label_output_ext": ".nii.gz",
+      "spacing": [
+        1.5,
+        1.5,
+        2.0
+      ],
+      "autoencoder_sliding_window_infer_size": [
+        48,
+        48,
+        48
+      ],
+      "autoencoder_sliding_window_infer_overlap": 0.6666,
+      "controlnet": "$@controlnet_def",
+      "diffusion_unet": "$@diffusion_unet_def",
+      "autoencoder": "$@autoencoder_def",
+      "mask_generation_autoencoder": "$@mask_generation_autoencoder_def",
+      "mask_generation_diffusion": "$@mask_generation_diffusion_def",
+      "modality": 1,
+      "cfg_guidance_scale": 0
+    },
+    "rendered_env_output_dir": "/<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples"
+  },
+  "runtime": {
+    "subprocess_seconds": 84.89,
+    "device": "cuda"
+  },
+  "logs": {
+    "stdout_tail": "... tensor(0.7031, dtype=torch.float64), tensor(1.4209, dtype=torch.float64)] -> [1.5, 1.5, 2.0]\n[2026-05-19 09:53:06.511][ INFO](root) - Output size: [512, 512, 256] -> [256, 256, 256]\n[2026-05-19 09:53:09.449][ INFO](root) - Resampling mask to target shape and spacing\n[2026-05-19 09:53:09.450][ INFO](root) - Resize Spacing: [tensor(0.7422, dtype=torch.float64), tensor(0.7422, dtype=torch.float64), tensor(0.5752, dtype=torch.float64)] -> [1.5, 1.5, 2.0]\n[2026-05-19 09:53:09.450][ INFO](root) - Output size: [512, 512, 640] -> [256, 256, 256]\n[2026-05-19 09:53:10.062][ INFO](root) - Images will be generated based on [{'mask_file': {'pseudo_label': '/<home>/nv-generate-ctmr/temp_work_dir/datasets/all_masks_flexible_size_and_spacing_4000/./Task06/labelsTr/lung_070_133combined_aug_wbdm.nii.gz', 'spacing': [1.5, 1.5, 2.0], 'dim': [256, 256, 256], 'top_region_index': [1, 0, 0, 0], 'bottom_region_index': [0, 0, 1, 0]}, 'if_aug': True}, {'mask_file': {'pseudo_label': '/<home>/nv-generate-ctmr/temp_work_dir/datasets/all_masks_flexible_size_and_spacing_4000/./Task06/labelsTr/lung_031_133combined_aug_wbdm.nii.gz', 'spacing': [1.5, 1.5, 2.0], 'dim': [256, 256, 256], 'top_region_index': [0, 1, 0, 0], 'bottom_region_index': [0, 0, 1, 0]}, 'if_aug': True}, {'mask_file': {'pseudo_label': '/<home>/nv-generate-ctmr/temp_work_dir/datasets/all_masks_flexible_size_and_spacing_4000/./Task06/labelsTr/lung_075_133combined_aug_wbdm.nii.gz', 'spacing': [1.5, 1.5, 2.0], 'dim': [256, 256, 256], 'top_region_index': [1, 0, 0, 0], 'bottom_region_index': [0, 0, 1, 0]}, 'if_aug': True}, {'mask_file': {'pseudo_label': '/<home>/nv-generate-ctmr/temp_work_dir/datasets/all_masks_flexible_size_and_spacing_4000/./Task06/labelsTr/lung_014_133combined_aug_wbdm.nii.gz', 'spacing': [1.5, 1.5, 2.0], 'dim': [256, 256, 256], 'top_region_index': [0, 1, 0, 0], 'bottom_region_index': [0, 0, 1, 0]}, 'if_aug': True}, {'mask_file': {'pseudo_label': '/<home>/nv-generate-ctmr/temp_work_dir/datasets/all_masks_flexible_size_and_spacing_4000/./Task06/labelsTr/lung_049_133combined_aug_wbdm.nii.gz', 'spacing': [1.5, 1.5, 2.0], 'dim': [256, 256, 256], 'top_region_index': [1, 0, 0, 0], 'bottom_region_index': [0, 0, 1, 0]}, 'if_aug': True}].\n[2026-05-19 09:53:10.062][ INFO](root) - ---- Start preparing masks... ----\n[2026-05-19 09:53:11.245][ INFO](root) - Resampling mask to target shape and spacing\n[2026-05-19 09:53:11.245][ INFO](root) - Resize Spacing: [tensor(0.7617, dtype=torch.float64), tensor(0.7617, dtype=torch.float64), tensor(1.2939, dtype=torch.float64)] -> [1.5, 1.5, 2.0]\n[2026-05-19 09:53:11.245][ INFO](root) - Output size: [512, 512, 256] -> [256, 256, 256]\naugmenting lung tumor\n28\nmetatensor(420., device='cuda:0') | metatensor(547.4000, device='cuda:0')\nmetatensor(539., device='cuda:0') | metatensor(547.4000, device='cuda:0')\nmetatensor(0., device='cuda:0') | metatensor(547.4000, device='cuda:0')\nmetatensor(756., device='cuda:0') | metatensor(547.4000, device='cuda:0')\n[2026-05-19 09:53:16.361][ INFO](root) - ---- Mask preparation time: 6.2988600730896 seconds ----\n[2026-05-19 09:53:16.511][ INFO](root) - ---- Start generating latent features... ----\n[2026-05-19 09:53:18.415][ INFO](root) - ---- DM/ControlNet Latent features generation time: 1.9031977653503418 seconds ----\n[2026-05-19 09:53:18.683][ INFO](root) - ---- Start decoding latent features into images... ----\n[2026-05-19 09:53:30.062][ INFO](root) - ---- Image VAE decoding time: 11.378272771835327 seconds ----\n2026-05-19 09:53:30,338 INFO image_writer.py:197 - writing: /<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples/sample_20260519_095330_334858_image.nii.gz\n2026-05-19 09:53:30,752 INFO image_writer.py:197 - writing: /<home>/Documents/medical-AI-skills/runs/nv_generate_ct_rflow_gpu_demo/samples/sample_20260519_095330_334858_label.nii.gz\n[2026-05-19 09:53:30.926][ INFO](maisi.inference) - MAISI image/mask generation finished\nPeak GPU memory usage: 12.71 GB\n",
+    "stderr_tail": "/<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/utils/deprecate_utils.py:321: FutureWarning: monai.transforms.spatial.dictionary Orientationd.__init__:labels: Current default value of argument `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` was changed in version None from `labels=(('L', 'R'), ('P', 'A'), ('I', 'S'))` to `labels=None`. Default value changed to None meaning that the transform now uses the 'space' of a meta-tensor, if applicable, to determine appropriate axis labels.\n  warn_deprecated(argname, msg, warning_category)\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.66it/s]\n 10%|\u2588         | 3/30 [00:00<00:02, 12.02it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 14.14it/s]\n 23%|\u2588\u2588\u258e       | 7/30 [00:00<00:01, 15.18it/s]\n 30%|\u2588\u2588\u2588       | 9/30 [00:00<00:01, 15.79it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:01, 16.15it/s]\n 43%|\u2588\u2588\u2588\u2588\u258e     | 13/30 [00:00<00:01, 16.40it/s]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 15/30 [00:00<00:00, 16.55it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:01<00:00, 16.66it/s]\n 63%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 19/30 [00:01<00:00, 16.73it/s]\n 70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 21/30 [00:01<00:00, 16.77it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:01<00:00, 16.77it/s]\n 83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 25/30 [00:01<00:00, 16.81it/s]\n 90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 27/30 [00:01<00:00, 16.83it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 16.83it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 15.97it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]/<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\n/<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n\n 12%|\u2588\u258e        | 1/8 [00:01<00:10,  1.48s/it]\n 25%|\u2588\u2588\u258c       | 2/8 [00:02<00:08,  1.44s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:04<00:07,  1.42s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:05<00:05,  1.42s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:07<00:04,  1.42s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:08<00:02,  1.42s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:09<00:01,  1.42s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.42s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.42s/it]\n"
+  },
+  "intended_use_disclaimer": "Engineering verification only. Output is NOT clinically meaningful and is NOT suitable as training data for production deployment. This wrapper invokes the upstream scripts.inference entry point from the NV-Generate-CTMR README; it does not modify diffusion, sampling, or autoencoder decoding."
+}

@@ -1,0 +1,126 @@
+{
+  "schema": "verifiers/ct_segmentation_finetune_quality_v1/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run",
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "verifier.id",
+        "eq": "medagent.verifiers.ct_segmentation_finetune_quality_v1"
+      },
+      "actual": "medagent.verifiers.ct_segmentation_finetune_quality_v1",
+      "ok": true,
+      "reason": "'medagent.verifiers.ct_segmentation_finetune_quality_v1' == 'medagent.verifiers.ct_segmentation_finetune_quality_v1'"
+    },
+    {
+      "check": {
+        "path": "target.skill_id",
+        "contains_any_of": [
+          "nv_segment_ct_finetune",
+          "medagent.nv_segment_ct_finetune"
+        ]
+      },
+      "actual": "medagent.nv_segment_ct_finetune",
+      "ok": true,
+      "reason": "matched 'nv_segment_ct_finetune'"
+    },
+    {
+      "check": {
+        "path": "artifact_inventory.checkpoint_resolved",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "training_trajectory.train_loss_finite",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "training_trajectory.oom",
+        "eq": false
+      },
+      "actual": false,
+      "ok": true,
+      "reason": "False == False"
+    },
+    {
+      "check": {
+        "path": "training_trajectory.verdict",
+        "eq": "pass"
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "'pass' == 'pass'"
+    },
+    {
+      "check": {
+        "path": "dataset_audit_review.verdict",
+        "eq": "pass"
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "'pass' == 'pass'"
+    },
+    {
+      "check": {
+        "path": "label_coverage.verdict",
+        "contains_any_of": [
+          "pass",
+          "skipped"
+        ]
+      },
+      "actual": "skipped",
+      "ok": true,
+      "reason": "matched 'skipped'"
+    },
+    {
+      "check": {
+        "path": "overall",
+        "eq": "pass"
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "'pass' == 'pass'"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "skipped",
+  "cost_results": [],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

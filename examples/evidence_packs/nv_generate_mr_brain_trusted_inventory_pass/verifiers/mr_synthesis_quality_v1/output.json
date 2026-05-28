@@ -1,0 +1,148 @@
+{
+  "checks": [
+    {
+      "name": "target_skill_matches",
+      "reason": "skill_id='medagent.nv_generate_mr_brain'",
+      "status": "pass"
+    },
+    {
+      "name": "source_pack_passed",
+      "reason": "source pack overall='passed'",
+      "status": "pass"
+    },
+    {
+      "name": "output_skill_supported",
+      "reason": "output.skill='nv_generate_mr_brain'",
+      "status": "pass"
+    },
+    {
+      "name": "version_matches_skill",
+      "reason": "input.version='rflow-mr-brain', expected='rflow-mr-brain'",
+      "status": "pass"
+    },
+    {
+      "name": "modality_supported",
+      "reason": "modality='mri_t1', code=9",
+      "status": "pass"
+    },
+    {
+      "name": "official_entrypoint_matches",
+      "reason": "official_entrypoint='python -m scripts.diff_model_infer'",
+      "status": "pass"
+    },
+    {
+      "name": "subprocess_succeeded",
+      "reason": "exit_code=0",
+      "status": "pass"
+    },
+    {
+      "name": "model_inventory_present",
+      "reason": "model_inventory.all_present=True",
+      "status": "pass"
+    },
+    {
+      "name": "samples_declared",
+      "reason": "num_samples=1, samples=1",
+      "status": "pass"
+    },
+    {
+      "images": [
+        {
+          "all_finite": true,
+          "declared_path": "<repo>/runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples/mr_brain_mri_t1_seed1234_size256x256x256_spacing1.00x1.00x1.00_20260526043719_rank0_modality9.nii.gz",
+          "exists": true,
+          "finite_fraction": 1.0,
+          "image_bytes": 9337901,
+          "image_nonconstant": true,
+          "image_nonnegative": true,
+          "image_sha256": "ed6242156450d355063160bbb59b8218af976bfc10dd61f2bc6e9eefa66bd0ae",
+          "intensity_max": 1300.0,
+          "intensity_mean": 107.416748,
+          "intensity_min": 0.0,
+          "intensity_std": 213.276688,
+          "readable": true,
+          "resolved_path": "runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples/mr_brain_mri_t1_seed1234_size256x256x256_spacing1.00x1.00x1.00_20260526043719_rank0_modality9.nii.gz",
+          "shape": [
+            256,
+            256,
+            256
+          ],
+          "shape_match_requested": true,
+          "spacing": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "spacing_match_requested": true
+        }
+      ],
+      "name": "image_artifacts_readable",
+      "reason": "readable=1/1",
+      "status": "pass"
+    },
+    {
+      "name": "image_shapes_match_requested",
+      "reason": "requested_shape=[256, 256, 256]",
+      "status": "pass"
+    },
+    {
+      "name": "image_spacing_matches_requested",
+      "reason": "requested_spacing=[1.0, 1.0, 1.0]",
+      "status": "pass"
+    },
+    {
+      "name": "image_values_finite",
+      "reason": "all image voxels must be finite",
+      "status": "pass"
+    },
+    {
+      "name": "image_values_nonconstant",
+      "reason": "all images must have non-trivial intensity variation",
+      "status": "pass"
+    },
+    {
+      "name": "image_values_nonnegative",
+      "reason": "MR synthesis wrapper reports post-decoded nonnegative intensity volumes",
+      "status": "pass"
+    },
+    {
+      "name": "aggregate_flags_match_recomputed",
+      "reason": "output aggregate flags must match verifier recomputation",
+      "status": "pass"
+    },
+    {
+      "name": "runtime_identity_present",
+      "reason": "runtime={'subprocess_seconds': 12.781, 'device': 'cuda'}",
+      "status": "pass"
+    },
+    {
+      "name": "scope_disclosed",
+      "reason": "intended_use_disclaimer must disclose engineering-only and non-clinical scope",
+      "status": "pass"
+    }
+  ],
+  "mr_quality": {
+    "acceptable": true,
+    "all_images_finite": true,
+    "all_images_nonconstant": true,
+    "all_images_nonnegative": true,
+    "all_images_readable": true,
+    "all_shapes_match_requested": true,
+    "all_spacing_match_requested": true,
+    "modality_name": "mri_t1",
+    "num_samples": 1,
+    "output_skill": "nv_generate_mr_brain",
+    "verdict": "pass",
+    "version": "rflow-mr-brain"
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "runs/nv_generate_mr_brain_trusted_hash_current/skill_run",
+    "skill_id": "medagent.nv_generate_mr_brain",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.mr_synthesis_quality_v1",
+    "version": "0.1.0"
+  }
+}

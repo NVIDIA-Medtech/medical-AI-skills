@@ -1,0 +1,170 @@
+{
+  "schema": "skills/nv-generate-ct-rflow/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "/<home>/Documents/medical-AI-skills/skills/nv-generate-ct-rflow/fixtures/default_config_infer.json",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "/<home>/Documents/medical-AI-skills/skills/nv-generate-ct-rflow/fixtures/default_config_infer.json",
+      "status": "passed"
+    },
+    {
+      "name": "host_has_cuda",
+      "requires_gpu": "cuda",
+      "gpu_fallback": null,
+      "have_cuda": true,
+      "status": "passed"
+    },
+    {
+      "name": "env_required:NV_GENERATE_ROOT",
+      "env_var": "NV_GENERATE_ROOT",
+      "present": true,
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "invocation.exit_code",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "invocation.model_inventory.all_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.num_samples",
+        "gte": 1
+      },
+      "actual": 1,
+      "ok": true,
+      "reason": "1 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.all_pairs_readable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_geometry_consistent",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.any_foreground_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_images_nonconstant",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_images_hu_like",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 87.11253265501,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 151.94828,
+      "min": null,
+      "max": 3600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 5878.73046875,
+      "min": 500,
+      "max": 32000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 13.037350226165056,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 14620.0,
+      "min": null,
+      "max": 48000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

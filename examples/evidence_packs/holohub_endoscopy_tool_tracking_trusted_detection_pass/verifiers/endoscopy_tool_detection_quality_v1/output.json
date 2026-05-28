@@ -1,0 +1,210 @@
+{
+  "artifact_inventory": {
+    "detection_artifact_count": 1,
+    "files": [
+      {
+        "actual_sha256": "3c2212f6d4a492046ac40f88e168c3aa2e0fa369d571d4f8df575229a7e13c0d",
+        "bytes": 147593760,
+        "declared_bytes": 147593760,
+        "declared_path": "tensor.gxf_entities",
+        "declared_sha256": "3c2212f6d4a492046ac40f88e168c3aa2e0fa369d571d4f8df575229a7e13c0d",
+        "exists": true,
+        "hash_checked": true,
+        "hash_match": true,
+        "kind": "gxf",
+        "path": "<home>/Documents/holohub/build/endoscopy_tool_tracking/recording_output/tensor.gxf_entities",
+        "usable": true
+      },
+      {
+        "actual_sha256": "aa724e414d38700dc6e1da7afe491c60699d14bf5c21c2bcdde91e2b1c80ce7c",
+        "bytes": 2880,
+        "declared_bytes": 2880,
+        "declared_path": "tensor.gxf_index",
+        "declared_sha256": "aa724e414d38700dc6e1da7afe491c60699d14bf5c21c2bcdde91e2b1c80ce7c",
+        "exists": true,
+        "hash_checked": true,
+        "hash_match": true,
+        "kind": "gxf",
+        "path": "<home>/Documents/holohub/build/endoscopy_tool_tracking/recording_output/tensor.gxf_index",
+        "usable": true
+      },
+      {
+        "actual_sha256": "fc2cedcce06fb044813ab2c35ef0f1c65152f4cb8f67a6f64d1fbc3c1813dc45",
+        "bytes": 925,
+        "declared_bytes": 925,
+        "declared_path": "tool_detections.jsonl",
+        "declared_sha256": "fc2cedcce06fb044813ab2c35ef0f1c65152f4cb8f67a6f64d1fbc3c1813dc45",
+        "exists": true,
+        "hash_checked": true,
+        "hash_match": true,
+        "kind": "detection",
+        "path": "<home>/Documents/holohub/build/endoscopy_tool_tracking/recording_output/tool_detections.jsonl",
+        "usable": true
+      }
+    ],
+    "gxf_entities_count": 1,
+    "gxf_index_count": 1,
+    "gxf_pair_count": 1,
+    "hash_mismatch_count": 0,
+    "recording_file_count": 3,
+    "recording_output_dir": "<home>/Documents/holohub/build/endoscopy_tool_tracking/recording_output",
+    "recording_total_bytes": 147597565,
+    "usable_recording_file_count": 3,
+    "video_count": 0
+  },
+  "detection_metrics": {
+    "bbox_sanity": {
+      "checked": 7,
+      "invalid": 0
+    },
+    "checks": [
+      {
+        "name": "detections_parsed",
+        "parse_errors": [],
+        "reason": "decoded detection frames were parsed",
+        "status": "pass"
+      },
+      {
+        "actual": 7,
+        "expected": "> 0",
+        "name": "tools_detected_count_gt_zero",
+        "reason": "tools_detected_count=7",
+        "status": "pass"
+      },
+      {
+        "actual": 1.0,
+        "expected": ">= 0.6",
+        "name": "frame_coverage_gte_0_6",
+        "reason": "frame_coverage=1.000",
+        "status": "pass"
+      },
+      {
+        "actual": 1.0,
+        "expected": "[0.5, 4.0]",
+        "name": "mean_detections_per_frame_reasonable",
+        "reason": "mean_detections_per_frame=1.000",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "checked": 7,
+          "invalid": 0
+        },
+        "expected": "checked > 0 and invalid == 0",
+        "name": "bbox_sanity",
+        "reason": "bbox_checked=7, bbox_invalid=0",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "Bipolar": 1,
+          "Clipper": 1,
+          "Grasper": 1,
+          "Hook": 1,
+          "Irrigator": 1,
+          "Scissors": 1,
+          "Spec.Bag": 1
+        },
+        "name": "tool_class_observed",
+        "reason": "classes={'Grasper': 1, 'Bipolar': 1, 'Hook': 1, 'Scissors': 1, 'Clipper': 1, 'Irrigator': 1, 'Spec.Bag': 1}",
+        "status": "pass"
+      }
+    ],
+    "frame_coverage": 1.0,
+    "frames_observed": 7,
+    "frames_with_detections": 7,
+    "max_detections_per_frame": 1,
+    "mean_detections_per_frame": 1.0,
+    "reason": "all detection-quality floor checks passed",
+    "source_files": [
+      "<home>/Documents/holohub/build/endoscopy_tool_tracking/recording_output/tool_detections.jsonl"
+    ],
+    "tool_class_distribution": {
+      "Bipolar": 1,
+      "Clipper": 1,
+      "Grasper": 1,
+      "Hook": 1,
+      "Irrigator": 1,
+      "Scissors": 1,
+      "Spec.Bag": 1
+    },
+    "tools_detected_count": 7,
+    "verdict": "pass"
+  },
+  "domain_floor": {
+    "checks": [
+      {
+        "name": "output_json_present",
+        "reason": "output.json loaded",
+        "status": "pass"
+      },
+      {
+        "actual": "holohub_endoscopy_tool_tracking",
+        "expected": [
+          "holohub_endoscopy_tool_tracking"
+        ],
+        "name": "target_skill_is_endoscopy",
+        "reason": "skill_id='holohub_endoscopy_tool_tracking'",
+        "status": "pass"
+      },
+      {
+        "actual": "passed",
+        "expected": "passed",
+        "name": "source_pack_passed",
+        "reason": "source overall_status='passed'",
+        "status": "pass"
+      },
+      {
+        "actual": 0,
+        "expected": 0,
+        "name": "declared_artifact_hashes_match",
+        "reason": "all verifiable artifact hashes match",
+        "status": "pass"
+      },
+      {
+        "actual": 3,
+        "expected": "> 0",
+        "name": "recording_artifact_present",
+        "reason": "usable_recording_file_count=3",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "nonempty": 3,
+          "usable": 3
+        },
+        "name": "recording_files_nonempty",
+        "reason": "nonempty=3 / usable=3",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "gxf_pair_count": 1,
+          "video_count": 0
+        },
+        "name": "gxf_pair_or_video_present",
+        "reason": "gxf_pair_count=1, video_count=0",
+        "status": "pass"
+      },
+      {
+        "actual": 1,
+        "expected": "> 0",
+        "name": "decoded_detection_artifact_present",
+        "reason": "detection_artifact_count=1",
+        "status": "pass"
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "<repo>/runs/holohub_endoscopy_trusted_default_pass_current3/skill_run",
+    "record_type": "visualizer",
+    "skill_id": "holohub_endoscopy_tool_tracking",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.endoscopy_tool_detection_quality_v1",
+    "version": "0.1.0"
+  }
+}

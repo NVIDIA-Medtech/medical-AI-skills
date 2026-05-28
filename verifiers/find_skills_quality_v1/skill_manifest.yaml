@@ -1,0 +1,58 @@
+id: medagent.verifiers.find_skills_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: find_skills_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for find_skills evidence packs. Audits source-pack
+    success, recommendation ordering, manifest path/id consistency, no-fit
+    semantics, and selection-scope disclosure.
+  scope: development
+  not_for:
+    - clinical interpretation
+    - regulatory submission
+    - ranking model performance
+    - autonomous deployment decisions
+inputs:
+  - name: find_skills_evidence_pack
+    type: directory_path
+    description: Evidence pack directory from skills/find-skills.
+outputs:
+  - name: find_skills_quality_report
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies:
+    pyyaml: ">=6.0"
+  side_effects:
+    pip_packages: [pyyaml>=6.0]
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+limitations:
+  - Audits selector evidence consistency, not true task suitability.
+  - For the repository fixture query, expects nv_segment_ct as the top CT NIfTI segmentation match.
+  - Does not query external marketplaces or compare live model performance.
+validation:
+  expected_runtime_seconds:
+    max: 10.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.find_skills_quality_v1}
+    - {path: target.skill_id, matches: "find_skills"}
+    - {path: selector_quality.n_fail, eq: 0}
+    - {path: selector_quality.acceptable, eq: true}
+    - {path: selector_quality.top_id, eq: medagent.nv_segment_ct}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

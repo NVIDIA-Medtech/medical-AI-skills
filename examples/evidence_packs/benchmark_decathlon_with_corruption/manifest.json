@@ -1,0 +1,30 @@
+{
+  "run_id": "903885c2ae1c",
+  "skill_id": "medagent.nv_segment_ct",
+  "skill_version": "0.2.0",
+  "skill_dir": "skills/nv-segment-ct",
+  "benchmark_manifest": {
+    "path": ".workbench_data/datasets/decathlon_spleen_with_corruption.benchmark.yaml",
+    "sha256": "af81d51164fdcf92b317237f200f3f5f90a3dcf053f7f90229340935c523d32c",
+    "size_bytes": 7487,
+    "format": "benchmark_dataset"
+  },
+  "environment": {
+    "fingerprint": "7b37b2170f57f5e7",
+    "pip_freeze_lines": 385,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "case_count": 44,
+  "command": [
+    "python3",
+    "eval_engine/run_benchmark.py",
+    "skills/nv-segment-ct",
+    "--benchmark",
+    ".workbench_data/datasets/decathlon_spleen_with_corruption.benchmark.yaml",
+    "--out",
+    "runs/benchmark_with_corruption_independent"
+  ],
+  "eval_engine_script": "eval_engine/run_benchmark.py"
+}

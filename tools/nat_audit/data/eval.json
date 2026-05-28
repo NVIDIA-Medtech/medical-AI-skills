@@ -1,0 +1,37 @@
+[
+  {"id": "find_skills",
+   "question": "I have a CT NIfTI volume and I want to segment it. Read skills/find-skills/SKILL.md so you know how to use the find_skills tool, then call find_skills to recommend which Medical AI Skills skill fits this task. Report the top match.",
+   "answer": "find_skills returned a top match"},
+
+  {"id": "dicom_meta_extract",
+   "question": "Extract DICOM metadata from Medical AI Skills' sample fixture. First read skills/dicom-metadata-extract/SKILL.md to understand the tool, then call dicom_meta_extract. Report the patient_keys and modality from the response.",
+   "answer": "dicom_meta_extract returned metadata"},
+
+  {"id": "dicom_series_to_volume",
+   "question": "Convert the bundled clean_axial DICOM series to a NIfTI volume. First read skills/dicom-series-to-volume/SKILL.md to understand the tool, then list skills/dicom-series-to-volume/fixtures/clean_axial to confirm the input layout, then call dicom_series_to_volume. Report the return_code.",
+   "answer": "dicom_series_to_volume returned return_code 0"},
+
+  {"id": "finetune_smoke",
+   "question": "Verify the nv_segment_ct_finetune skill works end-to-end. First read skills/nv-segment-ct-finetune/SKILL.md so you know what the --smoke preset proves and what to look for. Then call the finetune_smoke tool. From its response, report return_code, wall_seconds, best_val_dice, and whether the run hit OOM.",
+   "answer": "finetune_smoke completed"},
+
+  {"id": "nv_segment_ct",
+   "question": "Run NV-Segment-CT on the bundled spleen_03 NIfTI fixture. First read skills/nv-segment-ct/SKILL.md to understand the tool and the expected output, then call nv_segment_ct. Report the return_code and n_masks.",
+   "answer": "nv_segment_ct returned masks"},
+
+  {"id": "radiology_note_summarizer",
+   "question": "Summarize a sample radiology note via the radiology_note_summarizer skill. First read skills/radiology-note-summarizer/SKILL.md to understand what the skill does, then call radiology_note_summarizer. Report the return_code, model, and summary_chars.",
+   "answer": "radiology_note_summarizer returned a summary"},
+
+  {"id": "holohub_flow_benchmark",
+   "question": "Benchmark Holoscan endoscopy_tool_tracking flow performance. First read skills/holohub-flow-benchmark/SKILL.md to understand what the skill does and what env vars matter, then call holohub_flow_benchmark. Report the return_code.",
+   "answer": "holohub_flow_benchmark returned"},
+
+  {"id": "holohub_endoscopy_tool_tracking",
+   "question": "Run the HoloHub endoscopy_tool_tracking app on the bundled clip stub. First read skills/holohub-endoscopy-tool-tracking/SKILL.md to understand what the skill does, then call holohub_endoscopy_tool_tracking. Report the return_code.",
+   "answer": "holohub_endoscopy_tool_tracking returned"},
+
+  {"id": "holohub_imaging_ai_segmentator",
+   "question": "Run the HoloHub imaging_ai_segmentator CT segmentation app on the bundled fixture. First read skills/holohub-imaging-ai-segmentator/SKILL.md to understand the tool, then call holohub_imaging_ai_segmentator. Report the return_code.",
+   "answer": "holohub_imaging_ai_segmentator returned"}
+]

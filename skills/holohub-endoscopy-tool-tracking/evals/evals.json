@@ -1,0 +1,25 @@
+{
+  "skill_name": "holohub-endoscopy-tool-tracking",
+  "description": "Behavioral evals for HoloHub endoscopy_tool_tracking wrapper use. Tests bounded non-interactive config, native HoloHub execution, and quality-verifier separation.",
+  "evals": [
+    {
+      "id": "run-bounded-endoscopy-container",
+      "prompt": "Run the HoloHub endoscopy_tool_tracking sample non-interactively and collect evidence under runs/endoscopy_demo.",
+      "expected_output": "The agent uses HOLOHUB_CONFIG with the bounded Medical AI Skills config, sets HoloHub env vars, and runs the wrapper/eval command with an explicit out dir.",
+      "files": [
+        "../fixtures/configs/endoscopy_workflow_trusted.yaml"
+      ],
+      "assertions": [
+        "the command sets HOLOHUB_CONFIG to the bounded config",
+        "the command uses skills/holohub-endoscopy-tool-tracking rather than custom Holoscan code",
+        "the agent mentions decoded detection quality belongs to verifiers/endoscopy_tool_detection_quality_v1",
+        "the agent does NOT claim surgical guidance or detection-quality validation from the wrapper alone"
+      ]
+    }
+  ],
+  "baseline_methodology": {
+    "with_skill_setup": "Agent has non-interactive run constraints and verifier separation from SKILL.md.",
+    "without_skill_setup": "Agent may let the sample replayer loop forever or conflate runtime evidence with detection quality.",
+    "expected_delta": "with_skill: bounded container run and clear quality boundary. without_skill: higher hang risk and overclaiming."
+  }
+}

@@ -1,0 +1,30 @@
+workflow_id: abdomen_ct_summary
+description: |
+  Three-step end-to-end pipeline that demonstrates skill granularity
+  ("one external tool = one skill") and intermediate-result transparency
+  (each step ships its own evidence pack). The third step is the natural
+  spot to swap LLM backends from inference.nvidia.com — the workflow's
+  shape stays the same, Medical AI Skills' gates surface what each backend
+  did differently.
+
+steps:
+  - id: convert
+    skill: skills/dicom-series-to-volume
+    inputs:
+      fixture: ${input}
+
+  - id: segment
+    skill: skills/nv-segment-ct
+    inputs:
+      fixture: ${convert.output.path}
+
+  - id: summarize
+    skill: skills/radiology-note-summarizer
+    inputs:
+      fixture_template:
+        dicom_metadata: ${convert.dicom_metadata}
+        segmentation_summary: ${segment.output}
+        radiologist_note: |
+          Engineering verification only. Synthesise a structured radiology
+          summary from the DICOM metadata and the segmentation summary
+          above. Do not invent findings beyond what the segmentation reports.

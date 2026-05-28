@@ -1,0 +1,73 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "12cc9de8e6be",
+  "produced_at": "2026-05-26T01:25:17.468189+00:00",
+  "skill_id": "medagent.dicom_series_to_volume",
+  "skill_version": "0.1.0",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.dicom_volume_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/dicom_volume_quality_v1",
+      "exit_code": 0,
+      "overall": "passed",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "6a3d3fd30862e295fd273cdfb00ba8dd9f0812334110a97baf1de80caf508b61",
+        "validation_summary.json": "ac87ce4f3f3419e8f46b5fb16d0a2433dfe1d74d846914683c9422d4eb3d9d5c",
+        "output.json": "9cf6e4789103fb6f89ed2dc79a15898aa662b3c64d5b34f00da57d63b8c2542a",
+        "provenance.json": "23f1bfa0ec54a1ebe6313615f36dd139a8749c412dcb323d930ff994acb607bf",
+        "agent_run_trace.jsonl": "2dd8f2b82c3350afe84dd99d2f15a0b40601d1f8e0355c689817825a053eb918"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 0,
+      "semantic_overall": "pass",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 0,
+      "failure_findings": [],
+      "warning_findings": []
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.dicom_volume_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "medagent.dicom_series_to_volume",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "e189f47f6ad470e2830b692a41934832f32e8d751989ffbbe0ee33056109f401",
+        "validation_summary.json": "1fe9701c0f58eddc1f0dd87371519e38c0d0952b45eb48483840662d45aa3269",
+        "output.json": "79a2b3d370352e407d5df786dbfe3a75820fefc7956d1cc5ca6925261e6415e9",
+        "provenance.json": "7b7984c6c1dab3fad41f0e5343479aaa1a105d199305696688cc8a9ec7b50688",
+        "agent_run_trace.jsonl": "8f03a531f5347071b3cab9e98cf6d4cb868373920bd34b150cd220b35196928b"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.dicom_volume_quality_v1",
+      "pack": "verifiers/dicom_volume_quality_v1",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "6a3d3fd30862e295fd273cdfb00ba8dd9f0812334110a97baf1de80caf508b61",
+        "validation_summary.json": "ac87ce4f3f3419e8f46b5fb16d0a2433dfe1d74d846914683c9422d4eb3d9d5c",
+        "output.json": "9cf6e4789103fb6f89ed2dc79a15898aa662b3c64d5b34f00da57d63b8c2542a",
+        "provenance.json": "23f1bfa0ec54a1ebe6313615f36dd139a8749c412dcb323d930ff994acb607bf",
+        "agent_run_trace.jsonl": "2dd8f2b82c3350afe84dd99d2f15a0b40601d1f8e0355c689817825a053eb918"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "passed"
+}

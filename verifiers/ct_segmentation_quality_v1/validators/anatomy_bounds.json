@@ -1,0 +1,56 @@
+{
+  "_comment": "Population-typical adult organ volume bounds in mL, plus per-class connected-component caps. VISTA3D label IDs are the keys. Bounds are intentionally permissive engineering floors; pediatric or post-resection cases will fail.",
+  "1": {
+    "name": "liver",
+    "volume_ml_min": 800.0,
+    "volume_ml_max": 2500.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": false
+  },
+  "3": {
+    "name": "spleen",
+    "volume_ml_min": 30.0,
+    "volume_ml_max": 500.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": false
+  },
+  "4": {
+    "name": "pancreas",
+    "volume_ml_min": 30.0,
+    "volume_ml_max": 200.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.70,
+    "bilateral": false
+  },
+  "5": {
+    "name": "right kidney",
+    "volume_ml_min": 80.0,
+    "volume_ml_max": 300.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": true,
+    "bilateral_partner_id": 14
+  },
+  "14": {
+    "name": "left kidney",
+    "volume_ml_min": 80.0,
+    "volume_ml_max": 300.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": true,
+    "bilateral_partner_id": 5
+  },
+  "_cross_class_floors": {
+    "liver_gt_spleen": true,
+    "bilateral_symmetry_max_relative_diff": 0.5
+  },
+  "_gt_dice_floors": {
+    "1": 0.85,
+    "3": 0.85,
+    "4": 0.55,
+    "5": 0.80,
+    "14": 0.80
+  }
+}

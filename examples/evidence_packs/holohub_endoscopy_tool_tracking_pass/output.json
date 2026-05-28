@@ -1,0 +1,63 @@
+{
+  "invocation": {
+    "holohub_root": ".workbench_data/holohub",
+    "holohub_commit": "0eb7dcfb94d8b09a28075fb87337fcc12cff0af5",
+    "mode": "container",
+    "language": "python",
+    "source": "replayer",
+    "record_type": "visualizer",
+    "postprocessor": "tool_tracking_postprocessor",
+    "config_path": null,
+    "data_dir": ".workbench_data/holohub/data/endoscopy",
+    "command": [
+      "./holohub",
+      "run",
+      "endoscopy_tool_tracking",
+      "--language",
+      "python",
+      "--run-args=-s replayer -r visualizer -p tool_tracking_postprocessor"
+    ],
+    "exit_code": 0,
+    "container_image": "holohub-endoscopy_tool_tracking:main",
+    "container_image_id": "sha256:ed7b6078a0b871f53a87a3440400052d6a6f3a19a068b1023a80a260429660b3",
+    "model_path": ".workbench_data/holohub/data/endoscopy/tool_loc_convlstm.onnx",
+    "model_sha256": "d05733d49187f10975eafd762001f4535f5029fd071ca39779f953c7886a3c18",
+    "fixture": "skills/holohub-endoscopy-tool-tracking/fixtures/example_clip_stub",
+    "recording_output_dir": ".workbench_data/holohub/build/endoscopy_tool_tracking/recording_output"
+  },
+  "output": {
+    "gxf": {
+      "count": 2,
+      "total_bytes": 368991600,
+      "files": [
+        {
+          "path": "tensor.gxf_entities",
+          "bytes": 368984400,
+          "sha256": "8c21efe38d9992edc8f3fc276915a4424c6ebdee7d4fb5a76ae9c7ec0e454045"
+        },
+        {
+          "path": "tensor.gxf_index",
+          "bytes": 7200,
+          "sha256": "9e7453636d5b9d21a46c58c70c15be07ef4cd416ac1d312c736a2510a004e828"
+        }
+      ]
+    },
+    "video": {
+      "count": 0,
+      "total_bytes": 0,
+      "files": []
+    },
+    "other": {
+      "count": 0,
+      "total_bytes": 0,
+      "files": []
+    }
+  },
+  "runtime": {
+    "subprocess_seconds": 6.153853907715529
+  },
+  "logs": {
+    "stdout_tail": "...racking/applications/endoscopy_tool_tracking/python\n[2/2] cd /workspace/holohub/build/endoscopy_tool_tracking/applications/endoscopy_tool_tracking/python && /usr/bin/cmake -E copy /workspace/holohub/applications/endoscopy_tool_tracking/python/endoscopy_tool_tracking.py /workspace/holohub/build/endoscopy_tool_tracking/applications/endoscopy_tool_tracking/python\nRunning endoscopy_tool_tracking in 'replayer' mode\nINFO: HOLOHUB_ENABLE_SCCACHE=false\n2026-05-10 21:19:48 $ cmake -B /workspace/holohub/build/endoscopy_tool_tracking -S /workspace/holohub --no-warn-unused-cli -DPython3_EXECUTABLE=/usr/bin/python3 -DPython3_ROOT_DIR=/usr -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/nvidia/holoscan/lib -DHOLOHUB_DATA_DIR:PATH=/workspace/holohub/data -DAPP_endoscopy_tool_tracking=ON -G Ninja -DHOLOHUB_BUILD_PYTHON=ON -DHOLOHUB_BUILD_CPP=OFF -DHOLOHUB_BUILD_PYTHON=ON\n2026-05-10 21:19:48 $ cmake --build /workspace/holohub/build/endoscopy_tool_tracking --config Release -j 16\n2026-05-10 21:19:48 $ cd /workspace/holohub/build/endoscopy_tool_tracking\n2026-05-10 21:19:48 $ python3 /workspace/holohub/applications/endoscopy_tool_tracking/python/endoscopy_tool_tracking.py --data /workspace/holohub/data/endoscopy -s replayer -r visualizer -p tool_tracking_postprocessor\nRunning endoscopy_tool_tracking in 'replayer' mode\n2026-05-10 21:19:44 $ docker buildx version\n2026-05-10 21:19:44 $ docker build --build-arg BUILDKIT_INLINE_CACHE=1 --build-arg BASE_IMAGE=nvcr.io/nvidia/clara-holoscan/holoscan:v4.1.0-cuda13 --build-arg GPU_TYPE=dgpu --build-arg BASE_SDK_VERSION=4.1.0 --build-arg COMPUTE_CAPACITY=8.9 --build-arg CUDA_MAJOR=13 --network=host -f .workbench_data/holohub/Dockerfile -t holohub-endoscopy_tool_tracking:main -t holohub-endoscopy_tool_tracking:0eb7dcfb94d8 -t holohub:ngc-v4.1.0-cuda13 .workbench_data/holohub\n2026-05-10 21:19:47 $ docker inspect \"--format={{json .Config.Entrypoint}}\" holohub:ngc-v4.1.0-cuda13\n2026-05-10 21:19:47 $ docker inspect --format \"{{range .Config.Env}}{{println .}}{{end}}\" holohub-endoscopy_tool_tracking:main\n2026-05-10 21:19:47 $ docker run --net host --interactive -u 1000:1000 -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -v .workbench_data/holohub:/workspace/holohub -w /workspace/holohub --runtime nvidia --cap-add CAP_SYS_PTRACE --ipc=host -v /dev:/dev --device-cgroup-rule \"c 81:* rmw\" --device-cgroup-rule \"c 189:* rmw\" -e NVIDIA_DRIVER_CAPABILITIES=graphics,video,compute,utility,display -e NVIDIA_VISIBLE_DEVICES=all -e HOME=/workspace/holohub -e CUPY_CACHE_DIR=/workspace/holohub/.cupy/kernel_cache -e HOLOHUB_BUILD_LOCAL=1 -e CMAKE_BUILD_PARALLEL_LEVEL=16 --rm --ipc=host --cap-add=CAP_SYS_PTRACE --ulimit=memlock=-1 --ulimit=stack=67108864 --device /dev/video3 --device /dev/video2 --device /dev/video1 --device /dev/video0 --device /dev/snd/controlC1 --device /dev/snd/controlC3 --device /dev/snd/controlC2 --device /dev/snd/controlC0 --device /dev/snd/pcmC1D0c --device /dev/snd/pcmC1D0p --device /dev/snd/pcmC3D2c --device /dev/snd/pcmC3D0c --device /dev/snd/pcmC3D0p --device /dev/snd/pcmC2D8p --device /dev/snd/pcmC0D9p --device /dev/snd/pcmC0D8p --device /dev/snd/pcmC2D7p --device /dev/snd/pcmC2D3p --device /dev/snd/pcmC0D7p --device /dev/snd/pcmC0D3p --device /dev/snd/timer --device /dev/snd/seq --device /dev/nvidia-modeset -v /usr/share/nvidia/nvoptix.bin:/usr/share/nvidia/nvoptix.bin:ro --group-add 44 --group-add 110 --group-add 999 --group-add 29 -e XDG_SESSION_TYPE -e XDG_RUNTIME_DIR -v /run/user/1000:/run/user/1000 -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e PYTHONPATH=/opt/nvidia/holoscan/python/lib:/opt/nvidia/hololink/python:/workspace/holohub/benchmarks/holoscan_flow_benchmarking --entrypoint=/bin/bash holohub-endoscopy_tool_tracking:main -c \"./holohub run endoscopy_tool_tracking --language python --local --run-args='-s replayer -r visualizer -p tool_tracking_postprocessor'\"\n",
+    "stderr_tail": "..._id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[info] [video_stream_replayer.cpp:246] Reach end of file or playback count reaches to the limit. Stop ticking.\n[info] [greedy_scheduler.cpp:405] Scheduler stopped: Some entities are waiting for execution, but there are no periodic or async entities to get out of the deadlock.\n[info] [greedy_scheduler.cpp:435] Scheduler finished.\n[info] [gxf_executor.cpp:2842] [Endoscopy App] Deactivating Graph...\n[info] [gxf_executor.cpp:2851] [Endoscopy App] Graph execution finished.\n[info] [gxf_executor.cpp:541] [Endoscopy App] Destroying context\n"
+  }
+}

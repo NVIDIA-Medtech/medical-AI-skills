@@ -1,0 +1,143 @@
+{
+  "checks": [
+    {
+      "name": "target_skill_matches",
+      "reason": "skill_id='medagent.holohub_flow_benchmark'",
+      "status": "pass"
+    },
+    {
+      "name": "source_pack_passed",
+      "reason": "source pack overall='passed'",
+      "status": "pass"
+    },
+    {
+      "name": "output_skill_matches",
+      "reason": "output.skill='holohub_flow_benchmark'",
+      "status": "pass"
+    },
+    {
+      "name": "benchmark_exit_code_zero",
+      "reason": "benchmark_exit_code=0",
+      "status": "pass"
+    },
+    {
+      "name": "holohub_commit_present",
+      "reason": "holohub_commit='4aab4365c361feb60ee607cb91fd5ba6d8cfebb9'",
+      "status": "pass"
+    },
+    {
+      "artifacts": [
+        {
+          "actual_bytes": 37300,
+          "actual_sha256": "8f753769ad4347feae94eb352af985c37dbba949008db417ac9a3f1cf61f7862",
+          "bytes_match": true,
+          "declared_bytes": 37300,
+          "declared_path": "logger_greedy_1_1.log",
+          "declared_sha256": "8f753769ad4347feae94eb352af985c37dbba949008db417ac9a3f1cf61f7862",
+          "exists": true,
+          "resolved_path": "examples/evidence_packs/holohub_flow_benchmark_trusted_stub_pass/skill_run/artifacts/flow_benchmark_output/logger_greedy_1_1.log",
+          "sha256_match": true
+        }
+      ],
+      "name": "logger_artifacts_hash_match",
+      "reason": "logger_files=1",
+      "status": "pass"
+    },
+    {
+      "name": "latency_samples_present",
+      "reason": "paths=2, total_samples=160, min_path_samples=80",
+      "status": "pass"
+    },
+    {
+      "name": "scheduler_coverage_complete",
+      "reason": "requested=['greedy'], observed=['greedy']",
+      "status": "pass"
+    },
+    {
+      "name": "logger_count_matches_plan",
+      "reason": "observed=1, expected=1",
+      "status": "pass"
+    },
+    {
+      "name": "benchmark_log_completed",
+      "reason": "benchmark_log={'present': True, 'evaluation_completed': True, 'missing_log_errors': False, 'mentions_app': True}",
+      "status": "pass"
+    },
+    {
+      "name": "contract_assertions_passed",
+      "reason": "contract.present=True, assertions={'contract_loaded': True, 'app_matches_contract': True, 'source_file_present': True, 'required_data_files_present': True, 'required_data_files_hash_match': True, 'scheduler_coverage_complete': True, 'primary_sequence_present': True, 'direct_paths_present': True, 'latency_budgets_met': True, 'smoke_mode_skipped_budgets': False, 'all_required_assertions_passed': True}",
+      "status": "pass"
+    },
+    {
+      "artifacts": [
+        {
+          "actual_bytes": 10,
+          "actual_sha256": "cb240acdfc2e0b1df311ae1c68f314fdc834d382779e5f4e6ce7f0d7dc8a160e",
+          "bytes_match": true,
+          "declared_bytes": 10,
+          "declared_path": "gpu_utilization_greedy_1.csv",
+          "declared_sha256": "cb240acdfc2e0b1df311ae1c68f314fdc834d382779e5f4e6ce7f0d7dc8a160e",
+          "exists": true,
+          "resolved_path": "examples/evidence_packs/holohub_flow_benchmark_trusted_stub_pass/skill_run/artifacts/flow_benchmark_output/gpu_utilization_greedy_1.csv",
+          "sha256_match": true
+        }
+      ],
+      "name": "gpu_utilization_consistent",
+      "reason": "monitor_gpu=True, gpu_files=1",
+      "status": "pass"
+    },
+    {
+      "artifacts": [
+        {
+          "actual_bytes": 50,
+          "actual_sha256": "3095add801b8f784599abf27e169923e011b07349b5aef75bf577f4ad2140c5f",
+          "bytes_match": true,
+          "declared_bytes": 50,
+          "declared_path": "benchmark.log",
+          "declared_sha256": "3095add801b8f784599abf27e169923e011b07349b5aef75bf577f4ad2140c5f",
+          "exists": true,
+          "resolved_path": "examples/evidence_packs/holohub_flow_benchmark_trusted_stub_pass/skill_run/artifacts/flow_benchmark_output/benchmark.log",
+          "sha256_match": true
+        }
+      ],
+      "name": "benchmark_log_hash_match",
+      "reason": "other_files=1",
+      "status": "pass"
+    },
+    {
+      "name": "scope_disclosed",
+      "reason": "intended_use_disclaimer must disclose engineering-only and non-clinical scope",
+      "status": "pass"
+    }
+  ],
+  "flow_quality": {
+    "acceptable": true,
+    "app": "endoscopy_tool_tracking",
+    "contract_assertions_passed": true,
+    "contract_present": true,
+    "gpu_file_count": 1,
+    "logger_file_count": 1,
+    "min_path_sample_count": 80,
+    "observed_schedulers": [
+      "greedy"
+    ],
+    "paths_observed": 2,
+    "requested_schedulers": [
+      "greedy"
+    ],
+    "run_mode": "local",
+    "scheduler_coverage_complete": true,
+    "total_latency_samples": 160,
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "examples/evidence_packs/holohub_flow_benchmark_trusted_stub_pass/skill_run",
+    "skill_id": "medagent.holohub_flow_benchmark",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.holohub_flow_benchmark_quality_v1",
+    "version": "0.1.0"
+  }
+}

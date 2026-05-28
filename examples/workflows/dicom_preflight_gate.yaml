@@ -1,0 +1,12 @@
+workflow_id: dicom_preflight_gate
+description: |
+  Flagship A1: DICOM folder preflight with trusted paired verifier.
+  No GPU, no container, no model — header-only scan with pass/warn/fail
+  verdict and explicit findings. Intended as the catalog onboarding path.
+
+steps:
+  - id: preflight
+    skill: skills/dicom-series-preflight
+    trusted: true
+    inputs:
+      fixture: ${input}

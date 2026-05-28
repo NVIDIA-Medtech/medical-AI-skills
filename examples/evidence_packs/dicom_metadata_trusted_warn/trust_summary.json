@@ -1,0 +1,84 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "cc939c16429c",
+  "produced_at": "2026-05-26T01:25:48.359912+00:00",
+  "skill_id": "medagent.dicom_metadata_extract",
+  "skill_version": "0.1.0",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.dicom_metadata_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/dicom_metadata_quality_v1",
+      "exit_code": 0,
+      "overall": "warn",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "e0cbcdf12f2db16c2669812951b79fe78f4e5ca74ded7930ee15eef93748a5ea",
+        "validation_summary.json": "6c4aa1e146df63058b2875f7614c6f300b1fb415f3d77b8bd3c85d0865778e33",
+        "output.json": "be29523e08500b7744651e477a8d00b87023016b6d9e11a12b960f6d304ce1cb",
+        "provenance.json": "2884d626bdbadbad09a1f226ccdec04030afb6fbe037eae474f03c33361f709e",
+        "agent_run_trace.jsonl": "e646ccbc6fe7018c665615f3f80145a9cc5265b0a72012f16c126ab4cbe9f5f5"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 1,
+      "semantic_overall": "warn",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 1,
+      "failure_findings": [],
+      "warning_findings": [
+        "checks.standard_phi_present: standard PHI tags present: PatientName, PatientID, PatientBirthDate, PatientSex, InstitutionName, ReferringPhysicianName"
+      ]
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.dicom_metadata_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [
+    {
+      "id": "medagent.verifiers.dicom_metadata_quality_v1",
+      "pack": "verifiers/dicom_metadata_quality_v1",
+      "warning_count": 1,
+      "warnings": [
+        "checks.standard_phi_present: standard PHI tags present: PatientName, PatientID, PatientBirthDate, PatientSex, InstitutionName, ReferringPhysicianName"
+      ]
+    }
+  ],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "medagent.dicom_metadata_extract",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "80550e35135a6870562b7e8a09e0bbc28566d20308c1e64f4465892042efb07d",
+        "validation_summary.json": "eb8df9ea367c972ea03d04b06890abfbf59cd14fd295acae48a0d89fa51943d7",
+        "output.json": "a3bc06ef05ef0fbbb829fc045abf15ae4c2edc88df887dc92af41cb75ef57a5b",
+        "provenance.json": "376c127596046657b06accc6a8f69eb973da0430e9b82902b071668cc92669a8",
+        "agent_run_trace.jsonl": "98c6096db02271a277dcffe6eb287979d228a505399737da26a5fe30381f8f6f"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.dicom_metadata_quality_v1",
+      "pack": "verifiers/dicom_metadata_quality_v1",
+      "overall": "warn",
+      "hashes": {
+        "manifest.json": "e0cbcdf12f2db16c2669812951b79fe78f4e5ca74ded7930ee15eef93748a5ea",
+        "validation_summary.json": "6c4aa1e146df63058b2875f7614c6f300b1fb415f3d77b8bd3c85d0865778e33",
+        "output.json": "be29523e08500b7744651e477a8d00b87023016b6d9e11a12b960f6d304ce1cb",
+        "provenance.json": "2884d626bdbadbad09a1f226ccdec04030afb6fbe037eae474f03c33361f709e",
+        "agent_run_trace.jsonl": "e646ccbc6fe7018c665615f3f80145a9cc5265b0a72012f16c126ab4cbe9f5f5"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "warn"
+}

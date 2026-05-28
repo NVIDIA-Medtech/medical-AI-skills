@@ -1,0 +1,938 @@
+[
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_gpt55_with_repeat_1",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/with/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/with/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_gpt55_with_repeat_2",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/with/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/with/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_gpt55_with_repeat_3",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/with/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/with/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_gpt55_without_repeat_1",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/without/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/without/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_gpt55_without_repeat_2",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/without/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/without/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_gpt55_without_repeat_3",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/without/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/gpt55/without/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_opus_with_repeat_1",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/with/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/with/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_opus_with_repeat_2",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/with/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/with/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_opus_with_repeat_3",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/with/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/with/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_opus_without_repeat_1",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/without/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/without/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_opus_without_repeat_2",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/without/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/without/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_codex-opus_opus_without_repeat_3",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/without/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_codex_opus/opus/without/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_nemotron-correction_nemotron_with_repeat_1",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/with/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/with/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_nemotron-correction_nemotron_with_repeat_2",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/with/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/with/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_nemotron-correction_nemotron_with_repeat_3",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/with/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-segment-ct-finetune/SKILL.md. Read that document. Do not inspect any other files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/with/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "skills/nv-segment-ct-finetune/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-segment-ct-finetune/SKILL.md",
+        "exists": true,
+        "byte_count": 8664,
+        "sha256": "f6d39c0139511af242ef744ff28d131bacd2a415d037642745af733b4df39f22"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_nemotron-correction_nemotron_without_repeat_1",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/without/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/without/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_nemotron-correction_nemotron_without_repeat_2",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/without/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/without/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_segment_ct_finetune_nemotron-correction_nemotron_without_repeat_3",
+    "skill": "nv_segment_ct_finetune",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. Fine-tune the CT segmentation workflow on the small dataset at runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset. Use the shortest smoke-scale run suitable for checking the workflow, and write outputs under runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/without/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md. Read that document. Do not read or use any files under skills/nv-segment-ct-finetune/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_segment_ct_finetune_nemotron_correction/without/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset",
+    "source_fixture_used_only_for_staging": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        "exists": true,
+        "byte_count": 11429,
+        "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  }
+]

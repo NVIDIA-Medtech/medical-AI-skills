@@ -1,0 +1,51 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "937b8b2f03b2",
+  "skill_id": "medagent.verifiers.ct_segmentation_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/ct_segmentation_quality_v1",
+  "repo_git_sha": "cbdba910b87eb0281ea75ebb91eaf4054fdb91b4",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "conftest.py",
+    "fixtures/build_fixtures.py",
+    "fixtures/fragmented_pack/manifest.json",
+    "fixtures/fragmented_pack/output.json",
+    "fixtures/fragmented_pack/predicted_seg.nii.gz",
+    "fixtures/fragmented_pack/validation_summary.json",
+    "fixtures/gt_pass_pack/manifest.json",
+    "fixtures/gt_pass_pack/output.json",
+    "fixtures/gt_pass_pack/predicted_seg.nii.gz",
+    "fixtures/gt_pass_pack/reference_seg.nii.gz",
+    "fixtures/gt_pass_pack/validation_summary.json",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/predicted_seg.nii.gz",
+    "fixtures/pass_pack/validation_summary.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_ct_segmentation_quality_grade.py",
+    "validators/anatomy_bounds.json",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "runs/nv_segment_ctmr_trusted_pass_current/skill_run",
+    "sha256": "46663175fe5e344f7cf50e8226642894cf2deda28191b9b5de9f30501d4afe73",
+    "size_bytes": 504749,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/ct_segmentation_quality_v1/scripts/grade.py",
+    "runs/nv_segment_ctmr_trusted_pass_current/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

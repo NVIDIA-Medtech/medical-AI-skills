@@ -1,0 +1,229 @@
+%YAML 1.2
+# Medical AI Skills workflow config: finite replayer, headless Holoviz, recorder on workspace mount.
+# Pass via HOLOHUB_CONFIG=skills/holohub-endoscopy-tool-tracking/fixtures/configs/endoscopy_workflow_trusted.yaml
+# Pair with HOLOHUB_RECORD_TYPE=visualizer for GXF recordings + detection export.
+---
+application:
+  title: Holohub - Endoscopy Tool Tracking (workflow trusted)
+  version: 1.0
+  inputFormats: []
+  outputFormats: ["screen"]
+
+resources:
+  cpu: 2
+  gpu: 1
+  memory: 1Gi
+  gpuMemory: 1Gi
+
+extensions:
+  - lib/gxf_extensions/libgxf_lstm_tensor_rt_inference.so
+
+source: "replayer"
+postprocessor: "tool_tracking_postprocessor"
+visualizer: "holoviz"
+record_type: "visualizer"
+
+aja:
+  width: 1920
+  height: 1080
+  overlay_rdma: false
+  rdma: true
+  enable_overlay: false
+
+yuan:
+  width: 3840
+  height: 2160
+  rdma: true
+
+deltacast:
+  width: 1920
+  height: 1080
+  progressive: true
+  framerate: 25
+  board: 0
+  input: 0
+  output: 0
+  rdma: false
+  enable_overlay: true
+
+deltacast_overlay_format_converter:
+  in_dtype: "rgba8888"
+  alpha_value: 255
+  out_dtype: "rgba8888"
+  out_channel_order: [2,1,0,3]
+  resize_width: 1920
+  resize_height: 1080
+
+deltacast_drop_alpha_channel_converter:
+  in_dtype: "rgba8888"
+  out_dtype: "rgb888"
+
+deltacast_visualizer_format_converter:
+  in_dtype: "rgb888"
+  alpha_value: 255
+  out_dtype: "rgba8888"
+  out_channel_order: [2,1,0,3]
+
+replayer:
+  basename: "surgical_video"
+  frame_rate: 0
+  repeat: false
+  realtime: true
+  count: 120
+
+recorder_format_converter:
+  in_dtype: "rgba8888"
+  out_dtype: "rgb888"
+
+recorder:
+  directory: "/workspace/holohub/build/endoscopy_tool_tracking/recording_output"
+  basename: "tensor"
+
+format_converter_replayer:
+  out_tensor_name: source_video
+  out_dtype: "float32"
+  scale_min: 0.0
+  scale_max: 255.0
+
+format_converter_aja:
+  in_dtype: "rgba8888"
+  out_tensor_name: source_video
+  out_dtype: "float32"
+  scale_min: 0.0
+  scale_max: 255.0
+  resize_width: 854
+  resize_height: 480
+
+format_converter_yuan:
+  out_tensor_name: source_video
+  out_dtype: "float32"
+  scale_min: 0.0
+  scale_max: 255.0
+  resize_width: 854
+  resize_height: 480
+
+format_converter_deltacast:
+  in_dtype: "rgba8888"
+  out_tensor_name: source_video
+  out_dtype: "float32"
+  out_channel_order: [2,1,0]
+  scale_min: 0.0
+  scale_max: 255.0
+  resize_width: 854
+  resize_height: 480
+
+lstm_inference:
+  input_tensor_names:
+    - source_video
+    - cellstate_in
+    - hiddenstate_in
+  input_state_tensor_names:
+    - cellstate_in
+    - hiddenstate_in
+  input_binding_names:
+    - data_ph:0
+    - cellstate_ph:0
+    - hiddenstate_ph:0
+  output_tensor_names:
+    - cellstate_out
+    - hiddenstate_out
+    - probs
+    - scaled_coords
+    - binary_masks
+  output_state_tensor_names:
+    - cellstate_out
+    - hiddenstate_out
+  output_binding_names:
+    - Model/net_states:0
+    - Model/net_hidden:0
+    - probs:0
+    - Localize/scaled_coords:0
+    - Localize_1/binary_masks:0
+  force_engine_update: false
+  verbose: true
+  max_workspace_size: 0x80000000
+  enable_fp16_: true
+
+holoviz:
+  headless: true
+  tensors:
+    - name: ""
+      type: color
+      opacity: 1.0
+      priority: 0
+    - name: mask
+      type: color
+      opacity: 1.0
+      priority: 1
+    - name: scaled_coords
+      type: crosses
+      opacity: 1.0
+      line_width: 4
+      color:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 1.0
+      priority: 2
+    - name: scaled_coords
+      type: text
+      opacity: 1.0
+      priority: 3
+      color:
+        - 1.0
+        - 1.0
+        - 1.0
+        - 0.9
+      text:
+        - Grasper
+        - Bipolar
+        - Hook
+        - Scissors
+        - Clipper
+        - Irrigator
+        - Spec.Bag
+
+holoviz_overlay:
+  headless: true
+  tensors:
+    - name: mask
+      type: color
+      opacity: 1.0
+      priority: 1
+    - name: scaled_coords
+      type: crosses
+      opacity: 1.0
+      line_width: 4
+      color:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 1.0
+      priority: 2
+    - name: scaled_coords
+      type: text
+      opacity: 1.0
+      priority: 3
+      color:
+        - 1.0
+        - 1.0
+        - 1.0
+        - 0.9
+      text:
+        - Grasper
+        - Bipolar
+        - Hook
+        - Scissors
+        - Clipper
+        - Irrigator
+        - Spec.Bag
+
+vtk_op:
+  labels:
+    - Grasper
+    - Bipolar
+    - Hook
+    - Scissors
+    - Clipper
+    - Irrigator
+    - Spec.Bag

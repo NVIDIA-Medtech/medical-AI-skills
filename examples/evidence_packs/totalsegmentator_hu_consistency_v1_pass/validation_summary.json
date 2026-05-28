@@ -1,0 +1,93 @@
+{
+  "schema": "verifiers/totalsegmentator_hu_consistency_v1/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "runs/totalsegmentator_hu_consistency_source_pass",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "runs/totalsegmentator_hu_consistency_source_pass",
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "verifier.id",
+        "eq": "medagent.verifiers.totalsegmentator_hu_consistency_v1"
+      },
+      "actual": "medagent.verifiers.totalsegmentator_hu_consistency_v1",
+      "ok": true,
+      "reason": "'medagent.verifiers.totalsegmentator_hu_consistency_v1' == 'medagent.verifiers.totalsegmentator_hu_consistency_v1'"
+    },
+    {
+      "check": {
+        "path": "target.skill_id",
+        "eq": "totalsegmentator"
+      },
+      "actual": "totalsegmentator",
+      "ok": true,
+      "reason": "'totalsegmentator' == 'totalsegmentator'"
+    },
+    {
+      "check": {
+        "path": "input_inventory.input_volume_readable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "input_inventory.label_map_readable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "hu_consistency.verdict",
+        "eq": "pass"
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "'pass' == 'pass'"
+    },
+    {
+      "check": {
+        "path": "overall",
+        "eq": "pass"
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "'pass' == 'pass'"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "skipped",
+  "cost_results": [],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

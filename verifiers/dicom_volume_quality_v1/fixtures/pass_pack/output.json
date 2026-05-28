@@ -1,0 +1,22 @@
+{
+  "skill": "dicom_series_to_volume",
+  "n_slices": 32,
+  "single_series": true,
+  "modality": "CT",
+  "input_dir": "skills/dicom-series-to-volume/fixtures/clean_axial",
+  "output": {
+    "path": "skills/dicom-series-to-volume/fixtures/clean_axial.nii.gz",
+    "shape": [64, 64, 32],
+    "spacing": [1.0, 1.0, 2.0],
+    "affine": [
+      [-1.0, 0.0, 0.0, 0.0],
+      [0.0, -1.0, 0.0, 0.0],
+      [0.0, 0.0, 2.0, 0.0],
+      [0.0, 0.0, 0.0, 1.0]
+    ],
+    "axcodes": ["L", "P", "S"]
+  },
+  "hu_range": [-1000.0, 60.0],
+  "inconsistent_shape": false,
+  "intended_use_disclaimer": "Engineering verification only. Not a vetted clinical DICOM-to-NIfTI converter; does not auto-reorient. A downstream gate is expected to assert orientation before this volume is fed to a model."
+}

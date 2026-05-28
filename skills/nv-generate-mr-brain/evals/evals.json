@@ -1,0 +1,34 @@
+{
+  "skill_name": "nv-generate-mr-brain",
+  "description": "Behavioral evals for NV-Generate-CTMR rflow-mr-brain synthesis. Tests brain modality mapping, wrapper use, and non-clinical scope.",
+  "evals": [
+    {
+      "id": "generate-brain-mri-t1",
+      "prompt": "Generate a synthetic T1 brain MRI from /data/brain_request.json using nv-generate-mr-brain.",
+      "expected_output": "The agent runs scripts/run_mr_brain.py with the config path, --modality mri_t1, --output-dir, and --random-seed.",
+      "files": [],
+      "assertions": [
+        "the command uses skills/nv-generate-mr-brain/scripts/run_mr_brain.py",
+        "the command includes --modality mri_t1",
+        "the command includes an explicit --output-dir",
+        "the agent states the generated image is synthetic and not for clinical interpretation"
+      ]
+    },
+    {
+      "id": "skull-stripped-modality-supported",
+      "prompt": "Can this skill synthesize a skull-stripped FLAIR brain MRI?",
+      "expected_output": "The agent should answer yes with the supported modality mri_flair_skull_stripped and provide the wrapper command shape.",
+      "files": [],
+      "assertions": [
+        "the agent names mri_flair_skull_stripped exactly",
+        "the command shape still uses scripts/run_mr_brain.py",
+        "the agent does NOT claim clinical or production-training validity"
+      ]
+    }
+  ],
+  "baseline_methodology": {
+    "with_skill_setup": "Agent has the supported modality list and wrapper command.",
+    "without_skill_setup": "Agent may use incomplete modality names or the generic rflow-mr script.",
+    "expected_delta": "with_skill: correct modality and script. without_skill: higher mode and spelling error risk."
+  }
+}

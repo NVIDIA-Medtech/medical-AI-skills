@@ -1,0 +1,239 @@
+{
+  "backend": "nemotron",
+  "model": "nvidia/nvidia/nemotron-3-super-v3",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "nvidia/nvidia/nemotron-3-super-v3",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "without",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+    },
+    {
+      "role": "user",
+      "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The input CT volume is at runs/with_vs_without_nv/_inputs/nv_segment_ctmr/input.nii.gz. Run the CT body segmentation workflow and write the label map under runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-segment-ctmr/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_segment_ctmr_NV-Segment-CTMR_README.md ---\n# Model Overview\n\nNV-Segment-CTMR is a unified CT and MRI segmentation foundation model. It is based on VISTA3D CT model and extended to both CT and MRI. Please refer to [VISTA3D repo](https://github.com/Project-MONAI/VISTA/tree/main/vista3d) for more information.\n\nWe defined 345 classes as in [metadata.json](../configs/metadata.json) and their corresponding dataset in [label_dict.json](../configs/label_dict.json). It shows the label organ name, index, training dataset, modality and evaluation dice score. If a class only comes from CT training dataset, it may not perform well on MRI, but the actual performance will vary case by case.\nWe support three types of segment everything: \"CT_BODY\", \"MRI_BODY\", and \"MRI_BRAIN\". \"CT_BODY\" is the previous VISTA3D bundle supported 132 CT classes. \"MRI_BODY\" shares the same 50 label classes as TotalsegmentatorMR. \"MRI_BRAIN\" is trained on skull stripped [LUMIR](https://github.com/JHU-MedImage-Reg/LUMIR_L2R) dataset and will segment brain MRI substructures.\nPreprocessing is needed. Follow [tutorials](https://github.com/junyuchen245/MIR/tree/main/tutorials/brain_MRI_preprocessing). The exact mapping for those three everything labels can be found in [metadata.json](../configs/metadata.json).\n\nExample segmentations for **CT_BODY** (CT whole-body), **MRI_BRAIN**, and **MRI_BODY** (MRI torso):\n\n![CT_BODY, MRI_BRAIN, and MRI_BODY segmentation examples](ctmr.png)\n\nNote: The predefined segment everything does not cover all labels, user can select more classes as output. Below is a segmentation using the label list from AutoPetAtals. User can extract the label list from each dataset defined in configs/label_mappings.json\n\n![CT_BODY, MRI_BRAIN, and MRI_BODY segmentation examples](ctmr2.png)\n\nNote: For Brain MRI segmentation, the model is able to segment 133 classes across diverse MRI sequences including T1, T2, Flair e.t.c.\n\n## Quick Start\n\n### Installation\n\n```bash\n# Create and activate conda environment\nconda create -y -n vista3d-nv python=3.11\nconda activate vista3d-nv\n\n# Clone repository\ngit clone https://github.com/NVIDIA-Medtech/NV-Segment-CTMR.git\ncd NV-Segment-CTMR/NV-Segment-CTMR\n\n# Install dependencies\npip install -r requirements.txt\n```\n\nModel weights are prepared automatically during inference. The first run downloads the checkpoint from Hugging Face into the local Hugging Face cache and links it at `models/model.pt`; later runs reuse the cached weights.\n\n## Automatic Segmentation (support multi-gpu batch processing)\n\n## Single image inference to segment everything (automatic)\n\nThe output will be saved to `{output_dir}/s0289/s0289_{output_postfix}{output_ext}`. By default the everything will be \"CT_BODY\". Add \"MRI_BODY\" to segment the MRI body classes.\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\n# Automatic Segment everything. It requires a modality key. We allow \"CT_BODY\", \"MRI_BODY\", and \"MRI_BRAIN\". For brain, we require preprocessing.\npython -m monai.bundle run --config_file configs/inference.json --input_dict \"{'image':'example/s0289.nii.gz'}\" --modality MRI_BODY\n```\n\n## Single image inference to segment specific class (automatic)\n\nThe detailed automatic segmentation class index can be found [here](../configs/label_dict.json).\n\n```bash\n# Automatic Segment specific class\npython -m monai.bundle run --config_file configs/inference.json --input_dict \"{'image':'example/s0289.nii.gz','label_prompt':[3]}\"\n```\n\n## Batch inference with multiGPU support (automatic)\n\nThe `configs/batch_inference.json` defines the batch inference, you can:\n\n1. Segment all NIfTI files within a folder and subfolders\n\n    - `configs/batch_inference.json` builds `input_list` with `scripts/batch_inference_utils.build_input_list()`:\n    - Recursively discovers `**/*.nii.gz` under `--input_dir`.\n    - **Resume (default):** with `batch_resume_skip_existing: true` in `batch_inference.json`, only volumes whose expected output is **missing or empty** under `--output_dir` are queued (same layout as `SaveImaged`). Re-run the **same** command to finish leftovers. Set `batch_resume_skip_existing` to false to segment every discovered file again.\n    - **Discovery filters:** edit `batch_skip_dir_names` (exact parent folder name) and/or `batch_skip_dir_prefixes` (parent folder name starts with\u2026) in `configs/batch_inference.json` (JSON arrays of strings).\n    - **Optional keys** in `configs/batch_inference.json` (defaults in the file): `batch_skip_dir_names`, `batch_skip_dir_prefixes`, `batch_resume_skip_existing`, `batch_use_input_list_cache`, `batch_cache_wait_sec`.\n    - **`batch_use_input_list_cache`:** With `torchrun` (multi-process), only rank 0 walks the tree to build `input_list` and writes a small JSON cache under the system temp directory; other ranks read that file so you do not repeat a huge filesystem scan on every GPU. Set to `false` if you want every rank to compute the list itself (simpler, slower on large cohorts). Single-process runs are unaffected in practice.\n    - **`batch_cache_wait_sec`:** When `batch_use_input_list_cache` is `true`, non-zero ranks wait up to this many seconds for rank 0\u2019s cache file. Increase if rank 0\u2019s scan is slow; decrease only if the list is always built quickly.\n    - **Which classes to segment:** edit **`everything_labels`** in **`configs/inference.json`** (and `modality` / `--modality` as needed). See `configs/label_dict.json` and `docs/inference.md`.\n    - If **resume** leaves nothing to run (all outputs already present), the run **exits successfully** with `[nvseg] batch: nothing to run (resume); ok` (avoids a zero-length dataloader / `DistributedSampler` failure). If **no** `*.nii.gz` files are discovered under `input_dir`, you get a short `[nvseg] batch: no *.nii.gz\u2026` error.\n    - Rank 0 logs: `[nvseg] batch resume (skip existing outputs): N volume(s) (...)`.\n    - **Multi-GPU:** `--nproc_per_node` must be \u2264 the number of volumes in `input_list` after filtering.\n    - **Outputs:** With `data_root_dir` and `separate_folder: true`, `input_dir/patient1/mri/scan.nii.gz` \u2192 `output_dir/patient1/mri/scan/scan_trans.nii.gz`. If `models/model.pt` is missing, inference prepares it automatically from Hugging Face.\n    - Advanced: edit `should_skip_path_by_parent_rules()` in `scripts/batch_inference_utils.py` for custom path rules.\n\n2. Segment based on a filelist.txt file, you can change the `input_list` in `configs/batch_inference.json`\n\n```json\n  \"input_list\": \"$sorted([os.path.abspath(line.strip()) for line in open('/absolute/path/to/filelist.txt') if line.strip() and not line.strip().startswith('#')])\",\n```\n\n### Single-GPU Batch Inference\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\n# Segment MRI_BODY within example folder\npython -m monai.bundle run --config_file=\"['configs/inference.json', 'configs/batch_inference.json']\" --input_dir=\"example/\" --output_dir=\"example/\" --modality MRI_BODY\n```\n\n### Multi-GPU batch inference (cohorts, resume, optional folder filters)\n\n```bash\nconda activate vista3d-nv\n\n# Example: multi-GPU batch (same command for first run or resume)\ntorchrun --nproc_per_node=2 --nnodes=1 -m monai.bundle run \\\n  --config_file=\"['configs/inference.json', 'configs/batch_inference.json', 'configs/mgpu_inference.json']\" \\\n  --input_dir=\"example/\" \\\n  --output_dir=\"example/\" \\\n  --modality MRI_BODY\n```\n\n```text\nNote: if using the finetuned checkpoint and the finetuning label_mapping mapped to global index \"2, 20, 21\", remove the `subclass` dict from inference.json since those values defined in `subclass` will trigger the wrong subclass segmentation.\n```\n\n## Brain MRI segmentation (any MRI sequence)\n\n### Using the Brain Segmentation Script\n\nThe script automates skull stripping (SynthStrip via `brain_t1_preprocess/synthstrip-docker`), affine alignment to the LUMIR template, MONAI bundle inference, and reverting the mask to the original image space. Temporary files are removed after each case unless you pass `--keep-temp`. It is modified from [MIR tutorials](https://github.com/junyuchen245/MIR/tree/main/tutorials/brain_MRI_preprocessing).\n\n#### Single file\n\nOutput path: `{output_dir}/{basename}_trans.nii.gz` (default `output_dir` is `./eval`).\n\n```bash\nconda activate vista3d-nv\n\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz --output_dir results/\n# keep temperary files for skull stripping and registration\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz --keep-temp\n# if you cannot perform skull stripping with synthstrip-docker, e.g. on a remote cluster in docker env, you can skull strip the data first then run segmentation with skull strip skipped.\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz --no-skullstrip\n```\n\n#### Folder batch (`--input_folder`)\n\nOnly `*.nii` / `*.nii.gz` files **directly inside** the given folder are processed (`find` with `-maxdepth 1`; no subfolders). Each output is written as `{output_dir}/{basename}_trans.nii.gz` (flat layout).\n\n```bash\n./brain_t1_preprocess/run_brain_segmentation.sh --input_folder example/ --output_dir results/\n./brain_t1_preprocess/run_brain_segmentation.sh --input_folder example/ --output_dir results/ --keep-temp\n```\n\n#### File list (`--file_list` + `--root_path`)\n\nLines in the list are paths relative to `root_path` (comments and empty lines allowed). Outputs mirror that relative layout under `output_dir`, with `_seg` before the extension (e.g. `root_path/sub/scan.nii.gz` \u2192 `output_dir/sub/scan_seg.nii.gz`). By default, existing outputs are skipped (resume-friendly). Optional: split the sorted list across jobs with `--num_partitions N` and `--partition M` (1-based).\n\n```bash\n./brain_t1_preprocess/run_brain_segmentation.sh \\\n  --file_list file_list.txt --root_path /path/to/root --output_dir /path/to/output\n./brain_t1_preprocess/run_brain_segmentation.sh \\\n  --file_list file_list.txt --root_path /path/to/root --output_dir /path/to/output --no-skullstrip\n# split into multiple partitions to submit multiple jobs\n./brain_t1_preprocess/run_brain_segmentation.sh \\\n  --file_list file_list.txt --root_path /path/to/root --output_dir /path/to/output \\\n  --num_partitions 10 --partition 3\n```\n\n#### Script options\n\n- `--input FILE`: Single NIfTI to segment (mutually exclusive with `--input_folder` / `--file_list`).\n- `--input_folder FOLDER`: Batch only the NIfTI files in that folder (not recursive).\n- `--file_list FILE` and `--root_path PATH`: Batch from a text list (requires both).\n- `--output_dir DIR`: Output directory (default `./eval`).\n- `--keep-temp`: Keep per-case temporary preprocessing files (default: delete after success).\n- `--no-skullstrip`: Skip SynthStrip; preprocessing starts from the original image.\n- `--modality MODALITY`: `MRI_BRAIN` (default), `MRI_BODY`, or `CT_BODY`.\n- `--no-skip`: Recompute even when the expected output already exists (**file list mode only**).\n- `--num_partitions N`, `--partition M`: Deterministic shards of the sorted file list (**file list mode only**).\n- `-h`, `--help`: Print usage.\n\n**Note:** Skull stripping calls `brain_t1_preprocess/synthstrip-docker` (Docker must be available unless you use `--no-skullstrip`). In file list mode, failed or timed-out cases are appended to a timestamped log under the output directory.\n\n### Manual Processing (Advanced)\n\nIf you need more control over individual steps, you can run them manually:\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\n# Set variables\nfile=brain_t1\ninput=example/$file.nii.gz\nskull_stripped=example/${file}_skull_stripped.nii.gz\npreprocess_tmp=example/${file}_p.nii.gz\npreprocess_meta=example/${file}_p.meta.json\n\n# Step 1: Skull stripping with SynthStrip\n./brain_t1_preprocess/synthstrip-docker -i $input -o $skull_stripped\n\n# Step 2: Affine align to the LUMIR template\npython brain_t1_preprocess/preprocess.py $skull_stripped brain_t1_preprocess/LUMIR_template.nii.gz $preprocess_tmp --save-preprocess $preprocess_meta\n\n# Step 3: Segment the brain\npython -m monai.bundle run --config_file configs/inference.json --input_dict \"{'image':'$preprocess_tmp'}\" --modality MRI_BRAIN\n\n# Step 4: Revert the segmentation back to original space\n# Note: Adjust paths based on actual output location from step 3\npython brain_t1_preprocess/revert_preprocess.py $preprocess_tmp --out ${preprocess_tmp}.revert.nii.gz --mask eval/${file}_p/${file}_p_trans.nii.gz --mask-out eval/${file}_trans.nii.gz --meta $preprocess_meta\n```\n\n## Execute inference with the TensorRT model\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\npython -m monai.bundle run --config_file \"['configs/inference.json', 'configs/inference_trt.json']\"\n```\n\n## Continual learning / Finetuning\n\nWe provide predefined finetuning tutorial in [details](finetune.md).\nFor complicated finetuning, we suggest users to do vibe coding to generate finetuning pipelines by simply reuse the model and checkpoint\n\n```python\nfrom monai.networks.nets.vista3d import vista3d132\nvista3d132.load_state_dict(pretrained_ckpt, strict=True)\n```\n\n## References\n\n- He, Yufan, et al. \"VISTA3D: A unified segmentation foundation model for 3D medical imaging.\" Proceedings of the Computer Vision and Pattern Recognition Conference. 2025. <https://openaccess.thecvf.com/content/CVPR2025/html/He_VISTA3D_A_Unified_Segmentation_Foundation_Model_For_3D_Medical_Imaging_CVPR_2025_paper.html>\n\n## License\n\n### Code License\n\nThis project includes code licensed under the Apache License 2.0.\nYou may obtain a copy of the License at\n\n[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)\n\n### Model Weights License\n\nThe model weights included in this project are licensed under the Non-Commercial\n\n[NCLS v1 License](https://developer.download.nvidia.com/licenses/NVIDIA-OneWay-Noncommercial-License-22Mar2022.pdf?t=eyJscyI6InJlZiIsImxzZCI6IlJFRi1naXRodWIuY29tL252aWRpYS1ob2xvc2NhbiJ9)\n"
+    }
+  ],
+  "response": "\nconda activate vista3d-nv && mkdir -p runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2 && echo \"runs/with_vs_without_nv/_inputs/nv_segment_ctmr/input.nii.gz\" > runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/filelist.txt && echo '{ \"input_list\": \"$sorted([os.path.abspath(line.strip()) for line in open(\\\"runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/filelist.txt\\\") if line.strip() and not line.strip().startswith('#')])\" }' > runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/override.json && python -m monai.bundle run --config_file=\"['configs/inference.json', 'configs/batch_inference.json', 'runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/override.json']\" --output_dir=\"runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2\" --modality CT_BODY",
+  "command": null,
+  "usage": {
+    "completion_tokens": 8100,
+    "prompt_tokens": 4016,
+    "total_tokens": 12116
+  },
+  "execution": {
+    "executed": false,
+    "exit_code": null,
+    "reason": "no command extracted"
+  },
+  "score": {
+    "score": 0,
+    "tiers": [
+      {
+        "tier": 1,
+        "pass": false,
+        "reason": "entrypoint marker"
+      },
+      {
+        "tier": 2,
+        "pass": false,
+        "reason": "user input path marker"
+      },
+      {
+        "tier": 3,
+        "pass": false,
+        "reason": "model/modality/control marker"
+      },
+      {
+        "tier": 4,
+        "pass": false,
+        "reason": "output dir marker"
+      },
+      {
+        "tier": 5,
+        "pass": false,
+        "reason": "no command extracted"
+      }
+    ],
+    "passed": false
+  },
+  "failure_analysis": [
+    {
+      "kind": "no_command",
+      "reason": "No executable bash command was extracted from the model response.",
+      "repair_hint": "Return exactly one fenced bash block containing the command to run."
+    },
+    {
+      "kind": "tier_1",
+      "reason": "entrypoint marker",
+      "repair_hint": "Use the runnable surface documented for this arm."
+    },
+    {
+      "kind": "tier_2",
+      "reason": "user input path marker",
+      "repair_hint": "Use the staged user input path under runs/with_vs_without_nv/_inputs/."
+    },
+    {
+      "kind": "tier_3",
+      "reason": "model/modality/control marker",
+      "repair_hint": "Choose the model, modality, labels, anatomy controls, or smoke mode required by the task."
+    },
+    {
+      "kind": "tier_4",
+      "reason": "output dir marker",
+      "repair_hint": "Write outputs under the exact arm-specific output directory."
+    },
+    {
+      "kind": "tier_5",
+      "reason": "no command extracted",
+      "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+    },
+    {
+      "kind": "not_executed",
+      "reason": "no command extracted",
+      "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+    }
+  ],
+  "step": 0,
+  "backend_label": "Nemotron",
+  "attempts": [
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "without",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The input CT volume is at runs/with_vs_without_nv/_inputs/nv_segment_ctmr/input.nii.gz. Run the CT body segmentation workflow and write the label map under runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-segment-ctmr/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_segment_ctmr_NV-Segment-CTMR_README.md ---\n# Model Overview\n\nNV-Segment-CTMR is a unified CT and MRI segmentation foundation model. It is based on VISTA3D CT model and extended to both CT and MRI. Please refer to [VISTA3D repo](https://github.com/Project-MONAI/VISTA/tree/main/vista3d) for more information.\n\nWe defined 345 classes as in [metadata.json](../configs/metadata.json) and their corresponding dataset in [label_dict.json](../configs/label_dict.json). It shows the label organ name, index, training dataset, modality and evaluation dice score. If a class only comes from CT training dataset, it may not perform well on MRI, but the actual performance will vary case by case.\nWe support three types of segment everything: \"CT_BODY\", \"MRI_BODY\", and \"MRI_BRAIN\". \"CT_BODY\" is the previous VISTA3D bundle supported 132 CT classes. \"MRI_BODY\" shares the same 50 label classes as TotalsegmentatorMR. \"MRI_BRAIN\" is trained on skull stripped [LUMIR](https://github.com/JHU-MedImage-Reg/LUMIR_L2R) dataset and will segment brain MRI substructures.\nPreprocessing is needed. Follow [tutorials](https://github.com/junyuchen245/MIR/tree/main/tutorials/brain_MRI_preprocessing). The exact mapping for those three everything labels can be found in [metadata.json](../configs/metadata.json).\n\nExample segmentations for **CT_BODY** (CT whole-body), **MRI_BRAIN**, and **MRI_BODY** (MRI torso):\n\n![CT_BODY, MRI_BRAIN, and MRI_BODY segmentation examples](ctmr.png)\n\nNote: The predefined segment everything does not cover all labels, user can select more classes as output. Below is a segmentation using the label list from AutoPetAtals. User can extract the label list from each dataset defined in configs/label_mappings.json\n\n![CT_BODY, MRI_BRAIN, and MRI_BODY segmentation examples](ctmr2.png)\n\nNote: For Brain MRI segmentation, the model is able to segment 133 classes across diverse MRI sequences including T1, T2, Flair e.t.c.\n\n## Quick Start\n\n### Installation\n\n```bash\n# Create and activate conda environment\nconda create -y -n vista3d-nv python=3.11\nconda activate vista3d-nv\n\n# Clone repository\ngit clone https://github.com/NVIDIA-Medtech/NV-Segment-CTMR.git\ncd NV-Segment-CTMR/NV-Segment-CTMR\n\n# Install dependencies\npip install -r requirements.txt\n```\n\nModel weights are prepared automatically during inference. The first run downloads the checkpoint from Hugging Face into the local Hugging Face cache and links it at `models/model.pt`; later runs reuse the cached weights.\n\n## Automatic Segmentation (support multi-gpu batch processing)\n\n## Single image inference to segment everything (automatic)\n\nThe output will be saved to `{output_dir}/s0289/s0289_{output_postfix}{output_ext}`. By default the everything will be \"CT_BODY\". Add \"MRI_BODY\" to segment the MRI body classes.\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\n# Automatic Segment everything. It requires a modality key. We allow \"CT_BODY\", \"MRI_BODY\", and \"MRI_BRAIN\". For brain, we require preprocessing.\npython -m monai.bundle run --config_file configs/inference.json --input_dict \"{'image':'example/s0289.nii.gz'}\" --modality MRI_BODY\n```\n\n## Single image inference to segment specific class (automatic)\n\nThe detailed automatic segmentation class index can be found [here](../configs/label_dict.json).\n\n```bash\n# Automatic Segment specific class\npython -m monai.bundle run --config_file configs/inference.json --input_dict \"{'image':'example/s0289.nii.gz','label_prompt':[3]}\"\n```\n\n## Batch inference with multiGPU support (automatic)\n\nThe `configs/batch_inference.json` defines the batch inference, you can:\n\n1. Segment all NIfTI files within a folder and subfolders\n\n    - `configs/batch_inference.json` builds `input_list` with `scripts/batch_inference_utils.build_input_list()`:\n    - Recursively discovers `**/*.nii.gz` under `--input_dir`.\n    - **Resume (default):** with `batch_resume_skip_existing: true` in `batch_inference.json`, only volumes whose expected output is **missing or empty** under `--output_dir` are queued (same layout as `SaveImaged`). Re-run the **same** command to finish leftovers. Set `batch_resume_skip_existing` to false to segment every discovered file again.\n    - **Discovery filters:** edit `batch_skip_dir_names` (exact parent folder name) and/or `batch_skip_dir_prefixes` (parent folder name starts with\u2026) in `configs/batch_inference.json` (JSON arrays of strings).\n    - **Optional keys** in `configs/batch_inference.json` (defaults in the file): `batch_skip_dir_names`, `batch_skip_dir_prefixes`, `batch_resume_skip_existing`, `batch_use_input_list_cache`, `batch_cache_wait_sec`.\n    - **`batch_use_input_list_cache`:** With `torchrun` (multi-process), only rank 0 walks the tree to build `input_list` and writes a small JSON cache under the system temp directory; other ranks read that file so you do not repeat a huge filesystem scan on every GPU. Set to `false` if you want every rank to compute the list itself (simpler, slower on large cohorts). Single-process runs are unaffected in practice.\n    - **`batch_cache_wait_sec`:** When `batch_use_input_list_cache` is `true`, non-zero ranks wait up to this many seconds for rank 0\u2019s cache file. Increase if rank 0\u2019s scan is slow; decrease only if the list is always built quickly.\n    - **Which classes to segment:** edit **`everything_labels`** in **`configs/inference.json`** (and `modality` / `--modality` as needed). See `configs/label_dict.json` and `docs/inference.md`.\n    - If **resume** leaves nothing to run (all outputs already present), the run **exits successfully** with `[nvseg] batch: nothing to run (resume); ok` (avoids a zero-length dataloader / `DistributedSampler` failure). If **no** `*.nii.gz` files are discovered under `input_dir`, you get a short `[nvseg] batch: no *.nii.gz\u2026` error.\n    - Rank 0 logs: `[nvseg] batch resume (skip existing outputs): N volume(s) (...)`.\n    - **Multi-GPU:** `--nproc_per_node` must be \u2264 the number of volumes in `input_list` after filtering.\n    - **Outputs:** With `data_root_dir` and `separate_folder: true`, `input_dir/patient1/mri/scan.nii.gz` \u2192 `output_dir/patient1/mri/scan/scan_trans.nii.gz`. If `models/model.pt` is missing, inference prepares it automatically from Hugging Face.\n    - Advanced: edit `should_skip_path_by_parent_rules()` in `scripts/batch_inference_utils.py` for custom path rules.\n\n2. Segment based on a filelist.txt file, you can change the `input_list` in `configs/batch_inference.json`\n\n```json\n  \"input_list\": \"$sorted([os.path.abspath(line.strip()) for line in open('/absolute/path/to/filelist.txt') if line.strip() and not line.strip().startswith('#')])\",\n```\n\n### Single-GPU Batch Inference\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\n# Segment MRI_BODY within example folder\npython -m monai.bundle run --config_file=\"['configs/inference.json', 'configs/batch_inference.json']\" --input_dir=\"example/\" --output_dir=\"example/\" --modality MRI_BODY\n```\n\n### Multi-GPU batch inference (cohorts, resume, optional folder filters)\n\n```bash\nconda activate vista3d-nv\n\n# Example: multi-GPU batch (same command for first run or resume)\ntorchrun --nproc_per_node=2 --nnodes=1 -m monai.bundle run \\\n  --config_file=\"['configs/inference.json', 'configs/batch_inference.json', 'configs/mgpu_inference.json']\" \\\n  --input_dir=\"example/\" \\\n  --output_dir=\"example/\" \\\n  --modality MRI_BODY\n```\n\n```text\nNote: if using the finetuned checkpoint and the finetuning label_mapping mapped to global index \"2, 20, 21\", remove the `subclass` dict from inference.json since those values defined in `subclass` will trigger the wrong subclass segmentation.\n```\n\n## Brain MRI segmentation (any MRI sequence)\n\n### Using the Brain Segmentation Script\n\nThe script automates skull stripping (SynthStrip via `brain_t1_preprocess/synthstrip-docker`), affine alignment to the LUMIR template, MONAI bundle inference, and reverting the mask to the original image space. Temporary files are removed after each case unless you pass `--keep-temp`. It is modified from [MIR tutorials](https://github.com/junyuchen245/MIR/tree/main/tutorials/brain_MRI_preprocessing).\n\n#### Single file\n\nOutput path: `{output_dir}/{basename}_trans.nii.gz` (default `output_dir` is `./eval`).\n\n```bash\nconda activate vista3d-nv\n\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz --output_dir results/\n# keep temperary files for skull stripping and registration\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz --keep-temp\n# if you cannot perform skull stripping with synthstrip-docker, e.g. on a remote cluster in docker env, you can skull strip the data first then run segmentation with skull strip skipped.\n./brain_t1_preprocess/run_brain_segmentation.sh --input example/brain_t1.nii.gz --no-skullstrip\n```\n\n#### Folder batch (`--input_folder`)\n\nOnly `*.nii` / `*.nii.gz` files **directly inside** the given folder are processed (`find` with `-maxdepth 1`; no subfolders). Each output is written as `{output_dir}/{basename}_trans.nii.gz` (flat layout).\n\n```bash\n./brain_t1_preprocess/run_brain_segmentation.sh --input_folder example/ --output_dir results/\n./brain_t1_preprocess/run_brain_segmentation.sh --input_folder example/ --output_dir results/ --keep-temp\n```\n\n#### File list (`--file_list` + `--root_path`)\n\nLines in the list are paths relative to `root_path` (comments and empty lines allowed). Outputs mirror that relative layout under `output_dir`, with `_seg` before the extension (e.g. `root_path/sub/scan.nii.gz` \u2192 `output_dir/sub/scan_seg.nii.gz`). By default, existing outputs are skipped (resume-friendly). Optional: split the sorted list across jobs with `--num_partitions N` and `--partition M` (1-based).\n\n```bash\n./brain_t1_preprocess/run_brain_segmentation.sh \\\n  --file_list file_list.txt --root_path /path/to/root --output_dir /path/to/output\n./brain_t1_preprocess/run_brain_segmentation.sh \\\n  --file_list file_list.txt --root_path /path/to/root --output_dir /path/to/output --no-skullstrip\n# split into multiple partitions to submit multiple jobs\n./brain_t1_preprocess/run_brain_segmentation.sh \\\n  --file_list file_list.txt --root_path /path/to/root --output_dir /path/to/output \\\n  --num_partitions 10 --partition 3\n```\n\n#### Script options\n\n- `--input FILE`: Single NIfTI to segment (mutually exclusive with `--input_folder` / `--file_list`).\n- `--input_folder FOLDER`: Batch only the NIfTI files in that folder (not recursive).\n- `--file_list FILE` and `--root_path PATH`: Batch from a text list (requires both).\n- `--output_dir DIR`: Output directory (default `./eval`).\n- `--keep-temp`: Keep per-case temporary preprocessing files (default: delete after success).\n- `--no-skullstrip`: Skip SynthStrip; preprocessing starts from the original image.\n- `--modality MODALITY`: `MRI_BRAIN` (default), `MRI_BODY`, or `CT_BODY`.\n- `--no-skip`: Recompute even when the expected output already exists (**file list mode only**).\n- `--num_partitions N`, `--partition M`: Deterministic shards of the sorted file list (**file list mode only**).\n- `-h`, `--help`: Print usage.\n\n**Note:** Skull stripping calls `brain_t1_preprocess/synthstrip-docker` (Docker must be available unless you use `--no-skullstrip`). In file list mode, failed or timed-out cases are appended to a timestamped log under the output directory.\n\n### Manual Processing (Advanced)\n\nIf you need more control over individual steps, you can run them manually:\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\n# Set variables\nfile=brain_t1\ninput=example/$file.nii.gz\nskull_stripped=example/${file}_skull_stripped.nii.gz\npreprocess_tmp=example/${file}_p.nii.gz\npreprocess_meta=example/${file}_p.meta.json\n\n# Step 1: Skull stripping with SynthStrip\n./brain_t1_preprocess/synthstrip-docker -i $input -o $skull_stripped\n\n# Step 2: Affine align to the LUMIR template\npython brain_t1_preprocess/preprocess.py $skull_stripped brain_t1_preprocess/LUMIR_template.nii.gz $preprocess_tmp --save-preprocess $preprocess_meta\n\n# Step 3: Segment the brain\npython -m monai.bundle run --config_file configs/inference.json --input_dict \"{'image':'$preprocess_tmp'}\" --modality MRI_BRAIN\n\n# Step 4: Revert the segmentation back to original space\n# Note: Adjust paths based on actual output location from step 3\npython brain_t1_preprocess/revert_preprocess.py $preprocess_tmp --out ${preprocess_tmp}.revert.nii.gz --mask eval/${file}_p/${file}_p_trans.nii.gz --mask-out eval/${file}_trans.nii.gz --meta $preprocess_meta\n```\n\n## Execute inference with the TensorRT model\n\n```bash\n# Make sure conda environment is activated\nconda activate vista3d-nv\n\npython -m monai.bundle run --config_file \"['configs/inference.json', 'configs/inference_trt.json']\"\n```\n\n## Continual learning / Finetuning\n\nWe provide predefined finetuning tutorial in [details](finetune.md).\nFor complicated finetuning, we suggest users to do vibe coding to generate finetuning pipelines by simply reuse the model and checkpoint\n\n```python\nfrom monai.networks.nets.vista3d import vista3d132\nvista3d132.load_state_dict(pretrained_ckpt, strict=True)\n```\n\n## References\n\n- He, Yufan, et al. \"VISTA3D: A unified segmentation foundation model for 3D medical imaging.\" Proceedings of the Computer Vision and Pattern Recognition Conference. 2025. <https://openaccess.thecvf.com/content/CVPR2025/html/He_VISTA3D_A_Unified_Segmentation_Foundation_Model_For_3D_Medical_Imaging_CVPR_2025_paper.html>\n\n## License\n\n### Code License\n\nThis project includes code licensed under the Apache License 2.0.\nYou may obtain a copy of the License at\n\n[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)\n\n### Model Weights License\n\nThe model weights included in this project are licensed under the Non-Commercial\n\n[NCLS v1 License](https://developer.download.nvidia.com/licenses/NVIDIA-OneWay-Noncommercial-License-22Mar2022.pdf?t=eyJscyI6InJlZiIsImxzZCI6IlJFRi1naXRodWIuY29tL252aWRpYS1ob2xvc2NhbiJ9)\n"
+        }
+      ],
+      "response": "\nconda activate vista3d-nv && mkdir -p runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2 && echo \"runs/with_vs_without_nv/_inputs/nv_segment_ctmr/input.nii.gz\" > runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/filelist.txt && echo '{ \"input_list\": \"$sorted([os.path.abspath(line.strip()) for line in open(\\\"runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/filelist.txt\\\") if line.strip() and not line.strip().startswith('#')])\" }' > runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/override.json && python -m monai.bundle run --config_file=\"['configs/inference.json', 'configs/batch_inference.json', 'runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2/override.json']\" --output_dir=\"runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2\" --modality CT_BODY",
+      "command": null,
+      "usage": {
+        "completion_tokens": 8100,
+        "prompt_tokens": 4016,
+        "total_tokens": 12116
+      },
+      "execution": {
+        "executed": false,
+        "exit_code": null,
+        "reason": "no command extracted"
+      },
+      "score": {
+        "score": 0,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": false,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": false,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": false,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": false,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": false,
+            "reason": "no command extracted"
+          }
+        ],
+        "passed": false
+      },
+      "failure_analysis": [
+        {
+          "kind": "no_command",
+          "reason": "No executable bash command was extracted from the model response.",
+          "repair_hint": "Return exactly one fenced bash block containing the command to run."
+        },
+        {
+          "kind": "tier_1",
+          "reason": "entrypoint marker",
+          "repair_hint": "Use the runnable surface documented for this arm."
+        },
+        {
+          "kind": "tier_2",
+          "reason": "user input path marker",
+          "repair_hint": "Use the staged user input path under runs/with_vs_without_nv/_inputs/."
+        },
+        {
+          "kind": "tier_3",
+          "reason": "model/modality/control marker",
+          "repair_hint": "Choose the model, modality, labels, anatomy controls, or smoke mode required by the task."
+        },
+        {
+          "kind": "tier_4",
+          "reason": "output dir marker",
+          "repair_hint": "Write outputs under the exact arm-specific output directory."
+        },
+        {
+          "kind": "tier_5",
+          "reason": "no command extracted",
+          "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+        },
+        {
+          "kind": "not_executed",
+          "reason": "no command extracted",
+          "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+        }
+      ],
+      "step": 0
+    }
+  ],
+  "steps_to_pass": Infinity,
+  "max_correction_steps": 0,
+  "repeat": 2,
+  "output_dir": "runs/with_vs_without_nv/nv_segment_ctmr_nemotron_correction/without/repeat_2",
+  "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ctmr/input.nii.gz",
+  "prompt_style": "minimal"
+}

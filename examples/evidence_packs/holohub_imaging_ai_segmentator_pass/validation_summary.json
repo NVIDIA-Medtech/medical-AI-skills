@@ -1,0 +1,191 @@
+{
+  "schema": "skills/holohub-imaging-ai-segmentator/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": ".workbench_data/holohub_input/spleen_10",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": ".workbench_data/holohub_input/spleen_10",
+      "status": "passed"
+    },
+    {
+      "name": "dicom_series_readable",
+      "path": ".workbench_data/holohub_input/spleen_10",
+      "status": "passed",
+      "readable_files": 55
+    },
+    {
+      "name": "dicom_series_single_series",
+      "status": "passed",
+      "series_instance_uid_count": 1
+    },
+    {
+      "name": "dicom_series_modality_consistent",
+      "status": "passed",
+      "modalities": [
+        "CT"
+      ]
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "invocation.exit_code",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "output.dicom_seg.count",
+        "gte": 1
+      },
+      "actual": 1,
+      "ok": true,
+      "reason": "1 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.dicom_seg.total_bytes",
+        "gt": 50000
+      },
+      "actual": 20213016,
+      "ok": true,
+      "reason": "20213016 > 50000"
+    },
+    {
+      "check": {
+        "path": "output.nifti.original.count",
+        "gte": 1
+      },
+      "actual": 1,
+      "ok": true,
+      "reason": "1 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.nifti.segmentation.count",
+        "gte": 1
+      },
+      "actual": 1,
+      "ok": true,
+      "reason": "1 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.nifti.original.total_bytes",
+        "gt": 100000
+      },
+      "actual": 57672032,
+      "ok": true,
+      "reason": "57672032 > 100000"
+    },
+    {
+      "check": {
+        "path": "output.nifti.segmentation.total_bytes",
+        "gt": 100000
+      },
+      "actual": 14418272,
+      "ok": true,
+      "reason": "14418272 > 100000"
+    },
+    {
+      "check": {
+        "path": "output.seg_signals.seg_pixel_max_value",
+        "gt": 0
+      },
+      "actual": 103,
+      "ok": true,
+      "reason": "103 > 0"
+    },
+    {
+      "check": {
+        "path": "output.seg_signals.empty_segmentation_warning",
+        "eq": false
+      },
+      "actual": false,
+      "ok": true,
+      "reason": "False == False"
+    },
+    {
+      "check": {
+        "path": "invocation.holohub_commit",
+        "ne": ""
+      },
+      "actual": "0eb7dcfb94d8b09a28075fb87337fcc12cff0af5",
+      "ok": true,
+      "reason": "'0eb7dcfb94d8b09a28075fb87337fcc12cff0af5' != ''"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 9.487782302312553,
+      "min": 5,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 1.080072,
+      "min": null,
+      "max": 600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 2.9515004704302426,
+      "min": 0.5,
+      "max": 60,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 18346.0,
+      "min": 200,
+      "max": 25000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 60.18359375,
+      "min": null,
+      "max": 8000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

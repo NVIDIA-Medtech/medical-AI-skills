@@ -1,0 +1,102 @@
+id: medagent.verifiers.totalsegmentator_quality_v1
+version: 0.1.0
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for totalsegmentator evidence packs. Loads the
+    produced multilabel NIfTI, recomputes per-class voxel counts and
+    volumes, then checks anatomy plausibility (volume bounds, largest
+    connected component dominance, fragmentation cap, bilateral
+    symmetry, liver > spleen) using TotalSegmentator's class IDs
+    (1=spleen, 5=liver, 2/3=kidneys). If `input.ground_truth_path` is
+    recorded in the evidence pack and is readable, also computes
+    per-class Dice and IoU against the reference.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+
+inputs:
+  - name: totalsegmentator_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by
+      skills/totalsegmentator. The verifier reads output.json,
+      validation_summary.json, manifest.json, the referenced
+      multilabel NIfTI, and (optionally) input.ground_truth_path.
+
+outputs:
+  - name: totalsegmentator_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies:
+    nibabel: ">=4.0"
+    numpy: ">=1.23"
+    scipy: ">=1.10"
+  side_effects:
+    pip_packages:
+      - nibabel>=4.0
+      - numpy>=1.23
+      - scipy>=1.10
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    Per-class volume bounds in validators/anatomy_bounds_total.json are
+    population-typical adult ranges for the `total` task only. Pediatric,
+    surgically-resected, or pathologically-enlarged cases will fail
+    intentionally; the verifier is an engineering floor, not a clinical
+    assessment.
+  - >
+    Bounds for non-`total` tasks (total_mr, body, lung_vessels, etc.)
+    are not yet defined. The verifier still runs but anatomy_plausibility
+    only catches structural failures (fragmentation) on those tasks.
+  - >
+    Connected-component analysis uses 26-connectivity via
+    scipy.ndimage if scipy is installed, else a permissive numpy
+    fallback. Bilateral symmetry check splits volume by the configured
+    bilateral_partner_id pairs in anatomy_bounds_total.json.
+  - >
+    The gt_metrics tier runs only when the evidence pack records
+    `input.ground_truth_path` and that file is readable and shape-
+    compatible with the predicted mask. Otherwise it returns
+    verdict=skipped and gt_metrics.acceptable=true so single-pack
+    runs without ground truth still pass.
+
+validation:
+  expected_runtime_seconds:
+    max: 60.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.totalsegmentator_quality_v1}
+    - {path: target.skill_id, contains_any_of: [totalsegmentator, medagent.totalsegmentator]}
+    - {path: artifact_inventory.label_map_readable, eq: true}
+    - {path: artifact_inventory.affine_match, eq: true}
+    - {path: artifact_inventory.shape_match, eq: true}
+    - {path: anatomy_plausibility.verdict, eq: pass}
+    - {path: anatomy_plausibility.classes_failing_volume_bounds, length_eq: 0}
+    - {path: anatomy_plausibility.classes_overfragmented, length_eq: 0}
+    - {path: label_set_subset.verdict, contains_any_of: ["pass", "skipped"]}
+    - {path: gt_metrics.acceptable, eq: true}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: preflight
+    fixture: fixtures/README.md
+    runs: 2
+    reason: >
+      The deterministic pass pack is synthesized in tests to avoid committing
+      extra NIfTI artifacts. The repository audit repeats the declared
+      directory/env boundary check; tests exercise full verifier execution.

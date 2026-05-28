@@ -1,0 +1,31 @@
+workflow_id: holohub_imaging_evidence
+description: |
+  HoloHub imaging AI segmentator + flow benchmark, with the trusted imaging
+  segmentation quality verifier paired on the app step.
+
+  Path:
+    HoloHub fixture/source (DICOM CT series directory)
+      -> holohub_imaging_ai_segmentator (trusted)
+      -> holohub_imaging_segmentation_quality_v1
+      -> holohub_flow_benchmark (Holoscan flow metrics, smoke mode by default)
+      -> workflow summary with stream linkage
+
+  Prerequisites: HOLOHUB_ROOT, Docker, GPU, DISPLAY (for default Holoviz path).
+  Rebake DICOM with skills/holohub-imaging-ai-segmentator/fixtures/build_dicom_from_nifti.py.
+
+steps:
+  - id: holohub_app
+    skill: skills/holohub-imaging-ai-segmentator
+    trusted: true
+    inputs:
+      fixture: ${input}
+
+  - id: flow_benchmark
+    skill: skills/holohub-flow-benchmark
+    inputs:
+      fixture: skills/holohub-flow-benchmark/fixtures/default
+    env:
+      HOLOHUB_BENCHMARK_APP: imaging_ai_segmentator
+      HOLOHUB_BENCHMARK_LANGUAGE: python
+      HOLOHUB_BENCHMARK_SMOKE: "true"
+      HOLOHUB_BENCHMARK_MONITOR_GPU: "false"

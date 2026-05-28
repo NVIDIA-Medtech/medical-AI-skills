@@ -1,0 +1,52 @@
+{
+  "nvidia/openai/gpt-oss-20b": {
+    "n": 5,
+    "overall_pass_rate": 0.8,
+    "schema_pass_rate": 1.0,
+    "factual_echo_pass_rate": 1.0,
+    "runtime_integrity_clean_rate": 1.0,
+    "mean_tokens_input": 599,
+    "mean_tokens_output": 461,
+    "mean_wall_seconds": 1.96
+  },
+  "nvidia/meta/llama-3.3-70b-instruct": {
+    "n": 5,
+    "overall_pass_rate": 0.0,
+    "schema_pass_rate": 1.0,
+    "factual_echo_pass_rate": 1.0,
+    "runtime_integrity_clean_rate": 1.0,
+    "mean_tokens_input": 567,
+    "mean_tokens_output": 117,
+    "mean_wall_seconds": 2.87
+  },
+  "nvidia/openai/gpt-oss-120b": {
+    "n": 5,
+    "overall_pass_rate": 0.0,
+    "schema_pass_rate": 1.0,
+    "factual_echo_pass_rate": 1.0,
+    "runtime_integrity_clean_rate": 1.0,
+    "mean_tokens_input": 604,
+    "mean_tokens_output": 511,
+    "mean_wall_seconds": 2.96
+  },
+  "nvidia/mistralai/mistral-7b-instruct-v0.3": {
+    "n": 5,
+    "overall_pass_rate": 0.0,
+    "schema_pass_rate": 1.0,
+    "factual_echo_pass_rate": 1.0,
+    "runtime_integrity_clean_rate": 1.0,
+    "mean_tokens_input": 671,
+    "mean_tokens_output": 167,
+    "mean_wall_seconds": 2.89
+  },
+  "nvidia/meta/llama-3.2-1b-instruct": {
+    "n": 5,
+    "overall_pass_rate": 0.0,
+    "schema_pass_rate": 1.0,
+    "factual_echo_pass_rate": 0.8,
+    "runtime_integrity_clean_rate": 1.0,
+    "mean_tokens_input": 567,
+    "mean_tokens_output": 120,
+    "mean_wall_seconds": 1.34
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "captured_at": "2026-05-26T04:32:38.774187+00:00",
+  "gpu": {
+    "available": true,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "uuid": "GPU-95d20cf6-6e5f-d0cd-7c5c-1caad640b18e",
+        "driver_version": "580.159.04",
+        "compute_cap": "8.9",
+        "memory_total_mb": 49140.0,
+        "memory_free_mb": 48342.0,
+        "memory_used_mb": 145.0,
+        "mig_mode_current": "[N/A]"
+      }
+    ],
+    "nvcc_release": "Cuda compilation tools, release 13.2, V13.2.78"
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container digest/labels not captured by MVP provenance. Add via skill-side instrumentation when the wrapper spawns docker."
+  },
+  "network": {
+    "declared_endpoints": [
+      "https://zenodo.org",
+      "https://github.com"
+    ],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.totalsegmentator/",
+        "resolved": "~/.totalsegmentator",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 76,
+        "total_bytes": 1595152356
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.totalsegmentator/",
+        "resolved": "~/.totalsegmentator",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 76,
+        "total_bytes": 1595152356
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level",
+        "change": "untracked"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.totalsegmentator/",
+        "resolved": "~/.totalsegmentator",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      }
+    ]
+  }
+}

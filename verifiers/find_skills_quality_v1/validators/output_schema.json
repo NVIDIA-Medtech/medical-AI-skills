@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "find_skills_quality_v1 output",
+  "type": "object",
+  "required": ["verifier", "target", "selector_quality", "checks", "warnings", "overall"],
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "target": {"type": "object"},
+    "selector_quality": {
+      "type": "object",
+      "required": [
+        "n_fail",
+        "n_warn",
+        "verdict",
+        "acceptable",
+        "query",
+        "catalog_count",
+        "recommendation_count",
+        "top_id"
+      ],
+      "properties": {
+        "n_fail": {"type": "integer"},
+        "n_warn": {"type": "integer"},
+        "verdict": {"type": "string", "enum": ["pass", "warn", "fail"]},
+        "acceptable": {"type": "boolean"},
+        "query": {"type": ["string", "null"]},
+        "catalog_count": {"type": ["integer", "null"]},
+        "recommendation_count": {"type": "integer"},
+        "top_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "checks": {"type": "array"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "overall": {"type": "string", "enum": ["pass", "warn", "fail"]}
+  },
+  "additionalProperties": false
+}

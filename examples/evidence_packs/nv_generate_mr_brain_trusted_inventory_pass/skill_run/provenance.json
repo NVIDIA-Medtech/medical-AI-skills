@@ -1,0 +1,102 @@
+{
+  "captured_at": "2026-05-26T03:37:21.767650+00:00",
+  "gpu": {
+    "available": true,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "uuid": "GPU-95d20cf6-6e5f-d0cd-7c5c-1caad640b18e",
+        "driver_version": "580.159.04",
+        "compute_cap": "8.9",
+        "memory_total_mb": 49140.0,
+        "memory_free_mb": 48342.0,
+        "memory_used_mb": 145.0,
+        "mig_mode_current": "[N/A]"
+      }
+    ],
+    "nvcc_release": "Cuda compilation tools, release 13.2, V13.2.78"
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container image inspect and optional in-container pip freeze (HoloHub docker workflow).",
+    "outer_command": [
+      "<home>/anaconda3/envs/py312/bin/python",
+      "-m",
+      "scripts.diff_model_infer",
+      "-t",
+      "./configs/config_network_rflow.json",
+      "-e",
+      "<repo>/runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples/_staged_configs/environment_maisi_diff_model_rflow-mr-brain.json",
+      "-c",
+      "<repo>/runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples/_staged_configs/config_maisi_diff_model_rflow-mr-brain.json"
+    ],
+    "stderr_tail": "[2026-05-26 04:37:10.527][ INFO](inference) - Using cuda:0 of 1 with random seed: 1234\n[2026-05-26 04:37:10.527][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr-brain_v0.pt.\n[2026-05-26 04:37:10.527][ INFO](inference) - [config] random_seed -> 1234.\n[2026-05-26 04:37:10.527][ INFO](inference) - [config] output_prefix -> mr_brain_mri_t1.\n[2026-05-26 04:37:10.527][ INFO](inference) - [config] output_size -> (256, 256, 256).\n[2026-05-26 04:37:10.527][ INFO](inference) - [config] out_spacing -> (1.0, 1.0, 1.0).\n[2026-05-26 04:37:10.673][ INFO](inference) - checkpoints models/autoencoder_v1.pt loaded.\n[2026-05-26 04:37:11.732][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr-brain_v0.pt loaded.\n[2026-05-26 04:37:11.733][ INFO](inference) - scale_factor -> 0.9704500436782837.\n[2026-05-26 04:37:11.734][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-26 04:37:11.754][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  4.88it/s]\n 10%|\u2588         | 3/30 [00:00<00:02, 10.62it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:02, 11.88it/s]\n 23%|\u2588\u2588\u258e       | 7/30 [00:00<00:01, 12.44it/s]\n 30%|\u2588\u2588\u2588       | 9/30 [00:00<00:01, 12.76it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:01, 12.93it/s]\n 43%|\u2588\u2588\u2588\u2588\u258e     | 13/30 [00:01<00:01, 13.05it/s]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 15/30 [00:01<00:01, 13.13it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:01<00:00, 13.17it/s]\n 63%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 19/30 [00:01<00:00, 13.20it/s]\n 70%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588   | 21/30 [00:01<00:00, 13.22it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:01<00:00, 13.23it/s]\n 83%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e | 25/30 [00:01<00:00, 13.24it/s]\n 90%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 27/30 [00:02<00:00, 13.24it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:02<00:00, 13.24it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:02<00:00, 12.77it/s]\n[2026-05-26 04:37:19.457][ INFO](inference) - Saved <repo>/runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples/mr_brain_mri_t1_seed1234_size256x256x256_spacing1.00x1.00x1.00_20260526043719_rank0_modality9.nii.gz.\n"
+  },
+  "network": {
+    "declared_endpoints": [
+      "https://huggingface.co",
+      "https://github.com"
+    ],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level",
+        "change": "untracked"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      }
+    ]
+  }
+}

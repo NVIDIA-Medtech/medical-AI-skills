@@ -1,0 +1,87 @@
+{
+  "skill": "nv_segment_ct",
+  "model": "NVIDIA-Medtech/NV-Segment-CT (VISTA3D)",
+  "model_repo": "https://huggingface.co/nvidia/NV-Segment-CT",
+  "license": "NVIDIA Open Model License (commercial-friendly)",
+  "input": {
+    "path": "synthetic_ct.nii.gz",
+    "shape": [
+      40,
+      40,
+      40
+    ],
+    "ndim": 3,
+    "spacing": [
+      10.0,
+      10.0,
+      10.0
+    ],
+    "ground_truth_path": null
+  },
+  "output": {
+    "path": "predicted_seg.nii.gz",
+    "shape": [
+      40,
+      40,
+      40
+    ],
+    "label_prompts_requested": [
+      1,
+      3,
+      5,
+      14
+    ],
+    "label_ids_present": [
+      1,
+      3,
+      5,
+      14
+    ],
+    "unexpected_label_ids": [],
+    "label_set_valid": true,
+    "class_counts": {
+      "liver": 925,
+      "spleen": 123,
+      "right kidney": 123,
+      "left kidney": 123
+    },
+    "any_label_present": true,
+    "geometry": {
+      "input_shape": [
+        40,
+        40,
+        40
+      ],
+      "output_shape": [
+        40,
+        40,
+        40
+      ],
+      "shape_match": true,
+      "input_spacing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "output_spacing": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "spacing_match": true,
+      "affine_max_abs_diff": 0.0,
+      "affine_match": true
+    }
+  },
+  "invocation": {
+    "official_helper": "hugging_face_pipeline.HuggingFacePipelineHelper",
+    "pipeline_name": "vista3d",
+    "weights_dir": "fixture"
+  },
+  "runtime": {
+    "model_load_seconds": 0.0,
+    "inference_seconds": 0.0,
+    "device": "cpu"
+  },
+  "intended_use_disclaimer": "Fixture data; engineering verification only."
+}

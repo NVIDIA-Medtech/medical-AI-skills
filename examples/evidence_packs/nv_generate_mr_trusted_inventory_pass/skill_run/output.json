@@ -1,0 +1,214 @@
+{
+  "skill": "nv_generate_mr",
+  "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+  "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+  "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+  "license": "Wrapper Apache-2.0; NV-Generate-MR weights use NVIDIA Non-Commercial License.",
+  "input": {
+    "model_config_override_path": "<repo>/skills/nv-generate-mr/fixtures/default_mri_t1.json",
+    "model_config_override": {
+      "dim": [
+        128,
+        256,
+        256
+      ],
+      "spacing": [
+        1.25,
+        1.0,
+        1.0
+      ],
+      "num_inference_steps": 30,
+      "cfg_guidance_scale": 15
+    },
+    "modality_name": "mri_t1",
+    "modality_code": 9,
+    "dim_requested": [
+      128,
+      256,
+      256
+    ],
+    "spacing_requested": [
+      1.25,
+      1.0,
+      1.0
+    ],
+    "num_inference_steps_requested": 30,
+    "cfg_guidance_scale_requested": 15,
+    "random_seed": 0,
+    "version": "rflow-mr"
+  },
+  "output": {
+    "directory": "<repo>/runs/nv_generate_mr_trusted_hash_current/skill_run/samples",
+    "samples": [
+      {
+        "image_path": "<repo>/runs/nv_generate_mr_trusted_hash_current/skill_run/samples/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260526043636_rank0_modality9.nii.gz",
+        "image_bytes": 7005195,
+        "image_sha256": "65469520512044444b58b9c47a32f4d16b92328dbeff326b224c884d0a705bf8",
+        "image_readable": true,
+        "image_shape": [
+          128,
+          256,
+          256
+        ],
+        "requested_shape": [
+          128,
+          256,
+          256
+        ],
+        "shape_match_requested": true,
+        "image_spacing": [
+          1.25,
+          1.0,
+          1.0
+        ],
+        "requested_spacing": [
+          1.25,
+          1.0,
+          1.0
+        ],
+        "spacing_match_requested": true,
+        "image_affine": [
+          [
+            1.25,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "finite_fraction": 1.0,
+        "all_finite": true,
+        "intensity_min": 0.0,
+        "intensity_max": 1966.0,
+        "intensity_mean": 149.232,
+        "intensity_std": 263.206,
+        "image_nonconstant": true,
+        "image_nonnegative": true
+      }
+    ],
+    "num_samples": 1,
+    "all_images_readable": true,
+    "all_shapes_match_requested": true,
+    "all_spacing_match_requested": true,
+    "all_images_finite": true,
+    "all_images_nonconstant": true,
+    "all_images_nonnegative": true
+  },
+  "invocation": {
+    "official_entrypoint": "python -m scripts.diff_model_infer",
+    "upstream_root": "<repo>/.workbench_data/upstreams/NV-Generate-CTMR",
+    "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+    "command": [
+      "<home>/anaconda3/envs/py312/bin/python",
+      "-m",
+      "scripts.diff_model_infer",
+      "-t",
+      "./configs/config_network_rflow.json",
+      "-e",
+      "<repo>/runs/nv_generate_mr_trusted_hash_current/skill_run/samples/_staged_configs/environment_maisi_diff_model_rflow-mr.json",
+      "-c",
+      "<repo>/runs/nv_generate_mr_trusted_hash_current/skill_run/samples/_staged_configs/config_maisi_diff_model_rflow-mr.json"
+    ],
+    "exit_code": 0,
+    "subprocess_seconds": 8.738,
+    "model_inventory": {
+      "all_present": true,
+      "files": [
+        {
+          "path": "models/autoencoder_v2.pt",
+          "present": true,
+          "bytes": 83831932,
+          "sha256": "b5ed556dc64872cae11ebe67cc33e84fbd05ebdf7e35e40c74d956404e7c1ef0"
+        },
+        {
+          "path": "models/diff_unet_3d_rflow-mr.pt",
+          "present": true,
+          "bytes": 2166664552,
+          "sha256": "cbf3ee62ec807ebd63e53fe3cd6fcf8ac9249b427dbeee9e4d205e2931e8ca03"
+        }
+      ]
+    },
+    "rendered_model_config": {
+      "diffusion_unet_train": {
+        "batch_size": 1,
+        "cache_rate": 0,
+        "lr": 1e-05,
+        "n_epochs": 1000
+      },
+      "diffusion_unet_inference": {
+        "dim": [
+          128,
+          256,
+          256
+        ],
+        "spacing": [
+          1.25,
+          1.0,
+          1.0
+        ],
+        "top_region_index": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "bottom_region_index": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "random_seed": 0,
+        "num_inference_steps": 30,
+        "modality": 9,
+        "cfg_guidance_scale": 15
+      }
+    },
+    "rendered_env_output_dir": "<repo>/runs/nv_generate_mr_trusted_hash_current/skill_run/samples",
+    "rendered_env_output_prefix": "mr_mri_t1"
+  },
+  "runtime": {
+    "subprocess_seconds": 8.738,
+    "device": "cuda"
+  },
+  "logs": {
+    "stdout_tail": "",
+    "stderr_tail": "[2026-05-26 04:36:32.039][ INFO](inference) - Using cuda:0 of 1 with random seed: 0\n[2026-05-26 04:36:32.039][ INFO](inference) - [config] ckpt_filepath -> ./models/diff_unet_3d_rflow-mr.pt.\n[2026-05-26 04:36:32.039][ INFO](inference) - [config] random_seed -> 0.\n[2026-05-26 04:36:32.039][ INFO](inference) - [config] output_prefix -> mr_mri_t1.\n[2026-05-26 04:36:32.039][ INFO](inference) - [config] output_size -> (128, 256, 256).\n[2026-05-26 04:36:32.039][ INFO](inference) - [config] out_spacing -> (1.25, 1.0, 1.0).\n[2026-05-26 04:36:32.188][ INFO](inference) - checkpoints models/autoencoder_v2.pt loaded.\n[2026-05-26 04:36:33.300][ INFO](inference) - checkpoints ./models/diff_unet_3d_rflow-mr.pt loaded.\n[2026-05-26 04:36:33.300][ INFO](inference) - scale_factor -> 0.96240234375.\n[2026-05-26 04:36:33.302][ INFO](inference) - num_downsample_level -> 4, divisor -> 4.\n[2026-05-26 04:36:33.322][ INFO](inference) - noise: cuda:0, torch.float32, <class 'torch.Tensor'>\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  3%|\u258e         | 1/30 [00:00<00:05,  5.11it/s]\n 17%|\u2588\u258b        | 5/30 [00:00<00:01, 18.30it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:00, 22.00it/s]\n 37%|\u2588\u2588\u2588\u258b      | 11/30 [00:00<00:00, 24.12it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 25.41it/s]\n 57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 17/30 [00:00<00:00, 26.23it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:00<00:00, 26.75it/s]\n 77%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b  | 23/30 [00:00<00:00, 27.16it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 27.45it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 29/30 [00:01<00:00, 27.61it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 24.85it/s]\n[2026-05-26 04:36:36.866][ INFO](inference) - Saved <repo>/runs/nv_generate_mr_trusted_hash_current/skill_run/samples/mr_mri_t1_seed0_size128x256x256_spacing1.25x1.00x1.00_20260526043636_rank0_modality9.nii.gz.\n"
+  },
+  "preflight": {
+    "warnings": [],
+    "estimated_cost": {
+      "version": "rflow-mr",
+      "voxels_per_sample": 8388608,
+      "num_inference_steps": 30,
+      "estimated_wall_seconds": 60.0,
+      "estimated_peak_vram_gb": 16.0,
+      "estimated_disk_mb": 16.0
+    },
+    "cuda": {
+      "available": true,
+      "device_name": "NVIDIA RTX 6000 Ada Generation",
+      "total_memory_gb": 47.4,
+      "torch_version": "2.12.0+cu130",
+      "cuda_version": "13.0"
+    }
+  },
+  "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+}

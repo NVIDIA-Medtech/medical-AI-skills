@@ -1,0 +1,73 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "6630043013bb",
+  "produced_at": "2026-05-26T01:48:12.748468+00:00",
+  "skill_id": "medagent.nv_segment_ct",
+  "skill_version": "0.2.0",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.ct_segmentation_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/ct_segmentation_quality_v1",
+      "exit_code": 0,
+      "overall": "passed",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "5ac604c14517414a95cceeb12bd643f6ae176a94c49f1792aeadb344253e83fa",
+        "validation_summary.json": "b864c6e627cf1dd4822acb8327cd3d0abcefb1490c7a6ea2080bced52dc554fc",
+        "output.json": "a6f0d8fc697bbc2d52c90d75fc57bc20546b4aeab3308ff4fda5b8c72f481f47",
+        "provenance.json": "3ad4159ea2eed4b8277b60088fd582021930dffb75b8e2b85db5c3f3971c62f6",
+        "agent_run_trace.jsonl": "295654d580c6f23d0275fd209c5719f955301a9d2b4ae9a3e41fd43c52ee5c38"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 0,
+      "semantic_overall": "pass",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 0,
+      "failure_findings": [],
+      "warning_findings": []
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.ct_segmentation_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "medagent.nv_segment_ct",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "5a0277a8325feaf15b775d7cca99eaf5680f20560342598449d760d707c50208",
+        "validation_summary.json": "161a59276313bfa6a2a8089bce9e1ba43199be24e1e27f8c30d46e7577f20d39",
+        "output.json": "df4e1efe6cc104fd05b1c7bbebabbd9bd3832a0d90c383ad9438855fbe5097b0",
+        "provenance.json": "f3374c1a9205e0fb22b0e8d1c2c5b7afbf8e95e1e3ae47ee5c2f6ddb7d3836f7",
+        "agent_run_trace.jsonl": "89be37b30772e827fe1d4c2aab59595feedee187c887ac8a74e14f9c2b3469fe"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.ct_segmentation_quality_v1",
+      "pack": "verifiers/ct_segmentation_quality_v1",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "5ac604c14517414a95cceeb12bd643f6ae176a94c49f1792aeadb344253e83fa",
+        "validation_summary.json": "b864c6e627cf1dd4822acb8327cd3d0abcefb1490c7a6ea2080bced52dc554fc",
+        "output.json": "a6f0d8fc697bbc2d52c90d75fc57bc20546b4aeab3308ff4fda5b8c72f481f47",
+        "provenance.json": "3ad4159ea2eed4b8277b60088fd582021930dffb75b8e2b85db5c3f3971c62f6",
+        "agent_run_trace.jsonl": "295654d580c6f23d0275fd209c5719f955301a9d2b4ae9a3e41fd43c52ee5c38"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "passed"
+}

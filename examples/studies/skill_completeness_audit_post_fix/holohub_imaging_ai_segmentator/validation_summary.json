@@ -1,0 +1,82 @@
+{
+  "schema": "verifiers/skill_completeness_v1/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/holohub-imaging-ai-segmentator",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "skills/holohub-imaging-ai-segmentator",
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "tier1_structural.verdict",
+        "contains_any_of": [
+          "pass",
+          "fail"
+        ]
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "matched 'pass'"
+    },
+    {
+      "check": {
+        "path": "tier2_spec_honesty.verdict",
+        "contains_any_of": [
+          "pass",
+          "fail"
+        ]
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "matched 'pass'"
+    },
+    {
+      "check": {
+        "path": "overall",
+        "contains_any_of": [
+          "pass",
+          "fail"
+        ]
+      },
+      "actual": "pass",
+      "ok": true,
+      "reason": "matched 'pass'"
+    },
+    {
+      "check": {
+        "path": "blocking_issues_count",
+        "gte": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 >= 0"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "skipped",
+  "cost_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "minor",
+  "integrity_n_findings": 1,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

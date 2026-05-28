@@ -1,0 +1,979 @@
+{
+  "backend": "nemotron",
+  "backend_label": "Nemotron",
+  "model": "nvidia/nvidia/nemotron-3-super-v3",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "nvidia/nvidia/nemotron-3-super-v3",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "with",
+  "skill": "nv_reason_cxr",
+  "mode": "nemotron-correction",
+  "repeat_count": 3,
+  "max_correction_steps": 0,
+  "prompt_style": "minimal",
+  "clean_environment": {
+    "per_repeat_output_dir": true,
+    "per_attempt_fresh_venv": true,
+    "python_user_site_disabled": true,
+    "host_pythonpath_removed": true,
+    "output_dir_cleaned_before_each_attempt": true,
+    "dependency_and_model_caches_may_be_shared": true,
+    "shared_cache_root": ".workbench_data/with_vs_without_cache",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    }
+  },
+  "summary": {
+    "pass_count": 3,
+    "fail_count": 0,
+    "mean_score": 5.0,
+    "scores": [
+      5,
+      5,
+      5
+    ],
+    "steps_to_pass": {
+      "resolved_count": 3,
+      "unresolved_count": 0,
+      "mean_resolved": 0.0,
+      "min_resolved": 0,
+      "max_resolved": 0,
+      "values": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "repeats": [
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The CXR request is at runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json. Run a command-shape smoke test for the CXR reasoning workflow and write structured JSON under runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1. Do not grade clinical correctness.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_reason_cxr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-reason-cxr/SKILL.md ---\n---\nname: nv-reason-cxr\ndescription: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - cxr\n    - reasoning\n---\n\n# NV-Reason-CXR\n\n## Purpose\n- Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `chest_xray_image_or_fixture`; outputs are `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_nv_reason_cxr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_nv_reason_cxr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_nv_reason_cxr.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CXR_OR_FIXTURE --out-dir OUT_DIR [--mock] [--check-setup]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes JSON outputs under the caller's `--out-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` outside `--mock` mode.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Image preprocessing, model inference, and decoding are delegated to Hugging Face Transformers and the NV-Reason-CXR-3B model.\n- Output is not a diagnosis, clinical report, treatment recommendation, or triage decision. It is engineering evidence and must be reviewed by a qualified professional before any medical use.\n- The model may hallucinate findings, miss subtle abnormalities, misread support devices, or produce overconfident prose.\n- The committed fixture uses a generated synthetic PNG and deterministic mock response so CI can verify wrapper behavior without downloading model weights. Mock mode is not a substitute for model inference.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, treatment decisions.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nRuns NVIDIA-Medtech [`NV-Reason-CXR-3B`](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)\nfor chest X-ray image interpretation through the documented Hugging Face\nTransformers inference path. The wrapper does not reimplement the model,\nimage preprocessing, or decoding.\n\n\n## Exact Runnable Surface\n\nFor command-shape smoke tests and JSON fixtures, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE --mock --out-dir OUT_DIR\n```\n\nFor live image inference, omit `--mock` only when the user asks for live model inference. Do not invent `Medical AI Skills run`, `eval_engine/run.py`, `infer.py`, or `python -m nv_reason_cxr` commands for ordinary user runs.\n\n## Preconditions\n\nInstall the inference dependencies in the environment that will run the\nskill:\n\n```bash\npip install torch==2.7.1 torchvision==0.22.1 transformers==4.56.1 Pillow\n```\n\nThe model weights are loaded from `nvidia/NV-Reason-CXR-3B` through\nTransformers. They may download to the Hugging Face cache on first use.\nSet `TRANSFORMERS_OFFLINE=1` or pass `--local-files-only` only after the\nweights are already cached.\n\nCUDA is expected for practical inference. CPU execution may work for small\ntests but is slow and must be requested explicitly.\n\nCheck the local environment before downloading weights or running inference:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py --check-setup\n```\n\nThe setup report checks importable dependencies, CUDA visibility, Hugging Face\ncache state, and the recommended next step.\n\nOperational environment variables:\n\n| Variable | When to use |\n|---|---|\n| `MOCK_NV_REASON_CXR` | Set to `1` for deterministic command-shape smoke tests without model inference. |\n| `NV_REASON_CXR_MODEL` | Override the Hugging Face model id only for compatibility probes. |\n| `HF_HOME` | Point at a pre-populated Hugging Face cache. |\n| `HF_TOKEN` | Authenticate model downloads when required by the local environment. |\n| `TRANSFORMERS_OFFLINE` | Set to `1` only after weights are already cached. |\n| `HF_HUB_OFFLINE` | Set to `1` only after Hugging Face assets are already cached. |\n\n## License\n\nThe upstream repository code is Apache-2.0. The model weights are released\nunder the NVIDIA OneWay Noncommercial License Agreement. Users are responsible\nfor complying with the model-weight terms before live inference.\n\n## Usage\n\nFrom Medical AI Skills repo root:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.png \\\n  --prompt \"Find abnormalities and support devices.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nUse the wrapper script directly for agent-generated commands. Do not replace\nit with `eval_engine/run.py` unless the user explicitly asks to run the eval\nharness. Do not redirect stdout with `>` in generated commands: callers and\nthe eval harness read the wrapper's stdout JSON, including\n`output.response_text`, to verify the run. The direct runnable surface is:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE \\\n  --mock \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\n`PATH_TO_CXR_OR_FIXTURE` may be a PNG/JPEG image or a JSON fixture. If the\nuser provides a JSON request such as\n`runs/.../synthetic_cxr_input.json`, pass that exact JSON path as the first\nargument. The script will load `generated://synthetic_chest_xray` fixtures,\ncreate the temporary PNG under the output directory, and emit JSON with\n`output.response_text`. Use `--mock` only for command-shape smoke tests or\nfixtures that request mock mode; omit `--mock` for live model inference.\n\nFor JPEG input:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \\\n  --prompt \"Describe the chest X-ray findings.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nFlags:\n\n- `--model-id` \u2014 Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.\n- `--device auto|cuda|cpu` \u2014 default `auto`, using CUDA when available.\n- `--allow-cpu` \u2014 required for live CPU inference; CPU runs can be very slow.\n- `--torch-dtype auto|float16|bfloat16|float32` \u2014 default `auto`, using\n  bfloat16 on CUDA and float32 on CPU, matching the published BF16 model.\n- `--max-new-tokens` \u2014 generation cap, default 2048.\n- `--local-files-only` \u2014 use only locally cached Hugging Face assets.\n- `--mock` \u2014 deterministic dry-run response for CI and wiring checks.\n- `--prompt-preset findings|comprehensive|educational|structured` \u2014 optional\n  known-good prompt presets from the model card/demo behavior.\n\nThe tested local live path uses:\n\n- `AutoModelForImageTextToText.from_pretrained(..., dtype=torch.bfloat16).eval().to(\"cuda\")`\n- `AutoProcessor.from_pretrained(..., use_fast=True)`\n- PNG/JPEG image input plus one text prompt\n- `max_new_tokens=2048` by default\n\nThe script emits JSON on stdout and writes no clinical report files. It records\ninput image metadata, prompt, model id, runtime mode, response text, and known\nlimitations. If `runtime.truncated_by_max_new_tokens` is `true`, rerun with a\nhigher `--max-new-tokens` value.\n\n## Fixture Smoke Test\n\nThe committed fixture uses a generated synthetic PNG and mock mode so the\neval harness can verify the wrapper without downloading weights:\n\n```bash\npython eval_engine/run.py skills/nv-reason-cxr \\\n  --fixture skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json \\\n  --out runs/nv_reason_cxr_smoke\n```\n\n## Limits\n\nThis is research and engineering tooling only. It is not validated for\nclinical diagnosis, treatment decisions, triage, patient-facing reporting, or\nregulatory use. Model outputs can hallucinate, miss subtle findings, or\noverstate uncertainty. A qualified professional must review any use in a\nmedical workflow.\n"
+        }
+      ],
+      "response": "\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1\n```",
+      "command": "python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1",
+      "usage": {
+        "completion_tokens": 697,
+        "prompt_tokens": 2499,
+        "total_tokens": 3196
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.1124274730682373,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_1/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_1/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1/input_synthetic_chest_xray.png"
+        ],
+        "stdout_tail": "{\n  \"input\": {\n    \"case_id\": \"synthetic-cxr-smoke\",\n    \"image\": {\n      \"format\": \"png\",\n      \"height\": 96,\n      \"path\": \"runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1/input_synthetic_chest_xray.png\",\n      \"sha256\": \"767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf\",\n      \"source\": \"generated_fixture\",\n      \"width\": 96\n    },\n    \"prompt\": \"Find abnormalities and support devices.\"\n  },\n  \"limitations\": [\n    \"Output is engineering evidence only; it is not a diagnosis or treatment recommendation.\",\n    \"NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.\",\n    \"A qualified professional must review any medical workflow use.\"\n  ],\n  \"output\": {\n    \"response_text\": \"Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.\",\n    \"text_chars\": 202\n  },\n  \"runtime\": {\n    \"device\": \"none\",\n    \"generated_tokens\": 0,\n    \"inference_seconds\": 1e-06,\n    \"local_files_only\": false,\n    \"max_new_tokens\": 2048,\n    \"mock\": true,\n    \"mode\": \"mock\",\n    \"model\": \"nvidia/NV-Reason-CXR-3B\",\n    \"torch_dtype\": \"none\",\n    \"torch_version\": null,\n    \"transformers_version\": null,\n    \"truncated_by_max_new_tokens\": false\n  },\n  \"skill\": \"nv_reason_cxr\"\n}\n",
+        "stderr_tail": "",
+        "json": {
+          "input": {
+            "case_id": "synthetic-cxr-smoke",
+            "image": {
+              "format": "png",
+              "height": 96,
+              "path": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1/input_synthetic_chest_xray.png",
+              "sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+              "source": "generated_fixture",
+              "width": 96
+            },
+            "prompt": "Find abnormalities and support devices."
+          },
+          "limitations": [
+            "Output is engineering evidence only; it is not a diagnosis or treatment recommendation.",
+            "NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.",
+            "A qualified professional must review any medical workflow use."
+          ],
+          "output": {
+            "response_text": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+            "text_chars": 202
+          },
+          "runtime": {
+            "device": "none",
+            "generated_tokens": 0,
+            "inference_seconds": 1e-06,
+            "local_files_only": false,
+            "max_new_tokens": 2048,
+            "mock": true,
+            "mode": "mock",
+            "model": "nvidia/NV-Reason-CXR-3B",
+            "torch_dtype": "none",
+            "torch_version": null,
+            "transformers_version": null,
+            "truncated_by_max_new_tokens": false
+          },
+          "skill": "nv_reason_cxr"
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "response_text present"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "Nemotron",
+      "attempts": [
+        {
+          "backend": "nemotron",
+          "model": "nvidia/nvidia/nemotron-3-super-v3",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "nvidia/nvidia/nemotron-3-super-v3",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The CXR request is at runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json. Run a command-shape smoke test for the CXR reasoning workflow and write structured JSON under runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1. Do not grade clinical correctness.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_reason_cxr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-reason-cxr/SKILL.md ---\n---\nname: nv-reason-cxr\ndescription: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - cxr\n    - reasoning\n---\n\n# NV-Reason-CXR\n\n## Purpose\n- Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `chest_xray_image_or_fixture`; outputs are `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_nv_reason_cxr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_nv_reason_cxr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_nv_reason_cxr.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CXR_OR_FIXTURE --out-dir OUT_DIR [--mock] [--check-setup]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes JSON outputs under the caller's `--out-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` outside `--mock` mode.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Image preprocessing, model inference, and decoding are delegated to Hugging Face Transformers and the NV-Reason-CXR-3B model.\n- Output is not a diagnosis, clinical report, treatment recommendation, or triage decision. It is engineering evidence and must be reviewed by a qualified professional before any medical use.\n- The model may hallucinate findings, miss subtle abnormalities, misread support devices, or produce overconfident prose.\n- The committed fixture uses a generated synthetic PNG and deterministic mock response so CI can verify wrapper behavior without downloading model weights. Mock mode is not a substitute for model inference.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, treatment decisions.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nRuns NVIDIA-Medtech [`NV-Reason-CXR-3B`](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)\nfor chest X-ray image interpretation through the documented Hugging Face\nTransformers inference path. The wrapper does not reimplement the model,\nimage preprocessing, or decoding.\n\n\n## Exact Runnable Surface\n\nFor command-shape smoke tests and JSON fixtures, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE --mock --out-dir OUT_DIR\n```\n\nFor live image inference, omit `--mock` only when the user asks for live model inference. Do not invent `Medical AI Skills run`, `eval_engine/run.py`, `infer.py`, or `python -m nv_reason_cxr` commands for ordinary user runs.\n\n## Preconditions\n\nInstall the inference dependencies in the environment that will run the\nskill:\n\n```bash\npip install torch==2.7.1 torchvision==0.22.1 transformers==4.56.1 Pillow\n```\n\nThe model weights are loaded from `nvidia/NV-Reason-CXR-3B` through\nTransformers. They may download to the Hugging Face cache on first use.\nSet `TRANSFORMERS_OFFLINE=1` or pass `--local-files-only` only after the\nweights are already cached.\n\nCUDA is expected for practical inference. CPU execution may work for small\ntests but is slow and must be requested explicitly.\n\nCheck the local environment before downloading weights or running inference:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py --check-setup\n```\n\nThe setup report checks importable dependencies, CUDA visibility, Hugging Face\ncache state, and the recommended next step.\n\nOperational environment variables:\n\n| Variable | When to use |\n|---|---|\n| `MOCK_NV_REASON_CXR` | Set to `1` for deterministic command-shape smoke tests without model inference. |\n| `NV_REASON_CXR_MODEL` | Override the Hugging Face model id only for compatibility probes. |\n| `HF_HOME` | Point at a pre-populated Hugging Face cache. |\n| `HF_TOKEN` | Authenticate model downloads when required by the local environment. |\n| `TRANSFORMERS_OFFLINE` | Set to `1` only after weights are already cached. |\n| `HF_HUB_OFFLINE` | Set to `1` only after Hugging Face assets are already cached. |\n\n## License\n\nThe upstream repository code is Apache-2.0. The model weights are released\nunder the NVIDIA OneWay Noncommercial License Agreement. Users are responsible\nfor complying with the model-weight terms before live inference.\n\n## Usage\n\nFrom Medical AI Skills repo root:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.png \\\n  --prompt \"Find abnormalities and support devices.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nUse the wrapper script directly for agent-generated commands. Do not replace\nit with `eval_engine/run.py` unless the user explicitly asks to run the eval\nharness. Do not redirect stdout with `>` in generated commands: callers and\nthe eval harness read the wrapper's stdout JSON, including\n`output.response_text`, to verify the run. The direct runnable surface is:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE \\\n  --mock \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\n`PATH_TO_CXR_OR_FIXTURE` may be a PNG/JPEG image or a JSON fixture. If the\nuser provides a JSON request such as\n`runs/.../synthetic_cxr_input.json`, pass that exact JSON path as the first\nargument. The script will load `generated://synthetic_chest_xray` fixtures,\ncreate the temporary PNG under the output directory, and emit JSON with\n`output.response_text`. Use `--mock` only for command-shape smoke tests or\nfixtures that request mock mode; omit `--mock` for live model inference.\n\nFor JPEG input:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \\\n  --prompt \"Describe the chest X-ray findings.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nFlags:\n\n- `--model-id` \u2014 Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.\n- `--device auto|cuda|cpu` \u2014 default `auto`, using CUDA when available.\n- `--allow-cpu` \u2014 required for live CPU inference; CPU runs can be very slow.\n- `--torch-dtype auto|float16|bfloat16|float32` \u2014 default `auto`, using\n  bfloat16 on CUDA and float32 on CPU, matching the published BF16 model.\n- `--max-new-tokens` \u2014 generation cap, default 2048.\n- `--local-files-only` \u2014 use only locally cached Hugging Face assets.\n- `--mock` \u2014 deterministic dry-run response for CI and wiring checks.\n- `--prompt-preset findings|comprehensive|educational|structured` \u2014 optional\n  known-good prompt presets from the model card/demo behavior.\n\nThe tested local live path uses:\n\n- `AutoModelForImageTextToText.from_pretrained(..., dtype=torch.bfloat16).eval().to(\"cuda\")`\n- `AutoProcessor.from_pretrained(..., use_fast=True)`\n- PNG/JPEG image input plus one text prompt\n- `max_new_tokens=2048` by default\n\nThe script emits JSON on stdout and writes no clinical report files. It records\ninput image metadata, prompt, model id, runtime mode, response text, and known\nlimitations. If `runtime.truncated_by_max_new_tokens` is `true`, rerun with a\nhigher `--max-new-tokens` value.\n\n## Fixture Smoke Test\n\nThe committed fixture uses a generated synthetic PNG and mock mode so the\neval harness can verify the wrapper without downloading weights:\n\n```bash\npython eval_engine/run.py skills/nv-reason-cxr \\\n  --fixture skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json \\\n  --out runs/nv_reason_cxr_smoke\n```\n\n## Limits\n\nThis is research and engineering tooling only. It is not validated for\nclinical diagnosis, treatment decisions, triage, patient-facing reporting, or\nregulatory use. Model outputs can hallucinate, miss subtle findings, or\noverstate uncertainty. A qualified professional must review any use in a\nmedical workflow.\n"
+            }
+          ],
+          "response": "\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1\n```",
+          "command": "python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1",
+          "usage": {
+            "completion_tokens": 697,
+            "prompt_tokens": 2499,
+            "total_tokens": 3196
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 0.1124274730682373,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_1/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_1/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1/input_synthetic_chest_xray.png"
+            ],
+            "stdout_tail": "{\n  \"input\": {\n    \"case_id\": \"synthetic-cxr-smoke\",\n    \"image\": {\n      \"format\": \"png\",\n      \"height\": 96,\n      \"path\": \"runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1/input_synthetic_chest_xray.png\",\n      \"sha256\": \"767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf\",\n      \"source\": \"generated_fixture\",\n      \"width\": 96\n    },\n    \"prompt\": \"Find abnormalities and support devices.\"\n  },\n  \"limitations\": [\n    \"Output is engineering evidence only; it is not a diagnosis or treatment recommendation.\",\n    \"NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.\",\n    \"A qualified professional must review any medical workflow use.\"\n  ],\n  \"output\": {\n    \"response_text\": \"Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.\",\n    \"text_chars\": 202\n  },\n  \"runtime\": {\n    \"device\": \"none\",\n    \"generated_tokens\": 0,\n    \"inference_seconds\": 1e-06,\n    \"local_files_only\": false,\n    \"max_new_tokens\": 2048,\n    \"mock\": true,\n    \"mode\": \"mock\",\n    \"model\": \"nvidia/NV-Reason-CXR-3B\",\n    \"torch_dtype\": \"none\",\n    \"torch_version\": null,\n    \"transformers_version\": null,\n    \"truncated_by_max_new_tokens\": false\n  },\n  \"skill\": \"nv_reason_cxr\"\n}\n",
+            "stderr_tail": "",
+            "json": {
+              "input": {
+                "case_id": "synthetic-cxr-smoke",
+                "image": {
+                  "format": "png",
+                  "height": 96,
+                  "path": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1/input_synthetic_chest_xray.png",
+                  "sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+                  "source": "generated_fixture",
+                  "width": 96
+                },
+                "prompt": "Find abnormalities and support devices."
+              },
+              "limitations": [
+                "Output is engineering evidence only; it is not a diagnosis or treatment recommendation.",
+                "NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.",
+                "A qualified professional must review any medical workflow use."
+              ],
+              "output": {
+                "response_text": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+                "text_chars": 202
+              },
+              "runtime": {
+                "device": "none",
+                "generated_tokens": 0,
+                "inference_seconds": 1e-06,
+                "local_files_only": false,
+                "max_new_tokens": 2048,
+                "mock": true,
+                "mode": "mock",
+                "model": "nvidia/NV-Reason-CXR-3B",
+                "torch_dtype": "none",
+                "torch_version": null,
+                "transformers_version": null,
+                "truncated_by_max_new_tokens": false
+              },
+              "skill": "nv_reason_cxr"
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "response_text present"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 1,
+      "output_dir": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_1",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The CXR request is at runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json. Run a command-shape smoke test for the CXR reasoning workflow and write structured JSON under runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2. Do not grade clinical correctness.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_reason_cxr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-reason-cxr/SKILL.md ---\n---\nname: nv-reason-cxr\ndescription: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - cxr\n    - reasoning\n---\n\n# NV-Reason-CXR\n\n## Purpose\n- Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `chest_xray_image_or_fixture`; outputs are `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_nv_reason_cxr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_nv_reason_cxr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_nv_reason_cxr.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CXR_OR_FIXTURE --out-dir OUT_DIR [--mock] [--check-setup]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes JSON outputs under the caller's `--out-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` outside `--mock` mode.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Image preprocessing, model inference, and decoding are delegated to Hugging Face Transformers and the NV-Reason-CXR-3B model.\n- Output is not a diagnosis, clinical report, treatment recommendation, or triage decision. It is engineering evidence and must be reviewed by a qualified professional before any medical use.\n- The model may hallucinate findings, miss subtle abnormalities, misread support devices, or produce overconfident prose.\n- The committed fixture uses a generated synthetic PNG and deterministic mock response so CI can verify wrapper behavior without downloading model weights. Mock mode is not a substitute for model inference.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, treatment decisions.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nRuns NVIDIA-Medtech [`NV-Reason-CXR-3B`](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)\nfor chest X-ray image interpretation through the documented Hugging Face\nTransformers inference path. The wrapper does not reimplement the model,\nimage preprocessing, or decoding.\n\n\n## Exact Runnable Surface\n\nFor command-shape smoke tests and JSON fixtures, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE --mock --out-dir OUT_DIR\n```\n\nFor live image inference, omit `--mock` only when the user asks for live model inference. Do not invent `Medical AI Skills run`, `eval_engine/run.py`, `infer.py`, or `python -m nv_reason_cxr` commands for ordinary user runs.\n\n## Preconditions\n\nInstall the inference dependencies in the environment that will run the\nskill:\n\n```bash\npip install torch==2.7.1 torchvision==0.22.1 transformers==4.56.1 Pillow\n```\n\nThe model weights are loaded from `nvidia/NV-Reason-CXR-3B` through\nTransformers. They may download to the Hugging Face cache on first use.\nSet `TRANSFORMERS_OFFLINE=1` or pass `--local-files-only` only after the\nweights are already cached.\n\nCUDA is expected for practical inference. CPU execution may work for small\ntests but is slow and must be requested explicitly.\n\nCheck the local environment before downloading weights or running inference:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py --check-setup\n```\n\nThe setup report checks importable dependencies, CUDA visibility, Hugging Face\ncache state, and the recommended next step.\n\nOperational environment variables:\n\n| Variable | When to use |\n|---|---|\n| `MOCK_NV_REASON_CXR` | Set to `1` for deterministic command-shape smoke tests without model inference. |\n| `NV_REASON_CXR_MODEL` | Override the Hugging Face model id only for compatibility probes. |\n| `HF_HOME` | Point at a pre-populated Hugging Face cache. |\n| `HF_TOKEN` | Authenticate model downloads when required by the local environment. |\n| `TRANSFORMERS_OFFLINE` | Set to `1` only after weights are already cached. |\n| `HF_HUB_OFFLINE` | Set to `1` only after Hugging Face assets are already cached. |\n\n## License\n\nThe upstream repository code is Apache-2.0. The model weights are released\nunder the NVIDIA OneWay Noncommercial License Agreement. Users are responsible\nfor complying with the model-weight terms before live inference.\n\n## Usage\n\nFrom Medical AI Skills repo root:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.png \\\n  --prompt \"Find abnormalities and support devices.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nUse the wrapper script directly for agent-generated commands. Do not replace\nit with `eval_engine/run.py` unless the user explicitly asks to run the eval\nharness. Do not redirect stdout with `>` in generated commands: callers and\nthe eval harness read the wrapper's stdout JSON, including\n`output.response_text`, to verify the run. The direct runnable surface is:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE \\\n  --mock \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\n`PATH_TO_CXR_OR_FIXTURE` may be a PNG/JPEG image or a JSON fixture. If the\nuser provides a JSON request such as\n`runs/.../synthetic_cxr_input.json`, pass that exact JSON path as the first\nargument. The script will load `generated://synthetic_chest_xray` fixtures,\ncreate the temporary PNG under the output directory, and emit JSON with\n`output.response_text`. Use `--mock` only for command-shape smoke tests or\nfixtures that request mock mode; omit `--mock` for live model inference.\n\nFor JPEG input:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \\\n  --prompt \"Describe the chest X-ray findings.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nFlags:\n\n- `--model-id` \u2014 Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.\n- `--device auto|cuda|cpu` \u2014 default `auto`, using CUDA when available.\n- `--allow-cpu` \u2014 required for live CPU inference; CPU runs can be very slow.\n- `--torch-dtype auto|float16|bfloat16|float32` \u2014 default `auto`, using\n  bfloat16 on CUDA and float32 on CPU, matching the published BF16 model.\n- `--max-new-tokens` \u2014 generation cap, default 2048.\n- `--local-files-only` \u2014 use only locally cached Hugging Face assets.\n- `--mock` \u2014 deterministic dry-run response for CI and wiring checks.\n- `--prompt-preset findings|comprehensive|educational|structured` \u2014 optional\n  known-good prompt presets from the model card/demo behavior.\n\nThe tested local live path uses:\n\n- `AutoModelForImageTextToText.from_pretrained(..., dtype=torch.bfloat16).eval().to(\"cuda\")`\n- `AutoProcessor.from_pretrained(..., use_fast=True)`\n- PNG/JPEG image input plus one text prompt\n- `max_new_tokens=2048` by default\n\nThe script emits JSON on stdout and writes no clinical report files. It records\ninput image metadata, prompt, model id, runtime mode, response text, and known\nlimitations. If `runtime.truncated_by_max_new_tokens` is `true`, rerun with a\nhigher `--max-new-tokens` value.\n\n## Fixture Smoke Test\n\nThe committed fixture uses a generated synthetic PNG and mock mode so the\neval harness can verify the wrapper without downloading weights:\n\n```bash\npython eval_engine/run.py skills/nv-reason-cxr \\\n  --fixture skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json \\\n  --out runs/nv_reason_cxr_smoke\n```\n\n## Limits\n\nThis is research and engineering tooling only. It is not validated for\nclinical diagnosis, treatment decisions, triage, patient-facing reporting, or\nregulatory use. Model outputs can hallucinate, miss subtle findings, or\noverstate uncertainty. A qualified professional must review any use in a\nmedical workflow.\n"
+        }
+      ],
+      "response": "\n```bash\nmkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2\n```",
+      "command": "mkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2",
+      "usage": {
+        "completion_tokens": 1955,
+        "prompt_tokens": 2499,
+        "total_tokens": 4454
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.07591915130615234,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_2/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_2/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2/input_synthetic_chest_xray.png"
+        ],
+        "stdout_tail": "{\n  \"input\": {\n    \"case_id\": \"synthetic-cxr-smoke\",\n    \"image\": {\n      \"format\": \"png\",\n      \"height\": 96,\n      \"path\": \"runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2/input_synthetic_chest_xray.png\",\n      \"sha256\": \"767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf\",\n      \"source\": \"generated_fixture\",\n      \"width\": 96\n    },\n    \"prompt\": \"Find abnormalities and support devices.\"\n  },\n  \"limitations\": [\n    \"Output is engineering evidence only; it is not a diagnosis or treatment recommendation.\",\n    \"NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.\",\n    \"A qualified professional must review any medical workflow use.\"\n  ],\n  \"output\": {\n    \"response_text\": \"Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.\",\n    \"text_chars\": 202\n  },\n  \"runtime\": {\n    \"device\": \"none\",\n    \"generated_tokens\": 0,\n    \"inference_seconds\": 1e-06,\n    \"local_files_only\": false,\n    \"max_new_tokens\": 2048,\n    \"mock\": true,\n    \"mode\": \"mock\",\n    \"model\": \"nvidia/NV-Reason-CXR-3B\",\n    \"torch_dtype\": \"none\",\n    \"torch_version\": null,\n    \"transformers_version\": null,\n    \"truncated_by_max_new_tokens\": false\n  },\n  \"skill\": \"nv_reason_cxr\"\n}\n",
+        "stderr_tail": "",
+        "json": {
+          "input": {
+            "case_id": "synthetic-cxr-smoke",
+            "image": {
+              "format": "png",
+              "height": 96,
+              "path": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2/input_synthetic_chest_xray.png",
+              "sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+              "source": "generated_fixture",
+              "width": 96
+            },
+            "prompt": "Find abnormalities and support devices."
+          },
+          "limitations": [
+            "Output is engineering evidence only; it is not a diagnosis or treatment recommendation.",
+            "NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.",
+            "A qualified professional must review any medical workflow use."
+          ],
+          "output": {
+            "response_text": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+            "text_chars": 202
+          },
+          "runtime": {
+            "device": "none",
+            "generated_tokens": 0,
+            "inference_seconds": 1e-06,
+            "local_files_only": false,
+            "max_new_tokens": 2048,
+            "mock": true,
+            "mode": "mock",
+            "model": "nvidia/NV-Reason-CXR-3B",
+            "torch_dtype": "none",
+            "torch_version": null,
+            "transformers_version": null,
+            "truncated_by_max_new_tokens": false
+          },
+          "skill": "nv_reason_cxr"
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "response_text present"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "Nemotron",
+      "attempts": [
+        {
+          "backend": "nemotron",
+          "model": "nvidia/nvidia/nemotron-3-super-v3",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "nvidia/nvidia/nemotron-3-super-v3",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The CXR request is at runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json. Run a command-shape smoke test for the CXR reasoning workflow and write structured JSON under runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2. Do not grade clinical correctness.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_reason_cxr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-reason-cxr/SKILL.md ---\n---\nname: nv-reason-cxr\ndescription: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - cxr\n    - reasoning\n---\n\n# NV-Reason-CXR\n\n## Purpose\n- Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `chest_xray_image_or_fixture`; outputs are `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_nv_reason_cxr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_nv_reason_cxr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_nv_reason_cxr.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CXR_OR_FIXTURE --out-dir OUT_DIR [--mock] [--check-setup]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes JSON outputs under the caller's `--out-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` outside `--mock` mode.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Image preprocessing, model inference, and decoding are delegated to Hugging Face Transformers and the NV-Reason-CXR-3B model.\n- Output is not a diagnosis, clinical report, treatment recommendation, or triage decision. It is engineering evidence and must be reviewed by a qualified professional before any medical use.\n- The model may hallucinate findings, miss subtle abnormalities, misread support devices, or produce overconfident prose.\n- The committed fixture uses a generated synthetic PNG and deterministic mock response so CI can verify wrapper behavior without downloading model weights. Mock mode is not a substitute for model inference.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, treatment decisions.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nRuns NVIDIA-Medtech [`NV-Reason-CXR-3B`](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)\nfor chest X-ray image interpretation through the documented Hugging Face\nTransformers inference path. The wrapper does not reimplement the model,\nimage preprocessing, or decoding.\n\n\n## Exact Runnable Surface\n\nFor command-shape smoke tests and JSON fixtures, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE --mock --out-dir OUT_DIR\n```\n\nFor live image inference, omit `--mock` only when the user asks for live model inference. Do not invent `Medical AI Skills run`, `eval_engine/run.py`, `infer.py`, or `python -m nv_reason_cxr` commands for ordinary user runs.\n\n## Preconditions\n\nInstall the inference dependencies in the environment that will run the\nskill:\n\n```bash\npip install torch==2.7.1 torchvision==0.22.1 transformers==4.56.1 Pillow\n```\n\nThe model weights are loaded from `nvidia/NV-Reason-CXR-3B` through\nTransformers. They may download to the Hugging Face cache on first use.\nSet `TRANSFORMERS_OFFLINE=1` or pass `--local-files-only` only after the\nweights are already cached.\n\nCUDA is expected for practical inference. CPU execution may work for small\ntests but is slow and must be requested explicitly.\n\nCheck the local environment before downloading weights or running inference:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py --check-setup\n```\n\nThe setup report checks importable dependencies, CUDA visibility, Hugging Face\ncache state, and the recommended next step.\n\nOperational environment variables:\n\n| Variable | When to use |\n|---|---|\n| `MOCK_NV_REASON_CXR` | Set to `1` for deterministic command-shape smoke tests without model inference. |\n| `NV_REASON_CXR_MODEL` | Override the Hugging Face model id only for compatibility probes. |\n| `HF_HOME` | Point at a pre-populated Hugging Face cache. |\n| `HF_TOKEN` | Authenticate model downloads when required by the local environment. |\n| `TRANSFORMERS_OFFLINE` | Set to `1` only after weights are already cached. |\n| `HF_HUB_OFFLINE` | Set to `1` only after Hugging Face assets are already cached. |\n\n## License\n\nThe upstream repository code is Apache-2.0. The model weights are released\nunder the NVIDIA OneWay Noncommercial License Agreement. Users are responsible\nfor complying with the model-weight terms before live inference.\n\n## Usage\n\nFrom Medical AI Skills repo root:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.png \\\n  --prompt \"Find abnormalities and support devices.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nUse the wrapper script directly for agent-generated commands. Do not replace\nit with `eval_engine/run.py` unless the user explicitly asks to run the eval\nharness. Do not redirect stdout with `>` in generated commands: callers and\nthe eval harness read the wrapper's stdout JSON, including\n`output.response_text`, to verify the run. The direct runnable surface is:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE \\\n  --mock \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\n`PATH_TO_CXR_OR_FIXTURE` may be a PNG/JPEG image or a JSON fixture. If the\nuser provides a JSON request such as\n`runs/.../synthetic_cxr_input.json`, pass that exact JSON path as the first\nargument. The script will load `generated://synthetic_chest_xray` fixtures,\ncreate the temporary PNG under the output directory, and emit JSON with\n`output.response_text`. Use `--mock` only for command-shape smoke tests or\nfixtures that request mock mode; omit `--mock` for live model inference.\n\nFor JPEG input:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \\\n  --prompt \"Describe the chest X-ray findings.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nFlags:\n\n- `--model-id` \u2014 Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.\n- `--device auto|cuda|cpu` \u2014 default `auto`, using CUDA when available.\n- `--allow-cpu` \u2014 required for live CPU inference; CPU runs can be very slow.\n- `--torch-dtype auto|float16|bfloat16|float32` \u2014 default `auto`, using\n  bfloat16 on CUDA and float32 on CPU, matching the published BF16 model.\n- `--max-new-tokens` \u2014 generation cap, default 2048.\n- `--local-files-only` \u2014 use only locally cached Hugging Face assets.\n- `--mock` \u2014 deterministic dry-run response for CI and wiring checks.\n- `--prompt-preset findings|comprehensive|educational|structured` \u2014 optional\n  known-good prompt presets from the model card/demo behavior.\n\nThe tested local live path uses:\n\n- `AutoModelForImageTextToText.from_pretrained(..., dtype=torch.bfloat16).eval().to(\"cuda\")`\n- `AutoProcessor.from_pretrained(..., use_fast=True)`\n- PNG/JPEG image input plus one text prompt\n- `max_new_tokens=2048` by default\n\nThe script emits JSON on stdout and writes no clinical report files. It records\ninput image metadata, prompt, model id, runtime mode, response text, and known\nlimitations. If `runtime.truncated_by_max_new_tokens` is `true`, rerun with a\nhigher `--max-new-tokens` value.\n\n## Fixture Smoke Test\n\nThe committed fixture uses a generated synthetic PNG and mock mode so the\neval harness can verify the wrapper without downloading weights:\n\n```bash\npython eval_engine/run.py skills/nv-reason-cxr \\\n  --fixture skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json \\\n  --out runs/nv_reason_cxr_smoke\n```\n\n## Limits\n\nThis is research and engineering tooling only. It is not validated for\nclinical diagnosis, treatment decisions, triage, patient-facing reporting, or\nregulatory use. Model outputs can hallucinate, miss subtle findings, or\noverstate uncertainty. A qualified professional must review any use in a\nmedical workflow.\n"
+            }
+          ],
+          "response": "\n```bash\nmkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2\n```",
+          "command": "mkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2",
+          "usage": {
+            "completion_tokens": 1955,
+            "prompt_tokens": 2499,
+            "total_tokens": 4454
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 0.07591915130615234,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_2/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_2/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2/input_synthetic_chest_xray.png"
+            ],
+            "stdout_tail": "{\n  \"input\": {\n    \"case_id\": \"synthetic-cxr-smoke\",\n    \"image\": {\n      \"format\": \"png\",\n      \"height\": 96,\n      \"path\": \"runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2/input_synthetic_chest_xray.png\",\n      \"sha256\": \"767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf\",\n      \"source\": \"generated_fixture\",\n      \"width\": 96\n    },\n    \"prompt\": \"Find abnormalities and support devices.\"\n  },\n  \"limitations\": [\n    \"Output is engineering evidence only; it is not a diagnosis or treatment recommendation.\",\n    \"NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.\",\n    \"A qualified professional must review any medical workflow use.\"\n  ],\n  \"output\": {\n    \"response_text\": \"Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.\",\n    \"text_chars\": 202\n  },\n  \"runtime\": {\n    \"device\": \"none\",\n    \"generated_tokens\": 0,\n    \"inference_seconds\": 1e-06,\n    \"local_files_only\": false,\n    \"max_new_tokens\": 2048,\n    \"mock\": true,\n    \"mode\": \"mock\",\n    \"model\": \"nvidia/NV-Reason-CXR-3B\",\n    \"torch_dtype\": \"none\",\n    \"torch_version\": null,\n    \"transformers_version\": null,\n    \"truncated_by_max_new_tokens\": false\n  },\n  \"skill\": \"nv_reason_cxr\"\n}\n",
+            "stderr_tail": "",
+            "json": {
+              "input": {
+                "case_id": "synthetic-cxr-smoke",
+                "image": {
+                  "format": "png",
+                  "height": 96,
+                  "path": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2/input_synthetic_chest_xray.png",
+                  "sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+                  "source": "generated_fixture",
+                  "width": 96
+                },
+                "prompt": "Find abnormalities and support devices."
+              },
+              "limitations": [
+                "Output is engineering evidence only; it is not a diagnosis or treatment recommendation.",
+                "NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.",
+                "A qualified professional must review any medical workflow use."
+              ],
+              "output": {
+                "response_text": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+                "text_chars": 202
+              },
+              "runtime": {
+                "device": "none",
+                "generated_tokens": 0,
+                "inference_seconds": 1e-06,
+                "local_files_only": false,
+                "max_new_tokens": 2048,
+                "mock": true,
+                "mode": "mock",
+                "model": "nvidia/NV-Reason-CXR-3B",
+                "torch_dtype": "none",
+                "torch_version": null,
+                "transformers_version": null,
+                "truncated_by_max_new_tokens": false
+              },
+              "skill": "nv_reason_cxr"
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "response_text present"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 2,
+      "output_dir": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_2",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The CXR request is at runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json. Run a command-shape smoke test for the CXR reasoning workflow and write structured JSON under runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3. Do not grade clinical correctness.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_reason_cxr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-reason-cxr/SKILL.md ---\n---\nname: nv-reason-cxr\ndescription: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - cxr\n    - reasoning\n---\n\n# NV-Reason-CXR\n\n## Purpose\n- Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `chest_xray_image_or_fixture`; outputs are `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_nv_reason_cxr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_nv_reason_cxr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_nv_reason_cxr.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CXR_OR_FIXTURE --out-dir OUT_DIR [--mock] [--check-setup]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes JSON outputs under the caller's `--out-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` outside `--mock` mode.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Image preprocessing, model inference, and decoding are delegated to Hugging Face Transformers and the NV-Reason-CXR-3B model.\n- Output is not a diagnosis, clinical report, treatment recommendation, or triage decision. It is engineering evidence and must be reviewed by a qualified professional before any medical use.\n- The model may hallucinate findings, miss subtle abnormalities, misread support devices, or produce overconfident prose.\n- The committed fixture uses a generated synthetic PNG and deterministic mock response so CI can verify wrapper behavior without downloading model weights. Mock mode is not a substitute for model inference.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, treatment decisions.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nRuns NVIDIA-Medtech [`NV-Reason-CXR-3B`](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)\nfor chest X-ray image interpretation through the documented Hugging Face\nTransformers inference path. The wrapper does not reimplement the model,\nimage preprocessing, or decoding.\n\n\n## Exact Runnable Surface\n\nFor command-shape smoke tests and JSON fixtures, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE --mock --out-dir OUT_DIR\n```\n\nFor live image inference, omit `--mock` only when the user asks for live model inference. Do not invent `Medical AI Skills run`, `eval_engine/run.py`, `infer.py`, or `python -m nv_reason_cxr` commands for ordinary user runs.\n\n## Preconditions\n\nInstall the inference dependencies in the environment that will run the\nskill:\n\n```bash\npip install torch==2.7.1 torchvision==0.22.1 transformers==4.56.1 Pillow\n```\n\nThe model weights are loaded from `nvidia/NV-Reason-CXR-3B` through\nTransformers. They may download to the Hugging Face cache on first use.\nSet `TRANSFORMERS_OFFLINE=1` or pass `--local-files-only` only after the\nweights are already cached.\n\nCUDA is expected for practical inference. CPU execution may work for small\ntests but is slow and must be requested explicitly.\n\nCheck the local environment before downloading weights or running inference:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py --check-setup\n```\n\nThe setup report checks importable dependencies, CUDA visibility, Hugging Face\ncache state, and the recommended next step.\n\nOperational environment variables:\n\n| Variable | When to use |\n|---|---|\n| `MOCK_NV_REASON_CXR` | Set to `1` for deterministic command-shape smoke tests without model inference. |\n| `NV_REASON_CXR_MODEL` | Override the Hugging Face model id only for compatibility probes. |\n| `HF_HOME` | Point at a pre-populated Hugging Face cache. |\n| `HF_TOKEN` | Authenticate model downloads when required by the local environment. |\n| `TRANSFORMERS_OFFLINE` | Set to `1` only after weights are already cached. |\n| `HF_HUB_OFFLINE` | Set to `1` only after Hugging Face assets are already cached. |\n\n## License\n\nThe upstream repository code is Apache-2.0. The model weights are released\nunder the NVIDIA OneWay Noncommercial License Agreement. Users are responsible\nfor complying with the model-weight terms before live inference.\n\n## Usage\n\nFrom Medical AI Skills repo root:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.png \\\n  --prompt \"Find abnormalities and support devices.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nUse the wrapper script directly for agent-generated commands. Do not replace\nit with `eval_engine/run.py` unless the user explicitly asks to run the eval\nharness. Do not redirect stdout with `>` in generated commands: callers and\nthe eval harness read the wrapper's stdout JSON, including\n`output.response_text`, to verify the run. The direct runnable surface is:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE \\\n  --mock \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\n`PATH_TO_CXR_OR_FIXTURE` may be a PNG/JPEG image or a JSON fixture. If the\nuser provides a JSON request such as\n`runs/.../synthetic_cxr_input.json`, pass that exact JSON path as the first\nargument. The script will load `generated://synthetic_chest_xray` fixtures,\ncreate the temporary PNG under the output directory, and emit JSON with\n`output.response_text`. Use `--mock` only for command-shape smoke tests or\nfixtures that request mock mode; omit `--mock` for live model inference.\n\nFor JPEG input:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \\\n  --prompt \"Describe the chest X-ray findings.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nFlags:\n\n- `--model-id` \u2014 Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.\n- `--device auto|cuda|cpu` \u2014 default `auto`, using CUDA when available.\n- `--allow-cpu` \u2014 required for live CPU inference; CPU runs can be very slow.\n- `--torch-dtype auto|float16|bfloat16|float32` \u2014 default `auto`, using\n  bfloat16 on CUDA and float32 on CPU, matching the published BF16 model.\n- `--max-new-tokens` \u2014 generation cap, default 2048.\n- `--local-files-only` \u2014 use only locally cached Hugging Face assets.\n- `--mock` \u2014 deterministic dry-run response for CI and wiring checks.\n- `--prompt-preset findings|comprehensive|educational|structured` \u2014 optional\n  known-good prompt presets from the model card/demo behavior.\n\nThe tested local live path uses:\n\n- `AutoModelForImageTextToText.from_pretrained(..., dtype=torch.bfloat16).eval().to(\"cuda\")`\n- `AutoProcessor.from_pretrained(..., use_fast=True)`\n- PNG/JPEG image input plus one text prompt\n- `max_new_tokens=2048` by default\n\nThe script emits JSON on stdout and writes no clinical report files. It records\ninput image metadata, prompt, model id, runtime mode, response text, and known\nlimitations. If `runtime.truncated_by_max_new_tokens` is `true`, rerun with a\nhigher `--max-new-tokens` value.\n\n## Fixture Smoke Test\n\nThe committed fixture uses a generated synthetic PNG and mock mode so the\neval harness can verify the wrapper without downloading weights:\n\n```bash\npython eval_engine/run.py skills/nv-reason-cxr \\\n  --fixture skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json \\\n  --out runs/nv_reason_cxr_smoke\n```\n\n## Limits\n\nThis is research and engineering tooling only. It is not validated for\nclinical diagnosis, treatment decisions, triage, patient-facing reporting, or\nregulatory use. Model outputs can hallucinate, miss subtle findings, or\noverstate uncertainty. A qualified professional must review any use in a\nmedical workflow.\n"
+        }
+      ],
+      "response": "\n```bash\nmkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3\n```",
+      "command": "mkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3",
+      "usage": {
+        "completion_tokens": 2792,
+        "prompt_tokens": 2499,
+        "total_tokens": 5291
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.11342668533325195,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_3/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_3/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3/input_synthetic_chest_xray.png"
+        ],
+        "stdout_tail": "{\n  \"input\": {\n    \"case_id\": \"synthetic-cxr-smoke\",\n    \"image\": {\n      \"format\": \"png\",\n      \"height\": 96,\n      \"path\": \"runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3/input_synthetic_chest_xray.png\",\n      \"sha256\": \"767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf\",\n      \"source\": \"generated_fixture\",\n      \"width\": 96\n    },\n    \"prompt\": \"Find abnormalities and support devices.\"\n  },\n  \"limitations\": [\n    \"Output is engineering evidence only; it is not a diagnosis or treatment recommendation.\",\n    \"NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.\",\n    \"A qualified professional must review any medical workflow use.\"\n  ],\n  \"output\": {\n    \"response_text\": \"Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.\",\n    \"text_chars\": 202\n  },\n  \"runtime\": {\n    \"device\": \"none\",\n    \"generated_tokens\": 0,\n    \"inference_seconds\": 2e-06,\n    \"local_files_only\": false,\n    \"max_new_tokens\": 2048,\n    \"mock\": true,\n    \"mode\": \"mock\",\n    \"model\": \"nvidia/NV-Reason-CXR-3B\",\n    \"torch_dtype\": \"none\",\n    \"torch_version\": null,\n    \"transformers_version\": null,\n    \"truncated_by_max_new_tokens\": false\n  },\n  \"skill\": \"nv_reason_cxr\"\n}\n",
+        "stderr_tail": "",
+        "json": {
+          "input": {
+            "case_id": "synthetic-cxr-smoke",
+            "image": {
+              "format": "png",
+              "height": 96,
+              "path": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3/input_synthetic_chest_xray.png",
+              "sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+              "source": "generated_fixture",
+              "width": 96
+            },
+            "prompt": "Find abnormalities and support devices."
+          },
+          "limitations": [
+            "Output is engineering evidence only; it is not a diagnosis or treatment recommendation.",
+            "NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.",
+            "A qualified professional must review any medical workflow use."
+          ],
+          "output": {
+            "response_text": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+            "text_chars": 202
+          },
+          "runtime": {
+            "device": "none",
+            "generated_tokens": 0,
+            "inference_seconds": 2e-06,
+            "local_files_only": false,
+            "max_new_tokens": 2048,
+            "mock": true,
+            "mode": "mock",
+            "model": "nvidia/NV-Reason-CXR-3B",
+            "torch_dtype": "none",
+            "torch_version": null,
+            "transformers_version": null,
+            "truncated_by_max_new_tokens": false
+          },
+          "skill": "nv_reason_cxr"
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "response_text present"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "Nemotron",
+      "attempts": [
+        {
+          "backend": "nemotron",
+          "model": "nvidia/nvidia/nemotron-3-super-v3",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "nvidia/nvidia/nemotron-3-super-v3",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The CXR request is at runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json. Run a command-shape smoke test for the CXR reasoning workflow and write structured JSON under runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3. Do not grade clinical correctness.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_reason_cxr; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-reason-cxr/SKILL.md ---\n---\nname: nv-reason-cxr\ndescription: Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - cxr\n    - reasoning\n---\n\n# NV-Reason-CXR\n\n## Purpose\n- Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting.\n- Use the wrapper exactly as documented; do not replace the upstream entrypoint with a handwritten implementation.\n- Manifest I/O: inputs are `chest_xray_image_or_fixture`; outputs are `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_nv_reason_cxr.py` through the documented command below; keep outputs under a caller-provided run directory.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_nv_reason_cxr.py\", args=[...])`; otherwise run the Bash/Python command shown below.\n- Check the emitted JSON and paired verifier guidance before treating the run as evidence.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_nv_reason_cxr.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_CXR_OR_FIXTURE --out-dir OUT_DIR [--mock] [--check-setup]` |\n\n## Prerequisites\n- Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.\n- Side effects: writes JSON outputs under the caller's `--out-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://github.com` outside `--mock` mode.\n- Run commands from the repository root unless an existing section below says otherwise.\n\n## Limitations\n- This is a thin wrapper. Image preprocessing, model inference, and decoding are delegated to Hugging Face Transformers and the NV-Reason-CXR-3B model.\n- Output is not a diagnosis, clinical report, treatment recommendation, or triage decision. It is engineering evidence and must be reviewed by a qualified professional before any medical use.\n- The model may hallucinate findings, miss subtle abnormalities, misread support devices, or produce overconfident prose.\n- The committed fixture uses a generated synthetic PNG and deterministic mock response so CI can verify wrapper behavior without downloading model weights. Mock mode is not a substitute for model inference.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, treatment decisions.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| Missing dependency or import error | Runtime package drift from `skill_manifest.yaml`. | Install the packages declared in the manifest or use the documented setup command. |\n| Empty or schema-invalid output | Wrong input path, unsupported modality, or upstream failure. | Re-run with a known fixture and inspect the wrapper JSON plus stderr. |\n| Validation gate failure | Output violated a declared engineering invariant. | Keep the failed evidence pack and use the gate message to repair inputs or wrapper code. |\n\nRuns NVIDIA-Medtech [`NV-Reason-CXR-3B`](https://github.com/NVIDIA-Medtech/NV-Reason-CXR)\nfor chest X-ray image interpretation through the documented Hugging Face\nTransformers inference path. The wrapper does not reimplement the model,\nimage preprocessing, or decoding.\n\n\n## Exact Runnable Surface\n\nFor command-shape smoke tests and JSON fixtures, use this repo-root wrapper path exactly:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE --mock --out-dir OUT_DIR\n```\n\nFor live image inference, omit `--mock` only when the user asks for live model inference. Do not invent `Medical AI Skills run`, `eval_engine/run.py`, `infer.py`, or `python -m nv_reason_cxr` commands for ordinary user runs.\n\n## Preconditions\n\nInstall the inference dependencies in the environment that will run the\nskill:\n\n```bash\npip install torch==2.7.1 torchvision==0.22.1 transformers==4.56.1 Pillow\n```\n\nThe model weights are loaded from `nvidia/NV-Reason-CXR-3B` through\nTransformers. They may download to the Hugging Face cache on first use.\nSet `TRANSFORMERS_OFFLINE=1` or pass `--local-files-only` only after the\nweights are already cached.\n\nCUDA is expected for practical inference. CPU execution may work for small\ntests but is slow and must be requested explicitly.\n\nCheck the local environment before downloading weights or running inference:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py --check-setup\n```\n\nThe setup report checks importable dependencies, CUDA visibility, Hugging Face\ncache state, and the recommended next step.\n\nOperational environment variables:\n\n| Variable | When to use |\n|---|---|\n| `MOCK_NV_REASON_CXR` | Set to `1` for deterministic command-shape smoke tests without model inference. |\n| `NV_REASON_CXR_MODEL` | Override the Hugging Face model id only for compatibility probes. |\n| `HF_HOME` | Point at a pre-populated Hugging Face cache. |\n| `HF_TOKEN` | Authenticate model downloads when required by the local environment. |\n| `TRANSFORMERS_OFFLINE` | Set to `1` only after weights are already cached. |\n| `HF_HUB_OFFLINE` | Set to `1` only after Hugging Face assets are already cached. |\n\n## License\n\nThe upstream repository code is Apache-2.0. The model weights are released\nunder the NVIDIA OneWay Noncommercial License Agreement. Users are responsible\nfor complying with the model-weight terms before live inference.\n\n## Usage\n\nFrom Medical AI Skills repo root:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.png \\\n  --prompt \"Find abnormalities and support devices.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nUse the wrapper script directly for agent-generated commands. Do not replace\nit with `eval_engine/run.py` unless the user explicitly asks to run the eval\nharness. Do not redirect stdout with `>` in generated commands: callers and\nthe eval harness read the wrapper's stdout JSON, including\n`output.response_text`, to verify the run. The direct runnable surface is:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR_OR_FIXTURE \\\n  --mock \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\n`PATH_TO_CXR_OR_FIXTURE` may be a PNG/JPEG image or a JSON fixture. If the\nuser provides a JSON request such as\n`runs/.../synthetic_cxr_input.json`, pass that exact JSON path as the first\nargument. The script will load `generated://synthetic_chest_xray` fixtures,\ncreate the temporary PNG under the output directory, and emit JSON with\n`output.response_text`. Use `--mock` only for command-shape smoke tests or\nfixtures that request mock mode; omit `--mock` for live model inference.\n\nFor JPEG input:\n\n```bash\npython skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \\\n  --prompt \"Describe the chest X-ray findings.\" \\\n  --out-dir runs/nv_reason_cxr_case\n```\n\nFlags:\n\n- `--model-id` \u2014 Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.\n- `--device auto|cuda|cpu` \u2014 default `auto`, using CUDA when available.\n- `--allow-cpu` \u2014 required for live CPU inference; CPU runs can be very slow.\n- `--torch-dtype auto|float16|bfloat16|float32` \u2014 default `auto`, using\n  bfloat16 on CUDA and float32 on CPU, matching the published BF16 model.\n- `--max-new-tokens` \u2014 generation cap, default 2048.\n- `--local-files-only` \u2014 use only locally cached Hugging Face assets.\n- `--mock` \u2014 deterministic dry-run response for CI and wiring checks.\n- `--prompt-preset findings|comprehensive|educational|structured` \u2014 optional\n  known-good prompt presets from the model card/demo behavior.\n\nThe tested local live path uses:\n\n- `AutoModelForImageTextToText.from_pretrained(..., dtype=torch.bfloat16).eval().to(\"cuda\")`\n- `AutoProcessor.from_pretrained(..., use_fast=True)`\n- PNG/JPEG image input plus one text prompt\n- `max_new_tokens=2048` by default\n\nThe script emits JSON on stdout and writes no clinical report files. It records\ninput image metadata, prompt, model id, runtime mode, response text, and known\nlimitations. If `runtime.truncated_by_max_new_tokens` is `true`, rerun with a\nhigher `--max-new-tokens` value.\n\n## Fixture Smoke Test\n\nThe committed fixture uses a generated synthetic PNG and mock mode so the\neval harness can verify the wrapper without downloading weights:\n\n```bash\npython eval_engine/run.py skills/nv-reason-cxr \\\n  --fixture skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json \\\n  --out runs/nv_reason_cxr_smoke\n```\n\n## Limits\n\nThis is research and engineering tooling only. It is not validated for\nclinical diagnosis, treatment decisions, triage, patient-facing reporting, or\nregulatory use. Model outputs can hallucinate, miss subtle findings, or\noverstate uncertainty. A qualified professional must review any use in a\nmedical workflow.\n"
+            }
+          ],
+          "response": "\n```bash\nmkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3\n```",
+          "command": "mkdir -p runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3 && python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json --mock --out-dir runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3",
+          "usage": {
+            "completion_tokens": 2792,
+            "prompt_tokens": 2499,
+            "total_tokens": 5291
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 0.11342668533325195,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_3/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_reason_cxr_nemotron_correction/with/repeat_3/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3/input_synthetic_chest_xray.png"
+            ],
+            "stdout_tail": "{\n  \"input\": {\n    \"case_id\": \"synthetic-cxr-smoke\",\n    \"image\": {\n      \"format\": \"png\",\n      \"height\": 96,\n      \"path\": \"runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3/input_synthetic_chest_xray.png\",\n      \"sha256\": \"767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf\",\n      \"source\": \"generated_fixture\",\n      \"width\": 96\n    },\n    \"prompt\": \"Find abnormalities and support devices.\"\n  },\n  \"limitations\": [\n    \"Output is engineering evidence only; it is not a diagnosis or treatment recommendation.\",\n    \"NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.\",\n    \"A qualified professional must review any medical workflow use.\"\n  ],\n  \"output\": {\n    \"response_text\": \"Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.\",\n    \"text_chars\": 202\n  },\n  \"runtime\": {\n    \"device\": \"none\",\n    \"generated_tokens\": 0,\n    \"inference_seconds\": 2e-06,\n    \"local_files_only\": false,\n    \"max_new_tokens\": 2048,\n    \"mock\": true,\n    \"mode\": \"mock\",\n    \"model\": \"nvidia/NV-Reason-CXR-3B\",\n    \"torch_dtype\": \"none\",\n    \"torch_version\": null,\n    \"transformers_version\": null,\n    \"truncated_by_max_new_tokens\": false\n  },\n  \"skill\": \"nv_reason_cxr\"\n}\n",
+            "stderr_tail": "",
+            "json": {
+              "input": {
+                "case_id": "synthetic-cxr-smoke",
+                "image": {
+                  "format": "png",
+                  "height": 96,
+                  "path": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3/input_synthetic_chest_xray.png",
+                  "sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+                  "source": "generated_fixture",
+                  "width": 96
+                },
+                "prompt": "Find abnormalities and support devices."
+              },
+              "limitations": [
+                "Output is engineering evidence only; it is not a diagnosis or treatment recommendation.",
+                "NV-Reason-CXR-3B can hallucinate, miss findings, or produce overconfident prose.",
+                "A qualified professional must review any medical workflow use."
+              ],
+              "output": {
+                "response_text": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+                "text_chars": 202
+              },
+              "runtime": {
+                "device": "none",
+                "generated_tokens": 0,
+                "inference_seconds": 2e-06,
+                "local_files_only": false,
+                "max_new_tokens": 2048,
+                "mock": true,
+                "mode": "mock",
+                "model": "nvidia/NV-Reason-CXR-3B",
+                "torch_dtype": "none",
+                "torch_version": null,
+                "transformers_version": null,
+                "truncated_by_max_new_tokens": false
+              },
+              "skill": "nv_reason_cxr"
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "response_text present"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 3,
+      "output_dir": "runs/with_vs_without_nv/nv_reason_cxr_nemotron_correction/with/repeat_3",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json",
+      "prompt_style": "minimal"
+    }
+  ]
+}

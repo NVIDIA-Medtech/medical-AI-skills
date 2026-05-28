@@ -1,0 +1,48 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "e5bf70fdd55c",
+  "skill_id": "medagent.verifiers.endoscopy_tool_detection_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/endoscopy_tool_detection_quality_v1",
+  "repo_git_sha": "737bf55a754cc1cf588cc76db2af1eace2d7a803",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/no_detections_pack/manifest.json",
+    "fixtures/no_detections_pack/output.json",
+    "fixtures/no_detections_pack/recordings/clip.gxf_entities",
+    "fixtures/no_detections_pack/recordings/clip.gxf_index",
+    "fixtures/no_detections_pack/recordings/overlay.mp4",
+    "fixtures/no_detections_pack/validation_summary.json",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/recordings/clip.gxf_entities",
+    "fixtures/pass_pack/recordings/clip.gxf_index",
+    "fixtures/pass_pack/recordings/overlay.mp4",
+    "fixtures/pass_pack/recordings/tool_detections.jsonl",
+    "fixtures/pass_pack/validation_summary.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_grade.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "runs/holohub_endoscopy_trusted_default_pass_current3/skill_run",
+    "sha256": "3e50e048b1358df51345c40661249eb466cde87868388e6c609d0074668d9abc",
+    "size_bytes": 62773,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/endoscopy_tool_detection_quality_v1/scripts/grade.py",
+    "runs/holohub_endoscopy_trusted_default_pass_current3/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

@@ -1,0 +1,938 @@
+[
+  {
+    "id": "nv_generate_mr_brain_codex-opus_gpt55_with_repeat_1",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/with/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/with/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_gpt55_with_repeat_2",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/with/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/with/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_gpt55_with_repeat_3",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/with/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/with/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_gpt55_without_repeat_1",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/without/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/without/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_gpt55_without_repeat_2",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/without/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/without/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_gpt55_without_repeat_3",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "gpt55",
+    "backend_label": "GPT-5.5 / Codex",
+    "backend_model": "openai/openai/gpt-5.5",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "openai/openai/gpt-5.5",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/without/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/gpt55/without/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_opus_with_repeat_1",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/with/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/with/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_opus_with_repeat_2",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/with/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/with/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_opus_with_repeat_3",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/with/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/with/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_opus_without_repeat_1",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_opus_without_repeat_2",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_codex-opus_opus_without_repeat_3",
+    "skill": "nv_generate_mr_brain",
+    "mode": "codex-opus",
+    "backend": "opus",
+    "backend_label": "Opus 4.7",
+    "backend_model": "aws/anthropic/bedrock-claude-opus-4-7",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_codex_opus/opus/without/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_nemotron-correction_nemotron_with_repeat_1",
+    "skill": "nv_generate_mr_brain",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/with/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/with/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_nemotron-correction_nemotron_with_repeat_2",
+    "skill": "nv_generate_mr_brain",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/with/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/with/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_nemotron-correction_nemotron_with_repeat_3",
+    "skill": "nv_generate_mr_brain",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "with",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/with/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is skills/nv-generate-mr-brain/SKILL.md. Read that document. Do not inspect any other files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/with/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "skills/nv-generate-mr-brain/SKILL.md"
+    ],
+    "documentation": [
+      {
+        "path": "skills/nv-generate-mr-brain/SKILL.md",
+        "exists": true,
+        "byte_count": 7346,
+        "sha256": "a66fc9855b063472573ebdf82714e8cfe507d3fc4d01f20418eb50db9643bf4c"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_nemotron-correction_nemotron_without_repeat_1",
+    "skill": "nv_generate_mr_brain",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 1,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/without/repeat_1. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/without/repeat_1",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_nemotron-correction_nemotron_without_repeat_2",
+    "skill": "nv_generate_mr_brain",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 2,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/without/repeat_2. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/without/repeat_2",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  },
+  {
+    "id": "nv_generate_mr_brain_nemotron-correction_nemotron_without_repeat_3",
+    "skill": "nv_generate_mr_brain",
+    "mode": "nemotron-correction",
+    "backend": "nemotron",
+    "backend_label": "Nemotron",
+    "backend_model": "nvidia/nvidia/nemotron-3-super-v3",
+    "backend_protocol": {
+      "base_url": "https://inference-api.nvidia.com/v1",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "api_request_parameters": [
+        "model",
+        "messages"
+      ],
+      "provider_defaults": true,
+      "retry_attempts": 4,
+      "retryable_http_statuses": [
+        429,
+        500,
+        502,
+        503,
+        504
+      ],
+      "chat_attempt_timeout_seconds": 420,
+      "urlopen_timeout_seconds": 300
+    },
+    "arm": "without",
+    "repeat": 3,
+    "prompt_style": "path",
+    "system": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims.",
+    "question": "You are helping a medical-imaging engineer who has cloned https://github.com/NVIDIA-Medtech/medical-AI-skills. The image-generation request is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json. Generate one T1 brain MR image and write generated NIfTI volumes under runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/without/repeat_3. Tier-5 execution will occur in a fresh per-arm Python environment with no runtime dependencies preinstalled, so include any setup steps the documentation says are required. The only workflow document available to you is tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md. Read that document. Do not read or use any files under skills/nv-generate-mr-brain/. Use list_directory only if you need to confirm paths. Do not write to or modify .workbench_data/upstreams or NV upstream root environment variables; stage edited runtime files under the requested output directory. Then produce a SINGLE shell command (or `&&`-chained sequence) inside one ```bash code block. Follow the bash block with a brief one-line explanation. Do not run the command yourself.",
+    "answer": "Backend response is captured in examples/studies/with_vs_without_skill; expected response shape is exactly one bash code block containing one command or an &&-chained command sequence.",
+    "prompt_source": "tools/with_vs_without/run_nv_model_studies.py::_path_prompt",
+    "runner": "tools/with_vs_without/run_nv_model_studies.py",
+    "expected_output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_nemotron_correction/without/repeat_3",
+    "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json",
+    "source_fixture_used_only_for_staging": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "documentation_arm": [
+      "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md"
+    ],
+    "documentation": [
+      {
+        "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        "exists": true,
+        "byte_count": 8402,
+        "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+      }
+    ],
+    "correction_budget_steps": 0,
+    "repeat_count": 3,
+    "repair_prompt": "Repair prompts are disabled for the baseline comparison. Failed first commands are recorded as pass/fail outcomes with deterministic failure analysis."
+  }
+]

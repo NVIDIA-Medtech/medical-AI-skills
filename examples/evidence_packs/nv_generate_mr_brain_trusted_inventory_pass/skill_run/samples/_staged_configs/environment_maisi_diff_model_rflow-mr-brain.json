@@ -1,0 +1,12 @@
+{
+  "data_base_dir": "./data",
+  "embedding_base_dir": "./embeddings",
+  "json_data_list": "./dataset.json",
+  "model_dir": "./models",
+  "model_filename": "diff_unet_3d_rflow-mr-brain_v0.pt",
+  "output_dir": "<repo>/runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples",
+  "output_prefix": "mr_brain_mri_t1",
+  "trained_autoencoder_path": "models/autoencoder_v1.pt",
+  "existing_ckpt_filepath": "./models/diff_unet_3d_rflow-mr-brain_v0.pt",
+  "modality_mapping_path": "./configs/modality_mapping.json"
+}

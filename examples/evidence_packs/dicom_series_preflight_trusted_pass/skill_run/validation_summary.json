@@ -1,0 +1,157 @@
+{
+  "schema": "skills/dicom-series-preflight/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/dicom-series-preflight/fixtures/clean_no_phi",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "skills/dicom-series-preflight/fixtures/clean_no_phi",
+      "status": "passed"
+    },
+    {
+      "name": "dicom_series_readable",
+      "path": "skills/dicom-series-preflight/fixtures/clean_no_phi",
+      "status": "passed",
+      "readable_files": 32
+    },
+    {
+      "name": "dicom_series_single_series",
+      "status": "passed",
+      "series_instance_uid_count": 1
+    },
+    {
+      "name": "dicom_series_modality_consistent",
+      "status": "passed",
+      "modalities": [
+        "CT"
+      ]
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "skill",
+        "eq": "dicom_series_preflight"
+      },
+      "actual": "dicom_series_preflight",
+      "ok": true,
+      "reason": "'dicom_series_preflight' == 'dicom_series_preflight'"
+    },
+    {
+      "check": {
+        "path": "series.single_series",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "inventory.n_corrupt",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "orientation.axcodes_match",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "preflight.acceptable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 0.29078848799690604,
+      "min": null,
+      "max": 15,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 2.1138239999999997,
+      "min": null,
+      "max": 15,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 81.02734375,
+      "min": null,
+      "max": 300,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "passed",
+  "env_pin_results": [
+    {
+      "package": "pydicom",
+      "constraint": ">=2.4,<5",
+      "source": "eval_engine_host",
+      "installed": "3.0.2",
+      "ok": true,
+      "reason": "satisfies constraint"
+    }
+  ],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

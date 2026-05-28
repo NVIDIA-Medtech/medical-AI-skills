@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dicom_volume_quality_v1 output",
+  "type": "object",
+  "required": ["verifier", "target", "volume_quality", "checks", "warnings", "overall"],
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "target": {"type": "object"},
+    "volume_quality": {
+      "type": "object",
+      "required": ["n_fail", "n_warn", "verdict", "acceptable", "shape", "spacing", "axcodes", "hu_range"],
+      "properties": {
+        "n_fail": {"type": "integer"},
+        "n_warn": {"type": "integer"},
+        "verdict": {"type": "string", "enum": ["pass", "warn", "fail"]},
+        "acceptable": {"type": "boolean"},
+        "shape": {"type": "array", "items": {"type": "integer"}},
+        "spacing": {"type": "array", "items": {"type": "number"}},
+        "axcodes": {"type": "array", "items": {"type": "string"}},
+        "hu_range": {"type": "array", "items": {"type": ["number", "null"]}}
+      },
+      "additionalProperties": false
+    },
+    "checks": {"type": "array"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "overall": {"type": "string", "enum": ["pass", "warn", "fail"]}
+  },
+  "additionalProperties": false
+}

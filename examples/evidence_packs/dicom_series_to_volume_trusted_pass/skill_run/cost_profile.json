@@ -1,0 +1,62 @@
+{
+  "measured": {
+    "wall_seconds": 0.2711961790046189,
+    "cpu_seconds": 2.08976,
+    "rss_mb_peak": 84.5703125,
+    "gpu_seconds": 0.0,
+    "gpu_memory_mb_peak": 0.0,
+    "per_gpu": {},
+    "have_nvidia_smi": true
+  },
+  "self_reported": {},
+  "evaluation": {
+    "status": "passed",
+    "results": [
+      {
+        "key": "wall_seconds",
+        "actual": 0.2711961790046189,
+        "min": null,
+        "max": 10,
+        "ok": true,
+        "reason": null,
+        "source": "measured"
+      },
+      {
+        "key": "cpu_seconds",
+        "actual": 2.08976,
+        "min": null,
+        "max": 10,
+        "ok": true,
+        "reason": null,
+        "source": "measured"
+      },
+      {
+        "key": "rss_mb_peak",
+        "actual": 84.5703125,
+        "min": null,
+        "max": 500,
+        "ok": true,
+        "reason": null,
+        "source": "measured"
+      },
+      {
+        "key": "gpu_seconds",
+        "actual": 0.0,
+        "min": null,
+        "max": 0,
+        "ok": true,
+        "reason": null,
+        "source": "measured"
+      },
+      {
+        "key": "gpu_memory_mb_peak",
+        "actual": 0.0,
+        "min": null,
+        "max": 0,
+        "ok": true,
+        "reason": null,
+        "source": "measured"
+      }
+    ]
+  }
+}

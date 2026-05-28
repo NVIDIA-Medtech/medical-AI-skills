@@ -1,0 +1,121 @@
+{
+  "verifier": {
+    "id": "medagent.verifiers.dicom_volume_quality_v1",
+    "version": "0.1.0"
+  },
+  "target": {
+    "evidence_pack": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run",
+    "skill_id": "medagent.dicom_series_to_volume",
+    "source_overall_status": "passed",
+    "output_artifact": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz"
+  },
+  "volume_quality": {
+    "n_fail": 0,
+    "n_warn": 0,
+    "verdict": "pass",
+    "acceptable": true,
+    "shape": [
+      64,
+      64,
+      32
+    ],
+    "spacing": [
+      1.0,
+      1.0,
+      2.0
+    ],
+    "axcodes": [
+      "L",
+      "P",
+      "S"
+    ],
+    "hu_range": [
+      -1000.0,
+      60.0
+    ]
+  },
+  "checks": [
+    {
+      "name": "target_skill_matches",
+      "status": "pass",
+      "reason": "skill_id='medagent.dicom_series_to_volume'"
+    },
+    {
+      "name": "source_pack_passed",
+      "status": "pass",
+      "reason": "source pack overall='passed'"
+    },
+    {
+      "name": "modality_ct",
+      "status": "pass",
+      "reason": "modality='CT'"
+    },
+    {
+      "name": "single_series",
+      "status": "pass",
+      "reason": "single_series=True"
+    },
+    {
+      "name": "no_inconsistent_shape",
+      "status": "pass",
+      "reason": "inconsistent_shape=False"
+    },
+    {
+      "name": "output_artifact_declared",
+      "status": "pass",
+      "reason": "output.path='examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz'"
+    },
+    {
+      "name": "output_artifact_exists",
+      "status": "pass",
+      "reason": "resolved=examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz"
+    },
+    {
+      "name": "nifti_loadable",
+      "status": "pass",
+      "reason": "NIfTI loaded"
+    },
+    {
+      "name": "shape_matches_nifti",
+      "status": "pass",
+      "reason": "reported=[64, 64, 32], actual=[64, 64, 32]"
+    },
+    {
+      "name": "spacing_matches_nifti",
+      "status": "pass",
+      "reason": "reported=[1.0, 1.0, 2.0], actual=[1.0, 1.0, 2.0]"
+    },
+    {
+      "name": "axcodes_match_nifti",
+      "status": "pass",
+      "reason": "reported=['L', 'P', 'S'], actual=['L', 'P', 'S']"
+    },
+    {
+      "name": "affine_matches_nifti",
+      "status": "pass",
+      "reason": "reported affine matches loaded NIfTI affine"
+    },
+    {
+      "name": "finite_voxels",
+      "status": "pass",
+      "reason": "shape=[64, 64, 32]"
+    },
+    {
+      "name": "hu_range_matches_nifti",
+      "status": "pass",
+      "reason": "reported=[-1000.0, 60.0], actual=[-1000.0, 60.0]"
+    },
+    {
+      "name": "n_slices_matches_shape",
+      "status": "pass",
+      "reason": "n_slices=32, shape=[64, 64, 32]"
+    },
+    {
+      "name": "scope_disclosed",
+      "status": "pass",
+      "reason": "disclaimer must preserve engineering-only, non-clinical, no-auto-reorient scope"
+    }
+  ],
+  "warnings": [],
+  "overall": "pass"
+}

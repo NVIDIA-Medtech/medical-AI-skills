@@ -1,0 +1,57 @@
+# Contract for HoloHub endoscopy_tool_tracking under the generic
+# holohub_flow_benchmark skill.
+
+contract_version: 1
+
+app: endoscopy_tool_tracking
+
+# Endoscopy tool tracking targets surgical-suite Holoscan deployments
+# (IGX + AGX Orin) and dev workstations. Cloud/datacenter is plausible
+# but not the primary target.
+target_hardware:
+  - {line: edge_clinical, sku: IGX_AGX_Orin}
+  - {line: workstation,   sku: RTX_6000_Ada}
+
+# Budgets below (p95 ≤ 38 ms, p99 ≤ 50 ms) were calibrated on
+# RTX 6000 Ada with the default container Holoviz render path against
+# HoloHub commit 09f54daf3 (greedy p95 34.12 ms, multithread p95 33.90 ms,
+# both schedulers p99 ≤ 34.82 ms). Cross-host claims (e.g. on IGX or
+# Thor) require re-calibration; the evidence pack records the actual
+# runtime GPU separately so verifiers downstream can flag mismatches.
+calibration_hardware: RTX_6000_Ada
+
+required_data_files:
+  - {path: data/endoscopy/tool_loc_convlstm.onnx,         sha256: null}
+  - {path: data/endoscopy/surgical_video.gxf_entities,    sha256: null}
+  - {path: data/endoscopy/surgical_video.gxf_index,       sha256: null}
+
+source_file: applications/endoscopy_tool_tracking/python/endoscopy_tool_tracking.py
+
+model_file: data/endoscopy/tool_loc_convlstm.onnx
+
+flow_assertions:
+  primary_sequence:
+    - "Endoscopy App.replayer"
+    - "Endoscopy App.format_converter"
+    - "Endoscopy App.lstm_inferer"
+    - "Endoscopy App.tool_tracking_postprocessor"
+    - "Endoscopy App.holoviz"
+  direct_paths:
+    - ["Endoscopy App.replayer", "Endoscopy App.holoviz"]
+
+# Default budgets for the Holoviz render path, calibrated on RTX 6000 Ada.
+# p95 ≤ 38 ms allows ~11% headroom over the measured worst (34.12 ms) for
+# normal run-to-run jitter; the underlying 30 fps surgical viewer target
+# (33.33 ms / frame) is currently a stretch goal, not a hard ceiling on
+# this hardware. Tighten or relax per deployment target.
+latency_budgets:
+  p50_ms_max:            null
+  p95_ms_max:            38.0
+  p99_ms_max:            50.0
+  tail_95_100_ms_max:    null
+  flatness_10_90_ms_max: null
+  min_sample_count:      80      # 100 messages minus default 10+10 trim
+
+notes: |
+  Budgets assume the default container Holoviz render path. Adjust when
+  running headless or with custom --run-args.

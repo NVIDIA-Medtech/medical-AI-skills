@@ -1,0 +1,25 @@
+{
+  "dicom_metadata": {
+    "StudyInstanceUID": "SYNTH-STUDY-005",
+    "PatientID": "SYNTH-005",
+    "Modality": "CT",
+    "BodyPartExamined": "ABDOMEN",
+    "StudyDate": "20260403",
+    "StudyDescription": "CT ABDOMEN W/CONTRAST",
+    "SeriesDescription": "Axial 3mm portal venous phase"
+  },
+  "radiologist_note": "Routine surveillance CT abdomen with contrast. See organ-segmentation summary for measured volumes; no radiologist annotations were attached.",
+  "segmentation_summary": {
+    "skill": "nv_segment_ct",
+    "model": "VISTA3D",
+    "output": {
+      "class_counts": {
+        "liver": 1843201,
+        "spleen": 207558,
+        "right kidney": 152389,
+        "left kidney": 148722
+      },
+      "any_label_present": true
+    }
+  }
+}

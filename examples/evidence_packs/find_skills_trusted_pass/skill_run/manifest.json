@@ -1,0 +1,39 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "2621bbd017eb",
+  "skill_id": "medagent.find_skills",
+  "skill_version": "0.2.0",
+  "skill_dir": "skills/find-skills",
+  "repo_git_sha": "561dfc70254ab27a2ed817771879f3a6b71d27b6",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/example_task.txt",
+    "scripts/find_skills.py",
+    "scripts/list_local_skills.py",
+    "skill_manifest.yaml",
+    "tests/test_find_skills.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/find-skills/fixtures/example_task.txt",
+    "sha256": "7a48cce6b7321724d8a41119300b57695cc0d9ddea62e23a6d0d82a316b81326",
+    "size_bytes": 26,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/find-skills/scripts/find_skills.py",
+    "skills/find-skills/fixtures/example_task.txt"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

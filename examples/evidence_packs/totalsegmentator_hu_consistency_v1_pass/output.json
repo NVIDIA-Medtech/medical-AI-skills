@@ -1,0 +1,140 @@
+{
+  "hu_consistency": {
+    "checked_count": 6,
+    "checks": [
+      {
+        "name": "any_class_checked",
+        "reason": "6 class(es) had HU bounds defined out of 6 present",
+        "status": "pass"
+      },
+      {
+        "failing": [],
+        "name": "pass_fraction_meets_floor",
+        "reason": "6/6 classes within HU range (fraction=1.000 >= 0.7)",
+        "status": "pass"
+      }
+    ],
+    "classes_out_of_range": [],
+    "min_pass_fraction": 0.7,
+    "pass_fraction": 1.0,
+    "passing_count": 6,
+    "per_class": [
+      {
+        "check_status": "checked",
+        "hu_max_expected": 180.0,
+        "hu_min_expected": 30.0,
+        "in_range": true,
+        "label_id": 1,
+        "mean_hu": 45.0,
+        "median_hu": 45.0,
+        "name": "spleen",
+        "p10_hu": 45.0,
+        "p90_hu": 45.0,
+        "std_hu": 0.0,
+        "voxel_count": 9000
+      },
+      {
+        "check_status": "checked",
+        "hu_max_expected": 300.0,
+        "hu_min_expected": 20.0,
+        "in_range": true,
+        "label_id": 2,
+        "mean_hu": 35.0,
+        "median_hu": 35.0,
+        "name": "kidney_right",
+        "p10_hu": 35.0,
+        "p90_hu": 35.0,
+        "std_hu": 0.0,
+        "voxel_count": 5625
+      },
+      {
+        "check_status": "checked",
+        "hu_max_expected": 300.0,
+        "hu_min_expected": 20.0,
+        "in_range": true,
+        "label_id": 3,
+        "mean_hu": 35.0,
+        "median_hu": 35.0,
+        "name": "kidney_left",
+        "p10_hu": 35.0,
+        "p90_hu": 35.0,
+        "std_hu": 0.0,
+        "voxel_count": 5625
+      },
+      {
+        "check_status": "checked",
+        "hu_max_expected": 150.0,
+        "hu_min_expected": 30.0,
+        "in_range": true,
+        "label_id": 5,
+        "mean_hu": 50.0,
+        "median_hu": 50.0,
+        "name": "liver",
+        "p10_hu": 50.0,
+        "p90_hu": 50.0,
+        "std_hu": 0.0,
+        "voxel_count": 27000
+      },
+      {
+        "check_status": "checked",
+        "hu_max_expected": -500.0,
+        "hu_min_expected": -1000.0,
+        "in_range": true,
+        "label_id": 10,
+        "mean_hu": -800.0,
+        "median_hu": -800.0,
+        "name": "lung_upper_lobe_left",
+        "p10_hu": -800.0,
+        "p90_hu": -800.0,
+        "std_hu": 0.0,
+        "voxel_count": 4500
+      },
+      {
+        "check_status": "checked",
+        "hu_max_expected": 1500.0,
+        "hu_min_expected": 100.0,
+        "in_range": true,
+        "label_id": 31,
+        "mean_hu": 400.0,
+        "median_hu": 400.0,
+        "name": "vertebrae_L1",
+        "p10_hu": 400.0,
+        "p90_hu": 400.0,
+        "std_hu": 0.0,
+        "voxel_count": 4500
+      }
+    ],
+    "reason": "6/6 per-class median HU within population range (>= 70%)",
+    "verdict": "pass"
+  },
+  "input_inventory": {
+    "affine_match": true,
+    "input_shape": [
+      60,
+      60,
+      30
+    ],
+    "input_volume_path": "<repo>/runs/totalsegmentator_hu_consistency_source_pass/ct.nii.gz",
+    "input_volume_readable": true,
+    "label_map_path": "<repo>/runs/totalsegmentator_hu_consistency_source_pass/predicted_seg.nii.gz",
+    "label_map_readable": true,
+    "mask_shape": [
+      60,
+      60,
+      30
+    ],
+    "shape_match": true
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "<repo>/runs/totalsegmentator_hu_consistency_source_pass",
+    "input_volume_path": "<repo>/runs/totalsegmentator_hu_consistency_source_pass/ct.nii.gz",
+    "label_map_path": "<repo>/runs/totalsegmentator_hu_consistency_source_pass/predicted_seg.nii.gz",
+    "skill_id": "totalsegmentator",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.totalsegmentator_hu_consistency_v1",
+    "version": "0.1.0"
+  }
+}

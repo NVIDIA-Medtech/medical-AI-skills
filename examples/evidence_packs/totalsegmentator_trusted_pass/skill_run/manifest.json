@@ -1,0 +1,40 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "b8879b6de3b6",
+  "skill_id": "medagent.totalsegmentator",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/totalsegmentator",
+  "repo_git_sha": "3748f41b215ef7ab3ffcf141c85157e09a55da7c",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/README.md",
+    "scripts/run_totalsegmentator.py",
+    "skill_manifest.yaml",
+    "tests/test_run_totalsegmentator.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+    "sha256": "18fcb3df7da91366440dc4e14a9cc814024fce4df73db999b1d32e659ad127f9",
+    "size_bytes": 11352181,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/totalsegmentator/scripts/run_totalsegmentator.py",
+    "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+    "--output-dir",
+    "runs/totalsegmentator_trusted_pass_current/skill_run/totalsegmentator_outputs"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

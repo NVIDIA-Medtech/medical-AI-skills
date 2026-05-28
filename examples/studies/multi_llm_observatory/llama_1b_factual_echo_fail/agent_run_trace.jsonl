@@ -1,0 +1,2 @@
+{"ts": "2026-05-09T22:11:31.032794+00:00", "kind": "tool_call_start", "tool": "summarize.py", "args": ["skills/radiology-note-summarizer/fixtures/case_004_terse.json"]}
+{"ts": "2026-05-09T22:11:32.181317+00:00", "kind": "tool_call_end", "exit_code": 0, "elapsed_s": 1.148481230251491, "stdout_bytes": 811, "stderr_bytes": 0}

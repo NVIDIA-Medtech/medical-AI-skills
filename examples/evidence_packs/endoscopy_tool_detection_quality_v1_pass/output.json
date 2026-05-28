@@ -1,0 +1,213 @@
+{
+  "artifact_inventory": {
+    "detection_artifact_count": 1,
+    "files": [
+      {
+        "actual_sha256": null,
+        "bytes": 14,
+        "declared_bytes": 14,
+        "declared_path": "clip.gxf_index",
+        "declared_sha256": "fixture",
+        "exists": true,
+        "hash_checked": false,
+        "hash_match": null,
+        "kind": "gxf",
+        "path": "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/clip.gxf_index",
+        "usable": true
+      },
+      {
+        "actual_sha256": null,
+        "bytes": 17,
+        "declared_bytes": 16,
+        "declared_path": "clip.gxf_entities",
+        "declared_sha256": "fixture",
+        "exists": true,
+        "hash_checked": false,
+        "hash_match": null,
+        "kind": "gxf",
+        "path": "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/clip.gxf_entities",
+        "usable": true
+      },
+      {
+        "actual_sha256": null,
+        "bytes": 19,
+        "declared_bytes": 18,
+        "declared_path": "overlay.mp4",
+        "declared_sha256": "fixture",
+        "exists": true,
+        "hash_checked": false,
+        "hash_match": null,
+        "kind": "video",
+        "path": "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/overlay.mp4",
+        "usable": true
+      },
+      {
+        "actual_sha256": null,
+        "bytes": 434,
+        "declared_bytes": 384,
+        "declared_path": "tool_detections.jsonl",
+        "declared_sha256": "fixture",
+        "exists": true,
+        "hash_checked": false,
+        "hash_match": null,
+        "kind": "detection",
+        "path": "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/tool_detections.jsonl",
+        "usable": true
+      }
+    ],
+    "gxf_entities_count": 1,
+    "gxf_index_count": 1,
+    "gxf_pair_count": 1,
+    "hash_mismatch_count": 0,
+    "recording_file_count": 4,
+    "recording_output_dir": "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings",
+    "recording_total_bytes": 484,
+    "usable_recording_file_count": 4,
+    "video_count": 1
+  },
+  "detection_metrics": {
+    "bbox_sanity": {
+      "checked": 4,
+      "invalid": 0
+    },
+    "checks": [
+      {
+        "name": "detections_parsed",
+        "parse_errors": [],
+        "reason": "decoded detection frames were parsed",
+        "status": "pass"
+      },
+      {
+        "actual": 4,
+        "expected": "> 0",
+        "name": "tools_detected_count_gt_zero",
+        "reason": "tools_detected_count=4",
+        "status": "pass"
+      },
+      {
+        "actual": 1.0,
+        "expected": ">= 0.6",
+        "name": "frame_coverage_gte_0_6",
+        "reason": "frame_coverage=1.000",
+        "status": "pass"
+      },
+      {
+        "actual": 1.3333333333333333,
+        "expected": "[0.5, 4.0]",
+        "name": "mean_detections_per_frame_reasonable",
+        "reason": "mean_detections_per_frame=1.333",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "checked": 4,
+          "invalid": 0
+        },
+        "expected": "checked > 0 and invalid == 0",
+        "name": "bbox_sanity",
+        "reason": "bbox_checked=4, bbox_invalid=0",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "grasper": 3,
+          "scissors": 1
+        },
+        "name": "tool_class_observed",
+        "reason": "classes={'grasper': 3, 'scissors': 1}",
+        "status": "pass"
+      }
+    ],
+    "frame_coverage": 1.0,
+    "frames_observed": 3,
+    "frames_with_detections": 3,
+    "max_detections_per_frame": 2,
+    "mean_detections_per_frame": 1.3333333333333333,
+    "reason": "all detection-quality floor checks passed",
+    "source_files": [
+      "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/tool_detections.jsonl"
+    ],
+    "tool_class_distribution": {
+      "grasper": 3,
+      "scissors": 1
+    },
+    "tools_detected_count": 4,
+    "verdict": "pass"
+  },
+  "domain_floor": {
+    "checks": [
+      {
+        "name": "output_json_present",
+        "reason": "output.json loaded",
+        "status": "pass"
+      },
+      {
+        "actual": "holohub_endoscopy_tool_tracking",
+        "expected": [
+          "holohub_endoscopy_tool_tracking"
+        ],
+        "name": "target_skill_is_endoscopy",
+        "reason": "skill_id='holohub_endoscopy_tool_tracking'",
+        "status": "pass"
+      },
+      {
+        "actual": "passed",
+        "expected": "passed",
+        "name": "source_pack_passed",
+        "reason": "source overall_status='passed'",
+        "status": "pass"
+      },
+      {
+        "actual": 0,
+        "expected": 0,
+        "name": "declared_artifact_hashes_match",
+        "reason": "all verifiable artifact hashes match",
+        "status": "pass"
+      },
+      {
+        "actual": 4,
+        "expected": "> 0",
+        "name": "recording_artifact_present",
+        "reason": "usable_recording_file_count=4",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "nonempty": 4,
+          "usable": 4
+        },
+        "name": "recording_files_nonempty",
+        "reason": "nonempty=4 / usable=4",
+        "status": "pass"
+      },
+      {
+        "actual": {
+          "gxf_pair_count": 1,
+          "video_count": 1
+        },
+        "name": "gxf_pair_or_video_present",
+        "reason": "gxf_pair_count=1, video_count=1",
+        "status": "pass"
+      },
+      {
+        "actual": 1,
+        "expected": "> 0",
+        "name": "decoded_detection_artifact_present",
+        "reason": "detection_artifact_count=1",
+        "status": "pass"
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "<repo>/verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack",
+    "record_type": "visualizer",
+    "skill_id": "holohub_endoscopy_tool_tracking",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.endoscopy_tool_detection_quality_v1",
+    "version": "0.1.0"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "eaaeb8389b7e",
+  "skill_id": "medagent.nv_reason_cxr",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-reason-cxr",
+  "repo_git_sha": "27e4c10dd89466f94318f9571ebdc74142ae8960",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/synthetic_cxr_input.json",
+    "scripts/run_nv_reason_cxr.py",
+    "skill_manifest.yaml",
+    "tests/test_nv_reason_cxr.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+    "sha256": "7cb121e969161d99c932b4b99159d88b3c4394743d016cdd966ebd54078a8b15",
+    "size_bytes": 387,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py",
+    "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+    "--out-dir",
+    "examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run/artifacts"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

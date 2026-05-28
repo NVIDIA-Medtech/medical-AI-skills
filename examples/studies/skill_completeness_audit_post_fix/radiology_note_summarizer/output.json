@@ -1,0 +1,34 @@
+{
+  "skill": "skill_completeness_v1",
+  "verifier_version": "0.2.0",
+  "target_skill": "skills/radiology-note-summarizer",
+  "tier1_structural": {
+    "tier_id": "tier1_structural",
+    "checks_passed": 20,
+    "checks_total": 20,
+    "verdict": "pass",
+    "blocking_issues": [],
+    "advisory_issues": []
+  },
+  "tier2_spec_honesty": {
+    "tier_id": "tier2_spec_honesty",
+    "checks_passed": 11,
+    "checks_total": 11,
+    "verdict": "pass",
+    "blocking_issues": [],
+    "advisory_issues": []
+  },
+  "tier3_documentation": {
+    "tier_id": "tier3_documentation",
+    "verdict": "skipped",
+    "reason": "v0.2 \u2014 requires LLM rubric grading of SKILL.md vs manifest consistency, intended-use clarity, presence of not_for section"
+  },
+  "tier4_tests": {
+    "tier_id": "tier4_tests",
+    "verdict": "skipped",
+    "reason": "v0.2 \u2014 requires test execution + coverage assessment"
+  },
+  "overall": "pass",
+  "blocking_issues_count": 0,
+  "advisory_issues_count": 0
+}

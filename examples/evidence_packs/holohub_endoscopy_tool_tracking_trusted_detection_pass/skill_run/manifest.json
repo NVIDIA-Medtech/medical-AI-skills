@@ -1,0 +1,43 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "5dab9a8a210b",
+  "skill_id": "holohub_endoscopy_tool_tracking",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/holohub-endoscopy-tool-tracking",
+  "repo_git_sha": "737bf55a754cc1cf588cc76db2af1eace2d7a803",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/README.md",
+    "fixtures/configs/endoscopy_one_shot.yaml",
+    "fixtures/configs/endoscopy_workflow_trusted.yaml",
+    "fixtures/example_clip_stub/README.txt",
+    "scripts/export_tool_detections.py",
+    "scripts/run_endoscopy_tool_tracking.py",
+    "skill_manifest.yaml",
+    "tests/test_export_tool_detections.py",
+    "tests/test_run_endoscopy_tool_tracking.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "default",
+    "sha256": "",
+    "size_bytes": 0,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/holohub-endoscopy-tool-tracking/scripts/run_endoscopy_tool_tracking.py",
+    "default"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

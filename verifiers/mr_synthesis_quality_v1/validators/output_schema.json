@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mr_synthesis_quality_v1 output",
+  "type": "object",
+  "required": ["verifier", "target", "mr_quality", "checks", "overall"],
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": ["evidence_pack", "skill_id", "source_overall_status"],
+      "properties": {
+        "evidence_pack": {"type": "string"},
+        "skill_id": {"type": "string"},
+        "source_overall_status": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "mr_quality": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "acceptable",
+        "output_skill",
+        "version",
+        "modality_name",
+        "num_samples",
+        "all_images_readable",
+        "all_shapes_match_requested",
+        "all_spacing_match_requested",
+        "all_images_finite",
+        "all_images_nonconstant",
+        "all_images_nonnegative"
+      ],
+      "properties": {
+        "verdict": {"type": "string", "enum": ["pass", "fail"]},
+        "acceptable": {"type": "boolean"},
+        "output_skill": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "modality_name": {"type": ["string", "null"]},
+        "num_samples": {"type": "integer", "minimum": 0},
+        "all_images_readable": {"type": "boolean"},
+        "all_shapes_match_requested": {"type": "boolean"},
+        "all_spacing_match_requested": {"type": "boolean"},
+        "all_images_finite": {"type": "boolean"},
+        "all_images_nonconstant": {"type": "boolean"},
+        "all_images_nonnegative": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "reason"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"type": "string", "enum": ["pass", "fail", "warn"]},
+          "reason": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "overall": {"type": "string", "enum": ["pass", "fail"]}
+  },
+  "additionalProperties": false
+}

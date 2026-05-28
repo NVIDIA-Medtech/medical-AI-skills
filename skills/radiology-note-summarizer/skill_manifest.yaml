@@ -1,0 +1,192 @@
+id: radiology_note_summarizer
+version: 0.1.0
+upstream_refs:
+  - kind: hosted_llm_model
+    name: nvidia/openai/gpt-oss-20b
+    version: nvidia/openai/gpt-oss-20b
+    notes: Provider-managed NVIDIA NIM model id; model_identity gate records response identity.
+license: Apache-2.0
+intended_use:
+  summary: |
+    Reference LLM-using skill: takes a small structured DICOM-metadata
+    blob plus a free-text radiologist note, calls NVIDIA's hosted
+    OpenAI-compatible NIM endpoint for `nvidia/openai/gpt-oss-20b`, and emits a structured JSON summary
+    (findings, impressions, flags_for_followup). Demonstrates the
+    spec surface for LLM skills: model-identity pinning, factual
+    echo of input fields into output, runtime integrity scan, and
+    self-reported token cost.
+  scope: development
+  not_for:
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+    - patient-facing report generation
+
+inputs:
+  - name: case
+    type: file_path
+    formats: [json]
+    description: |
+      JSON fixture: {dicom_metadata: {...}, radiologist_note: "..."}.
+      Committed fixtures must be synthetic — no real patient data.
+
+outputs:
+  - name: summary
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/summarize.py
+  env_required: []
+  env_optional:
+    - NV_INFER_TOKEN    # required for live calls; obtain from https://inference.nvidia.com/key-management
+    - MOCK_LLM          # "1" returns a canned response without calling the API
+    - LLM_ENDPOINT      # backend override for probes; model_identity gate will catch drift
+    - LLM_MODEL         # model override for probes; model_identity gate will catch drift
+    - LLM_TEMPERATURE   # temperature override for probes; model_identity gate will catch drift
+  env_conditional:
+    live_call_any_of: [NV_INFER_TOKEN]
+    mock_call: MOCK_LLM
+  llm:
+    # The eval_engine reads this block as the published model spec.
+    # The skill's self-reported `runtime.{model,endpoint,temperature}`
+    # in the output JSON must match these declared values; the
+    # `model_identity` gate fires otherwise.
+    endpoint: https://inference-api.nvidia.com/v1
+    model: nvidia/openai/gpt-oss-20b
+    temperature: 0.0
+    top_p: 1.0
+    max_tokens: 1024
+    seed: 42
+    timeout_seconds: 60
+    prompt_template_path: prompts/user_template.md
+    system_prompt_path: prompts/system.md
+  external_assets:
+    - kind: hosted_llm
+      reference: nvidia/openai/gpt-oss-20b
+      provider: NVIDIA NIM via inference.nvidia.com
+      docs: https://docs.nvidia.com/nim/
+  side_effects:
+    pip_packages: []                 # pure stdlib + urllib
+    local_writes: []
+    home_writes: []
+    network_endpoints:
+      - https://inference-api.nvidia.com
+    requires_docker: false
+    requires_gpu: none               # work happens server-side
+    env_required: []
+    env_optional: [NV_INFER_TOKEN, MOCK_LLM, LLM_ENDPOINT, LLM_MODEL, LLM_TEMPERATURE]
+
+cost:
+  # Per-invocation agent-overhead token cost measured by NeMo Agent Toolkit
+  # (NAT) profiler — the cost an LLM-driven agent pays to call this skill
+  # once. Note: this skill itself issues an LLM call (its own); the number
+  # below excludes those skill-internal tokens (they live under
+  # runtime.llm_tokens_*). See tools/nat_audit/README.md for methodology.
+  token_estimate:
+    common:
+      model: meta/llama-3.3-70b-instruct
+      agent_type: tool_calling_agent
+      measured_at: 2026-05-16
+      methodology: tools/nat_audit/README.md
+    isolated_tool_call:
+      prompt_tokens: 2253
+      completion_tokens: 39
+      total_tokens: 2292
+      llm_calls: 2
+      n_tools_in_workflow: 9
+    end_to_end_workflow:
+      prompt_tokens: 4908
+      completion_tokens: 117
+      total_tokens: 5025
+      llm_calls: 3
+      n_tools_in_workflow: 11
+      scenario: realistic_user_workflow
+
+paired_verifiers:
+  - id: medagent.verifiers.radiology_note_summary_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+    purpose: >
+      Recomputes source-pack success, fixture fact echo, model/prompt identity,
+      and forbidden clinical/regulatory overreach checks from the evidence pack.
+      This is an engineering trust floor for the wrapper and output contract, not
+      a clinical correctness review of generated prose.
+
+limitations:
+  - >
+    Output is engineering evidence only. Not a clinical report.
+    The `not_for` list above applies in full.
+  - >
+    Generative prose may hallucinate. The factual_echo gate verifies
+    that declared input fields (StudyInstanceUID, Modality,
+    BodyPartExamined) appear verbatim or as substrings in the output;
+    the prose itself is not semantically verified.
+  - >
+    Replay is deterministic only when temperature=0.0 + seed=42 AND
+    the NIM-hosted model has not been server-side updated. The
+    `model_identity` gate catches the first; server-side model-version
+    drift is not yet detected.
+  - >
+    With `MOCK_LLM=1` the skill skips the network call and returns a
+    canned response computed deterministically from the input fixture.
+    Use this for dry-runs and CI; it is not a substitute for a real
+    NIM call.
+
+validation:
+  expected_runtime_seconds:
+    min: 0.05
+    max: 60.0
+
+  sanity_checks:
+    - {path: output.study_instance_uid, matches: "^(?:[0-9.]+|SYNTH-STUDY-[0-9]{3})$"}
+    - {path: output.findings, length_gte: 1}
+    - {path: output.impressions, matches: ".+"}
+    - {path: output.flags_for_followup, exists: true}
+    - {path: runtime.model, eq: "nvidia/openai/gpt-oss-20b"}
+    - {path: runtime.temperature, eq: 0.0}
+    - {path: runtime.endpoint, eq: "https://inference-api.nvidia.com/v1"}
+
+  factual_echo:
+    - input_path: dicom_metadata.StudyInstanceUID
+      output_path: output.study_instance_uid
+      mode: exact
+    # DICOM tag values are typically uppercase ("CT", "ABDOMEN") while
+    # generative prose lowercases them. case_insensitive: true lets the
+    # gate treat "abdomen" in output as a match for "ABDOMEN" in input.
+    - input_path: dicom_metadata.Modality
+      output_paths: [output.findings, output.impressions]
+      mode: any_contains
+      case_insensitive: true
+    - input_path: dicom_metadata.BodyPartExamined
+      output_paths: [output.findings, output.impressions]
+      mode: any_contains
+      case_insensitive: true
+
+  runtime_integrity:
+    paths:
+      - output.findings
+      - output.impressions
+      - output.flags_for_followup
+    patterns_file: validators/forbidden_runtime_phrases.yaml
+
+  expected_cost:
+    # No wall_seconds.min — host-side wall time is not the silent-failure
+    # detector for an LLM skill (the real work happens server-side). The
+    # canonical floor here is llm_tokens_output.min, which catches an
+    # empty/refused completion regardless of wall time.
+    wall_seconds:        {max: 60}
+    cpu_seconds:         {max: 10}
+    rss_mb_peak:         {max: 500}
+    gpu_seconds:         {max: 0}        # work happens server-side
+    gpu_memory_mb_peak:  {max: 0}
+    llm_tokens_input:    {min: 50, max: 4000}
+    llm_tokens_output:   {min: 20, max: 1024}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/case_001_input.json
+    runs: 2
+    env:
+      MOCK_LLM: "1"

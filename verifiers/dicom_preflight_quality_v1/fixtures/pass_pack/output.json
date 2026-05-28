@@ -1,0 +1,22 @@
+{
+  "skill": "dicom_series_preflight",
+  "inventory": {
+    "n_corrupt": 0
+  },
+  "series": {
+    "single_series": true,
+    "n_series": 1
+  },
+  "orientation": {
+    "axcodes": ["L", "P", "S"],
+    "axcodes_match": true
+  },
+  "phi": {
+    "phi_present": false
+  },
+  "findings": [],
+  "preflight": {
+    "verdict": "pass",
+    "acceptable": true
+  }
+}

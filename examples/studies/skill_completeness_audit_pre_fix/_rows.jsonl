@@ -1,0 +1,7 @@
+{"target": "dicom_metadata_extract", "target_path": "skills/dicom-metadata-extract/", "overall": "pass", "tier1_passed": 20, "tier1_total": 20, "tier2_passed": 11, "tier2_total": 11, "blocking": 0, "advisory": 0}
+{"target": "dicom_series_to_volume", "target_path": "skills/dicom-series-to-volume/", "overall": "fail", "tier1_passed": 19, "tier1_total": 20, "tier2_passed": 11, "tier2_total": 11, "blocking": 1, "advisory": 0}
+{"target": "holohub_imaging_ai_segmentator", "target_path": "skills/holohub-imaging-ai-segmentator/", "overall": "fail", "tier1_passed": 19, "tier1_total": 20, "tier2_passed": 10, "tier2_total": 11, "blocking": 1, "advisory": 1}
+{"target": "nv_segment_ct", "target_path": "skills/nv-segment-ct/", "overall": "pass", "tier1_passed": 20, "tier1_total": 20, "tier2_passed": 11, "tier2_total": 11, "blocking": 0, "advisory": 0}
+{"target": "radiology_note_summarizer", "target_path": "skills/radiology-note-summarizer/", "overall": "fail", "tier1_passed": 19, "tier1_total": 20, "tier2_passed": 11, "tier2_total": 11, "blocking": 1, "advisory": 0}
+{"target": "verifiers_skill_completeness_v1", "target_path": "verifiers/skill_completeness_v1/", "overall": "fail", "tier1_passed": 19, "tier1_total": 20, "tier2_passed": 11, "tier2_total": 11, "blocking": 1, "advisory": 0}
+{"target": "negative_sloppy_skill", "target_path": "verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill", "overall": "fail", "tier1_passed": 17, "tier1_total": 20, "tier2_passed": 7, "tier2_total": 10, "blocking": 4, "advisory": 2}

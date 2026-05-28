@@ -1,0 +1,39 @@
+workflow_id: holohub_endoscopy_evidence
+description: |
+  HoloHub endoscopy_tool_tracking + flow benchmark, with the trusted endoscopy
+  tool-detection verifier paired on the app step.
+
+  Path:
+    HoloHub fixture/source (GXF replayer dir or literal "default")
+      -> holohub_endoscopy_tool_tracking (trusted; headless + detection export)
+      -> holohub_flow_benchmark (endoscopy contract, smoke mode by default)
+      -> workflow / trust summary
+
+  Set WORKFLOW_INPUT=default when HoloHub has provisioned sample data. The
+  committed stub path at
+  skills/holohub-endoscopy-tool-tracking/fixtures/example_clip_stub is a
+  boundary-check fixture only; it does not include runnable GXF data or sidecar
+  detections. The paired verifier passes only when a real run emits decoded
+  detections via log parse or a recording-sidecar artifact.
+
+steps:
+  - id: holohub_app
+    skill: skills/holohub-endoscopy-tool-tracking
+    trusted: true
+    inputs:
+      fixture: ${input}
+    env:
+      HOLOHUB_RECORD_TYPE: visualizer
+      HOLOHUB_LANGUAGE: python
+      HOLOHUB_CONFIG: skills/holohub-endoscopy-tool-tracking/fixtures/configs/endoscopy_workflow_trusted.yaml
+      HOLOHUB_EXPORT_TOOL_DETECTIONS: "true"
+
+  - id: flow_benchmark
+    skill: skills/holohub-flow-benchmark
+    inputs:
+      fixture: skills/holohub-flow-benchmark/fixtures/default
+    env:
+      HOLOHUB_BENCHMARK_APP: endoscopy_tool_tracking
+      HOLOHUB_BENCHMARK_LANGUAGE: python
+      HOLOHUB_BENCHMARK_CONTRACT: skills/holohub-flow-benchmark/contracts/endoscopy_tool_tracking.yaml
+      HOLOHUB_BENCHMARK_SMOKE: "true"

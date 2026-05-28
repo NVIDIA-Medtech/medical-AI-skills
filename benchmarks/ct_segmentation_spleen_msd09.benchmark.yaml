@@ -1,0 +1,77 @@
+format: benchmark_dataset
+source: msd09_spleen
+dataset: ct_segmentation_spleen_msd09
+case_count: 5
+ground_truth: ../.workbench_data/datasets/Task09_Spleen/labelsTr
+inclusion:
+  modality: CT
+  body_part: abdomen
+  target_organ: spleen
+  slice_count: ">=80"
+license: CC-BY-SA-4.0
+notes: >
+  Curated five-case battery from the Medical Segmentation Decathlon Task09 Spleen
+  training subset. Engineering verification only — these cases are not a clinical
+  hold-out. The matrix axes (dice, iou, hd) are computed per case by
+  `eval_engine/run_benchmark.py` and aggregated for the matrix renderer.
+
+# VISTA3D emits label_id=3 for spleen across its 132-class vocabulary; MSD09
+# ground truth uses label_id=1 for the spleen foreground. The `gt_labels`
+# override on each case targets the GT mask only.
+cases:
+  - id: spleen_3
+    input: ../.workbench_data/datasets/Task09_Spleen/imagesTr/spleen_3.nii.gz
+    ground_truth: ../.workbench_data/datasets/Task09_Spleen/labelsTr/spleen_3.nii.gz
+    labels: [3]
+    gt_labels: [1]
+  - id: spleen_10
+    input: ../.workbench_data/datasets/Task09_Spleen/imagesTr/spleen_10.nii.gz
+    ground_truth: ../.workbench_data/datasets/Task09_Spleen/labelsTr/spleen_10.nii.gz
+    labels: [3]
+    gt_labels: [1]
+  - id: spleen_19
+    input: ../.workbench_data/datasets/Task09_Spleen/imagesTr/spleen_19.nii.gz
+    ground_truth: ../.workbench_data/datasets/Task09_Spleen/labelsTr/spleen_19.nii.gz
+    labels: [3]
+    gt_labels: [1]
+  - id: spleen_29
+    input: ../.workbench_data/datasets/Task09_Spleen/imagesTr/spleen_29.nii.gz
+    ground_truth: ../.workbench_data/datasets/Task09_Spleen/labelsTr/spleen_29.nii.gz
+    labels: [3]
+    gt_labels: [1]
+  - id: spleen_46
+    input: ../.workbench_data/datasets/Task09_Spleen/imagesTr/spleen_46.nii.gz
+    ground_truth: ../.workbench_data/datasets/Task09_Spleen/labelsTr/spleen_46.nii.gz
+    labels: [3]
+    gt_labels: [1]
+
+prediction:
+  path: output.path
+
+# Axis declarations consumed by the matrix renderer (eval_engine/render_baselines.py).
+# These are advisory: run_benchmark.py already computes dice/iou/hd; the axes
+# block tells the renderer which scalar to surface per skill and in which direction.
+axes:
+  - name: dice_mean
+    field: output.dice.mean
+    direction: higher_better
+    unit: ratio
+  - name: dice_p10
+    field: output.dice.p10
+    direction: higher_better
+    unit: ratio
+  - name: hd_mean_mm
+    field: output.hd.mean
+    direction: lower_better
+    unit: mm
+  - name: coverage_pct
+    field: output.coverage_pct
+    direction: higher_better
+    unit: percent
+
+sanity_checks:
+  - {path: output.coverage_pct, gte: 100}
+  - {path: output.fail_count, eq: 0}
+  # Engineering-floor only. A field-grade floor would be much higher (~0.92);
+  # this catches catastrophic silent failure (empty mask, wrong organ).
+  - {path: output.dice.mean, gte: 0.70}

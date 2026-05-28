@@ -1,0 +1,111 @@
+{
+  "checks": [
+    {
+      "name": "target_skill_matches",
+      "reason": "skill_id='medagent.nv_reason_cxr'",
+      "status": "pass"
+    },
+    {
+      "name": "source_pack_passed",
+      "reason": "source pack overall='passed'",
+      "status": "pass"
+    },
+    {
+      "name": "output_skill_matches",
+      "reason": "output.skill='nv_reason_cxr'",
+      "status": "pass"
+    },
+    {
+      "name": "fixture_loaded",
+      "reason": "fixture=skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+      "status": "pass"
+    },
+    {
+      "name": "case_id_matches_fixture",
+      "reason": "input='synthetic-cxr-smoke', fixture='synthetic-cxr-smoke'",
+      "status": "pass"
+    },
+    {
+      "name": "prompt_matches_fixture",
+      "reason": "input='Find abnormalities and support devices.', fixture='Find abnormalities and support devices.'",
+      "status": "pass"
+    },
+    {
+      "name": "image_metadata_shape",
+      "reason": "format='png', source='generated_fixture', size=96x96",
+      "status": "pass"
+    },
+    {
+      "name": "image_file_readable",
+      "reason": "image=examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run/artifacts/input_synthetic_chest_xray.png",
+      "status": "pass"
+    },
+    {
+      "name": "image_sha256_matches",
+      "reason": "reported='767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf', actual='767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf'",
+      "status": "pass"
+    },
+    {
+      "name": "response_text_nonempty",
+      "reason": "text_chars=202",
+      "status": "pass"
+    },
+    {
+      "name": "text_char_count_matches",
+      "reason": "output.text_chars must match len(output.response_text)",
+      "status": "pass"
+    },
+    {
+      "name": "model_identity_matches",
+      "reason": "runtime.model='nvidia/NV-Reason-CXR-3B'",
+      "status": "pass"
+    },
+    {
+      "name": "runtime_mode_supported",
+      "reason": "runtime.mode='mock'",
+      "status": "pass"
+    },
+    {
+      "name": "mock_flag_consistent",
+      "reason": "runtime.mode='mock', runtime.mock=True",
+      "status": "pass"
+    },
+    {
+      "name": "runtime_token_fields_consistent",
+      "reason": "max_new_tokens=2048, generated_tokens=0",
+      "status": "pass"
+    },
+    {
+      "name": "limitations_disclose_scope",
+      "reason": "limitations must disclose engineering-only, non-diagnostic, and non-treatment scope",
+      "status": "pass"
+    },
+    {
+      "name": "forbidden_phrases_absent",
+      "reason": "no treatment/regulatory/patient-directed/absolute-certainty phrases found",
+      "status": "pass"
+    }
+  ],
+  "cxr_quality": {
+    "acceptable": true,
+    "case_id": "synthetic-cxr-smoke",
+    "forbidden_finding_count": 0,
+    "forbidden_findings": [],
+    "image_format": "png",
+    "image_sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+    "mock_mode": true,
+    "model": "nvidia/NV-Reason-CXR-3B",
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run",
+    "fixture_path": "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+    "skill_id": "medagent.nv_reason_cxr",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.nv_reason_cxr_quality_v1",
+    "version": "0.1.0"
+  }
+}

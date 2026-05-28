@@ -1,0 +1,33 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "benchmark_run",
+  "run_id": "1d12e20a48e2",
+  "skill_id": "medagent.nv_segment_ct",
+  "skill_version": "0.2.0",
+  "skill_dir": "skills/nv-segment-ct",
+  "repo_git_sha": "4edfbc17011b1806aee6c573094c426dcb3a62d9",
+  "benchmark_manifest": {
+    "path": "benchmarks/ct_segmentation_spleen_msd09.benchmark.yaml",
+    "sha256": "c88969628863c72a09b8348cdc827be0506d282a94bd2edee4042f8c8795bbbf",
+    "size_bytes": 2839,
+    "format": "benchmark_dataset"
+  },
+  "environment": {
+    "fingerprint": "40c259505e209e6e",
+    "pip_freeze_lines": 391,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "case_count": 5,
+  "command": [
+    "python3",
+    "eval_engine/run_benchmark.py",
+    "skills/nv-segment-ct",
+    "--benchmark",
+    "benchmarks/ct_segmentation_spleen_msd09.benchmark.yaml",
+    "--out",
+    "runs/baselines/nv_segment_ct_msd09"
+  ],
+  "eval_engine_script": "eval_engine/run_benchmark.py"
+}

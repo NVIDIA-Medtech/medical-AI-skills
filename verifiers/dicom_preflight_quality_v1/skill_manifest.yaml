@@ -1,0 +1,54 @@
+id: medagent.verifiers.dicom_preflight_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: dicom_preflight_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for dicom_series_preflight evidence packs. Replays
+    skill findings and emits pass, warn, or fail with explicit reasons for
+    corruption, orientation, PHI, and consistency.
+  scope: development
+  not_for:
+    - clinical deployment
+    - regulatory de-identification
+    - autonomous diagnosis
+inputs:
+  - name: dicom_series_preflight_evidence_pack
+    type: directory_path
+    description: Evidence pack directory from skills/dicom-series-preflight.
+outputs:
+  - name: dicom_preflight_quality_report
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+limitations:
+  - Warn on PHI tag presence is advisory; not a de-identification audit.
+  - Orientation check mirrors the skill's L,P,S CT gate only.
+validation:
+  expected_runtime_seconds:
+    max: 10.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.dicom_preflight_quality_v1}
+    - {path: target.skill_id, matches: "dicom_series_preflight"}
+    - {path: preflight_gate.n_fail, eq: 0}
+    - {path: preflight_gate.acceptable, eq: true}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

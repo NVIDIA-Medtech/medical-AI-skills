@@ -1,0 +1,69 @@
+{
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "benchmark_manifest_exists",
+      "path": "benchmarks/ct_segmentation_spleen_msd09.benchmark.yaml",
+      "status": "passed"
+    },
+    {
+      "name": "benchmark_manifest_is_file",
+      "path": "benchmarks/ct_segmentation_spleen_msd09.benchmark.yaml",
+      "status": "passed"
+    },
+    {
+      "name": "benchmark_manifest_format",
+      "status": "passed",
+      "format": "benchmark_dataset"
+    },
+    {
+      "name": "case_count",
+      "status": "passed",
+      "count": 5
+    }
+  ],
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "output.coverage_pct",
+        "gte": 100
+      },
+      "actual": 100.0,
+      "ok": true,
+      "reason": "100.0 >= 100"
+    },
+    {
+      "check": {
+        "path": "output.fail_count",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "output.dice.mean",
+        "gte": 0.7
+      },
+      "actual": 0.9579706145258683,
+      "ok": true,
+      "reason": "0.9579706145258683 >= 0.7"
+    }
+  ],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "case_count": 5,
+  "pass_count": 5,
+  "fail_count": 0,
+  "coverage_pct": 100.0,
+  "coverage_pct_ci_95": {
+    "level": 0.95,
+    "method": "wilson",
+    "lower_pct": 56.551754,
+    "upper_pct": 100.0
+  },
+  "errors": []
+}

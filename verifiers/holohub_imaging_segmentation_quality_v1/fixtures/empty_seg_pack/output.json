@@ -1,0 +1,18 @@
+{
+  "invocation": {
+    "holohub_commit": "deadbeef",
+    "exit_code": 0
+  },
+  "output": {
+    "dicom_seg": {"count": 0, "total_bytes": 0, "files": []},
+    "nifti": {
+      "original": {"count": 1, "total_bytes": 1000, "files": [{"path": "series.nii", "bytes": 1000, "sha256": "x"}]},
+      "segmentation": {"count": 0, "total_bytes": 0, "files": []}
+    },
+    "seg_signals": {
+      "seg_pixel_max_value": 0,
+      "seg_array_shape": [1, 512, 512],
+      "empty_segmentation_warning": true
+    }
+  }
+}

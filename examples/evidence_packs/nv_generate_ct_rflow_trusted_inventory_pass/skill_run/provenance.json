@@ -1,0 +1,107 @@
+{
+  "captured_at": "2026-05-26T03:26:22.383982+00:00",
+  "gpu": {
+    "available": true,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "uuid": "GPU-95d20cf6-6e5f-d0cd-7c5c-1caad640b18e",
+        "driver_version": "580.159.04",
+        "compute_cap": "8.9",
+        "memory_total_mb": 49140.0,
+        "memory_free_mb": 48342.0,
+        "memory_used_mb": 145.0,
+        "mig_mode_current": "[N/A]"
+      }
+    ],
+    "nvcc_release": "Cuda compilation tools, release 13.2, V13.2.78"
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container image inspect and optional in-container pip freeze (HoloHub docker workflow).",
+    "outer_command": [
+      "<home>/anaconda3/envs/py312/bin/python",
+      "-m",
+      "scripts.inference",
+      "-t",
+      "configs/config_network_rflow.json",
+      "-i",
+      "<repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples/_staged_configs/config_infer.json",
+      "-e",
+      "<repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples/_staged_configs/environment_rflow-ct.json",
+      "--random-seed",
+      "0",
+      "--version",
+      "rflow-ct"
+    ],
+    "stdout_tail": "...i.inference) - image_output_ext: .nii.gz\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - label_output_ext: .nii.gz\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - spacing: [1.5, 1.5, 2.0]\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - autoencoder_sliding_window_infer_size: [48, 48, 48]\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - autoencoder_sliding_window_infer_overlap: 0.6666\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - controlnet: $@controlnet_def\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - diffusion_unet: $@diffusion_unet_def\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - autoencoder: $@autoencoder_def\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - mask_generation_autoencoder: $@mask_generation_autoencoder_def\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - mask_generation_diffusion: $@mask_generation_diffusion_def\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - modality: 1\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - cfg_guidance_scale: 0\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - output_dir: <repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples\n[2026-05-26 04:25:09.184][ INFO](root) - `controllable_anatomy_size` is not empty.\nWe will ignore `body_region` and `anatomy_list` and synthesize based on `controllable_anatomy_size`: ([['lung tumor', 0.2]]).\n[2026-05-26 04:25:09.184][ INFO](root) - The generate results will have voxel size to be [1.5, 1.5, 2.0]mm, volume size to be [256, 256, 256].\n[2026-05-26 04:25:09.184][ INFO](maisi.inference) - Network definition and inference inputs have been loaded.\n2026-05-26 04:25:10,984 - INFO - 'dst' model updated: 180 of 231 variables.\n[2026-05-26 04:25:11.754][ INFO](maisi.inference) - All the trained model weights have been loaded.\n[2026-05-26 04:25:11.754][ INFO](root) - controllable_anatomy_size is given, mask generation is triggered!\n[2026-05-26 04:25:11.764][ INFO](root) - LDM sampler initialized.\n[2026-05-26 04:25:11.764][ INFO](maisi.inference) - The generated image/mask pairs will be saved in <repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples.\n[2026-05-26 04:25:11.764][ INFO](root) - controllable_anatomy_size: [['lung tumor', 0.2]]\n[2026-05-26 04:25:11.768][ INFO](root) - ---- Start preparing masks... ----\n[2026-05-26 04:25:55.424][ INFO](root) - target_tumor_label for postprocess:23\nCurrent model does not support hepatic vessel by size control, so we treat generated hepatic vessel as part of liver for better visiaulization.\n[2026-05-26 04:26:04.021][ INFO](root) - Resampling mask to target shape and spacing\n[2026-05-26 04:26:04.022][ INFO](root) - Resize Spacing: [tensor(1.5000, dtype=torch.float64), tensor(1.5000, dtype=torch.float64), tensor(1.5000, dtype=torch.float64)] -> [1.5, 1.5, 2.0]\n[2026-05-26 04:26:04.022][ INFO](root) - Output size: [256, 256, 256] -> [256, 256, 256]\n[2026-05-26 04:26:04.313][ INFO](root) - ---- Mask preparation time: 52.54504752159119 seconds ----\n[2026-05-26 04:26:04.433][ INFO](root) - ---- Start generating latent features... ----\n[2026-05-26 04:26:06.231][ INFO](root) - ---- DM/ControlNet Latent features generation time: 1.7982327938079834 seconds ----\n[2026-05-26 04:26:06.573][ INFO](root) - ---- Start decoding latent features into images... ----\n[2026-05-26 04:26:18.143][ INFO](root) - ---- Image VAE decoding time: 11.568883419036865 seconds ----\n2026-05-26 04:26:18,410 INFO image_writer.py:197 - writing: <repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples/sample_20260526_042618_406127_image.nii.gz\n2026-05-26 04:26:18,920 INFO image_writer.py:197 - writing: <repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples/sample_20260526_042618_406127_label.nii.gz\n[2026-05-26 04:26:19.126][ INFO](maisi.inference) - MAISI image/mask generation finished\nPeak GPU memory usage: 12.95 GB\n",
+    "stderr_tail": "...\u2588\u2588\u2588\u2588\u2588 | 905/1000 [00:29<00:03, 30.57it/s]\n 91%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 | 909/1000 [00:29<00:02, 30.60it/s]\n 91%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 913/1000 [00:29<00:02, 30.59it/s]\n 92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 917/1000 [00:29<00:02, 30.60it/s]\n 92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258f| 921/1000 [00:29<00:02, 30.53it/s]\n 92%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 925/1000 [00:29<00:02, 30.57it/s]\n 93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 929/1000 [00:29<00:02, 30.59it/s]\n 93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 933/1000 [00:30<00:02, 30.57it/s]\n 94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 937/1000 [00:30<00:02, 30.63it/s]\n 94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 941/1000 [00:30<00:01, 30.63it/s]\n 94%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 945/1000 [00:30<00:01, 30.59it/s]\n 95%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258d| 949/1000 [00:30<00:01, 30.58it/s]\n 95%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 953/1000 [00:30<00:01, 30.56it/s]\n 96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 957/1000 [00:30<00:01, 30.56it/s]\n 96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c| 961/1000 [00:30<00:01, 30.57it/s]\n 96%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 965/1000 [00:31<00:01, 30.57it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 969/1000 [00:31<00:01, 30.57it/s]\n 97%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b| 973/1000 [00:31<00:00, 30.58it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 977/1000 [00:31<00:00, 30.56it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 981/1000 [00:31<00:00, 30.57it/s]\n 98%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a| 985/1000 [00:31<00:00, 30.54it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 989/1000 [00:31<00:00, 30.52it/s]\n 99%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 993/1000 [00:31<00:00, 30.50it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2589| 997/1000 [00:32<00:00, 30.53it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1000/1000 [00:32<00:00, 31.06it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/inferers/utils.py:231: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  win_data = inputs[unravel_slice[0]].to(sw_device)\n<home>/anaconda3/envs/py312/lib/python3.12/site-packages/monai/inferers/utils.py:370: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)\n  out[idx_zm] += p\n\n 12%|\u2588\u258e        | 1/8 [00:01<00:09,  1.34s/it]\n 25%|\u2588\u2588\u258c       | 2/8 [00:02<00:07,  1.17s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:03<00:05,  1.13s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:04<00:04,  1.11s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:05<00:03,  1.10s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:06<00:02,  1.09s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:07<00:01,  1.09s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:08<00:00,  1.08s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:08<00:00,  1.11s/it]\n\n  0%|          | 0/30 [00:00<?, ?it/s]\n  7%|\u258b         | 2/30 [00:00<00:01, 19.41it/s]\n 13%|\u2588\u258e        | 4/30 [00:00<00:01, 17.75it/s]\n 20%|\u2588\u2588        | 6/30 [00:00<00:01, 17.20it/s]\n 27%|\u2588\u2588\u258b       | 8/30 [00:00<00:01, 16.95it/s]\n 33%|\u2588\u2588\u2588\u258e      | 10/30 [00:00<00:01, 16.79it/s]\n 40%|\u2588\u2588\u2588\u2588      | 12/30 [00:00<00:01, 16.69it/s]\n 47%|\u2588\u2588\u2588\u2588\u258b     | 14/30 [00:00<00:00, 16.64it/s]\n 53%|\u2588\u2588\u2588\u2588\u2588\u258e    | 16/30 [00:00<00:00, 16.61it/s]\n 60%|\u2588\u2588\u2588\u2588\u2588\u2588    | 18/30 [00:01<00:00, 16.60it/s]\n 67%|\u2588\u2588\u2588\u2588\u2588\u2588\u258b   | 20/30 [00:01<00:00, 16.53it/s]\n 73%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e  | 22/30 [00:01<00:00, 16.51it/s]\n 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 24/30 [00:01<00:00, 16.53it/s]\n 87%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258b | 26/30 [00:01<00:00, 16.54it/s]\n 93%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258e| 28/30 [00:01<00:00, 16.57it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 16.57it/s]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 30/30 [00:01<00:00, 16.72it/s]\n\n  0%|          | 0/8 [00:00<?, ?it/s]\n 12%|\u2588\u258e        | 1/8 [00:01<00:10,  1.48s/it]\n 25%|\u2588\u2588\u258c       | 2/8 [00:02<00:08,  1.46s/it]\n 38%|\u2588\u2588\u2588\u258a      | 3/8 [00:04<00:07,  1.45s/it]\n 50%|\u2588\u2588\u2588\u2588\u2588     | 4/8 [00:05<00:05,  1.45s/it]\n 62%|\u2588\u2588\u2588\u2588\u2588\u2588\u258e   | 5/8 [00:07<00:04,  1.44s/it]\n 75%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c  | 6/8 [00:08<00:02,  1.44s/it]\n 88%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258a | 7/8 [00:10<00:01,  1.44s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.44s/it]\n100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:11<00:00,  1.45s/it]\n"
+  },
+  "network": {
+    "declared_endpoints": [
+      "https://huggingface.co",
+      "https://github.com"
+    ],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level",
+        "change": "untracked"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      }
+    ]
+  }
+}

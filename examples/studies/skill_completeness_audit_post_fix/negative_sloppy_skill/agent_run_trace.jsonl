@@ -1,0 +1,2 @@
+{"ts": "2026-05-10T07:30:20.999278+00:00", "kind": "tool_call_start", "tool": "grade.py", "args": ["verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill"]}
+{"ts": "2026-05-10T07:30:21.110952+00:00", "kind": "tool_call_end", "exit_code": 0, "elapsed_s": 0.11165451491251588, "stdout_bytes": 2362, "stderr_bytes": 0}

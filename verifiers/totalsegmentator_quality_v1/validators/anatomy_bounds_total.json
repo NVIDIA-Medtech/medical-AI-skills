@@ -1,0 +1,59 @@
+{
+  "_comment": "Population-typical adult organ volume bounds in mL for TotalSegmentator's `total` task. Keys are TotalSegmentator class IDs (NOT VISTA3D IDs). Source: totalsegmentator.map_to_binary.class_map['total']. Bounds intentionally permissive; pediatric or post-resection cases will fail.",
+  "_task": "total",
+  "1": {
+    "name": "spleen",
+    "volume_ml_min": 30.0,
+    "volume_ml_max": 500.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": false
+  },
+  "2": {
+    "name": "kidney_right",
+    "volume_ml_min": 80.0,
+    "volume_ml_max": 300.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": true,
+    "bilateral_partner_id": 3
+  },
+  "3": {
+    "name": "kidney_left",
+    "volume_ml_min": 80.0,
+    "volume_ml_max": 300.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": true,
+    "bilateral_partner_id": 2
+  },
+  "5": {
+    "name": "liver",
+    "volume_ml_min": 800.0,
+    "volume_ml_max": 2500.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.85,
+    "bilateral": false
+  },
+  "7": {
+    "name": "pancreas",
+    "volume_ml_min": 30.0,
+    "volume_ml_max": 200.0,
+    "max_components": 1,
+    "largest_cc_fraction_min": 0.70,
+    "bilateral": false
+  },
+  "_cross_class_floors": {
+    "liver_id": 5,
+    "spleen_id": 1,
+    "liver_gt_spleen": true,
+    "bilateral_symmetry_max_relative_diff": 0.5
+  },
+  "_gt_dice_floors": {
+    "1": 0.85,
+    "2": 0.80,
+    "3": 0.80,
+    "5": 0.85,
+    "7": 0.55
+  }
+}

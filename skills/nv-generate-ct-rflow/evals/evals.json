@@ -1,0 +1,34 @@
+{
+  "skill_name": "nv-generate-ct-rflow",
+  "description": "Behavioral evals for NV-Generate-CTMR rflow-ct synthetic CT generation. Tests config-path handling, preflight use, and synthetic-data scope.",
+  "evals": [
+    {
+      "id": "generate-abdomen-synthetic-ct",
+      "prompt": "Generate a synthetic abdomen CT and paired segmentation mask from my config at /data/abdomen_request.json using nv-generate-ct-rflow.",
+      "expected_output": "The agent runs scripts/run_rflow_ct.py with the user config path, NV_GENERATE_ROOT set or checked, --output-dir, and a deterministic --random-seed.",
+      "files": [],
+      "assertions": [
+        "the command uses skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py",
+        "the first positional argument is the user-provided config path",
+        "the command includes --output-dir and --random-seed",
+        "the agent states the output is synthetic and not production training data without review"
+      ]
+    },
+    {
+      "id": "preflight-before-expensive-run",
+      "prompt": "Before launching rflow-ct inference, check whether this request is valid and estimate cost.",
+      "expected_output": "The agent should use --preflight-only and report anatomy/config/CUDA/dataset checks rather than launching full inference.",
+      "files": [],
+      "assertions": [
+        "the command includes --preflight-only",
+        "the agent does NOT download weights or run full inference unless setup is explicitly requested",
+        "the final answer surfaces estimated runtime or VRAM caveats when present"
+      ]
+    }
+  ],
+  "baseline_methodology": {
+    "with_skill_setup": "Agent has wrapper command, preflight behavior, and synthetic-data boundaries.",
+    "without_skill_setup": "Agent has upstream generation docs only and may edit upstream configs directly or skip preflight.",
+    "expected_delta": "with_skill: stable wrapper invocation and preflight discipline. without_skill: higher risk of config staging mistakes or unsupported claims."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "ea25fbb8844d",
+  "produced_at": "2026-05-26T04:44:28.610192+00:00",
+  "skill_id": "medagent.nv_segment_ctmr",
+  "skill_version": "0.1.0",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.ct_segmentation_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/ct_segmentation_quality_v1",
+      "exit_code": 0,
+      "overall": "passed",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "1861413317151a184d1057c598b8ee0978e918941a038cac87c6c9522890fde0",
+        "validation_summary.json": "11145cb7238a75ed75924646959f45eaf44a2c1fd30dc3f7f9441a7dfda2b0ee",
+        "output.json": "e43c024e3f842ce1dffde4529c6444216360aca7a31327467d0227c3d0734196",
+        "provenance.json": "160460cccf3cef829d08883b81eb0687a14657b6051d815916dba0c4deef04db",
+        "agent_run_trace.jsonl": "f16c45c4a9c6a5e997a200038d8b5f63329c3784ed20c48abfe49cf57fe5efae"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 0,
+      "semantic_overall": "pass",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 0,
+      "failure_findings": [],
+      "warning_findings": []
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.ct_segmentation_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "medagent.nv_segment_ctmr",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "a3c56da9018202efc2ee462e8c64298c51d0ba81f2f56161ef3388b72aa3eabd",
+        "validation_summary.json": "3c5a663553a5b40565e9bd8bfd52e40eb7ecd69dde4bcefebc90e993ac5a2a3d",
+        "output.json": "e8fa7f13fc9bc9399c11653846e749f16a04874329bd678799466a44b9bf2cba",
+        "provenance.json": "10dd9ddcd15ebf68227b742a6d9155300b1f625809aa10225a183aaee91a166a",
+        "agent_run_trace.jsonl": "b90dda1b4b97dadfb78bcacb59da70847775d2e4352b5d30a3c7a77080c84bbc"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.ct_segmentation_quality_v1",
+      "pack": "verifiers/ct_segmentation_quality_v1",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "1861413317151a184d1057c598b8ee0978e918941a038cac87c6c9522890fde0",
+        "validation_summary.json": "11145cb7238a75ed75924646959f45eaf44a2c1fd30dc3f7f9441a7dfda2b0ee",
+        "output.json": "e43c024e3f842ce1dffde4529c6444216360aca7a31327467d0227c3d0734196",
+        "provenance.json": "160460cccf3cef829d08883b81eb0687a14657b6051d815916dba0c4deef04db",
+        "agent_run_trace.jsonl": "f16c45c4a9c6a5e997a200038d8b5f63329c3784ed20c48abfe49cf57fe5efae"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "passed",
+  "curation_note": "Committed NV-Segment-CTMR trust anchor omits the generated CT-body NIfTI label map. The verifier loaded the artifact during the trusted run; skill and verifier outputs record the output path, label inventory, geometry, organ-volume plausibility, and verifier verdict. Engineering evidence only; not a clinical or regulatory artifact."
+}

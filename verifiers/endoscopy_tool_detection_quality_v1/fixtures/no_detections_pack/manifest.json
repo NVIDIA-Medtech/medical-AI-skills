@@ -1,0 +1,5 @@
+{
+  "run_id": "fixture-no-detections",
+  "skill_id": "holohub_endoscopy_tool_tracking",
+  "skill_version": "0.1.0"
+}

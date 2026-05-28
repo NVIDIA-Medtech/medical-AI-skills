@@ -1,0 +1,41 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "23653247fb09",
+  "skill_id": "medagent.verifiers.dicom_volume_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/dicom_volume_quality_v1",
+  "repo_git_sha": "561dfc70254ab27a2ed817771879f3a6b71d27b6",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/validation_summary.json",
+    "fixtures/shape_mismatch_pack/manifest.json",
+    "fixtures/shape_mismatch_pack/output.json",
+    "fixtures/shape_mismatch_pack/validation_summary.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_dicom_volume_grade.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run",
+    "sha256": "6da956bac64e68cb9d178dc29ac03d91d4d43e4f0989d31e76a7493c2cfddfdc",
+    "size_bytes": 34637,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/dicom_volume_quality_v1/scripts/grade.py",
+    "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

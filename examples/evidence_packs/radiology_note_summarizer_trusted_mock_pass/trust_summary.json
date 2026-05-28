@@ -1,0 +1,73 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "fedd32cdee78",
+  "produced_at": "2026-05-26T01:59:46.543099+00:00",
+  "skill_id": "radiology_note_summarizer",
+  "skill_version": "0.1.0",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.radiology_note_summary_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/radiology_note_summary_quality_v1",
+      "exit_code": 0,
+      "overall": "passed",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "309df7ac1f6cba68785e851414e53155d02ef77123a34cee71b0d0f99a1f2200",
+        "validation_summary.json": "693969f0e090de0361e1934cab7a9ba4f4855ca131c0359024fc572ebc10ead8",
+        "output.json": "329fc2a515ebd23bfe0419b58ed3b7e695fdbd2224f40ed99179d21ff1d54522",
+        "provenance.json": "f0d03853a7f649253ea8961c32f81c09741f85fc0bcf4f160b5d50f2c977d0e3",
+        "agent_run_trace.jsonl": "1c40b026c103b2c036cebcd35a4eeb27f35ed05fb968d6341907d715a3ac33dd"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 0,
+      "semantic_overall": "pass",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 0,
+      "failure_findings": [],
+      "warning_findings": []
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.radiology_note_summary_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "radiology_note_summarizer",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "a4657aa8f44f47626f09a231887d50d36da631ebd8d24dafd2ccd9f6b316bcb9",
+        "validation_summary.json": "348637d3b306f8a9f01acb34f6832af16403e01225dc2a4afa5dd99a6a14d83d",
+        "output.json": "cd825bec59d20eb3cffc8411b5b7f28e612f7217d0f153f6805178895da3822f",
+        "provenance.json": "8718a33ec247a214721035eb1c128e23c358dd220d632bc29b7a4ccbce47a129",
+        "agent_run_trace.jsonl": "54051342a994b0b5127ce4304a9328818422344d8dd1d2f459abb0575b84b288"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.radiology_note_summary_quality_v1",
+      "pack": "verifiers/radiology_note_summary_quality_v1",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "309df7ac1f6cba68785e851414e53155d02ef77123a34cee71b0d0f99a1f2200",
+        "validation_summary.json": "693969f0e090de0361e1934cab7a9ba4f4855ca131c0359024fc572ebc10ead8",
+        "output.json": "329fc2a515ebd23bfe0419b58ed3b7e695fdbd2224f40ed99179d21ff1d54522",
+        "provenance.json": "f0d03853a7f649253ea8961c32f81c09741f85fc0bcf4f160b5d50f2c977d0e3",
+        "agent_run_trace.jsonl": "1c40b026c103b2c036cebcd35a4eeb27f35ed05fb968d6341907d715a3ac33dd"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "passed"
+}

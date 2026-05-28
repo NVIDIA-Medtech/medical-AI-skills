@@ -1,0 +1,32 @@
+{
+  "run_id": "62bde3a868ee",
+  "skill_id": "holohub_imaging_ai_segmentator",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/holohub-imaging-ai-segmentator",
+  "environment": {
+    "fingerprint": "7b37b2170f57f5e7",
+    "pip_freeze_lines": 385,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/build_dicom_from_nifti.py",
+    "scripts/run_holohub_app.py",
+    "skill_manifest.yaml",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": ".workbench_data/holohub_input/spleen_10",
+    "sha256": "1b6cc0633a91ab31b8938d1c585afb186556a15f96dfdd4dcca577ee1cc4b937",
+    "size_bytes": 28903998,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "skills/holohub-imaging-ai-segmentator/scripts/run_holohub_app.py",
+    ".workbench_data/holohub_input/spleen_10"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

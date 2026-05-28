@@ -1,0 +1,203 @@
+id: medagent.holohub_flow_benchmark
+version: 0.1.0
+upstream_refs:
+  - kind: github_repo
+    name: nvidia-holoscan/holohub
+    repo_url: https://github.com/nvidia-holoscan/holohub
+    git_commit: 90e0af6b2fa938d2bfa93237d177c76e4763158a
+    notes: benchmarks/holoscan_flow_benchmarking
+license: Apache-2.0
+# Transport declaration per medtech-platform brief §15.16. Anthropic Skill
+# is the current MVP transport; an MCP-tool adapter is planned.
+transport: anthropic-skill
+intended_use:
+  summary: >
+    Run HoloHub's official Holoscan Flow Benchmarking toolchain for a
+    HoloHub application. The wrapper optionally performs the documented
+    `./holohub build ... --benchmark` step, invokes
+    `benchmarks/holoscan_flow_benchmarking/benchmark.py`, inventories
+    `logger_*` and optional `gpu_utilization_*` artifacts, parses
+    data-flow tracking logs into latency metrics, and can enforce an
+    app-specific YAML contract.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - intra-operative guidance
+    - autonomous diagnosis
+    - regulatory submission
+    - model-output quality claims
+
+inputs:
+  - name: benchmark_fixture
+    type: directory_path
+    formats: [benchmark_placeholder]
+    description: >
+      Placeholder directory used by eval_engine's fixed fixture boundary.
+      Benchmark data selection is controlled by the HoloHub app and by
+      HOLOHUB_BENCHMARK_RUN_COMMAND when custom app args are required.
+    fixture_help: >
+      Use skills/holohub-flow-benchmark/fixtures/default. Set
+      HOLOHUB_ROOT and HOLOHUB_BENCHMARK_APP before running; optionally
+      set HOLOHUB_BENCHMARK_CONTRACT to a YAML file under contracts/.
+
+outputs:
+  - name: benchmark_logs
+    type: directory_path
+    formats: [holoscan_flow_logger, gpu_utilization_csv]
+  - name: result_json
+    type: json
+    schema: validators/output_schema.json
+
+paired_verifiers:
+  - id: medagent.verifiers.holohub_flow_benchmark_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+    purpose: >
+      Recomputes benchmark evidence quality from the source pack: logger
+      artifact inventory and hashes, scheduler coverage, latency sample
+      presence, benchmark-log completion, optional GPU-utilization artifact
+      consistency, app-specific contract assertions, and non-clinical scope
+      disclosure. This is an engineering-performance trust floor, not a
+      clinical, surgical, or model-quality assessment.
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_flow_benchmark.py
+  env_required:
+    - HOLOHUB_ROOT
+    - HOLOHUB_BENCHMARK_APP
+  env_optional:
+    - HOLOHUB_BENCHMARK_CONTRACT
+    - HOLOHUB_BENCHMARK_RUN_MODE
+    - HOLOHUB_BENCHMARK_LANGUAGE
+    - HOLOHUB_BENCHMARK_SCHEDULERS
+    - HOLOHUB_BENCHMARK_RUNS
+    - HOLOHUB_BENCHMARK_INSTANCES
+    - HOLOHUB_BENCHMARK_MESSAGES
+    - HOLOHUB_BENCHMARK_WORKER_THREADS
+    - HOLOHUB_BENCHMARK_MONITOR_GPU
+    - HOLOHUB_BENCHMARK_GPU
+    - HOLOHUB_BENCHMARK_BUILD
+    - HOLOHUB_BENCHMARK_NO_DOCKER_BUILD
+    - HOLOHUB_BENCHMARK_CONTAINER_ARGS
+    - HOLOHUB_BENCHMARK_BUILD_ARGS
+    - HOLOHUB_BENCHMARK_RUN_COMMAND
+    - HOLOHUB_BENCHMARK_OUTPUT_DIR
+    - HOLOHUB_BENCHMARK_CLEAN_OUTPUT
+    - HOLOHUB_BENCHMARK_TIMEOUT_SECONDS
+    - HOLOHUB_BENCHMARK_SKIP_BEGIN_MESSAGES
+    - HOLOHUB_BENCHMARK_DISCARD_LAST_MESSAGES
+    - HOLOHUB_BENCHMARK_SMOKE              # true => 5-message contract-lint, no latency-budget assertions
+    - DISPLAY
+    - NVIDIA_VISIBLE_DEVICES
+  dependencies:
+    pyyaml: ">=6.0"
+  test_dependencies:
+    jsonschema: ">=4.0"
+  external_assets:
+    - kind: github_app
+      repo: nvidia-holoscan/holohub
+      path: benchmarks/holoscan_flow_benchmarking
+      install_command: |
+        git clone https://github.com/nvidia-holoscan/holohub.git $HOLOHUB_ROOT
+        cd $HOLOHUB_ROOT
+        ./holohub run-container --extra-scripts benchmarking <app>
+    - kind: docker_image
+      reference: holohub-<app>:main
+      pulled_by: ./holohub build <app> --benchmark
+  side_effects:
+    pip_packages:
+      - pyyaml>=6.0
+    local_writes:
+      - {path: "$HOLOHUB_ROOT/build/<app>/flow_benchmark_output", approx_mb_max: 5000}
+      - {path: "$HOLOHUB_ROOT/build/<app>/", approx_mb_max: 10000}
+    home_writes:
+      - {path: /var/lib/docker/, approx_mb_max: 20000}
+    network_endpoints:
+      - https://github.com
+      - https://nvcr.io
+    requires_docker: true
+    requires_gpu: cuda
+    env_required:
+      - HOLOHUB_ROOT
+      - HOLOHUB_BENCHMARK_APP
+    env_optional:
+      - HOLOHUB_BENCHMARK_CONTRACT
+      - HOLOHUB_BENCHMARK_RUN_COMMAND
+
+cost:
+  # Per-invocation agent-overhead token cost measured by NeMo Agent Toolkit
+  # (NAT) profiler — the cost an LLM-driven agent pays to call this skill
+  # once. The skill itself emits zero tokens. See tools/nat_audit/README.md
+  # for methodology (pinned model, agent type, tool registry size).
+  token_estimate:
+    common:
+      model: meta/llama-3.3-70b-instruct
+      agent_type: tool_calling_agent
+      measured_at: 2026-05-16
+      methodology: tools/nat_audit/README.md
+    isolated_tool_call:
+      prompt_tokens: 2244
+      completion_tokens: 43
+      total_tokens: 2287
+      llm_calls: 2
+      n_tools_in_workflow: 9
+    end_to_end_workflow:                 # SKILL.md ~2500 tok (env-var-heavy doc)
+      prompt_tokens: 9744
+      completion_tokens: 83
+      total_tokens: 9827
+      llm_calls: 3
+      n_tools_in_workflow: 11
+      scenario: realistic_user_workflow
+
+limitations:
+  - >
+    This wraps HoloHub's performance instrumentation only. It does not
+    measure model correctness, tool-count quality, segmentation quality,
+    or bounding-box validity.
+  - >
+    Contract assertions check file presence, optional sha256 pins,
+    operator-path presence, scheduler coverage, and declared latency
+    budgets. They do not prove clinical or domain quality.
+  - >
+    The default mode executes inside the HoloHub benchmarking container
+    created with `./holohub run-container --extra-scripts benchmarking`.
+    Bare-metal runs require HOLOHUB_BENCHMARK_RUN_MODE=local and host
+    installation of benchmark and application dependencies.
+  - >
+    TensorRT-backed applications should be warmed once before collecting
+    latency numbers so engine generation is not mixed into steady-state
+    performance.
+
+validation:
+  expected_runtime_seconds:
+    min: 1.0
+    max: 3600.0
+    inference_path: runtime.total_seconds
+  sanity_checks:
+    - {path: skill, eq: holohub_flow_benchmark}
+    - {path: invocation.holohub_commit, ne: ""}
+    - {path: invocation.benchmark_exit_code, eq: 0}
+    - {path: plan.schedulers, length_gte: 1}
+    - {path: output.logger.count, gte: 1}
+    - {path: analysis.paths_observed, gte: 1}
+    - {path: analysis.total_latency_samples, gt: 0}
+    - {path: domain.logger_count_matches_plan, eq: true}
+    - {path: domain.scheduler_coverage_complete, eq: true}
+    - {path: contract.assertions.all_required_assertions_passed, eq: true}
+  expected_cost:
+    wall_seconds: {min: 1, max: 3600}
+    cpu_seconds: {max: 3600}
+    gpu_seconds: {min: 0.0, max: 3600}
+    gpu_memory_mb_peak: {min: 0, max: 25000}
+    rss_mb_peak: {max: 8000}
+  reproducibility:
+    mode: preflight
+    fixture: fixtures/default
+    runs: 2
+    reason: >
+      End-to-end benchmark repeats require a HoloHub checkout, benchmark
+      container or local app dependencies, and app-specific data. The
+      repository audit repeats the declared input/env boundary check.

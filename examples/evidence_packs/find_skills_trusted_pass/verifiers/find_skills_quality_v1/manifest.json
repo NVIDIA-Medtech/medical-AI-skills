@@ -1,0 +1,41 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "84a41bfa1dbe",
+  "skill_id": "medagent.verifiers.find_skills_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/find_skills_quality_v1",
+  "repo_git_sha": "561dfc70254ab27a2ed817771879f3a6b71d27b6",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/bad_path_pack/manifest.json",
+    "fixtures/bad_path_pack/output.json",
+    "fixtures/bad_path_pack/validation_summary.json",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/validation_summary.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_find_skills_grade.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "examples/evidence_packs/find_skills_trusted_pass/skill_run",
+    "sha256": "611c42d594b9d4792f52cda4f823986619f4abbd3f7d72321878310c05a67643",
+    "size_bytes": 40701,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/find_skills_quality_v1/scripts/grade.py",
+    "examples/evidence_packs/find_skills_trusted_pass/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

@@ -1,0 +1,197 @@
+{
+  "invocation": {
+    "holohub_root": "<home>/Documents/holohub",
+    "holohub_commit": "30534c4922a48d3304857f3762730e34c0ef1345",
+    "mode": "container",
+    "language": "python",
+    "source": "replayer",
+    "record_type": "visualizer",
+    "postprocessor": "tool_tracking_postprocessor",
+    "config_path": "<repo>/skills/holohub-endoscopy-tool-tracking/fixtures/configs/endoscopy_workflow_trusted.yaml",
+    "data_dir": "<home>/Documents/holohub/data/endoscopy",
+    "command": [
+      "./holohub",
+      "run",
+      "endoscopy_tool_tracking",
+      "--language",
+      "python",
+      "--run-args=-s replayer -r visualizer -p tool_tracking_postprocessor -c /workspace/holohub/build/endoscopy_tool_tracking/workbench_configs/endoscopy_workflow_trusted.yaml"
+    ],
+    "exit_code": 0,
+    "container_image": "holohub-endoscopy_tool_tracking:main",
+    "container_image_id": "sha256:35221ba8dfdad1605b23ba639d2ed88a4d5382c8e4512aa3d1d1a5e5c69edad9",
+    "container_provenance": {
+      "image_ref": "holohub-endoscopy_tool_tracking:main",
+      "inspect": {
+        "status": "ok",
+        "id": "sha256:35221ba8dfdad1605b23ba639d2ed88a4d5382c8e4512aa3d1d1a5e5c69edad9",
+        "repo_tags": [
+          "holohub-endoscopy_tool_tracking:90e0af6b2fa9",
+          "holohub-endoscopy_tool_tracking:main",
+          "holohub:endoscopy_tool_tracking"
+        ],
+        "labels": {
+          "com.nvidia.build.id": "280215355",
+          "com.nvidia.build.ref": "dc058d9a75f3d1a699daef7e45a3c946bd06e321",
+          "com.nvidia.cublas.version": "13.3.0.5",
+          "com.nvidia.cublasmp.version": "0.8.0.2023",
+          "com.nvidia.cuda.version": "9.0",
+          "com.nvidia.cudla.version": "13.2.51",
+          "com.nvidia.cudnn.version": "9.20.0.48",
+          "com.nvidia.cufft.version": "12.2.0.37",
+          "com.nvidia.curand.version": "10.4.2.51",
+          "com.nvidia.cusolver.version": "12.1.0.51",
+          "com.nvidia.cusparse.version": "12.7.9.17",
+          "com.nvidia.cusparselt.version": "0.9.0.3",
+          "com.nvidia.nccl.version": "2.29.7",
+          "com.nvidia.npp.version": "13.1.0.44",
+          "com.nvidia.nsightcompute.version": "2026.1.0.9",
+          "com.nvidia.nsightsystems.version": "2026.1.2.63",
+          "com.nvidia.nvjpeg.version": "13.0.4.44",
+          "com.nvidia.nvvm.version": "13.2.51",
+          "com.nvidia.tensorrt.version": "10.16.0.72",
+          "com.nvidia.tensorrtoss.version": "",
+          "com.nvidia.volumes.needed": "nvidia_driver",
+          "org.opencontainers.image.ref.name": "ubuntu",
+          "org.opencontainers.image.version": "24.04"
+        },
+        "env": [
+          "PATH=/opt/tensorrt/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/mpi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/ucx/bin:/opt/amazon/efa/bin:/opt/nvidia/holoscan/bin:/opt/nvidia/hololink/bin",
+          "GDRCOPY_VERSION=2.5.1",
+          "HPCX_VERSION=2.26",
+          "MOFED_VERSION=5.4-rdmacore59.1",
+          "OPENUCX_VERSION=1.20.0",
+          "OPENMPI_VERSION=4.1.7",
+          "RDMACORE_VERSION=59.1",
+          "EFA_VERSION=1.46.0",
+          "AWS_OFI_NCCL_VERSION=1.17.3",
+          "OPAL_PREFIX=/usr/local/mpi",
+          "OMPI_MCA_coll_hcoll_enable=0",
+          "CUDA_VERSION=13.2.0.046",
+          "CUDA_DRIVER_VERSION=595.45.04",
+          "NVVM_VERSION=13.2.51",
+          "DOCA_VERSION=3.2.0",
+          "_CUDA_COMPAT_PATH=/usr/local/cuda/compat",
+          "ENV=/etc/shinit_v2",
+          "BASH_ENV=/etc/bash.bashrc",
+          "SHELL=/bin/bash",
+          "NVIDIA_REQUIRE_CUDA=cuda>=9.0",
+          "NCCL_VERSION=2.29.7",
+          "CUBLAS_VERSION=13.3.0.5",
+          "CUFFT_VERSION=12.2.0.37",
+          "CURAND_VERSION=10.4.2.51",
+          "CUSPARSE_VERSION=12.7.9.17",
+          "CUSPARSELT_VERSION=0.9.0.3",
+          "CUSOLVER_VERSION=12.1.0.51",
+          "NPP_VERSION=13.1.0.44",
+          "NVJPEG_VERSION=13.0.4.44",
+          "CUFILE_VERSION=1.17.0.44",
+          "NVJITLINK_VERSION=13.2.51",
+          "NVFATBIN_VERSION=13.2.51",
+          "CUBLASMP_VERSION=0.8.0.2023",
+          "NVSHMEM_VERSION=3.5.21",
+          "CUDLA_VERSION=13.2.51",
+          "NVPTXCOMPILER_VERSION=13.2.51",
+          "CUDNN_VERSION=9.20.0.48",
+          "CUDNN_FRONTEND_VERSION=1.18.0",
+          "TRT_VERSION=10.16.0.72",
+          "TRTOSS_VERSION=",
+          "NSIGHT_SYSTEMS_VERSION=2026.1.2.63",
+          "NSIGHT_COMPUTE_VERSION=2026.1.0.9",
+          "DALI_VERSION=2.0.0",
+          "DALI_BUILD=",
+          "DALI_URL_SUFFIX=130",
+          "POLYGRAPHY_VERSION=0.49.26",
+          "TRANSFORMER_ENGINE_VERSION=2.13",
+          "MODEL_OPT_VERSION=0.41.0",
+          "CUDA_ARCH_LIST=7.5 8.0 8.6 9.0 10.0 12.0",
+          "MAXSMVER=",
+          "NVRX_VERSION=0.5.0",
+          "NIXL_VERSION=0.10.0",
+          "CUTILE_PYTHON_VERSION=1.1.0",
+          "LD_LIBRARY_PATH=/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64",
+          "NVIDIA_VISIBLE_DEVICES=all",
+          "NVIDIA_DRIVER_CAPABILITIES=all",
+          "NVIDIA_PRODUCT_NAME=NVIDIA Holoscan SDK",
+          "CUDA_COMPONENT_LIST=cccl crt nvrtc driver-dev culibos-dev cudart cudart-dev nvcc tileiras",
+          "LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64/stubs:",
+          "TENSORRT_VERSION=10.16.0.72",
+          "NVIDIA_TENSORRT_VERSION=26.03",
+          "TENSORRT_OSS_VERSION=master",
+          "PIP_BREAK_SYSTEM_PACKAGES=1",
+          "TRT_LIBPATH=/usr/local/cuda/lib64",
+          "TRT_WORKSPACE=/workspace/tensorrt",
+          "NVIDIA_BUILD_ID=280215355",
+          "CUDA_PATH=/usr/local/cuda",
+          "CUPY_CACHE_DIR=/tmp/.cupy/kernel_cache",
+          "CCCL_DIR=/opt/nvidia/CCCL",
+          "HOLOSCAN_INPUT_PATH=/workspace/holohub/data",
+          "ONNX_RUNTIME=/opt/onnxruntime/1.24.2",
+          "CMAKE_PREFIX_PATH=:/opt/nvidia/holoscan:/opt/nvidia/hololink",
+          "HOLOSCAN_LIB_PATH=/opt/nvidia/holoscan/lib",
+          "PYTHONPATH=/opt/nvidia/holoscan/python/lib:/opt/nvidia/hololink/python",
+          "HOLOSCAN_SDK_VERSION=4.2.0"
+        ]
+      },
+      "pip_freeze": {
+        "status": "ok",
+        "pip_freeze_lines": 40,
+        "pip_freeze_text": "cloudpickle==3.1.2\ncuda-bindings==13.2.0\ncuda-core==0.6.0\ncuda-pathfinder==1.4.1\ncuda-python==13.1.1\ncuda-toolkit==13.0.2\ncupy-cuda13x==14.0.1\nfilelock==3.29.0\nfsspec==2026.3.0\nJinja2==3.1.6\nllvmlite==0.46.0\nMarkupSafe==3.0.3\nmpmath==1.3.0\nnetworkx==3.6.1\nnumba==0.64.0\nnumba-cuda==0.28.2\nnumpy==2.4.4\nnvidia-cublas==13.1.0.3\nnvidia-cuda-cccl==13.2.27\nnvidia-cuda-cupti==13.0.85\nnvidia-cuda-nvrtc==13.0.88\nnvidia-cuda-runtime==13.0.96\nnvidia-cufft==12.0.0.61\nnvidia-cufile==1.15.1.6\nnvidia-curand==10.4.0.35\nnvidia-cusolver==12.0.4.66\nnvidia-cusparse==12.6.3.3\nnvidia-nvjitlink==13.0.88\nnvidia-nvtx==13.0.85\nnvidia-nvvm==13.2.51\nnvtx==0.2.15\npackaging==26.0\npillow==12.2.0\npolygraphy==0.49.33\nsetuptools==68.1.2\nsympy==1.14.0\ntensorrt @ file:///TensorRT-10.16.0.72/python/tensorrt-10.16.0.72-cp312-none-linux_x86_64.whl#sha256=9a0d9a0c1d849d1d76bf0015a890a1f4d87cf552abbe2a962a44e4dc6450782f\ntorch==2.11.0+cu130\ntyping_extensions==4.15.0\nwheel==0.42.0\n"
+      }
+    },
+    "model_path": "<home>/Documents/holohub/data/endoscopy/tool_loc_convlstm.onnx",
+    "model_sha256": "d05733d49187f10975eafd762001f4535f5029fd071ca39779f953c7886a3c18",
+    "fixture": "default",
+    "recording_output_dir": "<home>/Documents/holohub/build/endoscopy_tool_tracking/recording_output"
+  },
+  "output": {
+    "gxf": {
+      "count": 2,
+      "total_bytes": 147596640,
+      "files": [
+        {
+          "path": "tensor.gxf_entities",
+          "bytes": 147593760,
+          "sha256": "3c2212f6d4a492046ac40f88e168c3aa2e0fa369d571d4f8df575229a7e13c0d"
+        },
+        {
+          "path": "tensor.gxf_index",
+          "bytes": 2880,
+          "sha256": "aa724e414d38700dc6e1da7afe491c60699d14bf5c21c2bcdde91e2b1c80ce7c"
+        }
+      ]
+    },
+    "video": {
+      "count": 0,
+      "total_bytes": 0,
+      "files": []
+    },
+    "other": {
+      "count": 1,
+      "total_bytes": 925,
+      "files": [
+        {
+          "path": "tool_detections.jsonl",
+          "bytes": 925,
+          "sha256": "fc2cedcce06fb044813ab2c35ef0f1c65152f4cb8f67a6f64d1fbc3c1813dc45"
+        }
+      ]
+    },
+    "recording_file_count": 3,
+    "recording_total_bytes": 147597565,
+    "recording_written_ok": true
+  },
+  "detection_export": {
+    "enabled": true,
+    "method": "log_parse",
+    "path": "tool_detections.jsonl",
+    "frames_written": 7
+  },
+  "runtime": {
+    "subprocess_seconds": 8.275551575003192
+  },
+  "logs": {
+    "stdout_tail": "...kspace/holohub/applications/endoscopy_tool_tracking/python/endoscopy_tool_tracking.py /workspace/holohub/build/endoscopy_tool_tracking/applications/endoscopy_tool_tracking/python\nRunning endoscopy_tool_tracking in 'replayer' mode\nINFO: HOLOSCAN_CLI_ENABLE_SCCACHE=false\n2026-05-26 05:02:57 $ cmake -B /workspace/holohub/build/endoscopy_tool_tracking -S /workspace/holohub --no-warn-unused-cli -DPython3_EXECUTABLE=/usr/bin/python3 -DPython3_ROOT_DIR=/usr -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/opt/nvidia/holoscan/lib -DHOLOHUB_DATA_DIR:PATH=/workspace/holohub/data -DAPP_endoscopy_tool_tracking=ON -G Ninja -DHOLOHUB_BUILD_PYTHON=ON -DHOLOHUB_BUILD_CPP=OFF -DHOLOHUB_BUILD_PYTHON=ON\n2026-05-26 05:02:58 $ cmake --build /workspace/holohub/build/endoscopy_tool_tracking --config Release -j 16\n2026-05-26 05:02:58 $ cd /workspace/holohub/build/endoscopy_tool_tracking\n2026-05-26 05:02:58 $ python3 /workspace/holohub/applications/endoscopy_tool_tracking/python/endoscopy_tool_tracking.py --data /workspace/holohub/data/endoscopy -s replayer -r visualizer -p tool_tracking_postprocessor -c /workspace/holohub/build/endoscopy_tool_tracking/workbench_configs/endoscopy_workflow_trusted.yaml\nRunning endoscopy_tool_tracking in 'replayer' mode\n2026-05-26 05:02:56 $ docker buildx version\n2026-05-26 05:02:56 $ docker build --build-arg BUILDKIT_INLINE_CACHE=1 --build-arg BASE_IMAGE=holohub:base-v4.2.0-cuda13 --build-arg GPU_TYPE=dgpu --build-arg BASE_SDK_VERSION=4.2.0 --build-arg COMPUTE_CAPACITY=8.9 --build-arg CUDA_MAJOR=13 --network=host --build-context holoscan-cli-src=<home>/Documents/holoscan-cli -f <home>/Documents/holohub/Dockerfile -t holohub-endoscopy_tool_tracking:prototype-cli-consolidation-coordination -t holohub-endoscopy_tool_tracking:30534c4922a4 -t holohub:ngc-v4.2.0-cuda13 <home>/Documents/holohub\n2026-05-26 05:02:56 $ docker inspect \"--format={{json .Config.Entrypoint}}\" holohub:ngc-v4.2.0-cuda13\nINFO: No DISPLAY or WAYLAND_DISPLAY set; skipping display forwarding.\n2026-05-26 05:02:56 $ docker inspect --format \"{{range .Config.Env}}{{println .}}{{end}}\" holohub-endoscopy_tool_tracking:prototype-cli-consolidation-coordination\n2026-05-26 05:02:56 $ docker run --net host --interactive --cidfile /tmp/holohub-container-202812.cid -u 1000:1000 -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -v <home>/Documents/holohub:/workspace/holohub -w /workspace/holohub --runtime nvidia --cap-add CAP_SYS_PTRACE --ipc=host -v /dev:/dev --device-cgroup-rule \"c 81:* rmw\" --device-cgroup-rule \"c 189:* rmw\" -e NVIDIA_DRIVER_CAPABILITIES=graphics,video,compute,utility,display -e NVIDIA_VISIBLE_DEVICES=all -e HOME=/workspace/holohub -e CUPY_CACHE_DIR=/workspace/holohub/.cupy/kernel_cache -e HOLOSCAN_CLI_BUILD_LOCAL=1 -e CMAKE_BUILD_PARALLEL_LEVEL=16 --rm --ipc=host --cap-add=CAP_SYS_PTRACE --ulimit=memlock=-1 --ulimit=stack=67108864 --device /dev/video3 --device /dev/video2 --device /dev/video1 --device /dev/video0 --device /dev/snd/controlC3 --device /dev/snd/controlC0 --device /dev/snd/controlC2 --device /dev/snd/pcmC3D2c --device /dev/snd/pcmC3D0c --device /dev/snd/pcmC3D0p --device /dev/snd/pcmC0D9p --device /dev/snd/pcmC0D8p --device /dev/snd/pcmC2D8p --device /dev/snd/pcmC0D7p --device /dev/snd/pcmC0D3p --device /dev/snd/pcmC2D7p --device /dev/snd/pcmC2D3p --device /dev/snd/timer --device /dev/snd/seq --device /dev/nvidia-modeset -v /usr/share/nvidia/nvoptix.bin:/usr/share/nvidia/nvoptix.bin:ro --group-add 44 --group-add 110 --group-add 999 --group-add 29 -e PYTHONPATH=/opt/nvidia/holoscan/python/lib:/opt/nvidia/hololink/python:/workspace/holohub/benchmarks/holoscan_flow_benchmarking --entrypoint=/bin/bash holohub-endoscopy_tool_tracking:prototype-cli-consolidation-coordination -c \"holoscan run endoscopy_tool_tracking --language python --local --run-args='-s replayer -r visualizer -p tool_tracking_postprocessor -c /workspace/holohub/build/endoscopy_tool_tracking/workbench_configs/endoscopy_workflow_trusted.yaml'\"\n",
+    "stderr_tail": "..._id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[warning] [std_entity_serializer.cpp:200] No serializer found for component 'cuda_stream_id_' with type ID 0x7982aeac37f141beade86f00b4b5d47c\n[info] [video_stream_replayer.cpp:246] Reach end of file or playback count reaches to the limit. Stop ticking.\n[info] [greedy_scheduler.cpp:405] Scheduler stopped: Some entities are waiting for execution, but there are no periodic or async entities to get out of the deadlock.\n[info] [greedy_scheduler.cpp:435] Scheduler finished.\n[info] [gxf_executor.cpp:2930] [Endoscopy App] Deactivating Graph...\n[info] [gxf_executor.cpp:2939] [Endoscopy App] Graph execution finished.\n[info] [gxf_executor.cpp:601] [Endoscopy App] Destroying context\n"
+  }
+}

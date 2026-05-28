@@ -1,0 +1,23 @@
+id: examples.anti_patterns.sloppy_skill
+version: 0.1.0
+license: Apache-2.0
+# DELIBERATE VIOLATION: intended_use is missing — should be a top-level field
+inputs:
+  - name: stub
+    type: file_path
+outputs:
+  - name: stub_result
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  # DELIBERATE VIOLATION: this file does not exist on disk
+  entrypoint: scripts/missing_entrypoint.py
+  # DELIBERATE VIOLATION: no runtime.side_effects block
+validation:
+  # DELIBERATE VIOLATION: every sanity_check uses only `exists` (trivial)
+  sanity_checks:
+    - {path: status, exists: true}
+    - {path: result, exists: true}
+# DELIBERATE VIOLATION: no fixtures/ directory under this skill

@@ -1,0 +1,11 @@
+{
+  "dicom_metadata": {
+    "StudyInstanceUID": "SYNTH-STUDY-003",
+    "PatientID": "SYNTH-003",
+    "Modality": "CT",
+    "BodyPartExamined": "CHEST",
+    "StudyDate": "20251104",
+    "StudyDescription": "CT CHEST W/CONTRAST"
+  },
+  "radiologist_note": "55-year-old male, follow-up of prior pulmonary nodule. CT chest with contrast: stable 6 mm right upper lobe ground-glass nodule, unchanged from prior 6 months. No new nodules. No mediastinal lymphadenopathy. Continue surveillance per Fleischner guidelines."
+}

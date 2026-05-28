@@ -1,0 +1,25 @@
+{
+  "skill": "find_skills",
+  "input": {
+    "query": "segment a CT NIfTI volume"
+  },
+  "catalog": {
+    "count": 1
+  },
+  "top_recommendation": {
+    "id": "medagent.nv_segment_ct",
+    "path": "skills/missing-skill",
+    "kind": "skill",
+    "score": 12
+  },
+  "recommendations": [
+    {
+      "id": "medagent.nv_segment_ct",
+      "path": "skills/missing-skill",
+      "kind": "skill",
+      "score": 12
+    }
+  ],
+  "no_fit": false,
+  "intended_use_disclaimer": "Engineering selection aid only. Verify the chosen skill's manifest, side effects, and limitations before running it."
+}

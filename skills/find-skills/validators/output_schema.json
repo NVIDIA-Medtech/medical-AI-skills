@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "find_skills output",
+  "type": "object",
+  "required": [
+    "skill",
+    "input",
+    "catalog",
+    "top_recommendation",
+    "recommendations",
+    "no_fit",
+    "intended_use_disclaimer"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "skill": {"const": "find_skills"},
+    "input": {
+      "type": "object",
+      "required": ["query"],
+      "additionalProperties": false,
+      "properties": {
+        "query": {"type": "string", "minLength": 1}
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "required": ["count"],
+      "additionalProperties": false,
+      "properties": {
+        "count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/recommendation"}
+    },
+    "top_recommendation": {"$ref": "#/$defs/recommendation"},
+    "no_fit": {"type": "boolean"},
+    "intended_use_disclaimer": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "recommendation": {
+      "type": "object",
+      "required": [
+        "id",
+        "path",
+        "kind",
+        "summary",
+        "scope",
+        "not_for",
+        "inputs",
+        "outputs",
+        "paired_verifiers",
+        "requires_gpu",
+        "requires_docker",
+        "limitations",
+        "score",
+        "matched_terms",
+        "rationale",
+        "caveats"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "enum": ["skill", "verifier"]},
+        "summary": {"type": "string"},
+        "scope": {"type": "string"},
+        "not_for": {"type": "array", "items": {"type": "string"}},
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "formats"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string"},
+              "type": {"type": "string"},
+              "formats": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "formats"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string"},
+              "type": {"type": "string"},
+              "formats": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "paired_verifiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        },
+        "requires_gpu": {"type": ["string", "boolean", "null"]},
+        "requires_docker": {"type": "boolean"},
+        "limitations": {"type": "array", "items": {"type": "string"}},
+        "score": {"type": "integer", "minimum": 0},
+        "matched_terms": {"type": "array", "items": {"type": "string"}},
+        "rationale": {"type": "string"},
+        "caveats": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "25a7025a9db1",
+  "produced_at": "2026-05-26T03:10:22.459535+00:00",
+  "skill_id": "holohub_imaging_ai_segmentator",
+  "skill_version": "0.1.0",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.holohub_imaging_segmentation_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/holohub_imaging_segmentation_quality_v1",
+      "exit_code": 0,
+      "overall": "passed",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "ea58b963fbff189dfead1366e128bc2042155e9d0e83941a82d92f5c36701dbb",
+        "validation_summary.json": "f2c73ae4e4b1c5742171dab9aa2714fcb83c24d4ad41a889949ccac2f371233a",
+        "output.json": "741724ce5b2d1fdbba122678adc59d651b2ac85a90864d52ffb3e1478a5e476a",
+        "provenance.json": "08b360abb5534c9127648ffaa5d6517b513fd1c0b3dbfd479c4631230a9abc28",
+        "agent_run_trace.jsonl": "0d583ffe5397ddc113e1e6dbb584caae52cb61a255a81b2eada5241f6340f4b8"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 0,
+      "semantic_overall": "pass",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 0,
+      "failure_findings": [],
+      "warning_findings": []
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.holohub_imaging_segmentation_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "holohub_imaging_ai_segmentator",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "bd83b3bb86fad20d40682ba9f0c208bee8e4ea7b67a77bc19ba6ed97e8225ee9",
+        "validation_summary.json": "9f0df9bc3294e94572177075fa0d3440464c87849dc3cc795a5abadbad5f9b9e",
+        "output.json": "bc8f92e526e739b9e4397edc4db5097e822e14a9b6891687f3900a460643b620",
+        "provenance.json": "8be48748c52f7daa8c089e3a7705777372c1805e888f89990d9eb015a141f98c",
+        "agent_run_trace.jsonl": "b4de33262cfa4ab5453571d3212406daa9b7aa63511fb14077e7e02a2a60224f"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.holohub_imaging_segmentation_quality_v1",
+      "pack": "verifiers/holohub_imaging_segmentation_quality_v1",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "ea58b963fbff189dfead1366e128bc2042155e9d0e83941a82d92f5c36701dbb",
+        "validation_summary.json": "f2c73ae4e4b1c5742171dab9aa2714fcb83c24d4ad41a889949ccac2f371233a",
+        "output.json": "741724ce5b2d1fdbba122678adc59d651b2ac85a90864d52ffb3e1478a5e476a",
+        "provenance.json": "08b360abb5534c9127648ffaa5d6517b513fd1c0b3dbfd479c4631230a9abc28",
+        "agent_run_trace.jsonl": "0d583ffe5397ddc113e1e6dbb584caae52cb61a255a81b2eada5241f6340f4b8"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "passed"
+}

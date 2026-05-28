@@ -1,0 +1,201 @@
+{
+  "schema": "skills/holohub-flow-benchmark/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/holohub-flow-benchmark/fixtures/default",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "skills/holohub-flow-benchmark/fixtures/default",
+      "status": "passed"
+    },
+    {
+      "name": "host_has_cuda",
+      "requires_gpu": "cuda",
+      "gpu_fallback": null,
+      "have_cuda": true,
+      "status": "passed"
+    },
+    {
+      "name": "docker_daemon_reachable",
+      "have_docker": true,
+      "status": "passed"
+    },
+    {
+      "name": "env_required:HOLOHUB_ROOT",
+      "env_var": "HOLOHUB_ROOT",
+      "present": true,
+      "status": "passed"
+    },
+    {
+      "name": "env_required:HOLOHUB_BENCHMARK_APP",
+      "env_var": "HOLOHUB_BENCHMARK_APP",
+      "present": true,
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "skill",
+        "eq": "holohub_flow_benchmark"
+      },
+      "actual": "holohub_flow_benchmark",
+      "ok": true,
+      "reason": "'holohub_flow_benchmark' == 'holohub_flow_benchmark'"
+    },
+    {
+      "check": {
+        "path": "invocation.holohub_commit",
+        "ne": ""
+      },
+      "actual": "4aab4365c361feb60ee607cb91fd5ba6d8cfebb9",
+      "ok": true,
+      "reason": "'4aab4365c361feb60ee607cb91fd5ba6d8cfebb9' != ''"
+    },
+    {
+      "check": {
+        "path": "invocation.benchmark_exit_code",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "plan.schedulers",
+        "length_gte": 1
+      },
+      "actual": [
+        "greedy"
+      ],
+      "ok": true,
+      "reason": "len=1 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.logger.count",
+        "gte": 1
+      },
+      "actual": 1,
+      "ok": true,
+      "reason": "1 >= 1"
+    },
+    {
+      "check": {
+        "path": "analysis.paths_observed",
+        "gte": 1
+      },
+      "actual": 2,
+      "ok": true,
+      "reason": "2 >= 1"
+    },
+    {
+      "check": {
+        "path": "analysis.total_latency_samples",
+        "gt": 0
+      },
+      "actual": 160,
+      "ok": true,
+      "reason": "160 > 0"
+    },
+    {
+      "check": {
+        "path": "domain.logger_count_matches_plan",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "domain.scheduler_coverage_complete",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "contract.assertions.all_required_assertions_passed",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 1.286637816010625,
+      "min": 1,
+      "max": 3600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 0.26358499999999996,
+      "min": null,
+      "max": 3600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 0.0,
+      "min": 0.0,
+      "max": 3600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 0.0,
+      "min": 0,
+      "max": 25000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 43.5,
+      "min": null,
+      "max": 8000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}
