@@ -23,8 +23,10 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 _SKILLS_DIR = _SCRIPT_DIR.parent.parent
 if str(_SKILLS_DIR) not in sys.path:
     sys.path.insert(0, str(_SKILLS_DIR))
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
 
-from _shared.wrapper_utils import emit, file_sha256_safe, git_commit, tail  # noqa: E402
+from wrapper_utils import emit, file_sha256_safe, git_commit, tail  # noqa: E402
 
 SKILL_NAME = "nv_generate_ct_rflow_ct_image"
 MODEL_REPO = "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR"

@@ -86,6 +86,7 @@ validation:
   reproducibility:
     mode: repeat
     fixture: fixtures/clean_no_phi
+    fixture_builder: fixtures/generate_fixtures.py
     runs: 2
 negative_fixtures:
   - path: fixtures/flipped_lr

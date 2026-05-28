@@ -503,6 +503,45 @@ def test_env_pin_must_match_exact_runtime_pins(tmp_path: Path) -> None:
     assert "monai" in checks["env_pin_matches_exact_runtime_pins"]["msg"]
 
 
+def test_external_asset_python_modules_do_not_need_pip_declarations(tmp_path: Path) -> None:
+    skill_dir = _write_target_skill(
+        tmp_path,
+        skill_md_body=(
+            "## Purpose\n\nRun the demo wrapper.\n\n"
+            "## Instructions\n\n"
+            'Use `run_script("scripts/run_demo.py", args=[...])`.\n\n'
+            "## Available Scripts\n\n"
+            "| Script | Purpose | Arguments |\n"
+            "|---|---|---|\n"
+            "| `scripts/run_demo.py` | Runs the demo. | `INPUT --output-dir OUT` |\n\n"
+            "## Prerequisites\n\nPython only.\n\n"
+            "## Limitations\n\nEngineering fixture only.\n\n"
+            "## Troubleshooting\n\nCheck stderr.\n"
+        ),
+    )
+    (skill_dir / "scripts" / "run_demo.py").write_text(
+        "import json\n"
+        "from hugging_face_pipeline import HuggingFacePipelineHelper\n"
+        "print(json.dumps({'status': 'ok'}))\n"
+    )
+    manifest = skill_dir / "skill_manifest.yaml"
+    manifest.write_text(
+        manifest.read_text().replace(
+            "  side_effects:\n",
+            "  external_assets:\n"
+            "    - kind: huggingface_repo\n"
+            "      repo_id: example/model\n"
+            "      contains:\n"
+            "        - hugging_face_pipeline.py\n"
+            "  side_effects:\n",
+        )
+    )
+
+    checks = _checks_by_name(grade.grade_tier2(skill_dir))
+
+    assert checks["pip_imports_declared_in_side_effects"]["pass"] is True
+
+
 def test_agent_usability_shape_reports_advisory_gaps(tmp_path: Path) -> None:
     skill_dir = _write_target_skill(
         tmp_path,

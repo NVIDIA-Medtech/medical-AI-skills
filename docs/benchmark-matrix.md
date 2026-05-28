@@ -2,7 +2,7 @@
 
 Medical AI Skills is a **catalogue of skill wrappers** by default, but a catalogue alone cannot tell a user "which skill should I run for this task". The benchmark matrix is the comparison surface that closes that gap. It produces a versioned, per-task-class, per-axis measurement of every skill that participates, with no single rank score and no aggregate across benchmarks.
 
-> Benchmark matrix, not leaderboard. Each task class ships a curated, versioned reference fixture battery; skills are measured on it per-axis (accuracy, latency, memory, license, side-effects). `find-skills` filters by user profile; pareto is displayed.
+> Benchmark matrix, not leaderboard. Each task class ships a curated, versioned reference fixture battery; skills are measured on it per-axis (accuracy, latency, memory, license, side-effects). Pareto trade-offs are displayed.
 
 — Design framing committed 2026-05-17. The matrix renders the per-axis numbers; the user picks the trade-off that matches their situation. The renderer deliberately does **not** collapse the axes into a single number.
 
@@ -52,7 +52,7 @@ A benchmark run **is** an evidence pack — same provenance, same integrity gate
 
 ## What this does **not** do
 
-- It does not collapse axes into a single rank. A "best skill" cannot be named without a use-case profile (compute budget, licence tolerance, accuracy floor, latency cap). The renderer surfaces the trade-offs; the user (or `find-skills`) decides.
+- It does not collapse axes into a single rank. A "best skill" cannot be named without a use-case profile (compute budget, licence tolerance, accuracy floor, latency cap). The renderer surfaces the trade-offs; the user decides.
 - It does not enforce statistical reporting. There is no CI computation, no multi-seed, no subgroup analysis today.
 - It does not download datasets. Manifests reference local paths (under `.workbench_data/`); each contributor is responsible for staging the cases under the licence they hold.
 

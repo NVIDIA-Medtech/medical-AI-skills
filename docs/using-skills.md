@@ -7,16 +7,9 @@ environment. For trust artifacts (evidence packs, replay), see
 ## Discover
 
 1. Browse [`SKILL_INDEX.md`](../SKILL_INDEX.md) (`make list-skills` to regenerate).
-2. Or rank candidates for a task:
+2. Open the chosen skill's `SKILL.md` under `skills/<name>/`.
 
-   ```bash
-   make find-skills QUERY="convert a DICOM series to NIfTI"
-   ```
-
-3. Open the chosen skill's `SKILL.md` under `skills/<name>/`.
-
-The index lists **publishable skills** first. Verifiers and repository utilities
-are separate sections.
+The index lists **publishable skills** first. Verifiers are listed separately.
 
 ## Run (primary path)
 
@@ -59,21 +52,6 @@ make run-workflow-ct-seg \
 Inspect `WORKFLOW_OUT/workflow_run_record.md` and `workflow_summary.json`.
 This orchestrates skills from [`examples/workflows/ct_dicom_to_segmentation_evidence.yaml`](../examples/workflows/ct_dicom_to_segmentation_evidence.yaml).
 It does **not** replace reading each skill's `SKILL.md` for day-to-day use.
-
-## Optional: flagship workflow 2 (HoloHub imaging evidence)
-
-GPU + Docker + HoloHub clone required. See
-[`skills/holohub-imaging-ai-segmentator/SKILL.md`](../skills/holohub-imaging-ai-segmentator/SKILL.md)
-for prerequisites.
-
-```bash
-export HOLOHUB_ROOT=/path/to/holohub
-make run-workflow-holohub-imaging \
-  WORKFLOW_INPUT=/path/to/dicom_ct_series \
-  WORKFLOW_HOLOHUB_IMAGING_OUT=runs/holohub_imaging_evidence
-```
-
-Spec: [`examples/workflows/holohub_imaging_evidence.yaml`](../examples/workflows/holohub_imaging_evidence.yaml).
 
 ## Optional: evidence pack
 

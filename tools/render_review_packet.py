@@ -504,21 +504,15 @@ def _verifier_issue_summary(
     for key in ("blocking_issues_count", "advisory_issues_count"):
         if key in output:
             chunks.append(f"{key}={output[key]}")
-    for block_name in ("domain_floor", "detection_metrics", "gt_metrics"):
-        block = output.get(block_name)
-        if isinstance(block, dict) and block.get("verdict"):
+    for block_name, block in output.items():
+        if not isinstance(block, dict) or not block.get("verdict"):
+            continue
+        if block_name == "domain_floor" or block_name.endswith("_metrics"):
             chunks.append(f"{block_name}={block.get('verdict')}")
     inventory = output.get("artifact_inventory")
     if isinstance(inventory, dict):
-        recording_count = inventory.get("recording_file_count")
-        usable_count = inventory.get("usable_recording_file_count")
-        if usable_count is not None:
-            if recording_count is not None:
-                chunks.append(f"usable_recording_file_count={usable_count}/{recording_count}")
-            else:
-                chunks.append(f"usable_recording_file_count={usable_count}")
-        for key in ("hash_mismatch_count", "detection_artifact_count"):
-            if key in inventory:
+        for key in sorted(inventory):
+            if key.endswith("_count") and isinstance(inventory[key], (int, float, str)):
                 chunks.append(f"{key}={inventory[key]}")
     for key in ("findings", "warnings", "errors", "hard_failures", "soft_failures"):
         value = output.get(key)

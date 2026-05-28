@@ -1,6 +1,4 @@
-"""Docker/container provenance capture for HoloHub and container-backed skills."""
-# Skill-side mirror: skills/_shared/docker_capture.py (subset, no eval_engine import).
-# Duplication is intentional: lint rule E4 forbids skills from importing eval_engine.
+"""Docker/container provenance capture for container-backed skills."""
 from __future__ import annotations
 
 import json

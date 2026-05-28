@@ -134,6 +134,7 @@ validation:
   reproducibility:
     mode: repeat
     fixture: fixtures/clean_axial
+    fixture_builder: fixtures/generate_fixtures.py
     runs: 2
 
 # Negative fixtures that exist to *prove the gates fire* on bad inputs.

@@ -11,24 +11,24 @@ def _load(name: str) -> dict:
     return yaml.safe_load((WORKFLOWS / name).read_text())
 
 
-def test_holohub_imaging_workflow_mvp():
-    spec = _load("holohub_imaging_evidence.yaml")
-    assert spec["workflow_id"] == "holohub_imaging_evidence"
+def test_ct_dicom_to_segmentation_workflow():
+    spec = _load("ct_dicom_to_segmentation_evidence.yaml")
+    assert spec["workflow_id"] == "ct_dicom_to_segmentation_evidence"
     steps = spec["steps"]
     assert len(steps) == 2
-    assert steps[0]["skill"] == "skills/holohub-imaging-ai-segmentator"
-    assert steps[0]["trusted"] is True
+    assert steps[0]["skill"] == "skills/dicom-series-to-volume"
     assert steps[0]["inputs"]["fixture"] == "${input}"
-    assert steps[1]["id"] == "flow_benchmark"
-    assert steps[1]["env"]["HOLOHUB_BENCHMARK_APP"] == "imaging_ai_segmentator"
+    assert steps[1]["id"] == "segment"
+    assert steps[1]["skill"] == "skills/nv-segment-ct"
+    assert steps[1]["trusted"] is True
+    assert steps[1]["inputs"]["fixture"] == "${convert.output.path}"
 
 
-def test_holohub_endoscopy_workflow_trusted():
-    spec = _load("holohub_endoscopy_evidence.yaml")
-    assert spec["workflow_id"] == "holohub_endoscopy_evidence"
-    assert len(spec["steps"]) == 2
+def test_dicom_preflight_workflow_trusted():
+    spec = _load("dicom_preflight_gate.yaml")
+    assert spec["workflow_id"] == "dicom_preflight_gate"
+    assert len(spec["steps"]) == 1
     step = spec["steps"][0]
+    assert step["skill"] == "skills/dicom-series-preflight"
     assert step["trusted"] is True
-    assert step["skill"] == "skills/holohub-endoscopy-tool-tracking"
-    assert step["env"]["HOLOHUB_EXPORT_TOOL_DETECTIONS"] == "true"
-    assert spec["steps"][1]["id"] == "flow_benchmark"
+    assert step["inputs"]["fixture"] == "${input}"

@@ -34,9 +34,9 @@ The canonical file list is in [`docs/replay.md`](../docs/replay.md).
 `*_pass/` and `*_clean/` packs are drift anchors for the same spec. They
 are not cross-skill comparisons and should not be read as performance ordering.
 
+This branch keeps DICOM utilities and NVIDIA-Medtech `nv-*` skills only.
 Important anchors:
 
-- `find_skills_trusted_pass/`
 - `dicom_metadata_pass/`
 - `dicom_metadata_trusted_warn/`
 - `dicom_series_preflight_trusted_pass/`
@@ -46,51 +46,27 @@ Important anchors:
 - `nv_segment_ct_trusted_pass/`
 - `nv_segment_ctmr_trusted_pass/`
 - `nv_segment_ct_finetune_trusted_smoke_pass/`
+- `nv_generate_ct_rflow_pass/`
 - `nv_generate_ct_rflow_trusted_inventory_pass/`
 - `nv_generate_mr_trusted_inventory_pass/`
 - `nv_generate_mr_brain_trusted_inventory_pass/`
 - `nv_reason_cxr_trusted_mock_pass/`
-- `radiology_note_summarizer_trusted_mock_pass/`
-- `holohub_flow_benchmark_trusted_stub_pass/`
 - `benchmark_decathlon_spleen_clean/`
-- `holohub_imaging_ai_segmentator_pass/`
-- `holohub_imaging_ai_segmentator_trusted_inventory_pass/`
-- `holohub_endoscopy_tool_tracking_pass/` (wrapper execution anchor; the
-  committed pack does not include decoded detections and is not a paired
-  verifier pass)
-- `holohub_endoscopy_tool_tracking_trusted_detection_pass/`
-- `totalsegmentator_trusted_pass/`
+- `benchmark_decathlon_with_corruption/`
+- `benchmark_ct_segmentation_spleen_msd09_pass/`
 - `ct_segmentation_finetune_quality_v1_pass/`
-- `endoscopy_tool_detection_quality_v1_pass/`
-- `totalsegmentator_quality_v1_pass/`
-- `totalsegmentator_hu_consistency_v1_pass/`
-- `totalsegmentator_skeleton_topology_v1_pass/`
 
 Negative packs intentionally fail specific gates, such as invalid DICOM input,
 silent segmentation failure, integrity failure, benchmark corruption, or
 spec-completeness failures.
 
 Study packs under `examples/studies/` are useful reading, but they are not the
-canonical list. Current studies include `multi_llm_observatory/`,
-`optimizer_loop_iteration_1/`, `subtle_defect/`,
-`skill_completeness_audit_*`, and
-the current `with_vs_without_skill/*_codex_opus/` and
-`with_vs_without_skill/*_nemotron_correction/` result sets summarized in
+canonical list. Current studies are the `with_vs_without_skill/*_codex_opus/`
+and `with_vs_without_skill/*_nemotron_correction/` result sets summarized in
 [`docs/with-vs-without-skill-experiment.md`](../docs/with-vs-without-skill-experiment.md).
 
 Regenerate or compare examples with `make run-skill`, `make run-benchmark`,
 and `make diff`.
-
-`evidence_packs/find_skills_trusted_pass/` is the GPU-free selector trust
-anchor. It pairs `find_skills` with `find_skills_quality_v1` to confirm rank
-ordering, manifest path/id consistency, no-fit semantics, and selector-scope
-disclosure for the repository fixture query.
-
-`evidence_packs/radiology_note_summarizer_trusted_mock_pass/` is the
-deterministic mock LLM trust anchor. It pairs `radiology_note_summarizer` with
-`radiology_note_summary_quality_v1` to confirm source-pack success, factual
-echo, model/prompt identity, and forbidden-phrase guardrails without sending
-data to the hosted LLM API.
 
 `evidence_packs/nv_reason_cxr_trusted_mock_pass/` is the deterministic mock
 CXR reasoning trust anchor. It pairs `nv_reason_cxr` with
@@ -113,31 +89,6 @@ generated image bytes and hashes, requested geometry, finite nonconstant
 nonnegative voxel values, model inventory, and GPU provenance without
 committing generated NIfTI volumes.
 
-`evidence_packs/holohub_flow_benchmark_trusted_stub_pass/` is the deterministic
-stub HoloHub benchmark trust anchor. It pairs `holohub_flow_benchmark` with
-`holohub_flow_benchmark_quality_v1` to confirm logger and GPU artifact hashes,
-scheduler coverage, latency sample parsing, benchmark-log completion, contract
-assertions, and review-packet visibility. It is not real HoloHub app
-performance evidence; use a full HoloHub run for performance claims.
-
-`evidence_packs/holohub_imaging_ai_segmentator_trusted_inventory_pass/` is the
-HoloHub imaging inventory trust anchor. It pairs
-`holohub_imaging_ai_segmentator` with
-`holohub_imaging_segmentation_quality_v1` to confirm the app run, DICOM SEG and
-NIfTI inventory, non-zero segmentation signal, container provenance, and
-verifier summary without committing the large generated DICOM SEG/NIfTI
-artifacts.
-
-`evidence_packs/holohub_endoscopy_tool_tracking_trusted_detection_pass/` is the
-HoloHub endoscopy detection trust anchor. It pairs
-`holohub_endoscopy_tool_tracking` with
-`endoscopy_tool_detection_quality_v1` on the documented `default` sample path
-to confirm the HoloHub container run, GXF recording artifact hashes, decoded
-`tool_detections.jsonl` export, frame coverage, tool-count, bbox sanity, and
-observed tool classes. The generated GXF pair, detection sidecar, Docker layers,
-and model artifacts are referenced by path, hash, and verifier facts but are not
-committed.
-
 `evidence_packs/nv_segment_ct_finetune_trusted_smoke_pass/` is the
 NV-Segment-CT continual-finetune smoke trust anchor. It pairs
 `nv_segment_ct_finetune` with `ct_segmentation_finetune_quality_v1` on the
@@ -147,14 +98,6 @@ trajectory, and passes checkpoint-load inspection. It is plumbing evidence only
 and does not replace the Task06 Lung Tumor sanity run or convergence-quality
 evidence. The generated 872 MB checkpoint is referenced by path, size, and
 verifier facts but is not committed.
-
-`evidence_packs/totalsegmentator_trusted_pass/` is the TotalSegmentator
-user-facing trust anchor. It pairs `totalsegmentator` with
-`totalsegmentator_quality_v1` on the shared spleen CT fixture to confirm the
-official Python API ran with `ml=True`, emitted a multilabel mask, preserved
-input geometry, produced task-valid labels, and passed organ-volume,
-fragmentation, liver>spleen, and bilateral-kidney plausibility checks. The
-generated NIfTI is referenced by path and verifier facts but is not committed.
 
 `evidence_packs/nv_segment_ctmr_trusted_pass/` is the NV-Segment-CTMR CT-body
 trust anchor. It pairs `nv_segment_ctmr` with `ct_segmentation_quality_v1` on
@@ -169,12 +112,7 @@ need modality-specific verifier anchors.
 Verifier-only anchors close trust-layer lifecycle gaps without claiming that
 the corresponding heavy upstream skill has a trusted run. The
 `ct_segmentation_finetune_quality_v1_pass/` pack audits a committed synthetic
-finetune fixture. The `endoscopy_tool_detection_quality_v1_pass/` pack audits
-the verifier's tiny committed positive fixture with a decoded
-`tool_detections.jsonl` sidecar; it does not make the HoloHub wrapper itself a
-trusted detection run. The three `totalsegmentator_*_v1_pass/` packs audit
-synthetic verifier inputs generated under `runs/`; the generated NIfTI files
-are referenced by path, byte count, and SHA-256 hash but are not committed.
+finetune fixture.
 
 ## Flagship workflow A1: DICOM preflight gate (start here)
 
@@ -245,43 +183,6 @@ make run-workflow \
   WORKFLOW_INPUT=skills/dicom-series-to-volume/fixtures/flipped_lr \
   WORKFLOW_OUT=runs/ct_dicom_seg_flipped_fail
 ```
-
-## Flagship workflow 2: HoloHub imaging evidence (MVP)
-
-**Path:**
-
-```text
-HoloHub fixture/source
-  -> holohub_imaging_ai_segmentator (trusted)
-  -> holohub_imaging_segmentation_quality_v1
-  -> holohub_flow_benchmark (smoke)
-  -> workflow summary (+ stream linkage)
-```
-
-Requires `HOLOHUB_ROOT`, GPU, Docker, and a local DICOM series (rebake with
-`skills/holohub-imaging-ai-segmentator/fixtures/build_dicom_from_nifti.py`). Full
-spec: [`workflows/README.md`](workflows/README.md).
-
-Canonical inventory-level trusted anchor:
-`evidence_packs/holohub_imaging_ai_segmentator_trusted_inventory_pass/`
-contains a current-format skill pack, verifier pack, provenance, and trust
-summary. It references the generated DICOM SEG/NIfTI artifact hashes and sizes
-but does not bundle those large medical artifacts.
-
-```bash
-export HOLOHUB_ROOT=/path/to/holohub
-make run-workflow-holohub-imaging \
-  WORKFLOW_INPUT=.workbench_data/holohub_input/spleen_10 \
-  WORKFLOW_HOLOHUB_IMAGING_OUT=runs/holohub_imaging_evidence
-```
-
-Endoscopy variant (trusted + flow benchmark; detection export via log/sidecar):
-`holohub_endoscopy_evidence.yaml`.
-
-For a compact flow-benchmark trust reference without running the full HoloHub
-app, inspect `evidence_packs/holohub_flow_benchmark_trusted_stub_pass/`.
-It exercises the benchmark wrapper and verifier against a deterministic stub
-and deliberately does not claim real latency performance.
 
 Inspect `WORKFLOW_OUT/workflow_summary.json` for per-step status and
 `trust` linkage; the segment step writes `segment/trust_summary.json` and

@@ -143,9 +143,7 @@ cost:
 
 This is **agent-overhead** cost, not the skill's compute cost. Compute
 cost remains in `runs/<eval>/cost_profile.json` (wall, CPU, GPU seconds,
-peak RAM). Skills that issue their own LLM calls (e.g.
-`radiology_note_summarizer`) will appear with additional `llm_calls`
-in either scenario.
+peak RAM).
 
 ## What this does NOT measure
 

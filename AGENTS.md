@@ -67,7 +67,6 @@ it belongs in `skills/`. If it audits a skill or evidence pack, use
 
 ```bash
 make list-skills
-make find-skills QUERY="segment a CT NIfTI volume"
 make run-skill SKILL=dicom_metadata_extract \
   FIXTURE=skills/dicom-metadata-extract/fixtures/sample_ct.dcm \
   OUT=runs/demo

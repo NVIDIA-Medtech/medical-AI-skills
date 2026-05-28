@@ -2,20 +2,20 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://medagent.nvidia.com/spec/segmentation_output.schema.json#v1.0.0",
   "title": "SegmentationOutputEnvelope",
-  "description": "Canonical shared envelope for segmentation skill output payloads. Defines the minimum structural contract agreed by nv_segment_ct and holohub_imaging_ai_segmentator (intersection of required fields). Skill-specific fields are permitted alongside these. See docs/spec-model.md for placement rationale.",
+  "description": "Canonical shared envelope for segmentation skill output payloads. Defines the minimum structural contract for nv_segment_ct-style output payloads. Skill-specific fields are permitted alongside these. See docs/spec-model.md for placement rationale.",
   "type": "object",
   "required": ["invocation", "output", "runtime"],
   "properties": {
     "invocation": {
-      "description": "Provenance of the underlying tool invocation (command, identity, exit status). Shape is skill-specific; both skills guarantee this key is an object.",
+      "description": "Provenance of the underlying tool invocation (command, identity, exit status). Shape is skill-specific; segmentation skills guarantee this key is an object.",
       "type": "object"
     },
     "output": {
-      "description": "Structured summary of produced segmentation artefacts. Shape is skill-specific; both skills guarantee this key is an object.",
+      "description": "Structured summary of produced segmentation artefacts. Shape is skill-specific; segmentation skills guarantee this key is an object.",
       "type": "object"
     },
     "runtime": {
-      "description": "Wall-clock timing captured by the wrapper. Shape is skill-specific; both skills guarantee this key is an object.",
+      "description": "Wall-clock timing captured by the wrapper. Shape is skill-specific; segmentation skills guarantee this key is an object.",
       "type": "object"
     },
     "skill": {
@@ -43,7 +43,7 @@
       "type": "string"
     },
     "logs": {
-      "description": "stdout/stderr tails captured from the subprocess (holohub_imaging_ai_segmentator only).",
+      "description": "Optional stdout/stderr tails captured from a wrapped subprocess.",
       "type": "object"
     }
   },

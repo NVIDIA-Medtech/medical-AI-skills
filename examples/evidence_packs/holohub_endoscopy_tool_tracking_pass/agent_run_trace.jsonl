@@ -1,2 +1,0 @@
-{"ts": "2026-05-10T21:19:44.588188+00:00", "kind": "tool_call_start", "tool": "run_endoscopy_tool_tracking.py", "args": ["skills/holohub-endoscopy-tool-tracking/fixtures/example_clip_stub"]}
-{"ts": "2026-05-10T21:19:51.085030+00:00", "kind": "tool_call_end", "exit_code": 0, "elapsed_s": 6.496758542023599, "stdout_bytes": 10132, "stderr_bytes": 0}

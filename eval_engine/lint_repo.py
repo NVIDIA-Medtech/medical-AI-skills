@@ -79,12 +79,6 @@ BLOCKED_ARTIFACT_SUFFIXES = (
     ".gxf_index",
 )
 TRACKED_STUB_ALLOWLIST = {
-    "verifiers/endoscopy_tool_detection_quality_v1/fixtures/no_detections_pack/recordings/clip.gxf_entities",
-    "verifiers/endoscopy_tool_detection_quality_v1/fixtures/no_detections_pack/recordings/clip.gxf_index",
-    "verifiers/endoscopy_tool_detection_quality_v1/fixtures/no_detections_pack/recordings/overlay.mp4",
-    "verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/clip.gxf_entities",
-    "verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/clip.gxf_index",
-    "verifiers/endoscopy_tool_detection_quality_v1/fixtures/pass_pack/recordings/overlay.mp4",
     "verifiers/ct_segmentation_quality_v1/fixtures/pass_pack/predicted_seg.nii.gz",
     "verifiers/ct_segmentation_quality_v1/fixtures/fragmented_pack/predicted_seg.nii.gz",
     "verifiers/ct_segmentation_quality_v1/fixtures/gt_pass_pack/predicted_seg.nii.gz",

@@ -5,7 +5,7 @@
   "modality": "CT",
   "input_dir": "skills/dicom-series-to-volume/fixtures/clean_axial",
   "output": {
-    "path": "skills/dicom-series-to-volume/fixtures/clean_axial.nii.gz",
+    "path": "artifacts/clean_axial.nii.gz",
     "shape": [64, 64, 32],
     "spacing": [1.0, 1.0, 2.0],
     "affine": [

@@ -22,7 +22,7 @@
   "container": {
     "requires_docker": false,
     "image_digest_observed": null,
-    "note": "Container image inspect and optional in-container pip freeze (HoloHub docker workflow).",
+    "note": "Container image inspect and optional in-container pip freeze (container-backed workflow).",
     "outer_command": [
       "<home>/anaconda3/envs/py312/bin/python",
       "-m",

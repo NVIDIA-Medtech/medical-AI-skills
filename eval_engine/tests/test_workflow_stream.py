@@ -105,7 +105,7 @@ def test_extract_flow_benchmark_stream_shape() -> None:
     entry = extract_flow_benchmark_stream(
         "flow_benchmark",
         _flow_payload(),
-        step_record={"skill": "skills/holohub-flow-benchmark", "overall_status": "passed"},
+        step_record={"skill": "external/holoscan-flow-benchmark", "overall_status": "passed"},
     )
     holoscan = entry["holoscan_flow"]
     assert entry["holohub_app"] == "imaging_ai_segmentator"
@@ -121,8 +121,8 @@ def test_build_workflow_stream_block_rollup() -> None:
         "flow_benchmark": _flow_payload(),
     }
     step_results = [
-        {"id": "holohub_app", "skill": "skills/holohub-imaging-ai-segmentator", "overall_status": "passed"},
-        {"id": "flow_benchmark", "skill": "skills/holohub-flow-benchmark", "overall_status": "passed"},
+        {"id": "holohub_app", "skill": "external/holohub-app", "overall_status": "passed"},
+        {"id": "flow_benchmark", "skill": "external/holoscan-flow-benchmark", "overall_status": "passed"},
     ]
     block = build_workflow_stream_block(context, step_results)
     assert block["stream_format_version"] == STREAM_FORMAT_VERSION

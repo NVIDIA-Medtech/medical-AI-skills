@@ -107,7 +107,7 @@
     },
     "license_restrictions": {
       "type": "object",
-      "description": "Optional machine-readable description of licence restrictions beyond the top-level `license` field. Useful when the wrapped tool's code and weights have different terms, or when weight licences vary by task (e.g. TotalSegmentator academic-only tasks). Schema is permissive — common subkeys are `code`, `weights_default`, and `weights_per_task` (a {task: licence_tier} map). Downstream tooling MAY gate on these fields.",
+      "description": "Optional machine-readable description of licence restrictions beyond the top-level `license` field. Useful when the wrapped tool's code and weights have different terms, or when weight licences vary by task. Schema is permissive — common subkeys are `code`, `weights_default`, and `weights_per_task` (a {task: licence_tier} map). Downstream tooling MAY gate on these fields.",
       "additionalProperties": true
     }
   },
@@ -282,6 +282,11 @@
           "type": "string",
           "minLength": 1,
           "description": "Fixture path relative to the skill/verifier directory unless absolute."
+        },
+        "fixture_builder": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional repo-local script, relative to the skill/verifier directory, that creates the declared fixture when binary fixture files are intentionally gitignored."
         },
         "runs": {
           "type": "integer",

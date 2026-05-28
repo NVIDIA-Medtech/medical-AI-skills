@@ -191,6 +191,13 @@ validation:
     gpu_seconds:         {max: 90}
     gpu_memory_mb_peak:  {max: 32000}
   reproducibility:
-    mode: repeat
-    fixture: fixtures/spleen_03.nii.gz
+    mode: preflight
+    fixture: fixtures/preflight_synthetic_ct.nii.gz
+    fixture_builder: fixtures/generate_preflight_fixture.py
     runs: 2
+    reason: >
+      Full repeatability for this wrapper requires the external HuggingFace
+      model bundle and a CUDA-capable runtime. Repository verification repeats
+      the NIfTI/env boundary check on a tiny generated synthetic CT fixture;
+      full evidence packs should be compared separately after staging
+      `fixtures/spleen_03.nii.gz` and the model bundle.

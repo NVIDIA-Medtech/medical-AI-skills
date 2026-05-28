@@ -29,7 +29,7 @@ PACK_ROOTS = (
     REPO_ROOT / "examples" / "studies",
 )
 
-DISCOVERY_SKILL_DIRS = frozenset({"find-skills"})
+DISCOVERY_SKILL_DIRS = frozenset()
 
 # Onboarding / flagship skills listed first in SKILL_INDEX (stable order).
 FEATURED_PUBLISHABLE_IDS = (

@@ -33,8 +33,6 @@ A ?=
 B ?=
 COMPARE_OUT ?=
 AUDIT_OUT ?= runs/audit_$(SKILL)
-QUERY ?=
-FIND_SKILLS_ARGS ?=
 ACTION ?=
 NV_BASE ?= nv-base
 NV_BASE_OUT ?= /tmp/medical-AI-skills-nvbase
@@ -43,12 +41,7 @@ NV_BASE_REQUIRE_SKILLSPECTOR ?= 1
 
 WORKFLOW_CT_SEG ?= examples/workflows/ct_dicom_to_segmentation_evidence.yaml
 WORKFLOW_CT_SEG_OUT ?= runs/ct_dicom_seg_evidence
-WORKFLOW_HOLOHUB_IMAGING ?= examples/workflows/holohub_imaging_evidence.yaml
-WORKFLOW_HOLOHUB_IMAGING_OUT ?= runs/holohub_imaging_evidence
-WORKFLOW_HOLOHUB_ENDOSCOPY ?= examples/workflows/holohub_endoscopy_evidence.yaml
-WORKFLOW_HOLOHUB_ENDOSCOPY_OUT ?= runs/holohub_endoscopy_evidence
-
-.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-workflow-holohub-imaging run-workflow-holohub-endoscopy run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-mock-gates verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study nv-base-check nv-base-validate validate-skills-internal list-skills find-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix
+.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study nv-base-check nv-base-validate validate-skills-internal list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix
 
 help:
 	@echo "Targets:"
@@ -60,7 +53,6 @@ help:
 	@echo ""
 	@echo "Common:"
 	@echo "  make list-skills"
-	@echo "  make find-skills QUERY='segment a CT NIfTI volume'"
 	@echo "  make run-skill SKILL=<name> FIXTURE=<path> OUT=<dir>"
 	@echo "  make run-trusted SKILL=<name> FIXTURE=<path> OUT=<dir>"
 	@echo "  make validate-pack PACK=<dir>"
@@ -82,14 +74,11 @@ help-all:
 	@echo "  help-all                                                every target, including compatibility aliases"
 	@echo "  --- Discover ---"
 	@echo "  list-skills                                             regenerate SKILL_INDEX.md"
-	@echo "  find-skills    QUERY='<need/task>'                     rank local skills for a task"
 	@echo "  --- Run ---"
 	@echo "  run-skill      SKILL=<name> FIXTURE=<path> OUT=<dir>   single-skill evidence pack"
 	@echo "  run-llm-skill  SKILL=<name> FIXTURE=<path> [LLM_ARGS='--max-tokens 256']   LLM-mediated skill call"
 	@echo "  run-workflow   WORKFLOW=<yaml> WORKFLOW_INPUT=<path> WORKFLOW_OUT=<dir>   multi-skill workflow"
 	@echo "  run-workflow-ct-seg  WORKFLOW_INPUT=<dicom_dir> [WORKFLOW_CT_SEG_OUT=...]  Workflow 1: DICOM->NIfTI->segment+verifier"
-	@echo "  run-workflow-holohub-imaging  HOLOHUB_ROOT=<path> WORKFLOW_INPUT=<dicom_dir>  Workflow 2 MVP: HoloHub CT seg app"
-	@echo "  run-workflow-holohub-endoscopy HOLOHUB_ROOT=<path> WORKFLOW_INPUT=default  Workflow 2: endoscopy (verifier gap possible)"
 	@echo "  run-benchmark  SKILL=<name> BENCHMARK=<yaml> [BENCHMARK_ARGS='--limit 1']  benchmark evidence pack"
 	@echo "  run-trusted    SKILL=<name> FIXTURE=<path> OUT=<dir>  skill + every implemented paired verifier"
 	@echo "  --- Author ---"
@@ -102,7 +91,6 @@ help-all:
 	@echo "  validate-skills-internal                                alias for nv-base-validate"
 	@echo "  --- Trust ---"
 	@echo "  verify                                                  smoke-test evidence harness (lint + canonical pack diff)"
-	@echo "  verify-mock-gates                                       prove each radiology_note_summarizer gate fires"
 	@echo "  verify-negative-fixtures                                run every manifest-declared negative fixture"
 	@echo "  validate-pack  PACK=<dir> [VALIDATE_PACK_ARGS='--allow-legacy']   validate pack/trusted-run against spec/evidence_pack.schema.json"
 	@echo "  review-packet  PACK=<dir> [REVIEW_PACKET_OUT=<path>]              render compact human review packet under runs/"
@@ -129,13 +117,10 @@ help-all:
 
 help-run:
 	@echo "Run targets:"
-	@echo "  find-skills    QUERY='<need/task>'                     rank local skills for a task"
 	@echo "  run-skill      SKILL=<name> FIXTURE=<path> OUT=<dir>   single-skill evidence pack"
 	@echo "  run-llm-skill  SKILL=<name> FIXTURE=<path> [LLM_ARGS='--max-tokens 256']   LLM-mediated skill call"
 	@echo "  run-workflow   WORKFLOW=<yaml> WORKFLOW_INPUT=<path> WORKFLOW_OUT=<dir>   multi-skill workflow"
 	@echo "  run-workflow-ct-seg  WORKFLOW_INPUT=<dicom_dir> [WORKFLOW_CT_SEG_OUT=...]  Workflow 1: DICOM->NIfTI->segment+verifier"
-	@echo "  run-workflow-holohub-imaging  HOLOHUB_ROOT=<path> WORKFLOW_INPUT=<dicom_dir>  Workflow 2 MVP: HoloHub CT seg app"
-	@echo "  run-workflow-holohub-endoscopy HOLOHUB_ROOT=<path> WORKFLOW_INPUT=default  Workflow 2: endoscopy (verifier gap possible)"
 	@echo "  run-benchmark  SKILL=<name> BENCHMARK=<yaml> [BENCHMARK_ARGS='--limit 1']  benchmark evidence pack"
 	@echo "  run-trusted    SKILL=<name> FIXTURE=<path> OUT=<dir>  skill + every implemented paired verifier"
 
@@ -156,7 +141,6 @@ help-author:
 help-trust:
 	@echo "Trust targets:"
 	@echo "  verify                                                  smoke-test evidence harness (lint + canonical pack diff)"
-	@echo "  verify-mock-gates                                       prove each radiology_note_summarizer gate fires"
 	@echo "  verify-negative-fixtures                                run every manifest-declared negative fixture"
 	@echo "  validate-pack  PACK=<dir> [VALIDATE_PACK_ARGS='--allow-legacy']   validate pack/trusted-run against spec/evidence_pack.schema.json"
 	@echo "  review-packet  PACK=<dir> [REVIEW_PACKET_OUT=<path>]              render compact human review packet under runs/"
@@ -212,26 +196,6 @@ run-workflow-ct-seg:
 	fi
 	$(PYTHON) eval_engine/run_workflow.py $(WORKFLOW_CT_SEG) --input $(WORKFLOW_INPUT) --out $(WORKFLOW_CT_SEG_OUT)
 
-# Workflow 2 MVP: HoloHub imaging_ai_segmentator -> artifact inventory + workflow summary
-run-workflow-holohub-imaging:
-	@if [ -z "$(HOLOHUB_ROOT)" ]; then \
-		echo "Usage: make run-workflow-holohub-imaging HOLOHUB_ROOT=<holohub_clone> WORKFLOW_INPUT=<dicom_series_dir> [WORKFLOW_HOLOHUB_IMAGING_OUT=...]"; exit 2; \
-	fi
-	@if [ -z "$(WORKFLOW_INPUT)" ]; then \
-		echo "Usage: make run-workflow-holohub-imaging HOLOHUB_ROOT=<holohub_clone> WORKFLOW_INPUT=<dicom_series_dir>"; exit 2; \
-	fi
-	HOLOHUB_ROOT=$(HOLOHUB_ROOT) $(PYTHON) eval_engine/run_workflow.py $(WORKFLOW_HOLOHUB_IMAGING) --input $(WORKFLOW_INPUT) --out $(WORKFLOW_HOLOHUB_IMAGING_OUT)
-
-# Workflow 2 variant: endoscopy + trusted verifier (may gap until S4 fixed)
-run-workflow-holohub-endoscopy:
-	@if [ -z "$(HOLOHUB_ROOT)" ]; then \
-		echo "Usage: make run-workflow-holohub-endoscopy HOLOHUB_ROOT=<holohub_clone> WORKFLOW_INPUT=default [WORKFLOW_HOLOHUB_ENDOSCOPY_OUT=...]"; exit 2; \
-	fi
-	@if [ -z "$(WORKFLOW_INPUT)" ]; then \
-		echo "Usage: set WORKFLOW_INPUT=default or a GXF replayer directory"; exit 2; \
-	fi
-	HOLOHUB_ROOT=$(HOLOHUB_ROOT) $(PYTHON) eval_engine/run_workflow.py $(WORKFLOW_HOLOHUB_ENDOSCOPY) --input $(WORKFLOW_INPUT) --out $(WORKFLOW_HOLOHUB_ENDOSCOPY_OUT)
-
 run-benchmark:
 	@if [ -z "$(BENCHMARK)" ]; then \
 		echo "Usage: make run-benchmark SKILL=<name> BENCHMARK=<yaml> BENCHMARK_OUT=<dir> BENCHMARK_JOBS=<n> [BENCHMARK_ARGS='--limit 1']"; exit 2; \
@@ -266,9 +230,6 @@ verify-skills:
 
 verify-reproducibility:
 	@$(PYTHON) -m eval_engine.reproducibility
-
-verify-mock-gates:
-	@bash eval_engine/audit_mock_gates.sh
 
 verify-negative-fixtures:
 	@bash eval_engine/audit_negative_fixtures.sh
@@ -350,12 +311,6 @@ validate-skills-internal: nv-base-validate
 
 list-skills:
 	$(PYTHON) -m eval_engine.list_skills --out SKILL_INDEX.md
-
-find-skills:
-	@if [ -z "$(QUERY)" ]; then \
-		echo "Usage: make find-skills QUERY='<need/task>' [FIND_SKILLS_ARGS='--limit 3']"; exit 2; \
-	fi
-	$(PYTHON) skills/find-skills/scripts/find_skills.py "$(QUERY)" --markdown $(FIND_SKILLS_ARGS)
 
 audit-skill:
 	$(PYTHON) eval_engine/run.py verifiers/skill_completeness_v1 \

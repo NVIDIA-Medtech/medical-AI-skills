@@ -3,7 +3,6 @@
 Has populated standard PHI tags with obviously-synthetic values so the
 PHI-presence flag can be tested. Run once: produces sample_ct.dcm.
 """
-from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -14,7 +13,9 @@ from pydicom.dataset import Dataset, FileDataset
 def generate(out_path: Path) -> None:
     file_meta = Dataset()
     file_meta.MediaStorageSOPClassUID = pydicom.uid.CTImageStorage
-    file_meta.MediaStorageSOPInstanceUID = pydicom.uid.generate_uid()
+    file_meta.MediaStorageSOPInstanceUID = (
+        "1.2.826.0.1.3680043.8.498.87363990806676731690652303827211061652"
+    )
     file_meta.TransferSyntaxUID = pydicom.uid.ExplicitVRLittleEndian
 
     ds = FileDataset(str(out_path), {}, file_meta=file_meta, preamble=b"\0" * 128)
@@ -27,12 +28,11 @@ def generate(out_path: Path) -> None:
     ds.InstitutionName = "TEST_INSTITUTION_DO_NOT_USE"
     ds.ReferringPhysicianName = "TEST^Physician"
 
-    now = datetime.now()
-    ds.StudyDate = now.strftime("%Y%m%d")
-    ds.StudyTime = now.strftime("%H%M%S")
-    ds.StudyInstanceUID = pydicom.uid.generate_uid()
+    ds.StudyDate = "20260518"
+    ds.StudyTime = "102957"
+    ds.StudyInstanceUID = "1.2.826.0.1.3680043.8.498.70205069167432896821744418685172690618"
     ds.StudyDescription = "Synthetic test study (no clinical content)"
-    ds.SeriesInstanceUID = pydicom.uid.generate_uid()
+    ds.SeriesInstanceUID = "1.2.826.0.1.3680043.8.498.31550974118702976965686593096238327316"
     ds.SeriesNumber = 1
     ds.SeriesDescription = "Synthetic CT for skill testing"
     ds.Modality = "CT"

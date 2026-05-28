@@ -30,7 +30,7 @@ if str(_SKILLS_DIR) not in sys.path:
     sys.path.insert(0, str(_SKILLS_DIR))
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
-from _shared.wrapper_utils import (  # noqa: E402
+from wrapper_utils import (  # noqa: E402
     emit,
     file_sha256_safe,
     git_commit,

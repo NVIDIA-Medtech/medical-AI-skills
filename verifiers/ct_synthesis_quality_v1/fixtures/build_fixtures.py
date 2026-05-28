@@ -110,7 +110,9 @@ def _write_pack(name: str, image: np.ndarray, mask: np.ndarray, output_label_map
         "image_hu_bone_present": bool((image > 200).any()),
         "image_nonconstant": bool(image.max() - image.min() > 1.0),
     }
-    (pack / "output.json").write_text(json.dumps(_output_payload([sample], output_label_mapping), indent=2))
+    (pack / "output.json").write_text(
+        json.dumps(_output_payload([sample], output_label_mapping), indent=2) + "\n"
+    )
     (pack / "manifest.json").write_text(json.dumps({
         "pack_format_version": "1.0.0",
         "pack_kind": "skill_run",

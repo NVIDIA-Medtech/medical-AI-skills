@@ -28,7 +28,7 @@ evidence pack + verifier       -> verifier evidence pack
 
 | Task | Read first | Then | Preferred command |
 |---|---|---|---|
-| **Discover a skill** | `SKILL_INDEX.md` | `skills/<name>/SKILL.md`, `skill_manifest.yaml` | `make find-skills QUERY='…'` |
+| **Discover a skill** | `SKILL_INDEX.md` | `skills/<name>/SKILL.md`, `skill_manifest.yaml` | `make list-skills` |
 | **Inspect a contract** | `python tools/render_contract_summary.py skills/<name>` | `SKILL.md`, `skill_manifest.yaml` | `python tools/render_contract_summary.py skills/<name>` |
 | **Run a skill (user data)** | `skills/<name>/SKILL.md` | `runtime.side_effects`, `limitations` | Script in `SKILL.md` (not eval_engine) |
 | **Generate evidence pack** | `docs/trust-and-evidence.md` | Target manifest `validation.*` | `make run-skill SKILL=<name> FIXTURE=<path> OUT=runs/<id>` |
@@ -67,10 +67,9 @@ make verify-skills           # structural audit + reproducibility audit
 make verify                  # harness smoke + canonical pack diff
 ```
 
-Optional when touching gates or LLM skills:
+Optional when touching gates:
 
 ```bash
-make verify-mock-gates
 make verify-negative-fixtures
 ```
 

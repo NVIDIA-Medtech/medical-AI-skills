@@ -122,4 +122,5 @@ validation:
   reproducibility:
     mode: repeat
     fixture: fixtures/sample_ct.dcm
+    fixture_builder: fixtures/generate_sample.py
     runs: 2
