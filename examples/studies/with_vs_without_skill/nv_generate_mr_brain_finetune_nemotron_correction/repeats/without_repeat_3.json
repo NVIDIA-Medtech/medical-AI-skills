@@ -1,0 +1,199 @@
+{
+  "backend": "nemotron",
+  "model": "nvidia/nvidia/nemotron-3-super-v3",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "nvidia/nvidia/nemotron-3-super-v3",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "without",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+    },
+    {
+      "role": "user",
+      "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain-finetune/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_brain_finetune_NV-Generate-CTMR_train_diff_unet.md ---\n---\nname: train_diff_unet_mr_brain\ndescription: Upstream NV-Generate-CTMR notes for MR-brain diffusion-UNet finetuning from a MONAI-style datalist.\n---\n\n# MR-Brain Diffusion-UNet Finetuning\n\nNV-Generate-CTMR documents diffusion-UNet finetuning in\n`train_diff_unet_tutorial.ipynb` and exposes reusable script entrypoints for\nthe runnable stages. The notebook itself is not a CLI; an automated run should\nstage JSON configs under the requested output directory and invoke the upstream\nscripts from the NV-Generate-CTMR checkout.\n\n## Inputs\n\nUse a MONAI-style datalist with relative image paths:\n\n```json\n{\n  \"training\": [\n    {\"image\": \"imagesTr/case001.nii.gz\", \"modality\": \"mri_t1\"}\n  ],\n  \"testing\": []\n}\n```\n\nResolve each relative `image` against the selected data root. Supported\nMR-brain modalities come from `configs/modality_mapping.json`, including\n`mri_t1`, `mri_t2`, `mri_flair`, `mri_swi`, and skull-stripped variants.\n\n## Configs To Stage\n\nCopy or derive these files into the run output directory before editing them:\n\n- `configs/config_network_rflow.json`\n- `configs/environment_maisi_diff_model_rflow-mr-brain.json`\n- `configs/config_maisi_diff_model_rflow-mr-brain.json`\n- `configs/modality_mapping.json`\n\nDo not edit the files in `.workbench_data/upstreams` or `$NV_GENERATE_ROOT` in\nplace. Put edited runtime configs under the requested output directory.\n\nSet at least these environment-config values in the staged copy:\n\n- `data_base_dir`: data root containing the datalist-relative images\n- `json_data_list`: staged datalist path\n- `embedding_base_dir`: output subdirectory for image embeddings\n- `model_dir`: output subdirectory for checkpoints\n- `output_dir`: optional inference output subdirectory\n- `modality_mapping_path`: staged or upstream modality mapping file\n- `trained_autoencoder_path`: existing autoencoder checkpoint path\n- `existing_ckpt_filepath`: pretrained diffusion checkpoint path, or null for from-scratch\n\nIn the staged model config, set `diffusion_unet_train.n_epochs`, batch size,\nlearning rate, and cache rate for the requested run size. For preflight-only\nchecks, validate paths and staged config shape without launching GPU training.\n\n## Runnable Upstream Stages\n\nFrom the NV-Generate-CTMR checkout, the normal stages are:\n\n```bash\npython -m scripts.diff_model_create_training_data \\\n  -e OUT/configs/environment_maisi_diff_model.json \\\n  -c OUT/configs/config_maisi_diff_model.json \\\n  -t OUT/configs/config_maisi.json \\\n  -g 1\n\npython -m scripts.diff_model_train \\\n  -e OUT/configs/environment_maisi_diff_model.json \\\n  -c OUT/configs/config_maisi_diff_model.json \\\n  -t OUT/configs/config_maisi.json \\\n  -g 1\n```\n\nOptional inference uses `python -m scripts.diff_model_infer` with the same\nthree config paths and GPU count.\n\n## Preflight Boundary\n\nFor a preflight-scale comparison, do not train on placeholder files. Check that\nthe datalist is valid JSON, contains non-empty `training`, all referenced paths\nexist under the data root, modality values are supported, and the staged config\nfiles would point at output-local work directories. Write a small JSON summary\nunder the requested output directory.\n\n## Scope\n\nThis is engineering workflow plumbing only. It does not validate anatomical\nrealism, model utility, clinical interpretation, regulatory readiness, or\nproduction training-data approval.\n"
+    }
+  ],
+  "response": "\n\n```bash\nINPUT_DIR=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset\nOUTPUT_DIR=runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3 && \\\nmkdir -p \"$OUTPUT_DIR\" && \\\ncp configs/config_network_rflow.json \"$OUTPUT_DIR\"/ && \\\ncp configs/environment_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/config_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/modality_mapping.json \"$OUTPUT_DIR\"/ && \\\ncp \"$INPUT_DIR\"/dataset.json \"$OUTPUT_DIR\"/dataset.json && \\\njq empty \"$OUTPUT_DIR\"/dataset.json >/dev/null && \\\n[ \"$(jq '.training | length' \"$OUTPUT_DIR\"/dataset.json)\" -gt 0 ] && \\\njq '.training | all(.modality | IN(\"mri_t1\",\"mri_t2\",\"mri_flair\",\"mri_swi\",\"mri_t1_skull_stripped\",\"mri_t2_skull_stripped\",\"mri_flair_skull_stripped\",\"mri_swi_skull_stripped\"))' \"$OUTPUT_DIR\"/dataset.json | grep -q true && \\\njq -r '.training[].image' \"$OUTPUT_DIR\"/dataset.json | while read img; do [ -f \"$INPUT_DIR/$img\" ] || exit 1; done && \\\njq --arg data_base_dir \"$(realpath \"$INPUT_DIR\")\" \\\n   --arg json_data_list \"$(realpath \"$OUTPUT_DIR\"/dataset.json)\" \\\n   --arg embedding_base_dir \"$(realpath \"$OUTPUT_DIR\"/embeddings)\" \\\n   --arg model_dir \"$(realpath \"$OUTPUT_DIR\"/models)\" \\\n   --arg output_dir \"$(realpath \"$OUTPUT_DIR\"/inference)\" \\\n   --arg modality_mapping_path \"$(realpath \"$OUTPUT_DIR\"/modality_mapping.json)\" \\\n   '.data_base_dir = $data_base_dir | .json_data_list = $json_data_list | .embedding_base_dir = $embedding_base_dir | .model_dir = $model_dir | .output_dir = $output_dir | .modality_mapping_path = $modality_mapping_path | .trained_autoencoder_path = null | .existing_ckpt_filepath = null' \\\n   \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json > \"$OUTPUT_DIR\"/environment_tmp.json && \\\nmv \"$OUTPUT_DIR\"/environment_tmp.json \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json && \\\necho '{\"status\":\"preflight_ok\",\"checked_at\":\"'\"$(date -Iseconds)\"'\"}' > \"$OUTPUT_DIR\"/preflight_summary.json\n```",
+  "command": "INPUT_DIR=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset\nOUTPUT_DIR=runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3 && \\\nmkdir -p \"$OUTPUT_DIR\" && \\\ncp configs/config_network_rflow.json \"$OUTPUT_DIR\"/ && \\\ncp configs/environment_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/config_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/modality_mapping.json \"$OUTPUT_DIR\"/ && \\\ncp \"$INPUT_DIR\"/dataset.json \"$OUTPUT_DIR\"/dataset.json && \\\njq empty \"$OUTPUT_DIR\"/dataset.json >/dev/null && \\\n[ \"$(jq '.training | length' \"$OUTPUT_DIR\"/dataset.json)\" -gt 0 ] && \\\njq '.training | all(.modality | IN(\"mri_t1\",\"mri_t2\",\"mri_flair\",\"mri_swi\",\"mri_t1_skull_stripped\",\"mri_t2_skull_stripped\",\"mri_flair_skull_stripped\",\"mri_swi_skull_stripped\"))' \"$OUTPUT_DIR\"/dataset.json | grep -q true && \\\njq -r '.training[].image' \"$OUTPUT_DIR\"/dataset.json | while read img; do [ -f \"$INPUT_DIR/$img\" ] || exit 1; done && \\\njq --arg data_base_dir \"$(realpath \"$INPUT_DIR\")\" \\\n   --arg json_data_list \"$(realpath \"$OUTPUT_DIR\"/dataset.json)\" \\\n   --arg embedding_base_dir \"$(realpath \"$OUTPUT_DIR\"/embeddings)\" \\\n   --arg model_dir \"$(realpath \"$OUTPUT_DIR\"/models)\" \\\n   --arg output_dir \"$(realpath \"$OUTPUT_DIR\"/inference)\" \\\n   --arg modality_mapping_path \"$(realpath \"$OUTPUT_DIR\"/modality_mapping.json)\" \\\n   '.data_base_dir = $data_base_dir | .json_data_list = $json_data_list | .embedding_base_dir = $embedding_base_dir | .model_dir = $model_dir | .output_dir = $output_dir | .modality_mapping_path = $modality_mapping_path | .trained_autoencoder_path = null | .existing_ckpt_filepath = null' \\\n   \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json > \"$OUTPUT_DIR\"/environment_tmp.json && \\\nmv \"$OUTPUT_DIR\"/environment_tmp.json \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json && \\\necho '{\"status\":\"preflight_ok\",\"checked_at\":\"'\"$(date -Iseconds)\"'\"}' > \"$OUTPUT_DIR\"/preflight_summary.json",
+  "usage": {
+    "completion_tokens": 5453,
+    "prompt_tokens": 1138,
+    "total_tokens": 6591
+  },
+  "execution": {
+    "executed": false,
+    "exit_code": null,
+    "reason": "command does not reference an expected runnable surface"
+  },
+  "score": {
+    "score": 3,
+    "tiers": [
+      {
+        "tier": 1,
+        "pass": false,
+        "reason": "entrypoint marker"
+      },
+      {
+        "tier": 2,
+        "pass": true,
+        "reason": "user input path marker"
+      },
+      {
+        "tier": 3,
+        "pass": true,
+        "reason": "model/modality/control marker"
+      },
+      {
+        "tier": 4,
+        "pass": true,
+        "reason": "output dir marker"
+      },
+      {
+        "tier": 5,
+        "pass": false,
+        "reason": "command does not reference an expected runnable surface"
+      }
+    ],
+    "passed": false
+  },
+  "failure_analysis": [
+    {
+      "kind": "tier_1",
+      "reason": "entrypoint marker",
+      "repair_hint": "Use the runnable surface documented for this arm."
+    },
+    {
+      "kind": "tier_5",
+      "reason": "command does not reference an expected runnable surface",
+      "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+    },
+    {
+      "kind": "not_executed",
+      "reason": "command does not reference an expected runnable surface",
+      "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+    }
+  ],
+  "step": 0,
+  "backend_label": "Nemotron",
+  "attempts": [
+    {
+      "backend": "nemotron",
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "nvidia/nvidia/nemotron-3-super-v3",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "without",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-mr-brain-finetune/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_mr_brain_finetune_NV-Generate-CTMR_train_diff_unet.md ---\n---\nname: train_diff_unet_mr_brain\ndescription: Upstream NV-Generate-CTMR notes for MR-brain diffusion-UNet finetuning from a MONAI-style datalist.\n---\n\n# MR-Brain Diffusion-UNet Finetuning\n\nNV-Generate-CTMR documents diffusion-UNet finetuning in\n`train_diff_unet_tutorial.ipynb` and exposes reusable script entrypoints for\nthe runnable stages. The notebook itself is not a CLI; an automated run should\nstage JSON configs under the requested output directory and invoke the upstream\nscripts from the NV-Generate-CTMR checkout.\n\n## Inputs\n\nUse a MONAI-style datalist with relative image paths:\n\n```json\n{\n  \"training\": [\n    {\"image\": \"imagesTr/case001.nii.gz\", \"modality\": \"mri_t1\"}\n  ],\n  \"testing\": []\n}\n```\n\nResolve each relative `image` against the selected data root. Supported\nMR-brain modalities come from `configs/modality_mapping.json`, including\n`mri_t1`, `mri_t2`, `mri_flair`, `mri_swi`, and skull-stripped variants.\n\n## Configs To Stage\n\nCopy or derive these files into the run output directory before editing them:\n\n- `configs/config_network_rflow.json`\n- `configs/environment_maisi_diff_model_rflow-mr-brain.json`\n- `configs/config_maisi_diff_model_rflow-mr-brain.json`\n- `configs/modality_mapping.json`\n\nDo not edit the files in `.workbench_data/upstreams` or `$NV_GENERATE_ROOT` in\nplace. Put edited runtime configs under the requested output directory.\n\nSet at least these environment-config values in the staged copy:\n\n- `data_base_dir`: data root containing the datalist-relative images\n- `json_data_list`: staged datalist path\n- `embedding_base_dir`: output subdirectory for image embeddings\n- `model_dir`: output subdirectory for checkpoints\n- `output_dir`: optional inference output subdirectory\n- `modality_mapping_path`: staged or upstream modality mapping file\n- `trained_autoencoder_path`: existing autoencoder checkpoint path\n- `existing_ckpt_filepath`: pretrained diffusion checkpoint path, or null for from-scratch\n\nIn the staged model config, set `diffusion_unet_train.n_epochs`, batch size,\nlearning rate, and cache rate for the requested run size. For preflight-only\nchecks, validate paths and staged config shape without launching GPU training.\n\n## Runnable Upstream Stages\n\nFrom the NV-Generate-CTMR checkout, the normal stages are:\n\n```bash\npython -m scripts.diff_model_create_training_data \\\n  -e OUT/configs/environment_maisi_diff_model.json \\\n  -c OUT/configs/config_maisi_diff_model.json \\\n  -t OUT/configs/config_maisi.json \\\n  -g 1\n\npython -m scripts.diff_model_train \\\n  -e OUT/configs/environment_maisi_diff_model.json \\\n  -c OUT/configs/config_maisi_diff_model.json \\\n  -t OUT/configs/config_maisi.json \\\n  -g 1\n```\n\nOptional inference uses `python -m scripts.diff_model_infer` with the same\nthree config paths and GPU count.\n\n## Preflight Boundary\n\nFor a preflight-scale comparison, do not train on placeholder files. Check that\nthe datalist is valid JSON, contains non-empty `training`, all referenced paths\nexist under the data root, modality values are supported, and the staged config\nfiles would point at output-local work directories. Write a small JSON summary\nunder the requested output directory.\n\n## Scope\n\nThis is engineering workflow plumbing only. It does not validate anatomical\nrealism, model utility, clinical interpretation, regulatory readiness, or\nproduction training-data approval.\n"
+        }
+      ],
+      "response": "\n\n```bash\nINPUT_DIR=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset\nOUTPUT_DIR=runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3 && \\\nmkdir -p \"$OUTPUT_DIR\" && \\\ncp configs/config_network_rflow.json \"$OUTPUT_DIR\"/ && \\\ncp configs/environment_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/config_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/modality_mapping.json \"$OUTPUT_DIR\"/ && \\\ncp \"$INPUT_DIR\"/dataset.json \"$OUTPUT_DIR\"/dataset.json && \\\njq empty \"$OUTPUT_DIR\"/dataset.json >/dev/null && \\\n[ \"$(jq '.training | length' \"$OUTPUT_DIR\"/dataset.json)\" -gt 0 ] && \\\njq '.training | all(.modality | IN(\"mri_t1\",\"mri_t2\",\"mri_flair\",\"mri_swi\",\"mri_t1_skull_stripped\",\"mri_t2_skull_stripped\",\"mri_flair_skull_stripped\",\"mri_swi_skull_stripped\"))' \"$OUTPUT_DIR\"/dataset.json | grep -q true && \\\njq -r '.training[].image' \"$OUTPUT_DIR\"/dataset.json | while read img; do [ -f \"$INPUT_DIR/$img\" ] || exit 1; done && \\\njq --arg data_base_dir \"$(realpath \"$INPUT_DIR\")\" \\\n   --arg json_data_list \"$(realpath \"$OUTPUT_DIR\"/dataset.json)\" \\\n   --arg embedding_base_dir \"$(realpath \"$OUTPUT_DIR\"/embeddings)\" \\\n   --arg model_dir \"$(realpath \"$OUTPUT_DIR\"/models)\" \\\n   --arg output_dir \"$(realpath \"$OUTPUT_DIR\"/inference)\" \\\n   --arg modality_mapping_path \"$(realpath \"$OUTPUT_DIR\"/modality_mapping.json)\" \\\n   '.data_base_dir = $data_base_dir | .json_data_list = $json_data_list | .embedding_base_dir = $embedding_base_dir | .model_dir = $model_dir | .output_dir = $output_dir | .modality_mapping_path = $modality_mapping_path | .trained_autoencoder_path = null | .existing_ckpt_filepath = null' \\\n   \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json > \"$OUTPUT_DIR\"/environment_tmp.json && \\\nmv \"$OUTPUT_DIR\"/environment_tmp.json \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json && \\\necho '{\"status\":\"preflight_ok\",\"checked_at\":\"'\"$(date -Iseconds)\"'\"}' > \"$OUTPUT_DIR\"/preflight_summary.json\n```",
+      "command": "INPUT_DIR=runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset\nOUTPUT_DIR=runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3 && \\\nmkdir -p \"$OUTPUT_DIR\" && \\\ncp configs/config_network_rflow.json \"$OUTPUT_DIR\"/ && \\\ncp configs/environment_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/config_maisi_diff_model_rflow-mr-brain.json \"$OUTPUT_DIR\"/ && \\\ncp configs/modality_mapping.json \"$OUTPUT_DIR\"/ && \\\ncp \"$INPUT_DIR\"/dataset.json \"$OUTPUT_DIR\"/dataset.json && \\\njq empty \"$OUTPUT_DIR\"/dataset.json >/dev/null && \\\n[ \"$(jq '.training | length' \"$OUTPUT_DIR\"/dataset.json)\" -gt 0 ] && \\\njq '.training | all(.modality | IN(\"mri_t1\",\"mri_t2\",\"mri_flair\",\"mri_swi\",\"mri_t1_skull_stripped\",\"mri_t2_skull_stripped\",\"mri_flair_skull_stripped\",\"mri_swi_skull_stripped\"))' \"$OUTPUT_DIR\"/dataset.json | grep -q true && \\\njq -r '.training[].image' \"$OUTPUT_DIR\"/dataset.json | while read img; do [ -f \"$INPUT_DIR/$img\" ] || exit 1; done && \\\njq --arg data_base_dir \"$(realpath \"$INPUT_DIR\")\" \\\n   --arg json_data_list \"$(realpath \"$OUTPUT_DIR\"/dataset.json)\" \\\n   --arg embedding_base_dir \"$(realpath \"$OUTPUT_DIR\"/embeddings)\" \\\n   --arg model_dir \"$(realpath \"$OUTPUT_DIR\"/models)\" \\\n   --arg output_dir \"$(realpath \"$OUTPUT_DIR\"/inference)\" \\\n   --arg modality_mapping_path \"$(realpath \"$OUTPUT_DIR\"/modality_mapping.json)\" \\\n   '.data_base_dir = $data_base_dir | .json_data_list = $json_data_list | .embedding_base_dir = $embedding_base_dir | .model_dir = $model_dir | .output_dir = $output_dir | .modality_mapping_path = $modality_mapping_path | .trained_autoencoder_path = null | .existing_ckpt_filepath = null' \\\n   \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json > \"$OUTPUT_DIR\"/environment_tmp.json && \\\nmv \"$OUTPUT_DIR\"/environment_tmp.json \"$OUTPUT_DIR\"/environment_maisi_diff_model_rflow-mr-brain.json && \\\necho '{\"status\":\"preflight_ok\",\"checked_at\":\"'\"$(date -Iseconds)\"'\"}' > \"$OUTPUT_DIR\"/preflight_summary.json",
+      "usage": {
+        "completion_tokens": 5453,
+        "prompt_tokens": 1138,
+        "total_tokens": 6591
+      },
+      "execution": {
+        "executed": false,
+        "exit_code": null,
+        "reason": "command does not reference an expected runnable surface"
+      },
+      "score": {
+        "score": 3,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": false,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": false,
+            "reason": "command does not reference an expected runnable surface"
+          }
+        ],
+        "passed": false
+      },
+      "failure_analysis": [
+        {
+          "kind": "tier_1",
+          "reason": "entrypoint marker",
+          "repair_hint": "Use the runnable surface documented for this arm."
+        },
+        {
+          "kind": "tier_5",
+          "reason": "command does not reference an expected runnable surface",
+          "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
+        },
+        {
+          "kind": "not_executed",
+          "reason": "command does not reference an expected runnable surface",
+          "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+        }
+      ],
+      "step": 0
+    }
+  ],
+  "steps_to_pass": Infinity,
+  "max_correction_steps": 0,
+  "repeat": 3,
+  "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_nemotron_correction/without/repeat_3",
+  "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset",
+  "prompt_style": "minimal"
+}

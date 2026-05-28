@@ -25,6 +25,7 @@ metadata:
 - Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.
 - If a host agent exposes `run_script`, use `run_script("scripts/run_mr_brain_finetune.py", args=[...])`; otherwise run the Bash/Python command below.
 - Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.
+- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.
 
 ## Available Scripts
 | Script | Purpose | Arguments |
@@ -48,6 +49,17 @@ export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Genera
 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
   PATH_TO_DATALIST.json \
   --data-base-dir PATH_TO_DATA_ROOT \
+  --output-dir runs/nv_generate_mr_brain_finetune_preflight \
+  --preflight
+```
+
+Preflight bundle input:
+
+```bash
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}" && \
+python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
+  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \
+  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \
   --output-dir runs/nv_generate_mr_brain_finetune_preflight \
   --preflight
 ```

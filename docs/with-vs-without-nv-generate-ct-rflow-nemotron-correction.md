@@ -1,6 +1,6 @@
 # `nv_generate_ct_rflow`: Nemotron LLM+SKILL.md vs LLM+README Baseline Study
 
-Status: strict audit passed for refreshed artifacts on May 27, 2026. Full run log: `not found`. Targeted rerun log: `not found`.
+Status: strict audit passed for refreshed artifacts on May 28, 2026. Full run log: `not found`. Targeted rerun log: `not found`.
 
 This report uses the same direct-API embedded-doc no-repair baseline protocol as the Codex/Opus comparison, but runs `nvidia/nvidia/nemotron-3-super-v3`. The linked prompt artifact is the fair A2-style path prompt for tool-enabled/NAT replication.
 
@@ -23,11 +23,11 @@ Fair path-prompt artifact: `tools/nat_audit/data/eval_nv_model_studies_nv_genera
 | Backend | Arm | Mean score | Passes | Steps | Exit | Tier 5 | Failed tiers |
 |---|---|---:|---:|---|---|---|---|
 | Nemotron | with | 5.0/5 | 3/3 | mean 0.0; unresolved 0; values [0, 0, 0] | 0 (3) | image shape=(256, 256, 256); label shape=(256, 256, 256) (3) | none |
-| Nemotron | without | 1.7/5 | 0/3 | all unresolved; values [unresolved, unresolved, unresolved] | None (3) | command does not reference the neutral staged input path (2); no command extracted (1) | T2: user input path marker (3); T1: entrypoint marker (2); T5: command does not reference the neutral staged input path (2) |
+| Nemotron | without | 1.3/5 | 0/3 | all unresolved; values [unresolved, unresolved, unresolved] | None (2); 1 (1) | no command extracted (2); exit 1 (1) | T1: entrypoint marker (2); T2: user input path marker (2); T3: model/modality/control marker (2) |
 
 ## Analysis
 
-SKILL.md paired advantage: the with-skill repeats passed 3/3 with mean score 5.0/5 and steps mean 0.0; unresolved 0; values [0, 0, 0]. The README-only repeats passed 0/3 with mean score 1.7/5 and steps all unresolved; values [unresolved, unresolved, unresolved].
+SKILL.md paired advantage: the with-skill repeats passed 3/3 with mean score 5.0/5 and steps mean 0.0; unresolved 0; values [0, 0, 0]. The README-only repeats passed 0/3 with mean score 1.3/5 and steps all unresolved; values [unresolved, unresolved, unresolved].
 
 SKILL.md paired advantage: SKILL.md wins 3/3 matched backend-repeat pairs, README-only wins 0/3, and 0/3 are ties. Pass/fail is the primary outcome; score breaks ties only when pass status is equal. Exact one-sided sign-test p=0.125 across 3 decisive pair(s).
 
@@ -43,8 +43,8 @@ Token counts are provider-reported values saved in each repeat JSON. Reasoning t
 
 | Backend | Arm | Repeats | Passes | Attempts | Prompt tokens | Completion tokens | Reasoning tokens | Total tokens | Mean total/repeat | Executed | Mean exec s |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Nemotron | with | 3 | 3 | 3 | 9,393 | 5,526 | 0 | 14,919 | 4,973.0 | 3 | 117.7 |
-| Nemotron | without | 3 | 0 | 3 | 9,624 | 15,869 | 0 | 25,493 | 8,497.7 | 0 | n/a |
+| Nemotron | with | 3 | 3 | 3 | 9,546 | 9,029 | 0 | 18,575 | 6,191.7 | 3 | 113.6 |
+| Nemotron | without | 3 | 0 | 3 | 9,630 | 16,229 | 0 | 25,859 | 8,619.7 | 1 | 0.0 |
 
 ## Nemotron Diagnostics
 
@@ -53,19 +53,19 @@ These diagnostics are Nemotron-only and do not change the main score. The strict
 | Arm | Repeats | Passed strict | Strict command | Recoverable malformed command | Unrecoverable formatting | Guard-ready after tolerant extraction | Static guard blocked | Format categories | Guard reasons |
 |---|---:|---:|---:|---:|---:|---:|---:|---|---|
 | with | 3 | 3 | 3 | 0 | 0 | 0 | 0 | strict 3 | none |
-| without | 3 | 0 | 2 | 1 | 0 | 0 | 1 | strict 2; raw_shell 1 | command does not reference the neutral staged input path (1) |
+| without | 3 | 0 | 1 | 2 | 0 | 0 | 2 | strict 1; raw_shell 2 | command does not reference the neutral staged input path (2) |
 
 Protocol-compliance failure buckets, counted per repeat and not mutually exclusive:
 
 | Bucket | Count |
 |---|---:|
-| No strict command extracted | 1 |
+| No strict command extracted | 2 |
 | Wrong or missing runnable surface | 2 |
-| Missing staged input path | 3 |
-| Missing model/modality/control marker | 1 |
-| Missing output directory | 1 |
-| Unsafe/static guard block | 2 |
-| Nonzero execution exit | 0 |
+| Missing staged input path | 2 |
+| Missing model/modality/control marker | 2 |
+| Missing output directory | 2 |
+| Unsafe/static guard block | 0 |
+| Nonzero execution exit | 1 |
 | Artifact contract failure after execution | 0 |
 
 ## Attempt Trace
@@ -82,9 +82,9 @@ Protocol-compliance failure buckets, counted per repeat and not mutually exclusi
 
 | Repeat | Step | Score | Passed | Exit | Failed tiers | Why it did not work |
 |---:|---:|---:|---|---|---|---|
-| 1 | 0 | 2/5 | no | None | T1: entrypoint marker; T2: user input path marker; T5: command does not reference the neutral staged input path | tier_1: entrypoint marker Repair: Use the runnable surface documented for this arm.<br>tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_5: command does not reference the neutral staged input path Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: command does not reference the neutral staged input path Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
-| 2 | 0 | 0/5 | no | None | T1: entrypoint marker; T2: user input path marker; T3: model/modality/control marker; T4: output dir marker; T5: no command extracted | no_command: No executable bash command was extracted from the model response. Repair: Return exactly one fenced bash block containing the command to run.<br>tier_1: entrypoint marker Repair: Use the runnable surface documented for this arm.<br>tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_3: model/modality/control marker Repair: Choose the model, modality, labels, anatomy controls, or smoke mode required by the task. |
-| 3 | 0 | 3/5 | no | None | T2: user input path marker; T5: command does not reference the neutral staged input path | tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_5: command does not reference the neutral staged input path Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: command does not reference the neutral staged input path Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
+| 1 | 0 | 0/5 | no | None | T1: entrypoint marker; T2: user input path marker; T3: model/modality/control marker; T4: output dir marker; T5: no command extracted | no_command: No executable bash command was extracted from the model response. Repair: Return exactly one fenced bash block containing the command to run.<br>tier_1: entrypoint marker Repair: Use the runnable surface documented for this arm.<br>tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_3: model/modality/control marker Repair: Choose the model, modality, labels, anatomy controls, or smoke mode required by the task. |
+| 2 | 0 | 4/5 | no | 1 | T5: exit 1 | tier_5: exit 1 Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>nonzero_exit: Command exited 1. Repair: Use stderr/stdout to repair setup, paths, arguments, or runtime package installation. |
+| 3 | 0 | 0/5 | no | None | T1: entrypoint marker; T2: user input path marker; T3: model/modality/control marker; T4: output dir marker; T5: no command extracted | no_command: No executable bash command was extracted from the model response. Repair: Return exactly one fenced bash block containing the command to run.<br>tier_1: entrypoint marker Repair: Use the runnable surface documented for this arm.<br>tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_3: model/modality/control marker Repair: Choose the model, modality, labels, anatomy controls, or smoke mode required by the task. |
 
 ## Generated Commands
 
@@ -102,7 +102,7 @@ python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && \
 python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \
   runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \
   --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_1 \
-  --random-seed 42 \
+  --random-seed 1 \
   --version rflow-ct
 ```
 
@@ -114,7 +114,7 @@ python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && \
 python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \
   runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \
   --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_2 \
-  --random-seed 0 \
+  --random-seed 2 \
   --version rflow-ct
 ```
 
@@ -126,7 +126,6 @@ python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && \
 python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \
   runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json \
   --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/with/repeat_3 \
-  --random-seed 3 \
   --version rflow-ct
 ```
 
@@ -134,52 +133,30 @@ python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py \
 
 Extracted first-attempt commands are shown below by repeat. The main baseline uses no repair prompting, so failures are recorded as data.
 
-Repeat 1: score 2/5, passed=no, steps=unresolved, exit=None
-
-```bash
-mkdir -p runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_1 && \
-cd runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_1 && \
-cp ../../../configs/config_network_rflow.json . && \
-cp ../../../configs/config_infer.json . && \
-cp ../../../configs/environment_rflow-ct.json . && \
-sed -i '/"body_region"/c\  "body_region": ["chest"],' config_infer.json && \
-sed -i '/"anatomy_list"/c\  "anatomy_list": ["lung","tumor"],' config_infer.json && \
-sed -i '/"controllable_anatomy_size"/c\  "controllable_anatomy_size": [],' config_infer.json && \
-sed -i '/"output_size"/c\  "output_size": [256,256,256],' config_infer.json && \
-sed -i '/"spacing"/c\  "spacing": [1.5,1.5,1.5],' config_infer.json && \
-sed -i '/"modality"/c\  "modality": 1,' config_infer.json && \
-sed -i '/"num_inference_steps"/c\  "num_inference_steps": 30,' config_infer.json && \
-export MONAI_DATA_DIRECTORY="./temp_work_dir" && \
-python ../../../scripts/inference.py -t ./config_network_rflow.json -i ./config_infer.json -e ./environment_rflow-ct.json --random-seed 0 --version rflow-ct
-```
-
-Repeat 2: score 0/5, passed=no, steps=unresolved, exit=None
+Repeat 1: score 0/5, passed=no, steps=unresolved, exit=None
 
 _No executable bash command was extracted._
 
-Repeat 3: score 3/5, passed=no, steps=unresolved, exit=None
+Repeat 2: score 4/5, passed=no, steps=unresolved, exit=1
 
 ```bash
-OUTPUT_DIR=runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_3 && \
-mkdir -p "$OUTPUT_DIR" && \
-cd "$OUTPUT_DIR" && \
-cp ../../configs/config_network_rflow.json . && \
-cp ../../configs/environment_rflow-ct.json . && \
-cat > config_infer.json <<'EOF'
-{
-  "body_region": ["chest"],
-  "anatomy_list": ["lung", "tumor"],
-  "controllable_anatomy_size": [],
-  "output_size": [256, 256, 256],
-  "spacing": [1.5, 1.5, 1.5],
-  "modality": 1,
-  "num_inference_steps": 30,
-  "mask_generation_num_inference_steps": 1000,
-  "cfg_guidance_scale": 7.5
-}
-EOF && \
-python -m ../../scripts.inference -t config_network_rflow.json -i config_infer.json -e environment_rflow-ct.json --random-seed 0 --version rflow-ct
+export MONAI_DATA_DIRECTORY="./temp_work_dir" && \
+network="rflow" && \
+generate_version="rflow-ct" && \
+mkdir -p runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && \
+cp runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json && \
+python -m scripts.inference \
+    -t ./configs/config_network_${network}.json \
+    -i ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json \
+    -e ./configs/environment_${generate_version}.json \
+    --random-seed 0 \
+    --version ${generate_version} \
+    --output_dir ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2
 ```
+
+Repeat 3: score 0/5, passed=no, steps=unresolved, exit=None
+
+_No executable bash command was extracted._
 
 ## Skill Fix Notes
 

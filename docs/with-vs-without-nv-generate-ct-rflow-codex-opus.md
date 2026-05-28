@@ -1,6 +1,6 @@
 # `nv_generate_ct_rflow`: Codex/Opus LLM+SKILL.md vs LLM+README
 
-Status: strict audit passed for refreshed artifacts on May 27, 2026. Full run log: `not found`. Targeted rerun log: `not found`.
+Status: strict audit passed for refreshed artifacts on May 28, 2026. Full run log: `not found`. Targeted rerun log: `not found`.
 
 This report compares `LLM + SKILL.md` with `LLM + upstream README/guide`. The completed direct-API run used the corrected embedded-doc minimal prompt because those backends cannot read repo files. The fair NAT/tool-agent prompt artifact is A2-style: it gives a natural user request, a neutral staged input path, an output directory, and tells the agent which arm-specific document to read. It does not spell out operational details such as entrypoints, labels, model variants, or config filenames outside the documentation arm.
 
@@ -23,13 +23,13 @@ Fair path-prompt artifact: `tools/nat_audit/data/eval_nv_model_studies_nv_genera
 | Backend | Arm | Mean score | Passes | Steps | Exit | Tier 5 | Failed tiers |
 |---|---|---:|---:|---|---|---|---|
 | GPT-5.5 / Codex | with | 5.0/5 | 3/3 | mean 0.0; unresolved 0; values [0, 0, 0] | 0 (3) | image shape=(256, 256, 256); label shape=(256, 256, 256) (3) | none |
-| GPT-5.5 / Codex | without | 4.0/5 | 0/3 | all unresolved; values [unresolved, unresolved, unresolved] | 1 (2); None (1) | exit 1 (2); blocked unsafe command fragment: rm (1) | T5: exit 1 (2); T5: blocked unsafe command fragment: rm (1) |
-| Opus 4.7 | with | 5.0/5 | 3/3 | mean 0.0; unresolved 0; values [0, 0, 0] | 0 (3) | image shape=(256, 256, 256); label shape=(256, 256, 256) (3) | none |
-| Opus 4.7 | without | 2.7/5 | 0/3 | all unresolved; values [unresolved, unresolved, unresolved] | None (2); 1 (1) | command does not reference the expected output directory (2); exit 1 (1) | T2: user input path marker (2); T4: output dir marker (2); T5: command does not reference the expected output directory (2) |
+| GPT-5.5 / Codex | without | 4.0/5 | 0/3 | all unresolved; values [unresolved, unresolved, unresolved] | None (2); 1 (1) | blocked unsafe command fragment: rm (2); exit 1 (1) | T5: blocked unsafe command fragment: rm (2); T5: exit 1 (1) |
+| Opus 4.7 | with | 4.3/5 | 1/3 | mean 0.0; unresolved 2; values [unresolved, unresolved, 0] | 1 (2); 0 (1) | exit 1 (2); image shape=(256, 256, 256); label shape=(256, 256, 256) (1) | T5: exit 1 (2) |
+| Opus 4.7 | without | 2.0/5 | 0/3 | all unresolved; values [unresolved, unresolved, unresolved] | None (3) | command does not reference the expected output directory (3) | T2: user input path marker (3); T4: output dir marker (3); T5: command does not reference the expected output directory (3) |
 
 ## Analysis
 
-SKILL.md paired advantage: the with-skill arms passed 6/6 backend-repeat trials with an average score of 5.0/5; the README-only arms passed 0/6 backend-repeat trials with an average score of 3.3/5.
+SKILL.md paired advantage: the with-skill arms passed 4/6 backend-repeat trials with an average score of 4.7/5; the README-only arms passed 0/6 backend-repeat trials with an average score of 3.0/5.
 
 SKILL.md paired advantage: SKILL.md wins 6/6 matched backend-repeat pairs, README-only wins 0/6, and 0/6 are ties. Pass/fail is the primary outcome; score breaks ties only when pass status is equal. Exact one-sided sign-test p=0.01562 across 6 decisive pair(s).
 
@@ -39,7 +39,7 @@ Each backend/arm/skill configuration was repeated three times. A repeat is indep
 
 The main baseline uses `max_correction_steps=0`: each repeat sends one prompt, executes the extracted command once, and records pass/fail, runtime, tokens, and deterministic failure analysis. The repair-loop implementation remains available for separate diagnostic experiments, but it is not part of this comparison.
 
-All with-skill repeats exited successfully and produced artifacts accepted by the deterministic grader. That means the final SKILL.md surface was repeatable for both tested agent backends.
+With-skill failures: Opus 4.7: T5: exit 1 (2).
 
 The README-only commands did not pass tier 5. Typical failure modes were unsafe generated shell cleanup, missing schema fields, missing model/control details, or upstream commands that did not execute cleanly from Medical AI Skills root.
 
@@ -51,10 +51,10 @@ Token counts are provider-reported values saved in each repeat JSON. Reasoning t
 
 | Backend | Arm | Repeats | Passes | Attempts | Prompt tokens | Completion tokens | Reasoning tokens | Total tokens | Mean total/repeat | Executed | Mean exec s |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| GPT-5.5 / Codex | with | 3 | 3 | 3 | 8,943 | 2,242 | 1,739 | 11,185 | 3,728.3 | 3 | 114.3 |
-| GPT-5.5 / Codex | without | 3 | 0 | 3 | 8,988 | 20,673 | 16,894 | 29,661 | 9,887.0 | 2 | 0.0 |
-| Opus 4.7 | with | 3 | 3 | 3 | 15,240 | 672 | 0 | 15,912 | 5,304.0 | 3 | 113.9 |
-| Opus 4.7 | without | 3 | 0 | 3 | 14,271 | 2,743 | 0 | 17,014 | 5,671.3 | 1 | 0.0 |
+| GPT-5.5 / Codex | with | 3 | 3 | 3 | 9,102 | 1,906 | 1,519 | 11,008 | 3,669.3 | 3 | 114.7 |
+| GPT-5.5 / Codex | without | 3 | 0 | 3 | 8,994 | 17,924 | 14,335 | 26,918 | 8,972.7 | 1 | 0.0 |
+| Opus 4.7 | with | 3 | 1 | 3 | 15,501 | 608 | 0 | 16,109 | 5,369.7 | 3 | 37.9 |
+| Opus 4.7 | without | 3 | 0 | 3 | 14,301 | 2,675 | 0 | 16,976 | 5,658.7 | 0 | n/a |
 
 ## Repair Attempts and Failure Reasons
 
@@ -73,15 +73,15 @@ The tables below explain why each generated command failed and how many follow-u
 | Repeat | Step | Score | Passed | Exit | Failed tiers | Why it did not work |
 |---:|---:|---:|---|---|---|---|
 | 1 | 0 | 4/5 | no | 1 | T5: exit 1 | tier_5: exit 1 Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>nonzero_exit: Command exited 1. Repair: Use stderr/stdout to repair setup, paths, arguments, or runtime package installation. |
-| 2 | 0 | 4/5 | no | 1 | T5: exit 1 | tier_5: exit 1 Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>nonzero_exit: Command exited 1. Repair: Use stderr/stdout to repair setup, paths, arguments, or runtime package installation. |
+| 2 | 0 | 4/5 | no | None | T5: blocked unsafe command fragment: rm | tier_5: blocked unsafe command fragment: rm Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: blocked unsafe command fragment: rm Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
 | 3 | 0 | 4/5 | no | None | T5: blocked unsafe command fragment: rm | tier_5: blocked unsafe command fragment: rm Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: blocked unsafe command fragment: rm Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
 
 ### Opus 4.7, with arm
 
 | Repeat | Step | Score | Passed | Exit | Failed tiers | Why it did not work |
 |---:|---:|---:|---|---|---|---|
-| 1 | 0 | 5/5 | yes | 0 | none | none |
-| 2 | 0 | 5/5 | yes | 0 | none | none |
+| 1 | 0 | 4/5 | no | 1 | T5: exit 1 | tier_5: exit 1 Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>nonzero_exit: Command exited 1. Repair: Use stderr/stdout to repair setup, paths, arguments, or runtime package installation. |
+| 2 | 0 | 4/5 | no | 1 | T5: exit 1 | tier_5: exit 1 Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>nonzero_exit: Command exited 1. Repair: Use stderr/stdout to repair setup, paths, arguments, or runtime package installation. |
 | 3 | 0 | 5/5 | yes | 0 | none | none |
 
 ### Opus 4.7, without arm
@@ -89,7 +89,7 @@ The tables below explain why each generated command failed and how many follow-u
 | Repeat | Step | Score | Passed | Exit | Failed tiers | Why it did not work |
 |---:|---:|---:|---|---|---|---|
 | 1 | 0 | 2/5 | no | None | T2: user input path marker; T4: output dir marker; T5: command does not reference the expected output directory | tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_4: output dir marker Repair: Write outputs under the exact arm-specific output directory.<br>tier_5: command does not reference the expected output directory Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: command does not reference the expected output directory Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
-| 2 | 0 | 4/5 | no | 1 | T5: exit 1 | tier_5: exit 1 Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>nonzero_exit: Command exited 1. Repair: Use stderr/stdout to repair setup, paths, arguments, or runtime package installation. |
+| 2 | 0 | 2/5 | no | None | T2: user input path marker; T4: output dir marker; T5: command does not reference the expected output directory | tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_4: output dir marker Repair: Write outputs under the exact arm-specific output directory.<br>tier_5: command does not reference the expected output directory Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: command does not reference the expected output directory Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
 | 3 | 0 | 2/5 | no | None | T2: user input path marker; T4: output dir marker; T5: command does not reference the expected output directory | tier_2: user input path marker Repair: Use the staged user input path under runs/with_vs_without_nv/_inputs/.<br>tier_4: output dir marker Repair: Write outputs under the exact arm-specific output directory.<br>tier_5: command does not reference the expected output directory Repair: Make the command execute cleanly and produce verifier-accepted artifacts.<br>not_executed: command does not reference the expected output directory Repair: Remove unsafe shell fragments and keep the command within the documented workflow surface. |
 
 ## Skill Fix Notes
@@ -113,7 +113,7 @@ export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python 
 Repeat 2: score 5/5, passed=yes, steps=0, exit=0
 
 ```bash
-OUT="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/with/repeat_2" && mkdir -p "$OUT" && python -c 'import json, pathlib; src=pathlib.Path("runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json"); out=pathlib.Path("runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/with/repeat_2"); cfg=json.loads(src.read_text()); cfg["num_output_samples"]=1; dst=out/"config_infer_override.one_sample.json"; dst.write_text(json.dumps(cfg, indent=2) + "\n")' && export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py "$OUT/config_infer_override.one_sample.json" --output-dir "$OUT" --random-seed 2 --version rflow-ct --yes
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/with/repeat_2 --random-seed 2 --version rflow-ct --yes
 ```
 
 Repeat 3: score 5/5, passed=yes, steps=0, exit=0
@@ -129,314 +129,298 @@ Extracted first-attempt commands are shown below by repeat. The main baseline us
 Repeat 1: score 4/5, passed=no, steps=unresolved, exit=1
 
 ```bash
-OUT="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_1" && \
-REQ="runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json" && \
-NV_ROOT="${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}" && \
-export OUT REQ NV_ROOT && \
-OUT_ABS="$(python -c 'import os; print(os.path.abspath(os.environ["OUT"]))')" && \
-NV_ROOT_ABS="$(python -c 'import os; print(os.path.abspath(os.environ["NV_ROOT"]))')" && \
-export OUT_ABS NV_ROOT="$NV_ROOT_ABS" PYTHONDONTWRITEBYTECODE=1 MONAI_DATA_DIRECTORY="$OUT_ABS/_runtime/monai_data" && \
-mkdir -p "$OUT/_runtime/monai_data" && \
-python - <<'PY_PREP' && \
-(cd "$NV_ROOT" && python -B -m scripts.inference -t ./configs/config_network_rflow.json -i "$OUT_ABS/_runtime/config_infer.json" -e ./configs/environment_rflow-ct.json --random-seed 0 --version rflow-ct) && \
-python - <<'PY_CLEAN'
-import json, os, re, shutil
+REPO_ROOT="$PWD" && REQUEST="runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json" && OUT="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_1" && GEN_ROOT="${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}" && test -f "$REQUEST" && test -d "$GEN_ROOT" && mkdir -p "$OUT/runtime" "$OUT/monai_data" && find "$OUT" -maxdepth 1 -type f \( -name 'sample_*_image.nii.gz' -o -name 'sample_*_label.nii.gz' \) -delete && GEN_ROOT="$GEN_ROOT" OUT="$OUT" REQUEST="$REQUEST" REPO_ROOT="$REPO_ROOT" python - <<'PY' && (cd "$GEN_ROOT" && PYTHONDONTWRITEBYTECODE=1 MONAI_DATA_DIRECTORY="$REPO_ROOT/$OUT/monai_data" python -m scripts.inference -t ./configs/config_network_rflow.json -i "$REPO_ROOT/$OUT/runtime/config_infer_chest_lung_tumor.json" -e ./configs/environment_rflow-ct.json --random-seed 0 --version rflow-ct)
+import json, os, re
 from pathlib import Path
 
-out = Path(os.environ["OUT_ABS"])
-runtime = out / "_runtime"
-req = Path(os.environ["REQ"])
-nv = Path(os.environ["NV_ROOT"])
-
-if not req.is_file():
-    raise SystemExit(f"Missing request JSON: {req}")
-if not (nv / "configs" / "config_infer.json").is_file():
-    raise SystemExit(f"Missing upstream config_infer.json under: {nv}")
-if not (nv / "configs" / "label_dict.json").is_file():
-    raise SystemExit(f"Missing upstream label_dict.json under: {nv}")
-
+gen = Path(os.environ["GEN_ROOT"]).resolve()
+out = Path(os.environ["OUT"]).resolve()
+runtime = out / "runtime"
 runtime.mkdir(parents=True, exist_ok=True)
-shutil.copyfile(req, runtime / "request.json")
 
-def load_json(p):
-    with open(p, "r") as f:
-        return json.load(f)
+src_cfg = gen / "configs" / "config_infer.json"
+label_json = gen / "configs" / "label_dict.json"
 
-def dump_json(obj, p):
-    with open(p, "w") as f:
-        json.dump(obj, f, indent=2, sort_keys=True)
+cfg = json.loads(src_cfg.read_text())
+label_obj = json.loads(label_json.read_text())
 
-def collect_label_names(obj):
-    names = []
-    if isinstance(obj, dict):
-        for k, v in obj.items():
+names = set()
+def collect_strings(x):
+    if isinstance(x, dict):
+        for k, v in x.items():
             if isinstance(k, str) and not k.strip().lstrip("-").isdigit():
-                names.append(k)
-            if isinstance(v, str):
-                names.append(v)
-            else:
-                names.extend(collect_label_names(v))
-    elif isinstance(obj, list):
-        for v in obj:
-            if isinstance(v, str):
-                names.append(v)
-            else:
-                names.extend(collect_label_names(v))
-    seen, out_names = set(), []
-    for n in names:
-        if n not in seen:
-            seen.add(n)
-            out_names.append(n)
-    return out_names
+                names.add(k)
+            collect_strings(v)
+    elif isinstance(x, list):
+        for v in x:
+            collect_strings(v)
+    elif isinstance(x, str) and not x.strip().lstrip("-").isdigit():
+        names.add(x)
+
+collect_strings(label_obj)
 
 def norm(s):
-    return re.sub(r"\s+", " ", str(s).replace("_", " ").replace("-", " ").lower()).strip()
+    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
-labels = collect_label_names(load_json(nv / "configs" / "label_dict.json"))
-lung_exact = [n for n in labels if norm(n) == "lung"]
-lung_candidates = lung_exact or [n for n in labels if "lung" in norm(n) and not any(x in norm(n) for x in ("tumor", "nodule", "cancer"))]
-if not lung_candidates:
-    raise SystemExit("Could not resolve a lung anatomy label from configs/label_dict.json")
-lung_labels = lung_candidates[:1] if lung_exact else lung_candidates[:6]
+by_norm = {}
+for n in sorted(names):
+    by_norm.setdefault(norm(n), n)
 
-tumor_exact = [n for n in labels if norm(n) in ("lung tumor", "lung tumour")]
-tumor_candidates = tumor_exact or [n for n in labels if "lung" in norm(n) and any(x in norm(n) for x in ("tumor", "tumour", "cancer", "nodule"))]
-tumor_candidates = tumor_candidates or [n for n in labels if norm(n) in ("tumor", "tumour")]
-tumor_candidates = tumor_candidates or [n for n in labels if any(x in norm(n) for x in ("tumor", "tumour", "cancer", "nodule"))]
-if not tumor_candidates:
-    raise SystemExit("Could not resolve a tumor anatomy label from configs/label_dict.json")
-tumor_label = tumor_candidates[0]
+lung_priority = ["lung", "lungs", "left lung", "right lung", "lung left", "lung right", "lung l", "lung r"]
+lung_names = []
+for p in lung_priority:
+    if p in by_norm and by_norm[p] not in lung_names:
+        lung_names.append(by_norm[p])
+if not lung_names:
+    lung_names = [n for n in sorted(names) if "lung" in norm(n).split() and not any(t in norm(n).split() for t in ("tumor", "tumour", "lesion", "mass"))]
 
+tumor_names = [
+    n for n in sorted(names)
+    if "lung" in norm(n).split() and any(t in norm(n).split() for t in ("tumor", "tumour", "lesion", "mass"))
+]
+if not tumor_names:
+    tumor_names = [
+        n for n in sorted(names)
+        if any(t in norm(n).split() for t in ("tumor", "tumour", "lesion", "mass"))
+    ]
+
+if not lung_names:
+    raise SystemExit("Could not identify a lung label in configs/label_dict.json")
+if not tumor_names:
+    raise SystemExit("Could not identify a tumor/lesion label in configs/label_dict.json")
+
+tumor_name = tumor_names[0]
 anatomy_list = []
-for name in [*lung_labels, tumor_label]:
-    if name not in anatomy_list:
-        anatomy_list.append(name)
+for n in lung_names + [tumor_name]:
+    if n not in anatomy_list:
+        anatomy_list.append(n)
 
-cfg = load_json(nv / "configs" / "config_infer.json")
-for k in list(cfg.keys()):
-    if k.lower() in {
-        "num_output_samples", "num_outputs", "num_samples", "n_samples",
-        "num_images", "n_images", "num_volumes", "n_volumes", "number_of_images",
-        "num_generated_images"
-    }:
+cfg["body_region"] = ["chest", "thorax"]
+cfg["anatomy_list"] = anatomy_list
+cfg["controllable_anatomy_size"] = [[tumor_name, 0.5]]
+cfg["output_size"] = [256, 256, 256]
+cfg["spacing"] = [1.5, 1.5, 1.5]
+cfg["modality"] = 1
+cfg["num_inference_steps"] = 30
+cfg["mask_generation_num_inference_steps"] = 1000
+cfg["cfg_guidance_scale"] = 1.0
+cfg["output_dir"] = str(out)
+
+for k in ("num_output_samples", "num_samples", "n_samples", "num_images", "num_pairs"):
+    if k in cfg:
         cfg[k] = 1
 
-cfg.update({
+(runtime / "config_infer_chest_lung_tumor.json").write_text(json.dumps(cfg, indent=2) + "\n")
+PY
+```
+
+Repeat 2: score 4/5, passed=no, steps=unresolved, exit=None
+
+```bash
+OUT="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_2" && UP=".workbench_data/upstreams/NV-Generate-CTMR" && REQ="runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json" && test -f "$REQ" && rm -rf "$OUT" && mkdir -p "$OUT/runtime" "$OUT/monai_data" && python - "$UP" "$OUT" <<'PY' && MONAI_DATA_DIRECTORY="$OUT/monai_data" PYTHONPATH="$UP${PYTHONPATH:+:$PYTHONPATH}" python -m scripts.inference -t "$OUT/runtime/config_network_rflow.json" -i "$OUT/runtime/config_infer.json" -e "$OUT/runtime/environment_rflow-ct.json" --random-seed 0 --version rflow-ct
+import json, os, shutil, sys
+up, out = sys.argv[1], sys.argv[2]
+rt = os.path.join(out, "runtime")
+shutil.copyfile(os.path.join(up, "configs", "config_network_rflow.json"), os.path.join(rt, "config_network_rflow.json"))
+
+with open(os.path.join(up, "configs", "config_infer.json")) as f:
+    infer = json.load(f)
+infer.update({
+    "num_output_samples": 1,
     "body_region": ["chest", "thorax"],
-    "anatomy_list": anatomy_list,
-    "controllable_anatomy_size": [[tumor_label, 0.5]],
+    "anatomy_list": ["lung", "lung tumor"],
+    "controllable_anatomy_size": [["lung", 0.5], ["lung tumor", 0.35]],
     "output_size": [256, 256, 256],
     "spacing": [1.5, 1.5, 1.5],
     "modality": 1,
-    "output_dir": str(out),
     "num_inference_steps": 30,
     "mask_generation_num_inference_steps": 1000,
-    "cfg_guidance_scale": 1.0
+    "cfg_guidance_scale": 1.0,
+    "output_dir": out
 })
-if "dim" in cfg:
-    cfg["dim"] = [256, 256, 256]
+with open(os.path.join(rt, "config_infer.json"), "w") as f:
+    json.dump(infer, f, indent=2)
 
-dump_json(cfg, runtime / "config_infer.json")
-dump_json({"lung_labels": lung_labels, "tumor_label": tumor_label, "anatomy_list": anatomy_list}, runtime / "resolved_labels.json")
-PY_PREP
-import json, os
-from pathlib import Path
+with open(os.path.join(up, "configs", "environment_rflow-ct.json")) as f:
+    env = json.load(f)
 
-out = Path(os.environ["OUT_ABS"])
-pairs = []
-for img in sorted(out.glob("sample_*_image.nii.gz")):
-    lab = out / img.name.replace("_image.nii.gz", "_label.nii.gz")
-    if lab.exists():
-        pairs.append((img, lab))
+def stage_path(v):
+    if not isinstance(v, str) or os.path.isabs(v):
+        return v
+    vv = v[2:] if v.startswith("./") else v
+    if vv.startswith(("models/", "configs/", "data/", "dataset/", "datasets/")) or vv.endswith((".pt", ".pth", ".json", ".nii.gz")):
+        return os.path.join(up, vv)
+    return v
 
-if not pairs:
-    raise SystemExit(f"No generated image/label pair found in {out}")
+def walk(x):
+    if isinstance(x, dict):
+        return {k: walk(stage_path(v)) for k, v in x.items()}
+    if isinstance(x, list):
+        return [walk(v) for v in x]
+    return stage_path(x)
 
-keep = {pairs[0][0].resolve(), pairs[0][1].resolve()}
-for p in out.glob("sample_*.nii.gz"):
-    if p.resolve() not in keep:
-        p.unlink()
-
-manifest = {
-    "image": pairs[0][0].name,
-    "label": pairs[0][1].name,
-    "output_dir": str(out),
-    "model_variant": "rflow-ct",
-    "network": "rflow"
-}
-with open(out / "_runtime" / "manifest.json", "w") as f:
-    json.dump(manifest, f, indent=2, sort_keys=True)
-PY_CLEAN
-```
-
-Repeat 2: score 4/5, passed=no, steps=unresolved, exit=1
-
-```bash
-bash -lc 'set -euo pipefail; WB_ROOT="$PWD"; OUT="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_2"; REQ="runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json"; NV_ROOT="${NV_GENERATE_ROOT:-$WB_ROOT/.workbench_data/upstreams/NV-Generate-CTMR}"; mkdir -p "$OUT/runtime_configs" "$OUT/monai_data"; PYTHONDONTWRITEBYTECODE=1 python - <<'"'"'PY'"'"'
-import json, os, shutil
-from pathlib import Path
-wb = Path(os.environ.get("WB_ROOT", ".")).resolve()
-out = wb / "runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_2"
-req_path = wb / "runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json"
-nv = Path(os.environ.get("NV_GENERATE_ROOT", wb / ".workbench_data/upstreams/NV-Generate-CTMR")).resolve()
-runtime = out / "runtime_configs"
-runtime.mkdir(parents=True, exist_ok=True)
-req = json.loads(req_path.read_text()) if req_path.exists() else {}
-src_infer = nv / "configs/config_infer.json"
-cfg = json.loads(src_infer.read_text())
-label_dict = json.loads((nv / "configs/label_dict.json").read_text())
-label_names = [str(k) for k in label_dict.keys()]
-def pick(candidates, fallback):
-    low = {n.lower(): n for n in label_names}
-    for c in candidates:
-        if c.lower() in low:
-            return low[c.lower()]
-    for n in label_names:
-        ln = n.lower()
-        if all(tok in ln for tok in candidates[0].lower().split()):
-            return n
-    return fallback
-lung = pick(["lung", "lungs"], "lung")
-tumor = pick(["lung tumor", "lung tumour", "tumor", "tumour"], "lung tumor")
-cfg.update({
-    "body_region": req.get("body_region", ["chest"]),
-    "anatomy_list": req.get("anatomy_list", [lung, tumor]),
-    "controllable_anatomy_size": req.get("controllable_anatomy_size", []),
-    "output_size": req.get("output_size", [256, 256, 256]),
-    "spacing": req.get("spacing", [1.5, 1.5, 1.5]),
-    "modality": req.get("modality", 1),
-    "output_dir": str(out),
-    "num_inference_steps": req.get("num_inference_steps", 30),
-    "mask_generation_num_inference_steps": req.get("mask_generation_num_inference_steps", 1000),
-    "cfg_guidance_scale": req.get("cfg_guidance_scale", cfg.get("cfg_guidance_scale", 0))
-})
-for k in ("num_samples", "num_images", "num_output_samples", "n_samples", "batch_size"):
-    if k in cfg:
-        cfg[k] = 1
-(runtime / "config_infer.json").write_text(json.dumps(cfg, indent=2) + "\n")
+env = walk(env)
+with open(os.path.join(rt, "environment_rflow-ct.json"), "w") as f:
+    json.dump(env, f, indent=2)
 PY
-export MONAI_DATA_DIRECTORY="$WB_ROOT/$OUT/monai_data"; cd "$NV_ROOT"; PYTHONDONTWRITEBYTECODE=1 python -m scripts.inference -t ./configs/config_network_rflow.json -i "$WB_ROOT/$OUT/runtime_configs/config_infer.json" -e ./configs/environment_rflow-ct.json --random-seed 0 --version rflow-ct; cd "$WB_ROOT"; python - <<'"'"'PY'"'"'
-from pathlib import Path
-out = Path("runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_2")
-pairs = []
-for img in sorted(out.glob("*_image.nii.gz")):
-    lab = out / img.name.replace("_image.nii.gz", "_label.nii.gz")
-    if lab.exists():
-        pairs.append((img, lab))
-if not pairs:
-    raise SystemExit("No paired image/label outputs found")
-keep = set(map(str, pairs[0]))
-for p in list(out.glob("*_image.nii.gz")) + list(out.glob("*_label.nii.gz")):
-    if str(p) not in keep:
-        p.unlink()
-PY'
 ```
 
 Repeat 3: score 4/5, passed=no, steps=unresolved, exit=None
 
 ```bash
-export WBROOT="$PWD" OUT_REL="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_3" REQ_REL="runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json" NVROOT="${NV_GENERATE_ROOT:?Set NV_GENERATE_ROOT to the NV-Generate-CTMR checkout}" && mkdir -p "$OUT_REL/runtime" "$OUT_REL/monai_data" "$OUT_REL/cache" && rm -f "$OUT_REL"/sample_*_image.nii.gz "$OUT_REL"/sample_*_label.nii.gz && python - <<'PY_STAGE' && (cd "$NVROOT" && MONAI_DATA_DIRECTORY="$WBROOT/$OUT_REL/monai_data" XDG_CACHE_HOME="$WBROOT/$OUT_REL/cache" PYTHONDONTWRITEBYTECODE=1 python -m scripts.inference -t "$WBROOT/$OUT_REL/runtime/config_network_rflow.json" -i "$WBROOT/$OUT_REL/runtime/config_infer.json" -e "$WBROOT/$OUT_REL/runtime/environment_rflow-ct.json" --random-seed "$(cat "$WBROOT/$OUT_REL/runtime/random_seed.txt")" --version rflow-ct) && python - <<'PY_CHECK'
-import json, os, shutil
+OUT="runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/gpt55/without/repeat_3" && REQ="runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json" && ROOT="$(pwd -P)" && UP="$(cd "${NV_GENERATE_ROOT:?NV_GENERATE_ROOT must point to the NV-Generate-CTMR upstream checkout}" && pwd -P)" && rm -rf "$OUT" && mkdir -p "$OUT/runtime" && { python - "$REQ" "$OUT" "$ROOT" "$UP" <<'PY'
+import json, os, re, shutil, sys
 from pathlib import Path
 
-wb = Path(os.environ["WBROOT"]).resolve()
-nv = Path(os.environ["NVROOT"]).resolve()
-out = wb / os.environ["OUT_REL"]
-req_path = wb / os.environ["REQ_REL"]
-runtime = out / "runtime"
+req_path, out_rel, root, up = map(Path, sys.argv[1:5])
+if not req_path.is_file():
+    raise FileNotFoundError(f"request.json not found: {req_path}")
+
+out_abs = (root / out_rel).resolve()
+runtime = out_abs / "runtime"
 runtime.mkdir(parents=True, exist_ok=True)
 
-req = json.loads(req_path.read_text()) if req_path.exists() else {}
-if req_path.exists():
-    shutil.copy2(req_path, runtime / "request.json")
+with open(req_path) as f:
+    request = json.load(f)
 
-for name in ("config_network_rflow.json", "environment_rflow-ct.json"):
-    shutil.copy2(nv / "configs" / name, runtime / name)
-
-infer = json.loads((nv / "configs" / "config_infer.json").read_text())
-
-def label_names_from_label_dict(path):
-    obj = json.loads(path.read_text())
-    names = []
+def find_key(obj, names):
     if isinstance(obj, dict):
         for k, v in obj.items():
-            if isinstance(k, str) and not k.isdigit():
-                names.append(k)
-            if isinstance(v, str):
-                names.append(v)
+            if str(k).lower().replace("-", "_") in names:
+                return v
+        for v in obj.values():
+            found = find_key(v, names)
+            if found is not None:
+                return found
     elif isinstance(obj, list):
-        names.extend(x for x in obj if isinstance(x, str))
-    return list(dict.fromkeys(names))
-
-names = label_names_from_label_dict(nv / "configs" / "label_dict.json")
-def norm(s): return str(s).lower().replace("_", " ").replace("-", " ").strip()
-def exact(w):
-    for n in names:
-        if norm(n) == norm(w):
-            return n
-    return None
-def first_with(*words):
-    for n in names:
-        t = norm(n)
-        if all(w in t for w in words):
-            return n
+        for v in obj:
+            found = find_key(v, names)
+            if found is not None:
+                return found
     return None
 
-lung = exact("lung")
-lung_tumor = exact("lung tumor") or first_with("lung", "tumor") or exact("tumor") or first_with("tumor")
-anatomy_list = []
- if False else None
-if lung:
-    anatomy_list.append(lung)
-else:
-    anatomy_list.extend([n for n in names if "lung" in norm(n) and "tumor" not in norm(n)][:6])
-anatomy_list.append(lung_tumor or "lung tumor")
-anatomy_list = list(dict.fromkeys(anatomy_list))
+def norm(s):
+    return re.sub(r"[^a-z0-9]+", "", str(s).lower())
+
+label_dict_path = up / "configs" / "label_dict.json"
+with open(label_dict_path) as f:
+    raw_labels = json.load(f)
+
+label_names = []
+if isinstance(raw_labels, dict):
+    for k, v in raw_labels.items():
+        if isinstance(k, str) and not k.isdigit():
+            label_names.append(k)
+        if isinstance(v, str):
+            label_names.append(v)
+label_names = list(dict.fromkeys(label_names))
+if not label_names:
+    raise RuntimeError(f"Could not infer label names from {label_dict_path}")
+
+def pick_label(pred, prefer_exact=()):
+    exact = [name for name in label_names if norm(name) in {norm(x) for x in prefer_exact}]
+    if exact:
+        return exact[0]
+    matches = [name for name in label_names if pred(norm(name))]
+    if not matches:
+        return None
+    return sorted(matches, key=lambda x: (len(norm(x)), norm(x)))[0]
+
+lung_label = pick_label(lambda n: ("lung" in n and not any(t in n for t in ("tumor", "lesion", "nodule", "mass"))), ("lung", "lungs"))
+tumor_label = pick_label(lambda n: ("lung" in n and any(t in n for t in ("tumor", "lesion", "nodule", "mass"))), ("lung_tumor", "lung tumor", "pulmonary_tumor", "pulmonary tumor"))
+if tumor_label is None:
+    tumor_label = pick_label(lambda n: any(t in n for t in ("tumor", "lesion", "nodule", "mass")), ("tumor", "lesion"))
+if lung_label is None or tumor_label is None or lung_label == tumor_label:
+    raise RuntimeError(f"Could not select distinct lung/tumor labels from {label_dict_path}; selected lung={lung_label!r}, tumor={tumor_label!r}")
+
+shutil.copy2(up / "configs" / "config_network_rflow.json", runtime / "config_network_rflow.json")
+
+with open(up / "configs" / "environment_rflow-ct.json") as f:
+    env = json.load(f)
+
+def absolutize(x):
+    if isinstance(x, dict):
+        return {k: absolutize(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [absolutize(v) for v in x]
+    if isinstance(x, str):
+        if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", x) or os.path.isabs(x):
+            return x
+        if x.startswith(("./", "../")) or "/" in x:
+            return str((up / x).resolve())
+    return x
+
+with open(runtime / "environment_rflow-ct.json", "w") as f:
+    json.dump(absolutize(env), f, indent=2)
+
+with open(up / "configs" / "config_infer.json") as f:
+    infer = json.load(f)
+
+output_size = find_key(request, {"output_size", "dim", "dims", "dimensions", "shape"}) or [256, 256, 256]
+spacing = find_key(request, {"spacing", "voxel_spacing"}) or [1.5, 1.5, 1.5]
+seed = find_key(request, {"random_seed", "seed"}) or 0
 
 infer.update({
-    "body_region": req.get("body_region", ["chest"]),
-    "anatomy_list": req.get("anatomy_list", anatomy_list),
-    "controllable_anatomy_size": req.get("controllable_anatomy_size", []),
-    "output_size": req.get("output_size", req.get("dim", [256, 256, 256])),
-    "spacing": req.get("spacing", [1.5, 1.5, 1.5]),
-    "modality": req.get("modality", 1),
+    "body_region": ["chest"],
+    "anatomy_list": [lung_label, tumor_label],
+    "controllable_anatomy_size": [[lung_label, 0.70], [tumor_label, 0.35]],
+    "output_size": output_size,
+    "spacing": spacing,
+    "modality": 1,
     "num_inference_steps": 30,
     "mask_generation_num_inference_steps": 1000,
-    "output_dir": str(out),
+    "cfg_guidance_scale": infer.get("cfg_guidance_scale", 1.0) or 1.0,
+    "output_dir": str(out_abs),
 })
-for k in ("num_samples", "num_images", "num_output_samples", "n_samples", "n_outputs"):
+for k in ("num_samples", "num_sample", "n_samples", "num_images", "num_outputs", "num_output_images", "sample_num"):
     if k in infer:
         infer[k] = 1
 
-(runtime / "config_infer.json").write_text(json.dumps(infer, indent=2) + "\n")
-(runtime / "random_seed.txt").write_text(str(int(req.get("random_seed", req.get("seed", 3)))) + "\n")
-PY_STAGE
-import os
+with open(runtime / "config_infer.json", "w") as f:
+    json.dump(infer, f, indent=2)
+(runtime / "random_seed.txt").write_text(str(int(seed)))
+PY
+} && mkdir -p "$ROOT/$OUT/runtime/monai" && PYTHONDONTWRITEBYTECODE=1 MONAI_DATA_DIRECTORY="$ROOT/$OUT/runtime/monai" PYTHONPATH="$UP${PYTHONPATH:+:$PYTHONPATH}" python -m scripts.inference -t "$ROOT/$OUT/runtime/config_network_rflow.json" -i "$ROOT/$OUT/runtime/config_infer.json" -e "$ROOT/$OUT/runtime/environment_rflow-ct.json" --random-seed "$(cat "$ROOT/$OUT/runtime/random_seed.txt")" --version rflow-ct && { python - "$OUT" <<'PY'
+import sys
 from pathlib import Path
-out = Path(os.environ["WBROOT"]).resolve() / os.environ["OUT_REL"]
-imgs = sorted(out.glob("sample_*_image.nii.gz"))
-labs = sorted(out.glob("sample_*_label.nii.gz"))
-if len(imgs) != 1 or len(labs) != 1:
-    raise SystemExit(f"expected exactly one generated image and one label in {out}, found {len(imgs)} images and {len(labs)} labels")
-print(f"generated image: {imgs[0]}")
-print(f"generated label: {labs[0]}")
-PY_CHECK
+
+out = Path(sys.argv[1])
+imgs = sorted(out.glob("*_image.nii.gz"))
+labs = sorted(out.glob("*_label.nii.gz"))
+
+def prefix(p, suffix):
+    n = p.name
+    return n[:-len(suffix)] if n.endswith(suffix) else None
+
+lab_by_prefix = {prefix(p, "_label.nii.gz"): p for p in labs if prefix(p, "_label.nii.gz")}
+pairs = [(prefix(i, "_image.nii.gz"), i, lab_by_prefix.get(prefix(i, "_image.nii.gz"))) for i in imgs if prefix(i, "_image.nii.gz") in lab_by_prefix]
+pairs = [(pre, i, l) for pre, i, l in pairs if l is not None]
+if not pairs:
+    raise RuntimeError(f"No paired *_image.nii.gz and *_label.nii.gz outputs found in {out}")
+
+pre, keep_img, keep_lab = max(pairs, key=lambda x: max(x[1].stat().st_mtime, x[2].stat().st_mtime))
+for p in imgs + labs:
+    if p not in {keep_img, keep_lab}:
+        p.unlink()
+print(f"kept paired output: {keep_img} and {keep_lab}")
+PY
+}
 ```
 
 ### Opus 4.7, with arm
 
 Extracted first-attempt commands are shown below by repeat. The main baseline uses no repair prompting, so failures are recorded as data.
 
-Repeat 1: score 5/5, passed=yes, steps=0, exit=0
+Repeat 1: score 4/5, passed=no, steps=unresolved, exit=1
 
 ```bash
-export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/opus/with/repeat_1 --random-seed 1 --version rflow-ct --yes
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/opus/with/repeat_1 --random-seed 1 --version rflow-ct --yes
 ```
 
-Repeat 2: score 5/5, passed=yes, steps=0, exit=0
+Repeat 2: score 4/5, passed=no, steps=unresolved, exit=1
 
 ```bash
-export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/opus/with/repeat_2 --random-seed 2 --version rflow-ct --yes
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/nv-generate-ctmr}" && python skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json --output-dir runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/opus/with/repeat_2 --random-seed 2 --version rflow-ct --yes
 ```
 
 Repeat 3: score 5/5, passed=yes, steps=0, exit=0
@@ -452,52 +436,76 @@ Extracted first-attempt commands are shown below by repeat. The main baseline us
 Repeat 1: score 2/5, passed=no, steps=unresolved, exit=None
 
 ```bash
-set -euo pipefail && OUT="runs/with_vs_without/nv_generate_ct_rflow_codex_opus/opus/without/repeat_1" && REQ="runs/with_vs_without/_inputs/nv_generate_ct_rflow/request.json" && SRC="$NV_GENERATE_ROOT" && mkdir -p "$OUT/configs" "$OUT/output" && cat "$REQ" && cp "$SRC/configs/config_network_rflow.json" "$OUT/configs/config_network_rflow.json" && cp "$SRC/configs/environment_rflow-ct.json" "$OUT/configs/environment_rflow-ct.json" && python -c "
-import json, os
-src=os.environ['SRC']; out=os.environ['OUT']
-cfg=json.load(open(os.path.join(src,'configs','config_infer.json')))
-cfg['body_region']=['chest']
-cfg['anatomy_list']=['lung','lung tumor']
-cfg['controllable_anatomy_size']=[['lung tumor',0.3]]
-cfg['output_size']=[256,256,256]
-cfg['spacing']=[1.5,1.5,1.5]
-cfg['modality']='ct'
-cfg['num_inference_steps']=30
-cfg['mask_generation_num_inference_steps']=1000
-cfg['num_output_samples']=1
-cfg['output_dir']=os.path.abspath(os.path.join(out,'output'))
-json.dump(cfg, open(os.path.join(out,'configs','config_infer.json'),'w'), indent=2)
-" && SRC="$SRC" OUT="$OUT" env MONAI_DATA_DIRECTORY="$OUT/temp_work_dir" PYTHONPATH="$SRC" python -m scripts.inference -t "$OUT/configs/config_network_rflow.json" -i "$OUT/configs/config_infer.json" -e "$OUT/configs/environment_rflow-ct.json" --random-seed 0 --version rflow-ct
-```
-
-Repeat 2: score 4/5, passed=no, steps=unresolved, exit=1
-
-```bash
-set -euo pipefail && REQ=runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json && OUT=runs/with_vs_without_nv/nv_generate_ct_rflow_codex_opus/opus/without/repeat_2 && mkdir -p "$OUT/configs" "$OUT/output" && : "${NV_GENERATE_ROOT:?must be set}" && cp "$NV_GENERATE_ROOT/configs/config_network_rflow.json" "$OUT/configs/config_network_rflow.json" && cp "$NV_GENERATE_ROOT/configs/environment_rflow-ct.json" "$OUT/configs/environment_rflow-ct.json" && python -c "
-import json, os
+set -euo pipefail && OUT=runs/with_vs_without/nv_generate_ct_rflow_codex_opus/opus/without/repeat_1 && REQ=runs/with_vs_without/_inputs/nv_generate_ct_rflow/request.json && mkdir -p "$OUT/configs" "$OUT/output" && cat "$REQ" && cp "$NV_GENERATE_ROOT/configs/config_infer.json" "$OUT/configs/config_infer.json" && python -c "
+import json, sys
 req = json.load(open('$REQ'))
-print('request:', json.dumps(req, indent=2))
-cfg = json.load(open(os.path.join(os.environ['NV_GENERATE_ROOT'], 'configs/config_infer.json')))
-cfg['body_region'] = ['chest']
-cfg['anatomy_list'] = ['lung', 'lung tumor']
-cfg['controllable_anatomy_size'] = [['lung tumor', 0.3]]
-cfg['output_size'] = [256, 256, 256]
-cfg['spacing'] = [1.5, 1.5, 1.5]
-cfg['modality'] = 1
+cfg = json.load(open('$OUT/configs/config_infer.json'))
+cfg['body_region'] = req.get('body_region', ['chest'])
+cfg['anatomy_list'] = req.get('anatomy_list', ['lung', 'lung tumor'])
+cfg['controllable_anatomy_size'] = req.get('controllable_anatomy_size', [['lung tumor', 0.3]])
+cfg['output_size'] = req.get('output_size', [256, 256, 256])
+cfg['spacing'] = req.get('spacing', [1.5, 1.5, 1.5])
+cfg['modality'] = req.get('modality', 'ct')
 cfg['num_inference_steps'] = 30
 cfg['mask_generation_num_inference_steps'] = 1000
 cfg['num_output_samples'] = 1
 json.dump(cfg, open('$OUT/configs/config_infer.json', 'w'), indent=2)
-env = json.load(open('$OUT/configs/environment_rflow-ct.json'))
+print(json.dumps(cfg, indent=2))
+" && cp "$NV_GENERATE_ROOT/configs/environment_rflow-ct.json" "$OUT/configs/environment_rflow-ct.json" && python -c "
+import json, os
+p = '$OUT/configs/environment_rflow-ct.json'
+env = json.load(open(p))
 env['output_dir'] = os.path.abspath('$OUT/output')
-json.dump(env, open('$OUT/configs/environment_rflow-ct.json', 'w'), indent=2)
-" && export MONAI_DATA_DIRECTORY="$OUT/monai_tmp" && mkdir -p "$MONAI_DATA_DIRECTORY" && cd "$NV_GENERATE_ROOT" && python -m scripts.inference -t "$OLDPWD/$OUT/configs/config_network_rflow.json" -i "$OLDPWD/$OUT/configs/config_infer.json" -e "$OLDPWD/$OUT/configs/environment_rflow-ct.json" --random-seed 2 --version rflow-ct
+json.dump(env, open(p, 'w'), indent=2)
+" && cd "$NV_GENERATE_ROOT" && export MONAI_DATA_DIRECTORY="./temp_work_dir" && python -m scripts.inference -t ./configs/config_network_rflow.json -i "$OLDPWD/$OUT/configs/config_infer.json" -e "$OLDPWD/$OUT/configs/environment_rflow-ct.json" --random-seed 0 --version rflow-ct
+```
+
+Repeat 2: score 2/5, passed=no, steps=unresolved, exit=None
+
+```bash
+set -euo pipefail && OUT="runs/with_vs_without/nv_generate_ct_rflow_codex_opus/opus/without/repeat_2" && REQ="runs/with_vs_without/_inputs/nv_generate_ct_rflow/request.json" && mkdir -p "$OUT/configs" "$OUT/output" && cp "$NV_GENERATE_ROOT"/configs/*.json "$OUT/configs/" && python -c "
+import json, sys
+req = json.load(open('$REQ'))
+cfg_path = '$OUT/configs/config_infer.json'
+cfg = json.load(open(cfg_path))
+cfg['body_region'] = req.get('body_region', ['chest'])
+cfg['anatomy_list'] = req.get('anatomy_list', ['lung', 'lung tumor'])
+cfg['controllable_anatomy_size'] = req.get('controllable_anatomy_size', [['lung tumor', 0.3]])
+cfg['output_size'] = req.get('output_size', [256, 256, 256])
+cfg['spacing'] = req.get('spacing', [1.5, 1.5, 1.5])
+cfg['modality'] = req.get('modality', 1)
+cfg['num_inference_steps'] = 30
+cfg['mask_generation_num_inference_steps'] = 1000
+cfg['num_output_samples'] = 1
+json.dump(cfg, open(cfg_path, 'w'), indent=2)
+env_path = '$OUT/configs/environment_rflow-ct.json'
+env = json.load(open(env_path))
+env['output_dir'] = '$OUT/output'
+json.dump(env, open(env_path, 'w'), indent=2)
+print('staged configs')
+" && cd "$NV_GENERATE_ROOT" && export MONAI_DATA_DIRECTORY="$OLDPWD/$OUT/temp_work_dir" && mkdir -p "$MONAI_DATA_DIRECTORY" && python -m scripts.inference -t "$OLDPWD/$OUT/configs/config_network_rflow.json" -i "$OLDPWD/$OUT/configs/config_infer.json" -e "$OLDPWD/$OUT/configs/environment_rflow-ct.json" --random-seed 2 --version rflow-ct
 ```
 
 Repeat 3: score 2/5, passed=no, steps=unresolved, exit=None
 
 ```bash
-OUT=runs/with_vs_without/nv_generate_ct_rflow_codex_opus/opus/without/repeat_3 && REQ=runs/with_vs_without/_inputs/nv_generate_ct_rflow/request.json && NV_ROOT="${NV_GENERATE_ROOT:?set NV_GENERATE_ROOT to upstream NV-Generate-CTMR repo}" && mkdir -p "$OUT/configs" "$OUT/output" && cat "$REQ" && cp "$NV_ROOT/configs/config_infer.json" "$OUT/configs/config_infer.json" && python -c "import json,sys; p='$OUT/configs/config_infer.json'; c=json.load(open(p)); c['body_region']=['chest']; c['anatomy_list']=['lung','lung tumor']; c['controllable_anatomy_size']=[['lung tumor',0.3]]; c['output_size']=[256,256,256]; c['spacing']=[1.5,1.5,1.5]; c['modality']='ct'; c['num_inference_steps']=30; c['mask_generation_num_inference_steps']=1000; c['num_output_samples']=1; c['cfg_guidance_scale']=0; json.dump(c,open(p,'w'),indent=2)" && cp "$NV_ROOT/configs/environment_rflow-ct.json" "$OUT/configs/environment_rflow-ct.json" && python -c "import json,os; p='$OUT/configs/environment_rflow-ct.json'; e=json.load(open(p)); e['output_dir']=os.path.abspath('$OUT/output'); json.dump(e,open(p,'w'),indent=2)" && cd "$NV_ROOT" && MONAI_DATA_DIRECTORY="./temp_work_dir" python -m scripts.inference -t ./configs/config_network_rflow.json -i "$OLDPWD/$OUT/configs/config_infer.json" -e "$OLDPWD/$OUT/configs/environment_rflow-ct.json" --random-seed 0 --version rflow-ct
+set -euo pipefail && OUT="runs/with_vs_without/nv_generate_ct_rflow_codex_opus/opus/without/repeat_3" && REQ="runs/with_vs_without/_inputs/nv_generate_ct_rflow/request.json" && mkdir -p "$OUT" && cat "$REQ" && cd "$NV_GENERATE_ROOT" && STAGE="$OLDPWD/$OUT/_stage" && mkdir -p "$STAGE/configs" "$OLDPWD/$OUT/output" && cp configs/config_network_rflow.json "$STAGE/configs/" && cp configs/environment_rflow-ct.json "$STAGE/configs/environment_rflow-ct.json" && python -c "
+import json, os
+infer = json.load(open('configs/config_infer.json'))
+infer['body_region'] = ['chest']
+infer['anatomy_list'] = ['lung tumor']
+infer['controllable_anatomy_size'] = [['lung tumor', 0.3]]
+infer['modality'] = 'ct'
+infer['output_size'] = [256, 256, 256]
+infer['spacing'] = [1.5, 1.5, 1.5]
+infer['num_inference_steps'] = 30
+infer['mask_generation_num_inference_steps'] = 1000
+infer['num_output_samples'] = 1
+json.dump(infer, open('$STAGE/configs/config_infer.json','w'), indent=2)
+env = json.load(open('$STAGE/configs/environment_rflow-ct.json'))
+env['output_dir'] = '$OLDPWD/$OUT/output'
+json.dump(env, open('$STAGE/configs/environment_rflow-ct.json','w'), indent=2)
+" && export MONAI_DATA_DIRECTORY="$OLDPWD/$OUT/temp_work_dir" && mkdir -p "$MONAI_DATA_DIRECTORY" && python -m scripts.inference -t "$STAGE/configs/config_network_rflow.json" -i "$STAGE/configs/config_infer.json" -e "$STAGE/configs/environment_rflow-ct.json" --random-seed 3 --version rflow-ct
 ```
 
 ## Source Artifacts

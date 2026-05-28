@@ -1,12 +1,10 @@
 # Skill vs README Current Results Analysis
 
-Last refreshed: May 26, 2026.
+Last refreshed: May 28, 2026.
 
 This report tracks the current audited state of the NV model
-with-vs-without study. The last completed direct-API aggregate covered seven
-skills. The registry now includes two additional finetuning scenarios whose
-prompt artifacts are complete, but whose direct API repeat artifacts are still
-pending.
+with-vs-without study. The registry covers nine skills, and all nine currently
+have complete strict-audited direct-API artifacts.
 
 This is an engineering reproducibility analysis. It is not a clinical,
 diagnostic, regulatory, or model-quality claim.
@@ -20,14 +18,13 @@ and `python tools/with_vs_without/audit_nv_model_studies.py --format markdown`.
 | Check | Current value |
 |---|---:|
 | Prompt artifacts complete | 9/9 |
-| Study artifacts complete | 6/9 |
-| Complete paired outcomes | 6/9 |
-| Outcomes supporting SKILL.md paired advantage | 6/9 |
-| Strict audit issues | 70 |
-| Pending direct-study skills | 3 |
+| Study artifacts complete | 9/9 |
+| Complete paired outcomes | 9/9 |
+| Outcomes supporting SKILL.md paired advantage | 9/9 |
+| Strict audit issues | 0 |
+| Pending direct-study refresh skills | 0 |
 
-The strict proof gate is intentionally not cited while prompt-only scenarios
-and stale direct-repeat artifacts remain:
+The strict proof gate is now clean:
 
 ```bash
 make audit-with-vs-without
@@ -36,33 +33,32 @@ make plan-with-vs-without
 
 ## Current Interpretation
 
-The completed direct-API evidence supports SKILL.md paired advantage for the
-skills whose study artifacts are still current:
+The completed direct-API evidence supports SKILL.md paired advantage for all
+registered NV model study skills:
 
 | Skill | Status |
 |---|---|
-| `nv_generate_ct_rflow` | Prompt artifact complete; direct repeats need refresh in the current local audit |
+| `nv_generate_ct_rflow` | Complete; supports SKILL.md paired advantage |
 | `nv_generate_mr` | Complete; supports SKILL.md paired advantage |
 | `nv_generate_mr_brain` | Complete; supports SKILL.md paired advantage |
-| `nv_generate_mr_brain_finetune` | Prompt artifact complete; direct API repeats pending |
-| `nv_generate_vae_finetune` | Prompt artifact complete; direct API repeats pending |
+| `nv_generate_mr_brain_finetune` | Complete; supports SKILL.md paired advantage |
+| `nv_generate_vae_finetune` | Complete; supports SKILL.md paired advantage |
 | `nv_reason_cxr` | Complete; supports SKILL.md paired advantage |
 | `nv_segment_ct` | Complete; supports SKILL.md paired advantage |
 | `nv_segment_ct_finetune` | Complete; supports SKILL.md paired advantage |
 | `nv_segment_ctmr` | Complete; supports SKILL.md paired advantage |
 
-Across the historical completed direct-API study, the with-skill arm passed 62/63
-repeats, while the README-only arm passed 0/63 repeats. In matched
-backend-repeat pairs, SKILL.md won 62 times, README-only won once, and no pairs
-tied because both arms failed. The one-sided paired sign test over decisive
-pairs gives `p = 6.939e-18`.
+Across the current strict-audited direct-API study, the with-skill arm passed
+79/81 repeats, while the README-only arm passed 0/81 repeats. In matched
+backend-repeat pairs, SKILL.md won 81 times, README-only won 0 times, and no
+pairs tied because both arms failed. The one-sided paired sign test over
+decisive pairs gives `p = 4.136e-25`.
 
 ## Scope
 
-Supported by the last completed seven-skill aggregate, pending refresh of the
-current nine-scenario registry:
+Supported by the current nine-skill strict-audited aggregate:
 
-> Across the seven covered NV model skills and the current direct-API protocol,
+> Across the nine current strict-audited NV model skills and the current direct-API protocol,
 > SKILL.md is a stronger LLM operating contract than the selected upstream
 > README/model-guide baseline.
 

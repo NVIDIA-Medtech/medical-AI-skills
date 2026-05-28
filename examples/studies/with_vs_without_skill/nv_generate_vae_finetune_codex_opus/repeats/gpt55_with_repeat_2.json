@@ -1,0 +1,425 @@
+{
+  "backend": "gpt55",
+  "model": "openai/openai/gpt-5.5",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "openai/openai/gpt-5.5",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "with",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+    },
+    {
+      "role": "user",
+      "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The VAE finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_vae_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-vae-finetune/SKILL.md ---\n---\nname: nv-generate-vae-finetune\ndescription: Used for finetuning the NV-Generate-CTMR MAISI VAE from CT/MRI NIfTI datalists. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - ct\n    - mri\n    - vae\n    - finetune\n---\n\n# NV-Generate-VAE-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR MAISI VAE/autoencoder from user-supplied CT or MRI NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- Upstream currently documents VAE training in `train_vae_tutorial.ipynb` and provides configs/helpers, but not a `scripts.train_vae` CLI. This skill does not execute the notebook; it stages the required config/datalist glue locally and uses upstream helper APIs.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `autoencoder_checkpoint`, `discriminator_checkpoint`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_vae_finetune.py` from the Medical AI Skills repo root.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_vae_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri] [--patch-size 64,64,64] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `configs/config_maisi_vae_train.json`, `scripts/transforms.py`, and `scripts/utils.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, `lpips`, and downloaded VAE weights unless using `--train-from-scratch`.\n- Side effects: writes staged configs, checkpoints, TensorBoard logs, and run summaries under the caller-provided `--output-dir`; may write model caches under the upstream checkout, `~/.cache/huggingface/`, and `~/.cache/torch/`; may contact `https://huggingface.co`, `https://github.com`, and `https://download.pytorch.org`.\n- The datalist is a MONAI-style JSON object with non-empty `training[]` and `validation[]` or `testing[]`. Each entry has an `image` path relative to `--data-base-dir` and optional `class` or `modality` of `ct` or `mri`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_vae_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_vae_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython -m pip install lpips tensorboard && \\\npython skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_vae_finetune \\\n  --epochs 1 \\\n  --modality mri \\\n  --patch-size 64,64,64 \\\n  --download-model-data\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with VAE configs and helper APIs. The skill owns the runner glue and does not depend on the notebook.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism, reconstruction quality, or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `VAE configs/helpers were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `datalist must include non-empty validation[] or testing[]` | VAE training requires validation data for the configured validation loop. | Add `validation[]` or `testing[]` entries with relative image paths. |\n| CUDA, MONAI, or LPIPS import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` plus `lpips tensorboard` in the selected environment. |\n"
+    }
+  ],
+  "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 --preflight\n```",
+  "command": "mkdir -p runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 --preflight",
+  "usage": {
+    "completion_tokens": 610,
+    "prompt_tokens": 1696,
+    "total_tokens": 2306,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 439,
+      "rejected_prediction_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    }
+  },
+  "execution": {
+    "executed": true,
+    "exit_code": 0,
+    "elapsed_seconds": 0.03365468978881836,
+    "isolated_exec_env": true,
+    "fresh_exec_env_created": true,
+    "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv",
+    "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    },
+    "protected_upstream_env": {
+      "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+      "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+    },
+    "upstream_mutation_detected": false,
+    "upstream_mutation_restored": false,
+    "upstream_mutation_paths": [],
+    "generated_files": [
+      "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_vae_train.json",
+      "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_network_rflow.json",
+      "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/datalist_staged.json",
+      "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_vae_train.json",
+      "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/dataset.json"
+    ],
+    "stdout_tail": "{\n  \"skill\": \"nv_generate_vae_finetune\",\n  \"model\": \"maisi-vae\",\n  \"model_repo\": \"https://github.com/NVIDIA-Medtech/NV-Generate-CTMR\",\n  \"license\": \"Apache-2.0\",\n  \"input\": {\n    \"data_base_dir\": \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset\",\n    \"datalist\": \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json\",\n    \"training_cases\": 1,\n    \"validation_cases\": 1,\n    \"modalities\": [\n      \"mri\"\n    ],\n    \"default_modality\": \"mri\",\n    \"epochs\": 1,\n    \"batch_size\": 1,\n    \"lr\": 0.0001,\n    \"cache_rate\": 0.0,\n    \"patch_size\": [\n      64,\n      64,\n      64\n    ],\n    \"val_patch_size\": null,\n    \"num_gpus\": 1,\n    \"finetune\": true,\n    \"random_seed\": 0\n  },\n  \"output\": {\n    \"directory\": \"runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/artifacts\",\n    \"workflow_summary\": null,\n    \"autoencoder_checkpoint\": null,\n    \"autoencoder_checkpoint_present\": false,\n    \"discriminator_checkpoint\": null,\n    \"discriminator_checkpoint_present\": false,\n    \"best_autoencoder_checkpoints\": [],\n    \"num_best_autoencoder_checkpoints\": 0,\n    \"loss_history\": [],\n    \"tensorboard_dir\": null\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n      \"skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py\",\n      \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json\",\n      \"--data-base-dir\",\n      \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset\",\n      \"--output-dir\",\n      \"runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2\",\n      \"--modality\",\n      \"mri\",\n      \"--epochs\",\n      \"1\",\n      \"--batch-size\",\n      \"1\",\n      \"--lr\",\n      \"0.0001\",\n      \"--cache-rate\",\n      \"0.0\",\n      \"--patch-size\",\n      \"64,64,64\",\n      \"--num-gpus\",\n      \"1\",\n      \"--preflight\"\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.0007691383361816406\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.0007691383361816406,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged VAE configs and validated datalist paths.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic-imaging VAE finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+    "stderr_tail": "",
+    "json": {
+      "skill": "nv_generate_vae_finetune",
+      "model": "maisi-vae",
+      "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+      "license": "Apache-2.0",
+      "input": {
+        "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset",
+        "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json",
+        "training_cases": 1,
+        "validation_cases": 1,
+        "modalities": [
+          "mri"
+        ],
+        "default_modality": "mri",
+        "epochs": 1,
+        "batch_size": 1,
+        "lr": 0.0001,
+        "cache_rate": 0.0,
+        "patch_size": [
+          64,
+          64,
+          64
+        ],
+        "val_patch_size": null,
+        "num_gpus": 1,
+        "finetune": true,
+        "random_seed": 0
+      },
+      "output": {
+        "directory": "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2",
+        "artifacts_dir": "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/artifacts",
+        "workflow_summary": null,
+        "autoencoder_checkpoint": null,
+        "autoencoder_checkpoint_present": false,
+        "discriminator_checkpoint": null,
+        "discriminator_checkpoint_present": false,
+        "best_autoencoder_checkpoints": [],
+        "num_best_autoencoder_checkpoints": 0,
+        "loss_history": [],
+        "tensorboard_dir": null
+      },
+      "invocation": {
+        "official_entrypoint": "python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py",
+        "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+        "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+        "checked_upstream_roots": [
+          ".workbench_data/upstreams/NV-Generate-CTMR"
+        ],
+        "command": [
+          "runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+          "skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py",
+          "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json",
+          "--data-base-dir",
+          "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset",
+          "--output-dir",
+          "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2",
+          "--modality",
+          "mri",
+          "--epochs",
+          "1",
+          "--batch-size",
+          "1",
+          "--lr",
+          "0.0001",
+          "--cache-rate",
+          "0.0",
+          "--patch-size",
+          "64,64,64",
+          "--num-gpus",
+          "1",
+          "--preflight"
+        ],
+        "exit_code": 0,
+        "subprocess_seconds": 0.0007691383361816406
+      },
+      "runtime": {
+        "subprocess_seconds": 0.0007691383361816406,
+        "device": "cuda",
+        "preflight_only": true
+      },
+      "logs": {
+        "stdout_tail": "",
+        "stderr_tail": "Preflight staged VAE configs and validated datalist paths."
+      },
+      "intended_use_disclaimer": "Engineering wrapper for synthetic-imaging VAE finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+    }
+  },
+  "score": {
+    "score": 5,
+    "tiers": [
+      {
+        "tier": 1,
+        "pass": true,
+        "reason": "entrypoint marker"
+      },
+      {
+        "tier": 2,
+        "pass": true,
+        "reason": "user input path marker"
+      },
+      {
+        "tier": 3,
+        "pass": true,
+        "reason": "model/modality/control marker"
+      },
+      {
+        "tier": 4,
+        "pass": true,
+        "reason": "output dir marker"
+      },
+      {
+        "tier": 5,
+        "pass": true,
+        "reason": "preflight payload reported"
+      }
+    ],
+    "passed": true
+  },
+  "failure_analysis": [],
+  "step": 0,
+  "backend_label": "GPT-5.5 / Codex",
+  "attempts": [
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The VAE finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_vae_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-vae-finetune/SKILL.md ---\n---\nname: nv-generate-vae-finetune\ndescription: Used for finetuning the NV-Generate-CTMR MAISI VAE from CT/MRI NIfTI datalists. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - ct\n    - mri\n    - vae\n    - finetune\n---\n\n# NV-Generate-VAE-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR MAISI VAE/autoencoder from user-supplied CT or MRI NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- Upstream currently documents VAE training in `train_vae_tutorial.ipynb` and provides configs/helpers, but not a `scripts.train_vae` CLI. This skill does not execute the notebook; it stages the required config/datalist glue locally and uses upstream helper APIs.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `autoencoder_checkpoint`, `discriminator_checkpoint`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_vae_finetune.py` from the Medical AI Skills repo root.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_vae_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri] [--patch-size 64,64,64] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `configs/config_maisi_vae_train.json`, `scripts/transforms.py`, and `scripts/utils.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, `lpips`, and downloaded VAE weights unless using `--train-from-scratch`.\n- Side effects: writes staged configs, checkpoints, TensorBoard logs, and run summaries under the caller-provided `--output-dir`; may write model caches under the upstream checkout, `~/.cache/huggingface/`, and `~/.cache/torch/`; may contact `https://huggingface.co`, `https://github.com`, and `https://download.pytorch.org`.\n- The datalist is a MONAI-style JSON object with non-empty `training[]` and `validation[]` or `testing[]`. Each entry has an `image` path relative to `--data-base-dir` and optional `class` or `modality` of `ct` or `mri`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_vae_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_vae_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython -m pip install lpips tensorboard && \\\npython skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_vae_finetune \\\n  --epochs 1 \\\n  --modality mri \\\n  --patch-size 64,64,64 \\\n  --download-model-data\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with VAE configs and helper APIs. The skill owns the runner glue and does not depend on the notebook.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism, reconstruction quality, or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `VAE configs/helpers were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `datalist must include non-empty validation[] or testing[]` | VAE training requires validation data for the configured validation loop. | Add `validation[]` or `testing[]` entries with relative image paths. |\n| CUDA, MONAI, or LPIPS import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` plus `lpips tensorboard` in the selected environment. |\n"
+        }
+      ],
+      "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 --preflight\n```",
+      "command": "mkdir -p runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2 --preflight",
+      "usage": {
+        "completion_tokens": 610,
+        "prompt_tokens": 1696,
+        "total_tokens": 2306,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 439,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.03365468978881836,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_vae_train.json",
+          "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_network_rflow.json",
+          "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/datalist_staged.json",
+          "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_vae_train.json",
+          "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/workflow/dataset.json"
+        ],
+        "stdout_tail": "{\n  \"skill\": \"nv_generate_vae_finetune\",\n  \"model\": \"maisi-vae\",\n  \"model_repo\": \"https://github.com/NVIDIA-Medtech/NV-Generate-CTMR\",\n  \"license\": \"Apache-2.0\",\n  \"input\": {\n    \"data_base_dir\": \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset\",\n    \"datalist\": \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json\",\n    \"training_cases\": 1,\n    \"validation_cases\": 1,\n    \"modalities\": [\n      \"mri\"\n    ],\n    \"default_modality\": \"mri\",\n    \"epochs\": 1,\n    \"batch_size\": 1,\n    \"lr\": 0.0001,\n    \"cache_rate\": 0.0,\n    \"patch_size\": [\n      64,\n      64,\n      64\n    ],\n    \"val_patch_size\": null,\n    \"num_gpus\": 1,\n    \"finetune\": true,\n    \"random_seed\": 0\n  },\n  \"output\": {\n    \"directory\": \"runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/artifacts\",\n    \"workflow_summary\": null,\n    \"autoencoder_checkpoint\": null,\n    \"autoencoder_checkpoint_present\": false,\n    \"discriminator_checkpoint\": null,\n    \"discriminator_checkpoint_present\": false,\n    \"best_autoencoder_checkpoints\": [],\n    \"num_best_autoencoder_checkpoints\": 0,\n    \"loss_history\": [],\n    \"tensorboard_dir\": null\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n      \"skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py\",\n      \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json\",\n      \"--data-base-dir\",\n      \"runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset\",\n      \"--output-dir\",\n      \"runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2\",\n      \"--modality\",\n      \"mri\",\n      \"--epochs\",\n      \"1\",\n      \"--batch-size\",\n      \"1\",\n      \"--lr\",\n      \"0.0001\",\n      \"--cache-rate\",\n      \"0.0\",\n      \"--patch-size\",\n      \"64,64,64\",\n      \"--num-gpus\",\n      \"1\",\n      \"--preflight\"\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.0007691383361816406\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.0007691383361816406,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged VAE configs and validated datalist paths.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic-imaging VAE finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+        "stderr_tail": "",
+        "json": {
+          "skill": "nv_generate_vae_finetune",
+          "model": "maisi-vae",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "license": "Apache-2.0",
+          "input": {
+            "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset",
+            "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json",
+            "training_cases": 1,
+            "validation_cases": 1,
+            "modalities": [
+              "mri"
+            ],
+            "default_modality": "mri",
+            "epochs": 1,
+            "batch_size": 1,
+            "lr": 0.0001,
+            "cache_rate": 0.0,
+            "patch_size": [
+              64,
+              64,
+              64
+            ],
+            "val_patch_size": null,
+            "num_gpus": 1,
+            "finetune": true,
+            "random_seed": 0
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2",
+            "artifacts_dir": "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/artifacts",
+            "workflow_summary": null,
+            "autoencoder_checkpoint": null,
+            "autoencoder_checkpoint_present": false,
+            "discriminator_checkpoint": null,
+            "discriminator_checkpoint_present": false,
+            "best_autoencoder_checkpoints": [],
+            "num_best_autoencoder_checkpoints": 0,
+            "loss_history": [],
+            "tensorboard_dir": null
+          },
+          "invocation": {
+            "official_entrypoint": "python skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "checked_upstream_roots": [
+              ".workbench_data/upstreams/NV-Generate-CTMR"
+            ],
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+              "skills/nv-generate-vae-finetune/scripts/run_vae_finetune.py",
+              "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_datalist.json",
+              "--data-base-dir",
+              "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset/preflight_dataset",
+              "--output-dir",
+              "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2",
+              "--modality",
+              "mri",
+              "--epochs",
+              "1",
+              "--batch-size",
+              "1",
+              "--lr",
+              "0.0001",
+              "--cache-rate",
+              "0.0",
+              "--patch-size",
+              "64,64,64",
+              "--num-gpus",
+              "1",
+              "--preflight"
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 0.0007691383361816406
+          },
+          "runtime": {
+            "subprocess_seconds": 0.0007691383361816406,
+            "device": "cuda",
+            "preflight_only": true
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "Preflight staged VAE configs and validated datalist paths."
+          },
+          "intended_use_disclaimer": "Engineering wrapper for synthetic-imaging VAE finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "preflight payload reported"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0
+    }
+  ],
+  "steps_to_pass": 0,
+  "max_correction_steps": 0,
+  "repeat": 2,
+  "output_dir": "runs/with_vs_without_nv/nv_generate_vae_finetune_codex_opus/gpt55/with/repeat_2",
+  "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset",
+  "prompt_style": "minimal"
+}

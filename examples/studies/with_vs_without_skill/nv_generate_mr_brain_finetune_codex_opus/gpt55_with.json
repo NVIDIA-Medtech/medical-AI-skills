@@ -1,0 +1,1477 @@
+{
+  "backend": "gpt55",
+  "backend_label": "GPT-5.5 / Codex",
+  "model": "openai/openai/gpt-5.5",
+  "backend_protocol": {
+    "base_url": "https://inference-api.nvidia.com/v1",
+    "model": "openai/openai/gpt-5.5",
+    "api_request_parameters": [
+      "model",
+      "messages"
+    ],
+    "provider_defaults": true,
+    "retry_attempts": 4,
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "chat_attempt_timeout_seconds": 420,
+    "urlopen_timeout_seconds": 300
+  },
+  "arm": "with",
+  "skill": "nv_generate_mr_brain_finetune",
+  "mode": "codex-opus",
+  "repeat_count": 3,
+  "max_correction_steps": 0,
+  "prompt_style": "minimal",
+  "clean_environment": {
+    "per_repeat_output_dir": true,
+    "per_attempt_fresh_venv": true,
+    "python_user_site_disabled": true,
+    "host_pythonpath_removed": true,
+    "output_dir_cleaned_before_each_attempt": true,
+    "dependency_and_model_caches_may_be_shared": true,
+    "shared_cache_root": ".workbench_data/with_vs_without_cache",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    }
+  },
+  "summary": {
+    "pass_count": 3,
+    "fail_count": 0,
+    "mean_score": 5.0,
+    "scores": [
+      5,
+      5,
+      5
+    ],
+    "steps_to_pass": {
+      "resolved_count": 3,
+      "unresolved_count": 0,
+      "mean_resolved": 0.0,
+      "min_resolved": 0,
+      "max_resolved": 0,
+      "values": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "repeats": [
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr_brain_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr-brain-finetune/SKILL.md ---\n---\nname: nv-generate-mr-brain-finetune\ndescription: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - brain\n    - finetune\n---\n\n# NV-Generate-MR-Brain-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr_brain_finetune.py\", args=[...])`; otherwise run the Bash/Python command below.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--run-inference] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `scripts/diff_model_create_training_data.py`, `scripts/diff_model_train.py`, and `scripts/diff_model_infer.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, and downloaded MR-brain weights.\n- Side effects: writes staged configs, embeddings, checkpoints, optional inference images, and logs under the caller-provided `--output-dir`; may write model caches under the upstream checkout and `~/.cache/huggingface/`; may contact `https://huggingface.co` for model assets and `https://github.com` for the upstream checkout.\n- The datalist is a MONAI-style JSON object with `training[].image` paths relative to `--data-base-dir`. `training[].modality` is optional and defaults to `mri_t1`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune \\\n  --epochs 2 \\\n  --modality mri_t1 \\\n  --run-inference\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with the existing diffusion training scripts. The skill itself stages the required config and datalist glue locally and does not depend on the notebook or PR #33.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `diffusion training scripts were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `missing datalist image` | `training[].image` paths are not relative to `--data-base-dir` or files are absent. | Fix the datalist or pass the correct data root. |\n| CUDA or MONAI import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` in the selected environment. |\n"
+        }
+      ],
+      "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && PYTHONDONTWRITEBYTECODE=1 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --preflight\n```",
+      "command": "mkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && PYTHONDONTWRITEBYTECODE=1 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --preflight",
+      "usage": {
+        "completion_tokens": 711,
+        "prompt_tokens": 1690,
+        "total_tokens": 2401,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 512,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.03272366523742676,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/dataset.json"
+        ],
+        "stdout_tail": "/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/artifacts\",\n    \"workflow_summary\": null,\n    \"checkpoint\": null,\n    \"checkpoint_present\": false,\n    \"checkpoint_bytes\": null,\n    \"embedding_sidecars\": [],\n    \"num_embedding_sidecars\": 0,\n    \"inference_outputs\": [],\n    \"num_inference_outputs\": 0,\n    \"all_inference_outputs_present\": false\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python\",\n      \"-m\",\n      \"scripts.diff_model_create_training_data\",\n      \"-e\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json\",\n      \"-c\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json\",\n      \"-t\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json\",\n      \"-g\",\n      \"1\"\n    ],\n    \"command_plan\": [\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_create_training_data\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ],\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_train\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ]\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.0007622241973876953\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.0007622241973876953,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged configs and validated existing upstream script entrypoints.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+        "stderr_tail": "",
+        "json": {
+          "skill": "nv_generate_mr_brain_finetune",
+          "model": "rflow-mr-brain",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "license": "Apache-2.0",
+          "input": {
+            "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset",
+            "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json",
+            "training_cases": 1,
+            "testing_cases": 0,
+            "modalities": [
+              "mri_t1"
+            ],
+            "default_modality": "mri_t1",
+            "epochs": 2,
+            "batch_size": 1,
+            "lr": 1e-05,
+            "cache_rate": 0.0,
+            "num_gpus": 1,
+            "run_inference": false,
+            "train_from_scratch": false,
+            "infer_dim": [
+              256,
+              256,
+              256
+            ],
+            "infer_spacing": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "random_seed": 1234
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1",
+            "artifacts_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/artifacts",
+            "workflow_summary": null,
+            "checkpoint": null,
+            "checkpoint_present": false,
+            "checkpoint_bytes": null,
+            "embedding_sidecars": [],
+            "num_embedding_sidecars": 0,
+            "inference_outputs": [],
+            "num_inference_outputs": 0,
+            "all_inference_outputs_present": false
+          },
+          "invocation": {
+            "official_entrypoint": "python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "checked_upstream_roots": [
+              ".workbench_data/upstreams/NV-Generate-CTMR"
+            ],
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+              "-m",
+              "scripts.diff_model_create_training_data",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+              "-c",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+              "-t",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+              "-g",
+              "1"
+            ],
+            "command_plan": [
+              [
+                "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+                "-m",
+                "scripts.diff_model_create_training_data",
+                "-e",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+                "-c",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+                "-t",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+                "-g",
+                "1"
+              ],
+              [
+                "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+                "-m",
+                "scripts.diff_model_train",
+                "-e",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+                "-c",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+                "-t",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+                "-g",
+                "1"
+              ]
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 0.0007622241973876953
+          },
+          "runtime": {
+            "subprocess_seconds": 0.0007622241973876953,
+            "device": "cuda",
+            "preflight_only": true
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "Preflight staged configs and validated existing upstream script entrypoints."
+          },
+          "intended_use_disclaimer": "Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "preflight payload reported"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "GPT-5.5 / Codex",
+      "attempts": [
+        {
+          "backend": "gpt55",
+          "model": "openai/openai/gpt-5.5",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "openai/openai/gpt-5.5",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr_brain_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr-brain-finetune/SKILL.md ---\n---\nname: nv-generate-mr-brain-finetune\ndescription: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - brain\n    - finetune\n---\n\n# NV-Generate-MR-Brain-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr_brain_finetune.py\", args=[...])`; otherwise run the Bash/Python command below.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--run-inference] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `scripts/diff_model_create_training_data.py`, `scripts/diff_model_train.py`, and `scripts/diff_model_infer.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, and downloaded MR-brain weights.\n- Side effects: writes staged configs, embeddings, checkpoints, optional inference images, and logs under the caller-provided `--output-dir`; may write model caches under the upstream checkout and `~/.cache/huggingface/`; may contact `https://huggingface.co` for model assets and `https://github.com` for the upstream checkout.\n- The datalist is a MONAI-style JSON object with `training[].image` paths relative to `--data-base-dir`. `training[].modality` is optional and defaults to `mri_t1`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune \\\n  --epochs 2 \\\n  --modality mri_t1 \\\n  --run-inference\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with the existing diffusion training scripts. The skill itself stages the required config and datalist glue locally and does not depend on the notebook or PR #33.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `diffusion training scripts were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `missing datalist image` | `training[].image` paths are not relative to `--data-base-dir` or files are absent. | Fix the datalist or pass the correct data root. |\n| CUDA or MONAI import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` in the selected environment. |\n"
+            }
+          ],
+          "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && PYTHONDONTWRITEBYTECODE=1 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --preflight\n```",
+          "command": "mkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && PYTHONDONTWRITEBYTECODE=1 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1 --modality mri_t1 --preflight",
+          "usage": {
+            "completion_tokens": 711,
+            "prompt_tokens": 1690,
+            "total_tokens": 2401,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 512,
+              "rejected_prediction_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cached_tokens": 0
+            }
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 0.03272366523742676,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/dataset.json"
+            ],
+            "stdout_tail": "/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/artifacts\",\n    \"workflow_summary\": null,\n    \"checkpoint\": null,\n    \"checkpoint_present\": false,\n    \"checkpoint_bytes\": null,\n    \"embedding_sidecars\": [],\n    \"num_embedding_sidecars\": 0,\n    \"inference_outputs\": [],\n    \"num_inference_outputs\": 0,\n    \"all_inference_outputs_present\": false\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python\",\n      \"-m\",\n      \"scripts.diff_model_create_training_data\",\n      \"-e\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json\",\n      \"-c\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json\",\n      \"-t\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json\",\n      \"-g\",\n      \"1\"\n    ],\n    \"command_plan\": [\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_create_training_data\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ],\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_train\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ]\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.0007622241973876953\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.0007622241973876953,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged configs and validated existing upstream script entrypoints.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+            "stderr_tail": "",
+            "json": {
+              "skill": "nv_generate_mr_brain_finetune",
+              "model": "rflow-mr-brain",
+              "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+              "license": "Apache-2.0",
+              "input": {
+                "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset",
+                "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json",
+                "training_cases": 1,
+                "testing_cases": 0,
+                "modalities": [
+                  "mri_t1"
+                ],
+                "default_modality": "mri_t1",
+                "epochs": 2,
+                "batch_size": 1,
+                "lr": 1e-05,
+                "cache_rate": 0.0,
+                "num_gpus": 1,
+                "run_inference": false,
+                "train_from_scratch": false,
+                "infer_dim": [
+                  256,
+                  256,
+                  256
+                ],
+                "infer_spacing": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "random_seed": 1234
+              },
+              "output": {
+                "directory": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1",
+                "artifacts_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/artifacts",
+                "workflow_summary": null,
+                "checkpoint": null,
+                "checkpoint_present": false,
+                "checkpoint_bytes": null,
+                "embedding_sidecars": [],
+                "num_embedding_sidecars": 0,
+                "inference_outputs": [],
+                "num_inference_outputs": 0,
+                "all_inference_outputs_present": false
+              },
+              "invocation": {
+                "official_entrypoint": "python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train",
+                "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+                "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+                "checked_upstream_roots": [
+                  ".workbench_data/upstreams/NV-Generate-CTMR"
+                ],
+                "command": [
+                  "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+                  "-m",
+                  "scripts.diff_model_create_training_data",
+                  "-e",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+                  "-c",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+                  "-t",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+                  "-g",
+                  "1"
+                ],
+                "command_plan": [
+                  [
+                    "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+                    "-m",
+                    "scripts.diff_model_create_training_data",
+                    "-e",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+                    "-c",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+                    "-t",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+                    "-g",
+                    "1"
+                  ],
+                  [
+                    "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/venv/bin/python",
+                    "-m",
+                    "scripts.diff_model_train",
+                    "-e",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/environment_maisi_diff_model.json",
+                    "-c",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi_diff_model.json",
+                    "-t",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1/workflow/configs/config_maisi.json",
+                    "-g",
+                    "1"
+                  ]
+                ],
+                "exit_code": 0,
+                "subprocess_seconds": 0.0007622241973876953
+              },
+              "runtime": {
+                "subprocess_seconds": 0.0007622241973876953,
+                "device": "cuda",
+                "preflight_only": true
+              },
+              "logs": {
+                "stdout_tail": "",
+                "stderr_tail": "Preflight staged configs and validated existing upstream script entrypoints."
+              },
+              "intended_use_disclaimer": "Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "preflight payload reported"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 1,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_1",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr_brain_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr-brain-finetune/SKILL.md ---\n---\nname: nv-generate-mr-brain-finetune\ndescription: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - brain\n    - finetune\n---\n\n# NV-Generate-MR-Brain-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr_brain_finetune.py\", args=[...])`; otherwise run the Bash/Python command below.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--run-inference] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `scripts/diff_model_create_training_data.py`, `scripts/diff_model_train.py`, and `scripts/diff_model_infer.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, and downloaded MR-brain weights.\n- Side effects: writes staged configs, embeddings, checkpoints, optional inference images, and logs under the caller-provided `--output-dir`; may write model caches under the upstream checkout and `~/.cache/huggingface/`; may contact `https://huggingface.co` for model assets and `https://github.com` for the upstream checkout.\n- The datalist is a MONAI-style JSON object with `training[].image` paths relative to `--data-base-dir`. `training[].modality` is optional and defaults to `mri_t1`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune \\\n  --epochs 2 \\\n  --modality mri_t1 \\\n  --run-inference\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with the existing diffusion training scripts. The skill itself stages the required config and datalist glue locally and does not depend on the notebook or PR #33.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `diffusion training scripts were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `missing datalist image` | `training[].image` paths are not relative to `--data-base-dir` or files are absent. | Fix the datalist or pass the correct data root. |\n| CUDA or MONAI import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` in the selected environment. |\n"
+        }
+      ],
+      "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --preflight\n```",
+      "command": "mkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --preflight",
+      "usage": {
+        "completion_tokens": 702,
+        "prompt_tokens": 1690,
+        "total_tokens": 2392,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 512,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.03176379203796387,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/dataset.json"
+        ],
+        "stdout_tail": "/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/artifacts\",\n    \"workflow_summary\": null,\n    \"checkpoint\": null,\n    \"checkpoint_present\": false,\n    \"checkpoint_bytes\": null,\n    \"embedding_sidecars\": [],\n    \"num_embedding_sidecars\": 0,\n    \"inference_outputs\": [],\n    \"num_inference_outputs\": 0,\n    \"all_inference_outputs_present\": false\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n      \"-m\",\n      \"scripts.diff_model_create_training_data\",\n      \"-e\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json\",\n      \"-c\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json\",\n      \"-t\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json\",\n      \"-g\",\n      \"1\"\n    ],\n    \"command_plan\": [\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_create_training_data\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ],\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_train\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ]\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.0008122920989990234\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.0008122920989990234,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged configs and validated existing upstream script entrypoints.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+        "stderr_tail": "",
+        "json": {
+          "skill": "nv_generate_mr_brain_finetune",
+          "model": "rflow-mr-brain",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "license": "Apache-2.0",
+          "input": {
+            "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset",
+            "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json",
+            "training_cases": 1,
+            "testing_cases": 0,
+            "modalities": [
+              "mri_t1"
+            ],
+            "default_modality": "mri_t1",
+            "epochs": 2,
+            "batch_size": 1,
+            "lr": 1e-05,
+            "cache_rate": 0.0,
+            "num_gpus": 1,
+            "run_inference": false,
+            "train_from_scratch": false,
+            "infer_dim": [
+              256,
+              256,
+              256
+            ],
+            "infer_spacing": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "random_seed": 1234
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2",
+            "artifacts_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/artifacts",
+            "workflow_summary": null,
+            "checkpoint": null,
+            "checkpoint_present": false,
+            "checkpoint_bytes": null,
+            "embedding_sidecars": [],
+            "num_embedding_sidecars": 0,
+            "inference_outputs": [],
+            "num_inference_outputs": 0,
+            "all_inference_outputs_present": false
+          },
+          "invocation": {
+            "official_entrypoint": "python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "checked_upstream_roots": [
+              ".workbench_data/upstreams/NV-Generate-CTMR"
+            ],
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+              "-m",
+              "scripts.diff_model_create_training_data",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+              "-c",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+              "-t",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+              "-g",
+              "1"
+            ],
+            "command_plan": [
+              [
+                "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+                "-m",
+                "scripts.diff_model_create_training_data",
+                "-e",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+                "-c",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+                "-t",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+                "-g",
+                "1"
+              ],
+              [
+                "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+                "-m",
+                "scripts.diff_model_train",
+                "-e",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+                "-c",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+                "-t",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+                "-g",
+                "1"
+              ]
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 0.0008122920989990234
+          },
+          "runtime": {
+            "subprocess_seconds": 0.0008122920989990234,
+            "device": "cuda",
+            "preflight_only": true
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "Preflight staged configs and validated existing upstream script entrypoints."
+          },
+          "intended_use_disclaimer": "Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "preflight payload reported"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "GPT-5.5 / Codex",
+      "attempts": [
+        {
+          "backend": "gpt55",
+          "model": "openai/openai/gpt-5.5",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "openai/openai/gpt-5.5",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr_brain_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr-brain-finetune/SKILL.md ---\n---\nname: nv-generate-mr-brain-finetune\ndescription: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - brain\n    - finetune\n---\n\n# NV-Generate-MR-Brain-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr_brain_finetune.py\", args=[...])`; otherwise run the Bash/Python command below.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--run-inference] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `scripts/diff_model_create_training_data.py`, `scripts/diff_model_train.py`, and `scripts/diff_model_infer.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, and downloaded MR-brain weights.\n- Side effects: writes staged configs, embeddings, checkpoints, optional inference images, and logs under the caller-provided `--output-dir`; may write model caches under the upstream checkout and `~/.cache/huggingface/`; may contact `https://huggingface.co` for model assets and `https://github.com` for the upstream checkout.\n- The datalist is a MONAI-style JSON object with `training[].image` paths relative to `--data-base-dir`. `training[].modality` is optional and defaults to `mri_t1`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune \\\n  --epochs 2 \\\n  --modality mri_t1 \\\n  --run-inference\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with the existing diffusion training scripts. The skill itself stages the required config and datalist glue locally and does not depend on the notebook or PR #33.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `diffusion training scripts were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `missing datalist image` | `training[].image` paths are not relative to `--data-base-dir` or files are absent. | Fix the datalist or pass the correct data root. |\n| CUDA or MONAI import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` in the selected environment. |\n"
+            }
+          ],
+          "response": "```bash\nmkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --preflight\n```",
+          "command": "mkdir -p runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 && export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2 --modality mri_t1 --preflight",
+          "usage": {
+            "completion_tokens": 702,
+            "prompt_tokens": 1690,
+            "total_tokens": 2392,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 512,
+              "rejected_prediction_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cached_tokens": 0
+            }
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 0.03176379203796387,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/dataset.json"
+            ],
+            "stdout_tail": "/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/artifacts\",\n    \"workflow_summary\": null,\n    \"checkpoint\": null,\n    \"checkpoint_present\": false,\n    \"checkpoint_bytes\": null,\n    \"embedding_sidecars\": [],\n    \"num_embedding_sidecars\": 0,\n    \"inference_outputs\": [],\n    \"num_inference_outputs\": 0,\n    \"all_inference_outputs_present\": false\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n      \"-m\",\n      \"scripts.diff_model_create_training_data\",\n      \"-e\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json\",\n      \"-c\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json\",\n      \"-t\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json\",\n      \"-g\",\n      \"1\"\n    ],\n    \"command_plan\": [\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_create_training_data\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ],\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_train\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ]\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.0008122920989990234\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.0008122920989990234,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged configs and validated existing upstream script entrypoints.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+            "stderr_tail": "",
+            "json": {
+              "skill": "nv_generate_mr_brain_finetune",
+              "model": "rflow-mr-brain",
+              "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+              "license": "Apache-2.0",
+              "input": {
+                "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset",
+                "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json",
+                "training_cases": 1,
+                "testing_cases": 0,
+                "modalities": [
+                  "mri_t1"
+                ],
+                "default_modality": "mri_t1",
+                "epochs": 2,
+                "batch_size": 1,
+                "lr": 1e-05,
+                "cache_rate": 0.0,
+                "num_gpus": 1,
+                "run_inference": false,
+                "train_from_scratch": false,
+                "infer_dim": [
+                  256,
+                  256,
+                  256
+                ],
+                "infer_spacing": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "random_seed": 1234
+              },
+              "output": {
+                "directory": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2",
+                "artifacts_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/artifacts",
+                "workflow_summary": null,
+                "checkpoint": null,
+                "checkpoint_present": false,
+                "checkpoint_bytes": null,
+                "embedding_sidecars": [],
+                "num_embedding_sidecars": 0,
+                "inference_outputs": [],
+                "num_inference_outputs": 0,
+                "all_inference_outputs_present": false
+              },
+              "invocation": {
+                "official_entrypoint": "python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train",
+                "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+                "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+                "checked_upstream_roots": [
+                  ".workbench_data/upstreams/NV-Generate-CTMR"
+                ],
+                "command": [
+                  "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+                  "-m",
+                  "scripts.diff_model_create_training_data",
+                  "-e",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+                  "-c",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+                  "-t",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+                  "-g",
+                  "1"
+                ],
+                "command_plan": [
+                  [
+                    "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+                    "-m",
+                    "scripts.diff_model_create_training_data",
+                    "-e",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+                    "-c",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+                    "-t",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+                    "-g",
+                    "1"
+                  ],
+                  [
+                    "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/venv/bin/python",
+                    "-m",
+                    "scripts.diff_model_train",
+                    "-e",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/environment_maisi_diff_model.json",
+                    "-c",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi_diff_model.json",
+                    "-t",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2/workflow/configs/config_maisi.json",
+                    "-g",
+                    "1"
+                  ]
+                ],
+                "exit_code": 0,
+                "subprocess_seconds": 0.0008122920989990234
+              },
+              "runtime": {
+                "subprocess_seconds": 0.0008122920989990234,
+                "device": "cuda",
+                "preflight_only": true
+              },
+              "logs": {
+                "stdout_tail": "",
+                "stderr_tail": "Preflight staged configs and validated existing upstream script entrypoints."
+              },
+              "intended_use_disclaimer": "Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "preflight payload reported"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 2,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_2",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset",
+      "prompt_style": "minimal"
+    },
+    {
+      "backend": "gpt55",
+      "model": "openai/openai/gpt-5.5",
+      "backend_protocol": {
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "model": "openai/openai/gpt-5.5",
+        "api_request_parameters": [
+          "model",
+          "messages"
+        ],
+        "provider_defaults": true,
+        "retry_attempts": 4,
+        "retryable_http_statuses": [
+          429,
+          500,
+          502,
+          503,
+          504
+        ],
+        "chat_attempt_timeout_seconds": 420,
+        "urlopen_timeout_seconds": 300
+      },
+      "arm": "with",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+        },
+        {
+          "role": "user",
+          "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr_brain_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr-brain-finetune/SKILL.md ---\n---\nname: nv-generate-mr-brain-finetune\ndescription: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - brain\n    - finetune\n---\n\n# NV-Generate-MR-Brain-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr_brain_finetune.py\", args=[...])`; otherwise run the Bash/Python command below.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--run-inference] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `scripts/diff_model_create_training_data.py`, `scripts/diff_model_train.py`, and `scripts/diff_model_infer.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, and downloaded MR-brain weights.\n- Side effects: writes staged configs, embeddings, checkpoints, optional inference images, and logs under the caller-provided `--output-dir`; may write model caches under the upstream checkout and `~/.cache/huggingface/`; may contact `https://huggingface.co` for model assets and `https://github.com` for the upstream checkout.\n- The datalist is a MONAI-style JSON object with `training[].image` paths relative to `--data-base-dir`. `training[].modality` is optional and defaults to `mri_t1`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune \\\n  --epochs 2 \\\n  --modality mri_t1 \\\n  --run-inference\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with the existing diffusion training scripts. The skill itself stages the required config and datalist glue locally and does not depend on the notebook or PR #33.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `diffusion training scripts were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `missing datalist image` | `training[].image` paths are not relative to `--data-base-dir` or files are absent. | Fix the datalist or pass the correct data root. |\n| CUDA or MONAI import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` in the selected environment. |\n"
+        }
+      ],
+      "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3 --preflight\n```",
+      "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3 --preflight",
+      "usage": {
+        "completion_tokens": 434,
+        "prompt_tokens": 1690,
+        "total_tokens": 2124,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 284,
+          "rejected_prediction_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 0
+        }
+      },
+      "execution": {
+        "executed": true,
+        "exit_code": 0,
+        "elapsed_seconds": 0.0318295955657959,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+          "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/dataset.json"
+        ],
+        "stdout_tail": "nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/artifacts\",\n    \"workflow_summary\": null,\n    \"checkpoint\": null,\n    \"checkpoint_present\": false,\n    \"checkpoint_bytes\": null,\n    \"embedding_sidecars\": [],\n    \"num_embedding_sidecars\": 0,\n    \"inference_outputs\": [],\n    \"num_inference_outputs\": 0,\n    \"all_inference_outputs_present\": false\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python\",\n      \"-m\",\n      \"scripts.diff_model_create_training_data\",\n      \"-e\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json\",\n      \"-c\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json\",\n      \"-t\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json\",\n      \"-g\",\n      \"1\"\n    ],\n    \"command_plan\": [\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_create_training_data\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ],\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_train\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ]\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.000843048095703125\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.000843048095703125,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged configs and validated existing upstream script entrypoints.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+        "stderr_tail": "",
+        "json": {
+          "skill": "nv_generate_mr_brain_finetune",
+          "model": "rflow-mr-brain",
+          "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+          "license": "Apache-2.0",
+          "input": {
+            "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset",
+            "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json",
+            "training_cases": 1,
+            "testing_cases": 0,
+            "modalities": [
+              "mri_t1"
+            ],
+            "default_modality": "mri_t1",
+            "epochs": 2,
+            "batch_size": 1,
+            "lr": 1e-05,
+            "cache_rate": 0.0,
+            "num_gpus": 1,
+            "run_inference": false,
+            "train_from_scratch": false,
+            "infer_dim": [
+              256,
+              256,
+              256
+            ],
+            "infer_spacing": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "random_seed": 1234
+          },
+          "output": {
+            "directory": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3",
+            "artifacts_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/artifacts",
+            "workflow_summary": null,
+            "checkpoint": null,
+            "checkpoint_present": false,
+            "checkpoint_bytes": null,
+            "embedding_sidecars": [],
+            "num_embedding_sidecars": 0,
+            "inference_outputs": [],
+            "num_inference_outputs": 0,
+            "all_inference_outputs_present": false
+          },
+          "invocation": {
+            "official_entrypoint": "python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train",
+            "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+            "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+            "checked_upstream_roots": [
+              ".workbench_data/upstreams/NV-Generate-CTMR"
+            ],
+            "command": [
+              "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+              "-m",
+              "scripts.diff_model_create_training_data",
+              "-e",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+              "-c",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+              "-t",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+              "-g",
+              "1"
+            ],
+            "command_plan": [
+              [
+                "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+                "-m",
+                "scripts.diff_model_create_training_data",
+                "-e",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+                "-c",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+                "-t",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+                "-g",
+                "1"
+              ],
+              [
+                "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+                "-m",
+                "scripts.diff_model_train",
+                "-e",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+                "-c",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+                "-t",
+                "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+                "-g",
+                "1"
+              ]
+            ],
+            "exit_code": 0,
+            "subprocess_seconds": 0.000843048095703125
+          },
+          "runtime": {
+            "subprocess_seconds": 0.000843048095703125,
+            "device": "cuda",
+            "preflight_only": true
+          },
+          "logs": {
+            "stdout_tail": "",
+            "stderr_tail": "Preflight staged configs and validated existing upstream script entrypoints."
+          },
+          "intended_use_disclaimer": "Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+        }
+      },
+      "score": {
+        "score": 5,
+        "tiers": [
+          {
+            "tier": 1,
+            "pass": true,
+            "reason": "entrypoint marker"
+          },
+          {
+            "tier": 2,
+            "pass": true,
+            "reason": "user input path marker"
+          },
+          {
+            "tier": 3,
+            "pass": true,
+            "reason": "model/modality/control marker"
+          },
+          {
+            "tier": 4,
+            "pass": true,
+            "reason": "output dir marker"
+          },
+          {
+            "tier": 5,
+            "pass": true,
+            "reason": "preflight payload reported"
+          }
+        ],
+        "passed": true
+      },
+      "failure_analysis": [],
+      "step": 0,
+      "backend_label": "GPT-5.5 / Codex",
+      "attempts": [
+        {
+          "backend": "gpt55",
+          "model": "openai/openai/gpt-5.5",
+          "backend_protocol": {
+            "base_url": "https://inference-api.nvidia.com/v1",
+            "model": "openai/openai/gpt-5.5",
+            "api_request_parameters": [
+              "model",
+              "messages"
+            ],
+            "provider_defaults": true,
+            "retry_attempts": 4,
+            "retryable_http_statuses": [
+              429,
+              500,
+              502,
+              503,
+              504
+            ],
+            "chat_attempt_timeout_seconds": 420,
+            "urlopen_timeout_seconds": 300
+          },
+          "arm": "with",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You produce reproducible medical-imaging engineering commands. Do not make clinical claims."
+            },
+            {
+              "role": "user",
+              "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The MR-brain finetuning preflight input bundle is at runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset. Validate and stage the shortest preflight-scale workflow check, and write outputs under runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use Medical AI Skills skill documentation for nv_generate_mr_brain_finetune; do not inspect unrelated skill internals.\n\nDocumentation available to you:\n--- skills/nv-generate-mr-brain-finetune/SKILL.md ---\n---\nname: nv-generate-mr-brain-finetune\ndescription: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.\nlicense: Apache-2.0\nallowed-tools: Bash\nmetadata:\n  author: \"NVIDIA MedTech <noreply@nvidia.com>\"\n  tags:\n    - medtech\n    - mri\n    - brain\n    - finetune\n---\n\n# NV-Generate-MR-Brain-Finetune\n\n## Purpose\n- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.\n- Not for clinical interpretation, regulatory use, or approving synthetic data for production training.\n- The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.\n- Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.\n\n## Instructions\n- Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.\n- Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.\n- If a host agent exposes `run_script`, use `run_script(\"scripts/run_mr_brain_finetune.py\", args=[...])`; otherwise run the Bash/Python command below.\n- Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.\n- For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.\n\n## Available Scripts\n| Script | Purpose | Arguments |\n|---|---|---|\n| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--run-inference] [--preflight]` |\n\n## Prerequisites\n- `NV_GENERATE_ROOT` may point to a current checkout of `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` containing `scripts/diff_model_create_training_data.py`, `scripts/diff_model_train.py`, and `scripts/diff_model_infer.py`.\n- If `NV_GENERATE_ROOT` is unset, the wrapper searches `.workbench_data/upstreams/NV-Generate-CTMR`.\n- `CUDA_VISIBLE_DEVICES` is optional and can be used to select the GPU for real training.\n- Runtime requirements: NVIDIA CUDA GPU for real training, Python packages from the upstream `requirements.txt`, and downloaded MR-brain weights.\n- Side effects: writes staged configs, embeddings, checkpoints, optional inference images, and logs under the caller-provided `--output-dir`; may write model caches under the upstream checkout and `~/.cache/huggingface/`; may contact `https://huggingface.co` for model assets and `https://github.com` for the upstream checkout.\n- The datalist is a MONAI-style JSON object with `training[].image` paths relative to `--data-base-dir`. `training[].modality` is optional and defaults to `mri_t1`.\n\n## Usage\n\nPreflight only:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nPreflight bundle input:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_INPUT_BUNDLE/preflight_datalist.json \\\n  --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \\\n  --output-dir runs/nv_generate_mr_brain_finetune_preflight \\\n  --preflight\n```\n\nGPU finetuning:\n\n```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && \\\npython -m pip install -r \"$NV_GENERATE_ROOT/requirements.txt\" && \\\npython skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \\\n  PATH_TO_DATALIST.json \\\n  --data-base-dir PATH_TO_DATA_ROOT \\\n  --output-dir runs/nv_generate_mr_brain_finetune \\\n  --epochs 2 \\\n  --modality mri_t1 \\\n  --run-inference\n```\n\nReplace `PATH_TO_DATALIST.json` and `PATH_TO_DATA_ROOT` with the user's actual paths. Do not use the fixture datalist for real training; it is a preflight-only placeholder.\n\n## Limitations\n- Requires a current upstream `NV-Generate-CTMR` checkout with the existing diffusion training scripts. The skill itself stages the required config and datalist glue locally and does not depend on the notebook or PR #33.\n- Full training can be expensive and is not deterministic across hardware, CUDA, and package versions.\n- The wrapper gates file accounting and command provenance, not anatomical realism or downstream model utility.\n- Not for clinical deployment, clinical interpretation, autonomous diagnosis, regulatory submission, or production training-data approval.\n\n## Troubleshooting\n| Error | Cause | Fix |\n|---|---|---|\n| `diffusion training scripts were not found` | `NV_GENERATE_ROOT` does not point at a current NV-Generate-CTMR checkout. | Clone or update `https://github.com/NVIDIA-Medtech/NV-Generate-CTMR` and set `NV_GENERATE_ROOT`. |\n| `missing datalist image` | `training[].image` paths are not relative to `--data-base-dir` or files are absent. | Fix the datalist or pass the correct data root. |\n| CUDA or MONAI import failure | Runtime environment lacks upstream dependencies. | Install `\"$NV_GENERATE_ROOT/requirements.txt\"` in the selected environment. |\n"
+            }
+          ],
+          "response": "```bash\nexport NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3 --preflight\n```",
+          "command": "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json --data-base-dir runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset --output-dir runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3 --preflight",
+          "usage": {
+            "completion_tokens": 434,
+            "prompt_tokens": 1690,
+            "total_tokens": 2124,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 284,
+              "rejected_prediction_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cached_tokens": 0
+            }
+          },
+          "execution": {
+            "executed": true,
+            "exit_code": 0,
+            "elapsed_seconds": 0.0318295955657959,
+            "isolated_exec_env": true,
+            "fresh_exec_env_created": true,
+            "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv",
+            "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+            "shared_cache_env": {
+              "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+              "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+              "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+              "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+              "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+              "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+              "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+              "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+              "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+              "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+            },
+            "protected_upstream_env": {
+              "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+              "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+            },
+            "upstream_mutation_detected": false,
+            "upstream_mutation_restored": false,
+            "upstream_mutation_paths": [],
+            "generated_files": [
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+              "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/dataset.json"
+            ],
+            "stdout_tail": "nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3\",\n    \"artifacts_dir\": \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/artifacts\",\n    \"workflow_summary\": null,\n    \"checkpoint\": null,\n    \"checkpoint_present\": false,\n    \"checkpoint_bytes\": null,\n    \"embedding_sidecars\": [],\n    \"num_embedding_sidecars\": 0,\n    \"inference_outputs\": [],\n    \"num_inference_outputs\": 0,\n    \"all_inference_outputs_present\": false\n  },\n  \"invocation\": {\n    \"official_entrypoint\": \"python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train\",\n    \"upstream_root\": \".workbench_data/upstreams/NV-Generate-CTMR\",\n    \"upstream_commit\": \"61c4ec709b84cad468852243c48e250bec732074\",\n    \"checked_upstream_roots\": [\n      \".workbench_data/upstreams/NV-Generate-CTMR\"\n    ],\n    \"command\": [\n      \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python\",\n      \"-m\",\n      \"scripts.diff_model_create_training_data\",\n      \"-e\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json\",\n      \"-c\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json\",\n      \"-t\",\n      \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json\",\n      \"-g\",\n      \"1\"\n    ],\n    \"command_plan\": [\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_create_training_data\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ],\n      [\n        \"runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python\",\n        \"-m\",\n        \"scripts.diff_model_train\",\n        \"-e\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json\",\n        \"-c\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json\",\n        \"-t\",\n        \"runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json\",\n        \"-g\",\n        \"1\"\n      ]\n    ],\n    \"exit_code\": 0,\n    \"subprocess_seconds\": 0.000843048095703125\n  },\n  \"runtime\": {\n    \"subprocess_seconds\": 0.000843048095703125,\n    \"device\": \"cuda\",\n    \"preflight_only\": true\n  },\n  \"logs\": {\n    \"stdout_tail\": \"\",\n    \"stderr_tail\": \"Preflight staged configs and validated existing upstream script entrypoints.\"\n  },\n  \"intended_use_disclaimer\": \"Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval.\"\n}",
+            "stderr_tail": "",
+            "json": {
+              "skill": "nv_generate_mr_brain_finetune",
+              "model": "rflow-mr-brain",
+              "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+              "license": "Apache-2.0",
+              "input": {
+                "data_base_dir": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_dataset",
+                "datalist": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset/preflight_datalist.json",
+                "training_cases": 1,
+                "testing_cases": 0,
+                "modalities": [
+                  "mri_t1"
+                ],
+                "default_modality": "mri_t1",
+                "epochs": 2,
+                "batch_size": 1,
+                "lr": 1e-05,
+                "cache_rate": 0.0,
+                "num_gpus": 1,
+                "run_inference": false,
+                "train_from_scratch": false,
+                "infer_dim": [
+                  256,
+                  256,
+                  256
+                ],
+                "infer_spacing": [
+                  1.0,
+                  1.0,
+                  1.0
+                ],
+                "random_seed": 1234
+              },
+              "output": {
+                "directory": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3",
+                "artifacts_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/artifacts",
+                "workflow_summary": null,
+                "checkpoint": null,
+                "checkpoint_present": false,
+                "checkpoint_bytes": null,
+                "embedding_sidecars": [],
+                "num_embedding_sidecars": 0,
+                "inference_outputs": [],
+                "num_inference_outputs": 0,
+                "all_inference_outputs_present": false
+              },
+              "invocation": {
+                "official_entrypoint": "python -m scripts.diff_model_create_training_data; python -m scripts.diff_model_train",
+                "upstream_root": ".workbench_data/upstreams/NV-Generate-CTMR",
+                "upstream_commit": "61c4ec709b84cad468852243c48e250bec732074",
+                "checked_upstream_roots": [
+                  ".workbench_data/upstreams/NV-Generate-CTMR"
+                ],
+                "command": [
+                  "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+                  "-m",
+                  "scripts.diff_model_create_training_data",
+                  "-e",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+                  "-c",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+                  "-t",
+                  "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+                  "-g",
+                  "1"
+                ],
+                "command_plan": [
+                  [
+                    "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+                    "-m",
+                    "scripts.diff_model_create_training_data",
+                    "-e",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+                    "-c",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+                    "-t",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+                    "-g",
+                    "1"
+                  ],
+                  [
+                    "runs/with_vs_without_nv/_exec_envs/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/venv/bin/python",
+                    "-m",
+                    "scripts.diff_model_train",
+                    "-e",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/environment_maisi_diff_model.json",
+                    "-c",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi_diff_model.json",
+                    "-t",
+                    "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3/workflow/configs/config_maisi.json",
+                    "-g",
+                    "1"
+                  ]
+                ],
+                "exit_code": 0,
+                "subprocess_seconds": 0.000843048095703125
+              },
+              "runtime": {
+                "subprocess_seconds": 0.000843048095703125,
+                "device": "cuda",
+                "preflight_only": true
+              },
+              "logs": {
+                "stdout_tail": "",
+                "stderr_tail": "Preflight staged configs and validated existing upstream script entrypoints."
+              },
+              "intended_use_disclaimer": "Engineering wrapper for synthetic MR-brain diffusion model finetuning; not for clinical interpretation, regulatory use, or production training data approval."
+            }
+          },
+          "score": {
+            "score": 5,
+            "tiers": [
+              {
+                "tier": 1,
+                "pass": true,
+                "reason": "entrypoint marker"
+              },
+              {
+                "tier": 2,
+                "pass": true,
+                "reason": "user input path marker"
+              },
+              {
+                "tier": 3,
+                "pass": true,
+                "reason": "model/modality/control marker"
+              },
+              {
+                "tier": 4,
+                "pass": true,
+                "reason": "output dir marker"
+              },
+              {
+                "tier": 5,
+                "pass": true,
+                "reason": "preflight payload reported"
+              }
+            ],
+            "passed": true
+          },
+          "failure_analysis": [],
+          "step": 0
+        }
+      ],
+      "steps_to_pass": 0,
+      "max_correction_steps": 0,
+      "repeat": 3,
+      "output_dir": "runs/with_vs_without_nv/nv_generate_mr_brain_finetune_codex_opus/gpt55/with/repeat_3",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset",
+      "prompt_style": "minimal"
+    }
+  ]
+}

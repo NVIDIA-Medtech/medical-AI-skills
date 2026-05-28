@@ -1,9 +1,7 @@
 # With-vs-Without Skill Experiment Docs
 
-Last refreshed: May 27, 2026.
-Audit status: current local audit is incomplete after adding the two finetuning
-prompt-only scenarios; direct repeat artifacts are pending for those new
-scenarios.
+Last refreshed: May 28, 2026.
+Audit status: strict audit passed for refreshed artifacts on May 28, 2026.
 
 Each covered user-facing model skill has two comparison documents from the corrected with-vs-without protocol:
 
@@ -24,40 +22,35 @@ This is an engineering reproducibility protocol. It tests whether an agent can r
 
 The corrected experiment is **LLM + SKILL.md vs LLM + upstream README/guide**. The fair NAT/tool-agent prompts give only a natural user request, a neutral staged input path, an output directory, and the path of the arm-specific document to read. They do not embed the documentation and do not give label IDs, config names, entrypoint names, model variants, or backend implementation details outside the documentation arm.
 
-The saved direct-API runs used an embedded-doc minimal prompt only because those chat backends had no file-reading tools. The study JSONs preserve those exact direct-API messages; the `tools/nat_audit/data` artifacts are the fair A2-style path prompts for future NAT/tool-agent comparisons.
+The completed direct-API runs used an embedded-doc minimal prompt only because those chat backends had no file-reading tools. The study JSONs preserve those exact direct-API messages; the `tools/nat_audit/data` artifacts are the fair A2-style path prompts for future NAT/tool-agent comparisons.
 
 The direct-API backend protocol is service-default by design: each LLM request sends only `model` and `messages`. It omits sampling fields, token caps, backend-specific reasoning controls, and extra request body fields. Retry attempts and socket timeouts are client transport settings, not model behavior settings.
 
-## Last Completed Aggregate Result
+## Current Aggregate Result
 
-The aggregate below is the last completed direct-API result set for the
-original seven scenarios. The newly added `nv_generate_mr_brain_finetune` and
-`nv_generate_vae_finetune` scenarios currently have complete prompt artifacts
-and no direct API repeat artifacts yet.
+- Codex/Opus with-skill repeats: 52/54 passed.
+- Codex/Opus README-only repeats: 0/54 passed.
+- Nemotron with-skill repeats: 27/27 passed.
+- Nemotron README-only repeats: 0/27 passed.
+- Codex/Opus outcome-support gates: 9/9 skill reports support SKILL.md paired advantage.
+- Nemotron outcome-support gates: 9/9 skill reports support SKILL.md paired advantage.
 
-- Codex/Opus with-skill repeats: 42/42 passed.
-- Codex/Opus README-only repeats: 0/42 passed.
-- Nemotron with-skill repeats: 21/21 passed.
-- Nemotron README-only repeats: 0/21 passed.
-- Codex/Opus outcome-support gates: 7/7 skill reports support SKILL.md paired advantage.
-- Nemotron outcome-support gates: 7/7 skill reports support SKILL.md paired advantage.
-
-Every with-skill repeat exits successfully and passes the deterministic grader.
+With-skill pass status is mixed; unresolved repeats are listed in the per-skill reports.
 
 Artifact completeness alone does not establish the skill-advantage claim. Treat the aggregate as supporting that claim only when every expected per-skill/backend outcome-support gate reports a SKILL.md paired advantage.
 
 ## Token Profiling
 
-The table below aggregates provider-reported usage across all seven skills for each backend/arm. It is useful for separating workflow success from prompting cost: README-only arms often spent more output tokens explaining or improvising commands while still failing the artifact contract.
+The table below aggregates provider-reported usage across all 9 skills for each backend/arm. It is useful for separating workflow success from prompting cost: README-only arms often spent more output tokens explaining or improvising commands while still failing the artifact contract.
 
 | Backend | Arm | Repeats | Passes | Attempts | Prompt tokens | Completion tokens | Reasoning tokens | Total tokens | Mean total/repeat | Executed | Mean exec s |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| GPT-5.5 / Codex | with | 21 | 21 | 21 | 48,432 | 9,854 | 7,043 | 58,286 | 2,775.5 | 21 | 48.8 |
-| GPT-5.5 / Codex | without | 21 | 0 | 21 | 65,172 | 108,211 | 86,134 | 173,383 | 8,256.3 | 5 | 0.0 |
-| Nemotron | with | 21 | 21 | 21 | 51,063 | 35,026 | 0 | 86,089 | 4,099.5 | 21 | 56.5 |
-| Nemotron | without | 21 | 0 | 21 | 69,408 | 133,520 | 0 | 202,928 | 9,663.2 | 7 | 0.0 |
-| Opus 4.7 | with | 21 | 21 | 21 | 83,070 | 4,355 | 0 | 87,425 | 4,163.1 | 21 | 52.9 |
-| Opus 4.7 | without | 21 | 0 | 21 | 101,544 | 16,292 | 0 | 117,836 | 5,611.2 | 17 | 0.2 |
+| GPT-5.5 / Codex | with | 27 | 27 | 27 | 58,749 | 13,228 | 9,505 | 71,977 | 2,665.8 | 27 | 38.0 |
+| GPT-5.5 / Codex | without | 27 | 0 | 27 | 71,442 | 137,320 | 101,916 | 208,762 | 7,731.9 | 7 | 0.0 |
+| Nemotron | with | 27 | 27 | 27 | 61,938 | 44,405 | 0 | 106,343 | 3,938.6 | 27 | 43.5 |
+| Nemotron | without | 27 | 0 | 27 | 76,041 | 171,122 | 0 | 247,163 | 9,154.2 | 8 | 0.0 |
+| Opus 4.7 | with | 27 | 25 | 27 | 100,974 | 5,930 | 0 | 106,904 | 3,959.4 | 27 | 32.7 |
+| Opus 4.7 | without | 27 | 0 | 27 | 112,074 | 24,469 | 0 | 136,543 | 5,057.1 | 16 | 0.3 |
 
 Reasoning tokens are included in completion tokens where reported. Mean execution seconds excludes repeats that never reached command execution, but those repeats still contributed prompt and completion tokens.
 
@@ -67,27 +60,27 @@ Nemotron is reported with the same main no-repair outcome gate as the other back
 
 | Arm | Repeats | Passed strict | Strict command | Recoverable malformed command | Unrecoverable formatting | Guard-ready after tolerant extraction | Static guard blocked | Format categories | Guard reasons |
 |---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| with | 21 | 21 | 21 | 0 | 0 | 0 | 0 | strict 21 | none |
-| without | 21 | 0 | 16 | 5 | 0 | 3 | 2 | strict 16; raw_shell 5 | command does not reference the neutral staged input path (2) |
+| with | 27 | 27 | 27 | 0 | 0 | 0 | 0 | strict 27 | none |
+| without | 27 | 0 | 20 | 7 | 0 | 3 | 4 | strict 20; raw_shell 7 | command does not reference the neutral staged input path (3); command does not reference an expected runnable surface (1) |
 
 Protocol-compliance failure buckets, counted per repeat and not mutually exclusive:
 
 | Bucket | Count |
 |---|---:|
-| No strict command extracted | 5 |
-| Wrong or missing runnable surface | 6 |
+| No strict command extracted | 7 |
+| Wrong or missing runnable surface | 12 |
 | Missing staged input path | 14 |
-| Missing model/modality/control marker | 8 |
-| Missing output directory | 5 |
-| Unsafe/static guard block | 9 |
-| Nonzero execution exit | 6 |
+| Missing model/modality/control marker | 10 |
+| Missing output directory | 7 |
+| Unsafe/static guard block | 12 |
+| Nonzero execution exit | 7 |
 | Artifact contract failure after execution | 1 |
 
 ## Overall Findings
 
-The current evidence strongly favors `LLM + SKILL.md` over `LLM + upstream README/guide` for these engineering tasks. Across all seven NV model skills and three LLM backends, the with-skill arm passed 63/63 repeats, while the README-only arm passed 0/63 repeats. In matched backend-repeat pairs, SKILL.md won 63 times, README-only won 0 times, and 0 pairs tied because both arms failed. The exact one-sided paired sign test over decisive pairs gives `p = 1.084e-19`.
+The current evidence strongly favors `LLM + SKILL.md` over `LLM + upstream README/guide` for these engineering tasks. Across all 9 NV model skills and three LLM backends, the with-skill arm passed 79/81 repeats, while the README-only arm passed 0/81 repeats. In matched backend-repeat pairs, SKILL.md won 81 times, README-only won 0 times, and 0 pairs tied because both arms failed. The exact one-sided paired sign test over decisive pairs gives `p = 4.136e-25`.
 
-The effect is clearest for the stronger coding backends: GPT-5.5/Codex and Opus both passed every with-skill repeat after the SKILL.md updates, for a combined 42/42 with-skill pass rate versus 0/42 for README-only. Nemotron is more fragile, especially around command formatting and extraction, but still shows an aggregate skill advantage: 21/21 with-skill passes versus 0/21 README-only passes.
+The stronger coding backends show a large aggregate gap: GPT-5.5/Codex and Opus produced a combined 52/54 with-skill pass rate versus 0/54 for README-only. Nemotron is more fragile, especially around command formatting and extraction, but still shows an aggregate skill advantage: 27/27 with-skill passes versus 0/27 README-only passes.
 
 The README-only arms were not usually irrelevant; they often found part of the right upstream surface and earned partial scores. The failure was executable completion. Common README-only failure modes were nonzero execution exits, missing or malformed command extraction, unsafe cleanup such as generated `rm` fragments, commands that missed the neutral staged input path, commands that missed the expected output directory, and outputs that did not satisfy the deterministic artifact contract. These map directly to the details SKILL.md files are intended to make explicit: exact entrypoints, fresh-environment dependency steps, model variants, label or modality controls, staged input/output contracts, and verifier-facing artifacts.
 
@@ -109,16 +102,13 @@ To add this protocol for a new skill, follow [`with-vs-without-authoring.md`](wi
 
 ## Document Matrix
 
-Rows with pass statistics are historical completed runs. Rows marked pending
-have prompt artifacts only and should not be cited as outcome evidence.
-
 | Skill | Codex/Opus comparison | Nemotron baseline study | Current evidence |
 |---|---|---|---|
-| `nv_generate_ct_rflow` | [`with-vs-without-nv-generate-ct-rflow-codex-opus.md`](with-vs-without-nv-generate-ct-rflow-codex-opus.md) | [`with-vs-without-nv-generate-ct-rflow-nemotron-correction.md`](with-vs-without-nv-generate-ct-rflow-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 3.3/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 1.7/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
+| `nv_generate_ct_rflow` | [`with-vs-without-nv-generate-ct-rflow-codex-opus.md`](with-vs-without-nv-generate-ct-rflow-codex-opus.md) | [`with-vs-without-nv-generate-ct-rflow-nemotron-correction.md`](with-vs-without-nv-generate-ct-rflow-nemotron-correction.md) | Codex/Opus with 4/6 pass (avg 4.7/5) vs README 0/6 (avg 3.0/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 1.3/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
 | `nv_generate_mr` | [`with-vs-without-nv-generate-mr-codex-opus.md`](with-vs-without-nv-generate-mr-codex-opus.md) | [`with-vs-without-nv-generate-mr-nemotron-correction.md`](with-vs-without-nv-generate-mr-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 4.0/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 3.3/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
 | `nv_generate_mr_brain` | [`with-vs-without-nv-generate-mr-brain-codex-opus.md`](with-vs-without-nv-generate-mr-brain-codex-opus.md) | [`with-vs-without-nv-generate-mr-brain-nemotron-correction.md`](with-vs-without-nv-generate-mr-brain-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 3.7/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 2.0/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
-| `nv_generate_mr_brain_finetune` | pending direct API repeats | pending direct API repeats | Prompt artifact complete at `tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_finetune_prompts.json`; outcome evidence pending. |
-| `nv_generate_vae_finetune` | pending direct API repeats | pending direct API repeats | Prompt artifact complete at `tools/nat_audit/data/eval_nv_model_studies_nv_generate_vae_finetune_prompts.json`; outcome evidence pending. |
+| `nv_generate_mr_brain_finetune` | [`with-vs-without-nv-generate-mr-brain-finetune-codex-opus.md`](with-vs-without-nv-generate-mr-brain-finetune-codex-opus.md) | [`with-vs-without-nv-generate-mr-brain-finetune-nemotron-correction.md`](with-vs-without-nv-generate-mr-brain-finetune-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 2.8/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 3.0/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
+| `nv_generate_vae_finetune` | [`with-vs-without-nv-generate-vae-finetune-codex-opus.md`](with-vs-without-nv-generate-vae-finetune-codex-opus.md) | [`with-vs-without-nv-generate-vae-finetune-nemotron-correction.md`](with-vs-without-nv-generate-vae-finetune-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 3.0/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 2.0/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
 | `nv_reason_cxr` | [`with-vs-without-nv-reason-cxr-codex-opus.md`](with-vs-without-nv-reason-cxr-codex-opus.md) | [`with-vs-without-nv-reason-cxr-nemotron-correction.md`](with-vs-without-nv-reason-cxr-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 4.0/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 4.0/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
 | `nv_segment_ct` | [`with-vs-without-nv-segment-ct-codex-opus.md`](with-vs-without-nv-segment-ct-codex-opus.md) | [`with-vs-without-nv-segment-ct-nemotron-correction.md`](with-vs-without-nv-segment-ct-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 3.5/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 2.3/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
 | `nv_segment_ct_finetune` | [`with-vs-without-nv-segment-ct-finetune-codex-opus.md`](with-vs-without-nv-segment-ct-finetune-codex-opus.md) | [`with-vs-without-nv-segment-ct-finetune-nemotron-correction.md`](with-vs-without-nv-segment-ct-finetune-nemotron-correction.md) | Codex/Opus with 6/6 pass (avg 5.0/5) vs README 0/6 (avg 3.8/5); paired SKILL.md paired advantage (6/6 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.01562); gate Supports SKILL.md advantage. Nemotron with 3/3 pass (avg 5.0/5, steps mean 0.0; unresolved 0; values [0, 0, 0]) vs README 0/3 pass (avg 2.7/5, steps all unresolved; values [unresolved, unresolved, unresolved]); paired SKILL.md paired advantage (3/3 SKILL.md wins, 0 README-only wins, 0 ties, sign-test p=0.125); gate Supports SKILL.md advantage. |
@@ -161,6 +151,8 @@ The fair A2-style path prompts for NAT/tool-agent comparisons are saved here:
 | `nv_generate_ct_rflow` | `tools/nat_audit/data/eval_nv_model_studies_nv_generate_ct_rflow_prompts.json` |
 | `nv_generate_mr` | `tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_prompts.json` |
 | `nv_generate_mr_brain` | `tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_prompts.json` |
+| `nv_generate_mr_brain_finetune` | `tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_finetune_prompts.json` |
+| `nv_generate_vae_finetune` | `tools/nat_audit/data/eval_nv_model_studies_nv_generate_vae_finetune_prompts.json` |
 | `nv_reason_cxr` | `tools/nat_audit/data/eval_nv_model_studies_nv_reason_cxr_prompts.json` |
 | `nv_segment_ct` | `tools/nat_audit/data/eval_nv_model_studies_nv_segment_ct_prompts.json` |
 | `nv_segment_ct_finetune` | `tools/nat_audit/data/eval_nv_model_studies_nv_segment_ct_finetune_prompts.json` |

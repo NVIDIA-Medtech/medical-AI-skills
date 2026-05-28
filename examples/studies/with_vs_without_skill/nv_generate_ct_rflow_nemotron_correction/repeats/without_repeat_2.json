@@ -31,84 +31,91 @@
       "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The case request is at runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json. Synthesize one paired 3D CT image and segmentation mask for a chest case with a lung tumor, and write the output pair under runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-ct-rflow/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_ct_rflow_NV-Generate-CTMR_infer_mask-image-paired.md ---\n---\nname: infer_mask-image-paired\ndescription: How to run paired mask + image generation with NV-Generate-CTMR. Generates a 3D mask (either from anatomy_size or by retrieving a real training mask) and then a paired CT/MR image conditioned on that mask via ControlNet. Trigger when the user asks \"how do I generate a mask and image together\", \"how does LDMSampler work\", \"what does scripts.inference do\", or wants help running the README \u00a72.3 CT Paired Image/Mask command.\n---\n\n# Mask + image paired inference\n\nThis skill covers the **paired generation** pipeline: mask first, then image conditioned on that mask. The CLI is `scripts.inference`, which instantiates `LDMSampler` and calls `sample_multiple_images`. This is the path used in README \u00a72.3 (CT Paired Image/Mask Generation).\n\nTwo algorithms run sequentially:\n\n1. **Mask stage** \u2014 see the `infer_mask-generation` skill.\n2. **Image stage** \u2014 see the `infer_image-from-mask` skill.\n\nThis skill explains how they're chained, the LDMSampler state required, and the configuration knobs.\n\n## Quick Start command\n\n```bash\nexport MONAI_DATA_DIRECTORY=\"./temp_work_dir\"\nnetwork=\"rflow\"                       # or \"ddpm\"\ngenerate_version=\"rflow-ct\"           # or \"ddpm-ct\"\npython -m scripts.inference \\\n    -t ./configs/config_network_${network}.json \\\n    -i ./configs/config_infer.json \\\n    -e ./configs/environment_${generate_version}.json \\\n    --random-seed 0 --version ${generate_version}\n```\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct`). The notebook auto-applies this when `generate_version == \"ddpm-ct\"` (see cell 12). If you call the API directly, set this explicitly \u2014 DDPM scheduler will not produce usable output with fewer steps. This is 33\u00d7 slower than `rflow-ct` but produces equivalent quality.\n\nThree configs are passed:\n\n- `-t` network architecture (`config_network_rflow.json` or `config_network_ddpm.json`).\n- `-i` inference parameters (`config_infer.json` \u2014 `body_region`, `anatomy_list`, `output_size`, `spacing`, `controllable_anatomy_size`, etc.).\n- `-e` environment paths (`environment_rflow-ct.json` or `environment_ddpm-ct.json` \u2014 checkpoint paths, label dicts, mask database).\n\n## How `LDMSampler.sample_multiple_images` chooses the mask path\n\n```text\ncontrollable_anatomy_size non-empty?\n            \u2502\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n  YES                 NO\n   \u2502                   \u2502\n   \u25bc                   \u25bc\nprepare_anatomy_size_  find_masks(body_region, anatomy_list, ...)\ncondition()            (look up real training masks; resample if needed)\n   \u2502                   \u2502\n   \u25bc                   \u25bc\nsample_one_mask()      read_mask_information(mask_file)\n(diffusion-generated)  (no diffusion, just load + transform)\n   \u2502                   \u2502\n   \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n            \u25bc\n   prepare_one_mask_and_meta_info()  (assign 1.5mm iso affine, derive\n                                      top/bottom_region_index)\n            \u2502\n            \u25bc\n   sample_one_pair()  (ControlNet + image DM \u2014 see infer_image-from-mask skill)\n            \u2502\n            \u25bc\n   quality_check_ct(image, mask)\n            \u2502\n        passed?\n            \u2502\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n  YES               NO\n   \u2502                 \u2502\nsave image+label   re-generate (up to LDMSampler.max_try_time=2 retries)\n```\n\n### Two paths in detail\n\n**Path A \u2014 `controllable_anatomy_size` non-empty** (diffusion-generated mask):\n\n- User provides e.g. `[(\"pancreas\", 0.5), (\"liver\", 0.7)]` in `config_infer.json`.\n- `prepare_anatomy_size_condition` builds the 10-d vector (see `infer_mask-generation` skill).\n- `sample_one_mask` runs the mask DDPM.\n- Result is at fixed shape `256\u00d7256\u00d7256 \u00d7 1.5mm iso` (the mask DM's pretrained shape).\n- `ensure_output_size_and_spacing` resamples to the user's requested `output_size` + `spacing`.\n\n**Path B \u2014 `controllable_anatomy_size` empty** (real training mask):\n\n- `find_masks` queries `configs/all_mask_files_*.json` for masks matching `body_region` + `anatomy_list` + `spacing` + `output_size`.\n- If no exact match, `find_closest_masks` picks the closest by FOV / dim / spacing.\n- `read_mask_information` loads the mask via `val_transforms` (LoadImaged + Orientationd(\"RAS\") + spacing scaling).\n- Optional `augmentation()` applies training-style mask augmentation if `if_aug` is set.\n\nBoth paths then call `sample_one_pair` for the image stage.\n\n## `LDMSampler.__init__` \u2014 required state\n\n| Group | Argument | Source |\n|---|---|---|\n| Mask DM | `mask_generation_autoencoder` | `models/mask_generation_autoencoder.pt` |\n| Mask DM | `mask_generation_diffusion_unet` | `models/mask_generation_diffusion_unet.pt` |\n| Mask DM | `mask_generation_noise_scheduler` | DDPM scheduler (from network def) |\n| Mask DM | `mask_generation_scale_factor` | `1.0055984258651733` |\n| Mask DM | `mask_generation_latent_shape` | `(4, 64, 64, 64)` for 256\u00b3 output |\n| Image DM | `autoencoder`, `diffusion_unet`, `controlnet` | variant-specific checkpoints under `models/` |\n| Image DM | `noise_scheduler` | RFlow (rflow-ct/mr) or DDPM (ddpm-ct) |\n| Image DM | `scale_factor`, `latent_shape` | from the variant's network config |\n| Mask DB | `all_mask_files_json`, `all_mask_files_base_dir` | for Path B only |\n| Vocabularies | `label_dict_json`, `label_dict_remap_json` | `configs/label_dict.json`, `configs/label_dict_124_to_132.json` |\n| Anatomy size DB | `all_anatomy_size_conditions_json` | `configs/all_anatomy_size_conditions.json` (used by Path A) |\n| QC | `real_img_median_statistics` | `configs/image_median_statistics_ct.json` (CT-only quality check) |\n| User intent | `body_region`, `anatomy_list`, `controllable_anatomy_size`, `output_size`, `spacing`, `modality` | from `config_infer.json` |\n| Other | `device`, `output_dir`, `num_inference_steps`, `cfg_guidance_scale`, etc. | runtime / config |\n\n## `dim` and `spacing` \u2014 same FOV rules as image-only\n\n> \u26a0\ufe0f **FOV (= `dim \u00d7 spacing`) is the #1 quality knob.** See the **\"Why FOV matters\"** section at the top of [`infer_image-only.md`](infer_image-only.md) \u2014 same warning applies here. Out-of-distribution FOVs produce unusable output even when the validator accepts the inputs.\n\nThe mask + image pipeline uses **the same** `output_size` and `spacing` constraints as image-only inference \u2014 see the `infer_image-only` skill for the table of recommended `(dim, spacing)` per anatomical target and the hard constraints from `check_input_ct` / `check_input_mr`.\n\nAdditional FOV considerations specific to the paired pipeline:\n\n- The **mask DM** was pretrained at **256\u00b3 \u00d7 1.5 mm iso** (= 384 mm cube FOV). Generating a mask at significantly different shape forces the `ensure_output_size_and_spacing` resampling, which degrades label boundaries. Stay at or near 256\u00b3 \u00d7 1.5mm for Path A.\n- For Path B (mask DB lookup), the candidate masks are themselves drawn from a training-FOV distribution \u2014 `find_closest_masks` picks the closest matches, but the closer your requested FOV is to a mode of that distribution, the less reshaping is needed.\n\n## Quality check loop\n\n`LDMSampler.quality_check_ct` runs after each image is generated (CT only; MR codes \u2265 8 skip the check):\n\n- For each label (liver, spleen, pancreas, kidney, lung, brain, tumors, bone), check that the **median HU value** of voxels with that label falls in the per-organ acceptable range stored in `configs/image_median_statistics_ct.json`.\n- If any label is an outlier \u2192 fail; retry mask + image generation up to `max_try_time=2` times.\n- If still failing after retries: save the last attempt and log a warning.\n\n## Configuration knobs\n\nLive in the three configs:\n\n- `config_network_*.json` \u2014 fixed network architecture; not usually edited.\n- `config_infer.json` \u2014 user intent (see below).\n- `environment_*.json` \u2014 paths.\n\nKey `config_infer.json` knobs:\n\n| Key | Effect |\n|---|---|\n| `body_region` | List of regions present in the requested mask: any of `[\"head\", \"chest\", \"thorax\", \"abdomen\", \"pelvis\", \"lower\"]`. Used by Path B only (`find_masks` filter). |\n| `anatomy_list` | List of organ names from `configs/label_dict.json` that must be present. Used by `find_masks` (Path B) AND as the post-process filter (`filter_mask_with_organs`) for both paths. |\n| `controllable_anatomy_size` | Empty list \u2192 Path B. Non-empty list of `(organ_name, size)` tuples \u2192 Path A (diffusion-generated mask). At most 10 entries; at most 1 tumor. |\n| `output_size` | Target volume shape. Hard constraints apply (see `infer_image-only` skill). |\n| `spacing` | Target voxel spacing (mm). Hard constraints apply. |\n| `modality` | Modality code (1=CT, 8..32=MR variants). |\n| `num_inference_steps` | RFlow \u2192 30, **DDPM \u2192 1000**. \u26a0\ufe0f For `ddpm-ct` you must set this to 1000; the notebook auto-applies this override in cell 12. |\n| `mask_generation_num_inference_steps` | **1000** \u2014 the mask DM always uses DDPM regardless of which image-DM variant you pick. Setting this lower silently degrades mask quality. |\n| `cfg_guidance_scale` | Image-DM tumor CFG; `0` disables. |\n\n## Output\n\nFor each successful generation, two files are saved to `output_dir`:\n\n- `sample_<timestamp>_image.nii.gz` \u2014 synthetic CT/MR\n- `sample_<timestamp>_label.nii.gz` \u2014 paired mask (filtered to `anatomy_list`)\n\n## Code references\n\n| Symbol | File |\n|---|---|\n| `LDMSampler` | `scripts/sample.py` |\n| `LDMSampler.sample_multiple_images` (orchestrator) | `scripts/sample.py` |\n| `LDMSampler.prepare_anatomy_size_condition` (Path A) | `scripts/sample.py` |\n| `LDMSampler.find_closest_masks`, `read_mask_information` (Path B) | `scripts/sample.py` |\n| `LDMSampler.sample_one_pair` (image stage) | `scripts/sample.py` |\n| `LDMSampler.quality_check_ct` | `scripts/sample.py` |\n| `ldm_conditional_sample_one_mask` (mask DM) | `scripts/sample_mask.py` |\n| `ldm_conditional_sample_one_image` (image DM + ControlNet) | `scripts/infer_image_from_mask.py` |\n| `find_masks` (mask DB lookup) | `scripts/find_masks.py` |\n| `augmentation`, `remove_tumors` | `scripts/augmentation.py` |\n| `is_outlier` (quality check) | `scripts/quality_check.py` |\n| CLI entry point | `scripts/inference.py` |\n\n## Related skills\n\n- `infer_mask-generation` \u2014 algorithm details for the mask stage.\n- `infer_image-from-mask` \u2014 algorithm details for the image stage.\n- `infer_image-only` \u2014 image-only path (no mask); covers FOV/dim/spacing table.\n- `download-models` \u2014 fetch checkpoints first.\n"
     }
   ],
-  "response": "\nexport OUTPUT_DIR=runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && mkdir -p $OUTPUT_DIR && mkdir -p $OUTPUT_DIR/temp_work_dir && cp ./configs/config_infer.json $OUTPUT_DIR/config_infer.json && export OUTPUT_DIR_ABS=$(cd $OUTPUT_DIR && pwd) && cat > $OUTPUT_DIR/update_config.py << 'EOF'\nimport json\nimport os\noutput_dir = os.environ['OUTPUT_DIR_ABS']\nwith open('$OUTPUT_DIR/config_infer.json', 'r') as f:\n    data = json.load(f)\ndata['controllable_anatomy_size'] = [['lung', 1.0], ['tumor', 0.2]]\ndata['anatomy_list'] = ['lung', 'tumor']\ndata['body_region'] = ['chest']\ndata['output_size'] = [256, 256, 256]\ndata['spacing'] = [1.5, 1.5, 1.5]\ndata['modality'] = 1\ndata['num_inference_steps'] = 30\ndata['mask_generation_num_inference_steps'] = 1000\ndata['cfg_guidance_scale'] = 7.5\ndata['output_dir'] = output_dir\nwith open('$OUTPUT_DIR/config_infer.json', 'w') as f:\n    json.dump(data, f, indent=2)\nEOF\npython $OUTPUT_DIR/update_config.py && export MONAI_DATA_DIRECTORY=$OUTPUT_DIR/temp_work_dir && network=\"rflow\" && generate_version=\"rflow-ct\" && python -m scripts.inference -t ./configs/config_network_${network}.json -i $OUTPUT_DIR/config_infer.json -e ./configs/environment_${generate_version}.json --random-seed 0 --version ${generate_version}",
-  "command": null,
+  "response": "\n\n```bash\nexport MONAI_DATA_DIRECTORY=\"./temp_work_dir\" && \\\nnetwork=\"rflow\" && \\\ngenerate_version=\"rflow-ct\" && \\\nmkdir -p runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && \\\ncp runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json && \\\npython -m scripts.inference \\\n    -t ./configs/config_network_${network}.json \\\n    -i ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json \\\n    -e ./configs/environment_${generate_version}.json \\\n    --random-seed 0 \\\n    --version ${generate_version} \\\n    --output_dir ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2\n```",
+  "command": "export MONAI_DATA_DIRECTORY=\"./temp_work_dir\" && \\\nnetwork=\"rflow\" && \\\ngenerate_version=\"rflow-ct\" && \\\nmkdir -p runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && \\\ncp runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json && \\\npython -m scripts.inference \\\n    -t ./configs/config_network_${network}.json \\\n    -i ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json \\\n    -e ./configs/environment_${generate_version}.json \\\n    --random-seed 0 \\\n    --version ${generate_version} \\\n    --output_dir ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2",
   "usage": {
-    "completion_tokens": 10232,
-    "prompt_tokens": 3208,
-    "total_tokens": 13440
+    "completion_tokens": 1588,
+    "prompt_tokens": 3210,
+    "total_tokens": 4798
   },
   "execution": {
-    "executed": false,
-    "exit_code": null,
-    "reason": "no command extracted"
+    "executed": true,
+    "exit_code": 1,
+    "elapsed_seconds": 0.013115406036376953,
+    "isolated_exec_env": true,
+    "fresh_exec_env_created": true,
+    "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv",
+    "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv/bin/python",
+    "shared_cache_env": {
+      "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+      "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+      "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+      "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+      "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+      "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+      "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+      "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+      "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+      "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+    },
+    "protected_upstream_env": {
+      "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+      "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+    },
+    "upstream_mutation_detected": false,
+    "upstream_mutation_restored": false,
+    "upstream_mutation_paths": [],
+    "generated_files": [
+      "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json"
+    ],
+    "stdout_tail": "",
+    "stderr_tail": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv/bin/python: Error while finding module specification for 'scripts.inference' (ModuleNotFoundError: No module named 'scripts')\n",
+    "json": null
   },
   "score": {
-    "score": 0,
+    "score": 4,
     "tiers": [
       {
         "tier": 1,
-        "pass": false,
+        "pass": true,
         "reason": "entrypoint marker"
       },
       {
         "tier": 2,
-        "pass": false,
+        "pass": true,
         "reason": "user input path marker"
       },
       {
         "tier": 3,
-        "pass": false,
+        "pass": true,
         "reason": "model/modality/control marker"
       },
       {
         "tier": 4,
-        "pass": false,
+        "pass": true,
         "reason": "output dir marker"
       },
       {
         "tier": 5,
         "pass": false,
-        "reason": "no command extracted"
+        "reason": "exit 1"
       }
     ],
     "passed": false
   },
   "failure_analysis": [
     {
-      "kind": "no_command",
-      "reason": "No executable bash command was extracted from the model response.",
-      "repair_hint": "Return exactly one fenced bash block containing the command to run."
-    },
-    {
-      "kind": "tier_1",
-      "reason": "entrypoint marker",
-      "repair_hint": "Use the runnable surface documented for this arm."
-    },
-    {
-      "kind": "tier_2",
-      "reason": "user input path marker",
-      "repair_hint": "Use the staged user input path under runs/with_vs_without_nv/_inputs/."
-    },
-    {
-      "kind": "tier_3",
-      "reason": "model/modality/control marker",
-      "repair_hint": "Choose the model, modality, labels, anatomy controls, or smoke mode required by the task."
-    },
-    {
-      "kind": "tier_4",
-      "reason": "output dir marker",
-      "repair_hint": "Write outputs under the exact arm-specific output directory."
-    },
-    {
       "kind": "tier_5",
-      "reason": "no command extracted",
+      "reason": "exit 1",
       "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
     },
     {
-      "kind": "not_executed",
-      "reason": "no command extracted",
-      "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+      "kind": "nonzero_exit",
+      "reason": "Command exited 1.",
+      "stderr_tail": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv/bin/python: Error while finding module specification for 'scripts.inference' (ModuleNotFoundError: No module named 'scripts')\n",
+      "stdout_tail": "",
+      "repair_hint": "Use stderr/stdout to repair setup, paths, arguments, or runtime package installation."
     }
   ],
   "step": 0,
@@ -147,84 +154,91 @@
           "content": "You are helping a medical-imaging engineer who has cloned the Medical AI Skills repo.\nUser request: The case request is at runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json. Synthesize one paired 3D CT image and segmentation mask for a chest case with a lung tumor, and write the output pair under runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2.\n\n- Produce exactly one bash code block containing one command or an &&-chained command sequence.\n- Do not run the command yourself.\n- Use the documentation below to infer setup steps, model variant, labels, config files, and runnable commands.\n- Use paths relative to the Medical AI Skills repo root unless the documentation itself tells you otherwise.\n- Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.\n- Use only the upstream documentation below; do not use or mention files under skills/nv-generate-ct-rflow/.\n\nDocumentation available to you:\n--- tools/with_vs_without/upstream_docs/nv_generate_ct_rflow_NV-Generate-CTMR_infer_mask-image-paired.md ---\n---\nname: infer_mask-image-paired\ndescription: How to run paired mask + image generation with NV-Generate-CTMR. Generates a 3D mask (either from anatomy_size or by retrieving a real training mask) and then a paired CT/MR image conditioned on that mask via ControlNet. Trigger when the user asks \"how do I generate a mask and image together\", \"how does LDMSampler work\", \"what does scripts.inference do\", or wants help running the README \u00a72.3 CT Paired Image/Mask command.\n---\n\n# Mask + image paired inference\n\nThis skill covers the **paired generation** pipeline: mask first, then image conditioned on that mask. The CLI is `scripts.inference`, which instantiates `LDMSampler` and calls `sample_multiple_images`. This is the path used in README \u00a72.3 (CT Paired Image/Mask Generation).\n\nTwo algorithms run sequentially:\n\n1. **Mask stage** \u2014 see the `infer_mask-generation` skill.\n2. **Image stage** \u2014 see the `infer_image-from-mask` skill.\n\nThis skill explains how they're chained, the LDMSampler state required, and the configuration knobs.\n\n## Quick Start command\n\n```bash\nexport MONAI_DATA_DIRECTORY=\"./temp_work_dir\"\nnetwork=\"rflow\"                       # or \"ddpm\"\ngenerate_version=\"rflow-ct\"           # or \"ddpm-ct\"\npython -m scripts.inference \\\n    -t ./configs/config_network_${network}.json \\\n    -i ./configs/config_infer.json \\\n    -e ./configs/environment_${generate_version}.json \\\n    --random-seed 0 --version ${generate_version}\n```\n\n> \u26a0\ufe0f **`ddpm-ct` requires `num_inference_steps = 1000`** (vs 30 for `rflow-ct`). The notebook auto-applies this when `generate_version == \"ddpm-ct\"` (see cell 12). If you call the API directly, set this explicitly \u2014 DDPM scheduler will not produce usable output with fewer steps. This is 33\u00d7 slower than `rflow-ct` but produces equivalent quality.\n\nThree configs are passed:\n\n- `-t` network architecture (`config_network_rflow.json` or `config_network_ddpm.json`).\n- `-i` inference parameters (`config_infer.json` \u2014 `body_region`, `anatomy_list`, `output_size`, `spacing`, `controllable_anatomy_size`, etc.).\n- `-e` environment paths (`environment_rflow-ct.json` or `environment_ddpm-ct.json` \u2014 checkpoint paths, label dicts, mask database).\n\n## How `LDMSampler.sample_multiple_images` chooses the mask path\n\n```text\ncontrollable_anatomy_size non-empty?\n            \u2502\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n  YES                 NO\n   \u2502                   \u2502\n   \u25bc                   \u25bc\nprepare_anatomy_size_  find_masks(body_region, anatomy_list, ...)\ncondition()            (look up real training masks; resample if needed)\n   \u2502                   \u2502\n   \u25bc                   \u25bc\nsample_one_mask()      read_mask_information(mask_file)\n(diffusion-generated)  (no diffusion, just load + transform)\n   \u2502                   \u2502\n   \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n            \u25bc\n   prepare_one_mask_and_meta_info()  (assign 1.5mm iso affine, derive\n                                      top/bottom_region_index)\n            \u2502\n            \u25bc\n   sample_one_pair()  (ControlNet + image DM \u2014 see infer_image-from-mask skill)\n            \u2502\n            \u25bc\n   quality_check_ct(image, mask)\n            \u2502\n        passed?\n            \u2502\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n  YES               NO\n   \u2502                 \u2502\nsave image+label   re-generate (up to LDMSampler.max_try_time=2 retries)\n```\n\n### Two paths in detail\n\n**Path A \u2014 `controllable_anatomy_size` non-empty** (diffusion-generated mask):\n\n- User provides e.g. `[(\"pancreas\", 0.5), (\"liver\", 0.7)]` in `config_infer.json`.\n- `prepare_anatomy_size_condition` builds the 10-d vector (see `infer_mask-generation` skill).\n- `sample_one_mask` runs the mask DDPM.\n- Result is at fixed shape `256\u00d7256\u00d7256 \u00d7 1.5mm iso` (the mask DM's pretrained shape).\n- `ensure_output_size_and_spacing` resamples to the user's requested `output_size` + `spacing`.\n\n**Path B \u2014 `controllable_anatomy_size` empty** (real training mask):\n\n- `find_masks` queries `configs/all_mask_files_*.json` for masks matching `body_region` + `anatomy_list` + `spacing` + `output_size`.\n- If no exact match, `find_closest_masks` picks the closest by FOV / dim / spacing.\n- `read_mask_information` loads the mask via `val_transforms` (LoadImaged + Orientationd(\"RAS\") + spacing scaling).\n- Optional `augmentation()` applies training-style mask augmentation if `if_aug` is set.\n\nBoth paths then call `sample_one_pair` for the image stage.\n\n## `LDMSampler.__init__` \u2014 required state\n\n| Group | Argument | Source |\n|---|---|---|\n| Mask DM | `mask_generation_autoencoder` | `models/mask_generation_autoencoder.pt` |\n| Mask DM | `mask_generation_diffusion_unet` | `models/mask_generation_diffusion_unet.pt` |\n| Mask DM | `mask_generation_noise_scheduler` | DDPM scheduler (from network def) |\n| Mask DM | `mask_generation_scale_factor` | `1.0055984258651733` |\n| Mask DM | `mask_generation_latent_shape` | `(4, 64, 64, 64)` for 256\u00b3 output |\n| Image DM | `autoencoder`, `diffusion_unet`, `controlnet` | variant-specific checkpoints under `models/` |\n| Image DM | `noise_scheduler` | RFlow (rflow-ct/mr) or DDPM (ddpm-ct) |\n| Image DM | `scale_factor`, `latent_shape` | from the variant's network config |\n| Mask DB | `all_mask_files_json`, `all_mask_files_base_dir` | for Path B only |\n| Vocabularies | `label_dict_json`, `label_dict_remap_json` | `configs/label_dict.json`, `configs/label_dict_124_to_132.json` |\n| Anatomy size DB | `all_anatomy_size_conditions_json` | `configs/all_anatomy_size_conditions.json` (used by Path A) |\n| QC | `real_img_median_statistics` | `configs/image_median_statistics_ct.json` (CT-only quality check) |\n| User intent | `body_region`, `anatomy_list`, `controllable_anatomy_size`, `output_size`, `spacing`, `modality` | from `config_infer.json` |\n| Other | `device`, `output_dir`, `num_inference_steps`, `cfg_guidance_scale`, etc. | runtime / config |\n\n## `dim` and `spacing` \u2014 same FOV rules as image-only\n\n> \u26a0\ufe0f **FOV (= `dim \u00d7 spacing`) is the #1 quality knob.** See the **\"Why FOV matters\"** section at the top of [`infer_image-only.md`](infer_image-only.md) \u2014 same warning applies here. Out-of-distribution FOVs produce unusable output even when the validator accepts the inputs.\n\nThe mask + image pipeline uses **the same** `output_size` and `spacing` constraints as image-only inference \u2014 see the `infer_image-only` skill for the table of recommended `(dim, spacing)` per anatomical target and the hard constraints from `check_input_ct` / `check_input_mr`.\n\nAdditional FOV considerations specific to the paired pipeline:\n\n- The **mask DM** was pretrained at **256\u00b3 \u00d7 1.5 mm iso** (= 384 mm cube FOV). Generating a mask at significantly different shape forces the `ensure_output_size_and_spacing` resampling, which degrades label boundaries. Stay at or near 256\u00b3 \u00d7 1.5mm for Path A.\n- For Path B (mask DB lookup), the candidate masks are themselves drawn from a training-FOV distribution \u2014 `find_closest_masks` picks the closest matches, but the closer your requested FOV is to a mode of that distribution, the less reshaping is needed.\n\n## Quality check loop\n\n`LDMSampler.quality_check_ct` runs after each image is generated (CT only; MR codes \u2265 8 skip the check):\n\n- For each label (liver, spleen, pancreas, kidney, lung, brain, tumors, bone), check that the **median HU value** of voxels with that label falls in the per-organ acceptable range stored in `configs/image_median_statistics_ct.json`.\n- If any label is an outlier \u2192 fail; retry mask + image generation up to `max_try_time=2` times.\n- If still failing after retries: save the last attempt and log a warning.\n\n## Configuration knobs\n\nLive in the three configs:\n\n- `config_network_*.json` \u2014 fixed network architecture; not usually edited.\n- `config_infer.json` \u2014 user intent (see below).\n- `environment_*.json` \u2014 paths.\n\nKey `config_infer.json` knobs:\n\n| Key | Effect |\n|---|---|\n| `body_region` | List of regions present in the requested mask: any of `[\"head\", \"chest\", \"thorax\", \"abdomen\", \"pelvis\", \"lower\"]`. Used by Path B only (`find_masks` filter). |\n| `anatomy_list` | List of organ names from `configs/label_dict.json` that must be present. Used by `find_masks` (Path B) AND as the post-process filter (`filter_mask_with_organs`) for both paths. |\n| `controllable_anatomy_size` | Empty list \u2192 Path B. Non-empty list of `(organ_name, size)` tuples \u2192 Path A (diffusion-generated mask). At most 10 entries; at most 1 tumor. |\n| `output_size` | Target volume shape. Hard constraints apply (see `infer_image-only` skill). |\n| `spacing` | Target voxel spacing (mm). Hard constraints apply. |\n| `modality` | Modality code (1=CT, 8..32=MR variants). |\n| `num_inference_steps` | RFlow \u2192 30, **DDPM \u2192 1000**. \u26a0\ufe0f For `ddpm-ct` you must set this to 1000; the notebook auto-applies this override in cell 12. |\n| `mask_generation_num_inference_steps` | **1000** \u2014 the mask DM always uses DDPM regardless of which image-DM variant you pick. Setting this lower silently degrades mask quality. |\n| `cfg_guidance_scale` | Image-DM tumor CFG; `0` disables. |\n\n## Output\n\nFor each successful generation, two files are saved to `output_dir`:\n\n- `sample_<timestamp>_image.nii.gz` \u2014 synthetic CT/MR\n- `sample_<timestamp>_label.nii.gz` \u2014 paired mask (filtered to `anatomy_list`)\n\n## Code references\n\n| Symbol | File |\n|---|---|\n| `LDMSampler` | `scripts/sample.py` |\n| `LDMSampler.sample_multiple_images` (orchestrator) | `scripts/sample.py` |\n| `LDMSampler.prepare_anatomy_size_condition` (Path A) | `scripts/sample.py` |\n| `LDMSampler.find_closest_masks`, `read_mask_information` (Path B) | `scripts/sample.py` |\n| `LDMSampler.sample_one_pair` (image stage) | `scripts/sample.py` |\n| `LDMSampler.quality_check_ct` | `scripts/sample.py` |\n| `ldm_conditional_sample_one_mask` (mask DM) | `scripts/sample_mask.py` |\n| `ldm_conditional_sample_one_image` (image DM + ControlNet) | `scripts/infer_image_from_mask.py` |\n| `find_masks` (mask DB lookup) | `scripts/find_masks.py` |\n| `augmentation`, `remove_tumors` | `scripts/augmentation.py` |\n| `is_outlier` (quality check) | `scripts/quality_check.py` |\n| CLI entry point | `scripts/inference.py` |\n\n## Related skills\n\n- `infer_mask-generation` \u2014 algorithm details for the mask stage.\n- `infer_image-from-mask` \u2014 algorithm details for the image stage.\n- `infer_image-only` \u2014 image-only path (no mask); covers FOV/dim/spacing table.\n- `download-models` \u2014 fetch checkpoints first.\n"
         }
       ],
-      "response": "\nexport OUTPUT_DIR=runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && mkdir -p $OUTPUT_DIR && mkdir -p $OUTPUT_DIR/temp_work_dir && cp ./configs/config_infer.json $OUTPUT_DIR/config_infer.json && export OUTPUT_DIR_ABS=$(cd $OUTPUT_DIR && pwd) && cat > $OUTPUT_DIR/update_config.py << 'EOF'\nimport json\nimport os\noutput_dir = os.environ['OUTPUT_DIR_ABS']\nwith open('$OUTPUT_DIR/config_infer.json', 'r') as f:\n    data = json.load(f)\ndata['controllable_anatomy_size'] = [['lung', 1.0], ['tumor', 0.2]]\ndata['anatomy_list'] = ['lung', 'tumor']\ndata['body_region'] = ['chest']\ndata['output_size'] = [256, 256, 256]\ndata['spacing'] = [1.5, 1.5, 1.5]\ndata['modality'] = 1\ndata['num_inference_steps'] = 30\ndata['mask_generation_num_inference_steps'] = 1000\ndata['cfg_guidance_scale'] = 7.5\ndata['output_dir'] = output_dir\nwith open('$OUTPUT_DIR/config_infer.json', 'w') as f:\n    json.dump(data, f, indent=2)\nEOF\npython $OUTPUT_DIR/update_config.py && export MONAI_DATA_DIRECTORY=$OUTPUT_DIR/temp_work_dir && network=\"rflow\" && generate_version=\"rflow-ct\" && python -m scripts.inference -t ./configs/config_network_${network}.json -i $OUTPUT_DIR/config_infer.json -e ./configs/environment_${generate_version}.json --random-seed 0 --version ${generate_version}",
-      "command": null,
+      "response": "\n\n```bash\nexport MONAI_DATA_DIRECTORY=\"./temp_work_dir\" && \\\nnetwork=\"rflow\" && \\\ngenerate_version=\"rflow-ct\" && \\\nmkdir -p runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && \\\ncp runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json && \\\npython -m scripts.inference \\\n    -t ./configs/config_network_${network}.json \\\n    -i ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json \\\n    -e ./configs/environment_${generate_version}.json \\\n    --random-seed 0 \\\n    --version ${generate_version} \\\n    --output_dir ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2\n```",
+      "command": "export MONAI_DATA_DIRECTORY=\"./temp_work_dir\" && \\\nnetwork=\"rflow\" && \\\ngenerate_version=\"rflow-ct\" && \\\nmkdir -p runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2 && \\\ncp runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json && \\\npython -m scripts.inference \\\n    -t ./configs/config_network_${network}.json \\\n    -i ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json \\\n    -e ./configs/environment_${generate_version}.json \\\n    --random-seed 0 \\\n    --version ${generate_version} \\\n    --output_dir ./runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2",
       "usage": {
-        "completion_tokens": 10232,
-        "prompt_tokens": 3208,
-        "total_tokens": 13440
+        "completion_tokens": 1588,
+        "prompt_tokens": 3210,
+        "total_tokens": 4798
       },
       "execution": {
-        "executed": false,
-        "exit_code": null,
-        "reason": "no command extracted"
+        "executed": true,
+        "exit_code": 1,
+        "elapsed_seconds": 0.013115406036376953,
+        "isolated_exec_env": true,
+        "fresh_exec_env_created": true,
+        "exec_env_path": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv",
+        "exec_python": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv/bin/python",
+        "shared_cache_env": {
+          "PIP_CACHE_DIR": ".workbench_data/with_vs_without_cache/pip",
+          "HF_HOME": ".workbench_data/with_vs_without_cache/huggingface",
+          "HF_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "HUGGINGFACE_HUB_CACHE": ".workbench_data/with_vs_without_cache/huggingface/hub",
+          "TRANSFORMERS_CACHE": ".workbench_data/with_vs_without_cache/huggingface/transformers",
+          "TORCH_HOME": ".workbench_data/with_vs_without_cache/torch",
+          "XDG_CACHE_HOME": ".workbench_data/with_vs_without_cache/xdg",
+          "CONDA_PKGS_DIRS": ".workbench_data/with_vs_without_cache/conda_pkgs",
+          "UV_CACHE_DIR": ".workbench_data/with_vs_without_cache/uv",
+          "CUDA_CACHE_PATH": ".workbench_data/with_vs_without_cache/cuda",
+          "NUMBA_CACHE_DIR": ".workbench_data/with_vs_without_cache/numba"
+        },
+        "protected_upstream_env": {
+          "NV_GENERATE_ROOT": ".workbench_data/upstreams/NV-Generate-CTMR",
+          "NV_SEGMENT_CTMR_ROOT": ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR"
+        },
+        "upstream_mutation_detected": false,
+        "upstream_mutation_restored": false,
+        "upstream_mutation_paths": [],
+        "generated_files": [
+          "runs/with_vs_without_nv/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/request.json"
+        ],
+        "stdout_tail": "",
+        "stderr_tail": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv/bin/python: Error while finding module specification for 'scripts.inference' (ModuleNotFoundError: No module named 'scripts')\n",
+        "json": null
       },
       "score": {
-        "score": 0,
+        "score": 4,
         "tiers": [
           {
             "tier": 1,
-            "pass": false,
+            "pass": true,
             "reason": "entrypoint marker"
           },
           {
             "tier": 2,
-            "pass": false,
+            "pass": true,
             "reason": "user input path marker"
           },
           {
             "tier": 3,
-            "pass": false,
+            "pass": true,
             "reason": "model/modality/control marker"
           },
           {
             "tier": 4,
-            "pass": false,
+            "pass": true,
             "reason": "output dir marker"
           },
           {
             "tier": 5,
             "pass": false,
-            "reason": "no command extracted"
+            "reason": "exit 1"
           }
         ],
         "passed": false
       },
       "failure_analysis": [
         {
-          "kind": "no_command",
-          "reason": "No executable bash command was extracted from the model response.",
-          "repair_hint": "Return exactly one fenced bash block containing the command to run."
-        },
-        {
-          "kind": "tier_1",
-          "reason": "entrypoint marker",
-          "repair_hint": "Use the runnable surface documented for this arm."
-        },
-        {
-          "kind": "tier_2",
-          "reason": "user input path marker",
-          "repair_hint": "Use the staged user input path under runs/with_vs_without_nv/_inputs/."
-        },
-        {
-          "kind": "tier_3",
-          "reason": "model/modality/control marker",
-          "repair_hint": "Choose the model, modality, labels, anatomy controls, or smoke mode required by the task."
-        },
-        {
-          "kind": "tier_4",
-          "reason": "output dir marker",
-          "repair_hint": "Write outputs under the exact arm-specific output directory."
-        },
-        {
           "kind": "tier_5",
-          "reason": "no command extracted",
+          "reason": "exit 1",
           "repair_hint": "Make the command execute cleanly and produce verifier-accepted artifacts."
         },
         {
-          "kind": "not_executed",
-          "reason": "no command extracted",
-          "repair_hint": "Remove unsafe shell fragments and keep the command within the documented workflow surface."
+          "kind": "nonzero_exit",
+          "reason": "Command exited 1.",
+          "stderr_tail": "runs/with_vs_without_nv/_exec_envs/nv_generate_ct_rflow_nemotron_correction/without/repeat_2/venv/bin/python: Error while finding module specification for 'scripts.inference' (ModuleNotFoundError: No module named 'scripts')\n",
+          "stdout_tail": "",
+          "repair_hint": "Use stderr/stdout to repair setup, paths, arguments, or runtime package installation."
         }
       ],
       "step": 0

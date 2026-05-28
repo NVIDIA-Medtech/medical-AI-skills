@@ -22,7 +22,6 @@ from tools.with_vs_without.run_nv_model_studies import (
     DIRECT_REPEATS,
     REPO_ROOT,
     SCENARIOS,
-    _extract_command,
     _safe_to_execute,
     _shared_cache_env_records,
     _staged_input_path,
@@ -33,7 +32,7 @@ RUN_ROOT = REPO_ROOT / "runs/with_vs_without_nv"
 DOC_ROOT = REPO_ROOT / "docs"
 PROMPT_ROOT = REPO_ROOT / "tools/nat_audit/data"
 
-REFRESHED = "May 27, 2026"
+REFRESHED = "May 28, 2026"
 FULL_LOG_GLOB = "run_all_after_timeout_patch_*.log"
 RERUN_LOG_GLOB = "rerun_codex_opus_after_skill_fixes_*.log"
 _REPORT_AUDIT_STATUS = "complete"
@@ -679,7 +678,7 @@ def _overview_token_profile_section(
     lines = [
         "## Token Profiling",
         "",
-        "The table below aggregates provider-reported usage across all seven "
+        f"The table below aggregates provider-reported usage across all {len(codex)} "
         "skills for each backend/arm. It is useful for separating workflow "
         "success from prompting cost: README-only arms often spent more output "
         "tokens explaining or improvising commands while still failing the "
@@ -1780,7 +1779,7 @@ def write_overview(codex: list[dict[str, Any]], nemotron: list[dict[str, Any]]) 
             "",
             "The current evidence strongly favors `LLM + SKILL.md` over "
             "`LLM + upstream README/guide` for these engineering tasks. Across "
-            f"all seven NV model skills and three LLM backends, the with-skill "
+            f"all {len(codex)} NV model skills and three LLM backends, the with-skill "
             f"arm passed {total_with}/{total_with_repeats} repeats, while the "
             f"README-only arm passed {total_without}/{total_without_repeats} "
             "repeats. In matched backend-repeat pairs, SKILL.md won "
@@ -1789,9 +1788,8 @@ def write_overview(codex: list[dict[str, Any]], nemotron: list[dict[str, Any]]) 
             "The exact one-sided paired sign test over decisive pairs gives "
             f"`p = {_p_value_text(aggregate_p)}`.",
             "",
-            "The effect is clearest for the stronger coding backends: "
-            "GPT-5.5/Codex and Opus both passed every with-skill repeat after "
-            "the SKILL.md updates, for a combined "
+            "The stronger coding backends show a large aggregate gap: "
+            "GPT-5.5/Codex and Opus produced a combined "
             f"{total_codex_with}/{total_codex_with_repeats} with-skill pass "
             f"rate versus {total_codex_without}/{total_codex_without_repeats} "
             "for README-only. Nemotron is more fragile, especially around "
