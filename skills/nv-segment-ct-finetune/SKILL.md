@@ -7,8 +7,9 @@ metadata:
   author: "NVIDIA MedTech <noreply@nvidia.com>"
   tags:
     - medtech
-    - ct
+    - CT
     - finetuning
+    - segmentation
 ---
 
 # NV-Segment-CT Finetune
