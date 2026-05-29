@@ -1,14 +1,26 @@
 # Medical AI Skills
 
-**Medical AI Skills** publishes agent-callable **medtech skills** —
-small wrappers around medical AI tools, models, and pipelines. The committed
-catalog today is focused on medical imaging DICOM utilities and
-NVIDIA-Medtech `nv-*` model wrappers.
+Medical AI Skills is the verified skills catalog for NVIDIA MedTech. It
+publishes standard, agent-callable skills that wrap medical AI tools, models,
+and pipelines, starting with medical AI workflows such as medical imaging,
+MONAI-based workflows, NVIDIA MedTech models, DICOM utilities, and related
+tools.
 
-Medtech engineers use these skills in their own environment with their own data.
-Manifests, fixtures, evidence packs, verifiers, and the eval engine make those
-skills easier to integrate, reproduce, compare, and trust. This is not an
-agent runtime and not a clinical tool.
+The catalog makes NVIDIA MedTech capabilities easier for agents and engineers
+to discover, invoke, chain, reproduce, and verify in their own environments.
+The core value of this skills repository is trust: skills are published only
+after passing NVIDIA verification and evaluation through a domain-aware
+evaluation engine.
+
+Each published skill is packaged with the assets needed to support
+reproducibility, validation, and review, including a skill manifest, skill
+card, implementation scripts, tests, validators, evaluation assets, benchmarks,
+requirements, and example inputs or outputs where applicable. Engineers run
+these skills locally in their own secure hospital, research, or development
+environments using their own data.
+
+This repository is a tools catalog only. It is not an agent runtime, an LLM
+orchestrator, or a clinical diagnostic tool.
 
 ## What this repo publishes
 
