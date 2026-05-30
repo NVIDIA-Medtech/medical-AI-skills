@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the NV-Segment-CT VISTA3D segmentation model on their own CT datasets for engineering verification and research purposes. <br>
+Developers and engineers use this skill to fine-tune the NV-Segment-CT VISTA3D model on CT segmentation datasets for research, development, and engineering verification workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,23 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Task06 and Results Reference](references/task06-and-results.md) <br>
+- [Task06 Reference and Results](references/task06-and-results.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Configuration files, JSON] <br>
-**Output Format:** [JSON (structured output.json with validation metrics and checkpoint paths)] <br>
+**Output Type(s):** [Shell commands, Files] <br>
+**Output Format:** [JSON (output.json with metrics and checkpoint paths)] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Writes finetuned checkpoint, auto-generated bundle configs under bundle/configs/, and structured output.json with Dice scores and runtime metadata] <br>
+**Other Properties Related to Output:** [None] <br>
+
+## Evaluation Agents Used: <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
+
+
+
+## Evaluation Tasks: <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 2 attempts per task, 50% pass threshold). <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -36,10 +45,28 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 75% (+0%) | 100% (+0%) |
+| Correctness | 4 | 84% (+10%) | 89% (+19%) |
+| Discoverability | 4 | 92% (+0%) | 57% (-4%) |
+| Effectiveness | 4 | 68% (+11%) | 82% (+29%) |
+| Efficiency | 4 | 79% (+3%) | 42% (-6%) |
 
 ## Skill Version(s): <br>
-58b9ee3 (source: git SHA, committed 2026-05-28) <br>
+07e62c6 (source: git SHA, committed 2026-05-30) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
