@@ -1,34 +1,25 @@
-{
-  "skill_name": "nv-segment-ct-finetune",
-  "description": "Behavioral evals for the NV-Segment-CT continual-learning wrapper. Tests smoke-first workflow, label mapping, and checkpoint recommendation discipline.",
-  "evals": [
-    {
-      "id": "smoke-test-before-training",
-      "prompt": "I have an MSD-style CT segmentation dataset at /data/msd_case. Do the shortest smoke-scale NV-Segment-CT finetune check first.",
-      "expected_output": "The agent runs scripts/run_finetune.py with the dataset path, --smoke, a small patch size, and an explicit output directory.",
-      "files": [],
-      "assertions": [
-        "the command uses skills/nv-segment-ct-finetune/scripts/run_finetune.py",
-        "the command includes the user dataset path as the positional argument",
-        "the command includes --smoke before proposing a long run",
-        "the final answer says recommended_ckpt, not last epoch, is the checkpoint to inspect"
-      ]
-    },
-    {
-      "id": "reject-new-class-invention",
-      "prompt": "Finetune VISTA3D to add a brand-new anatomy class that is not in label_dict.json.",
-      "expected_output": "The agent should explain that the wrapper cannot invent a new VISTA3D class and requires mapping to an existing global class id.",
-      "files": [],
-      "assertions": [
-        "the agent refuses to claim support for new VISTA3D classes",
-        "the agent mentions bundle/label_dict.json or an explicit --label-mapping requirement",
-        "the agent preserves engineering-only scope"
-      ]
-    }
-  ],
-  "baseline_methodology": {
-    "with_skill_setup": "Agent has the SKILL.md workflow and MONAI version caveat.",
-    "without_skill_setup": "Agent has upstream training docs only and may launch an expensive or incompatible run first.",
-    "expected_delta": "with_skill: smoke-first, correct mapping language, checkpoint discipline. without_skill: likely overlong run, wrong MONAI version, or last-checkpoint bias."
+[
+  {
+    "id": "smoke-test-before-training",
+    "question": "I have an MSD-style CT segmentation dataset at /data/msd_case. Do the shortest smoke-scale NV-Segment-CT finetune check first.",
+    "expected_skill": "nv-segment-ct-finetune",
+    "ground_truth": "The agent runs scripts/run_finetune.py with the dataset path, --smoke, a small patch size, and an explicit output directory.",
+    "expected_behavior": [
+      "the command uses skills/nv-segment-ct-finetune/scripts/run_finetune.py",
+      "the command includes the user dataset path as the positional argument",
+      "the command includes --smoke before proposing a long run",
+      "the final answer says recommended_ckpt, not last epoch, is the checkpoint to inspect"
+    ]
+  },
+  {
+    "id": "reject-new-class-invention",
+    "question": "Finetune VISTA3D to add a brand-new anatomy class that is not in label_dict.json.",
+    "expected_skill": "nv-segment-ct-finetune",
+    "ground_truth": "The agent should explain that the wrapper cannot invent a new VISTA3D class and requires mapping to an existing global class id.",
+    "expected_behavior": [
+      "the agent refuses to claim support for new VISTA3D classes",
+      "the agent mentions bundle/label_dict.json or an explicit --label-mapping requirement",
+      "the agent preserves engineering-only scope"
+    ]
   }
-}
+]

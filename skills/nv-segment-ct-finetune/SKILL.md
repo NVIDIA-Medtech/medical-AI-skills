@@ -6,7 +6,7 @@ allowed-tools: Bash
 metadata:
   author: NVIDIA MedTech Team
   tags:
-    - medtech
+    - MedTech
     - CT
     - finetuning
     - segmentation
