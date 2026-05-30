@@ -6,10 +6,10 @@ allowed-tools: Bash
 metadata:
   author: NVIDIA MedTech Team
   tags:
-    - medtech
-    - ct
-    - mri
-    - vae
+    - MedTech
+    - CT
+    - MRI
+    - VAE
     - finetune
 ---
 
