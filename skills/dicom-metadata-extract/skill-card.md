@@ -1,7 +1,7 @@
 ## Description: <br>
 Used for extracting selected metadata from one DICOM file and flagging standard-tag PHI presence. Not for anonymization or clinical use. <br>
 
-This skill is for demonstration purposes and not for production usage. <br>
+This skill is for research and development only. <br>
 
 ## Owner
 NVIDIA <br>
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill for engineering-time DICOM metadata extraction with a PHI-tag-presence flag before sharing files externally. <br>
+Developers and engineers use this skill for extracting structured metadata from DICOM files and checking for the presence of standard PHI tags during development and review workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,18 +19,24 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Output JSON Schema](validators/output_schema.json) <br>
 - [Skill Manifest](skill_manifest.yaml) <br>
+- [Output Schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [JSON] <br>
+**Output Type(s):** [Analysis] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Validates against validators/output_schema.json] <br>
+
+## Evaluation Agents Used: <br>
+- `claude-code` <br>
+- `codex` <br>
+
+
 
 ## Evaluation Tasks: <br>
-NVSkills-Eval 3-Tier evaluation (external profile). Tier 1 static validation ran 9 checks (12 findings, all MEDIUM). Tier 2 deduplication ran 2 checks (0 findings). Overall verdict: PASS. <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 0 negative cases). Pass threshold: 50%. Overall verdict: PASS. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -40,7 +46,25 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+0%) | 100% (+0%) |
+| Correctness | 4 | 97% (+10%) | 83% (+21%) |
+| Discoverability | 4 | 90% (+31%) | 70% (+8%) |
+| Effectiveness | 4 | 91% (+2%) | 73% (+30%) |
+| Efficiency | 4 | 69% (+27%) | 55% (+5%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>

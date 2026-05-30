@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the MAISI VAE autoencoder on custom CT or MRI NIfTI training volumes using the NV-Generate-CTMR upstream tooling. <br>
+Developers and engineers use this skill to finetune the NVIDIA MAISI VAE/autoencoder on custom CT or MRI NIfTI datasets, validating datalist structure, staging training configs, and running single-GPU VAE training with artifact accounting. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,25 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Generate-CTMR (upstream repository)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [NV-Generate-CTMR upstream repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [Skill manifest](skill_manifest.yaml) <br>
+- [Output schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Configuration files, Model checkpoints] <br>
-**Output Format:** [JSON result summary and PyTorch checkpoint files] <br>
+**Output Type(s):** [Files, JSON] <br>
+**Output Format:** [PyTorch checkpoint files and structured JSON result summary] <br>
 **Output Parameters:** [1D] <br>
 **Other Properties Related to Output:** [None] <br>
+
+## Evaluation Agents Used: <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
+
+
+
+## Evaluation Tasks: <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation tasks, 2 attempts per task, 50% pass threshold). <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -36,7 +47,25 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+25%) | 100% (+25%) |
+| Correctness | 4 | 91% (+3%) | 81% (+34%) |
+| Discoverability | 4 | 90% (+1%) | 63% (+9%) |
+| Effectiveness | 4 | 74% (-9%) | 55% (+29%) |
+| Efficiency | 4 | 65% (-4%) | 47% (+7%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>

@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache 2.0 <br>
+Apache-2.0 <br>
 ## Use Case: <br>
-Developers and researchers use this skill to generate synthetic CT volumes and paired segmentation masks for medical imaging research, algorithm development, and data augmentation workflows. <br>
+Developers and researchers use this skill to generate synthetic CT volumes and paired segmentation masks for medical imaging research, synthetic data augmentation, and pipeline testing. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -20,16 +20,25 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
 - [NV-Generate-CTMR upstream repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
-- [FOV and download references](references/fov-and-downloads.md) <br>
-- [CT mask label space](references/ct-mask-label-space.md) <br>
-- [CT from mask format](references/ct-from-mask-format.md) <br>
+- [CT-from-mask format reference](references/ct-from-mask-format.md) <br>
+- [CT mask label space reference](references/ct-mask-label-space.md) <br>
+- [FOV and downloads reference](references/fov-and-downloads.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Files, JSON] <br>
-**Output Format:** [NIfTI volumes and structured JSON result with HTML summary card] <br>
+**Output Type(s):** [Files, Shell commands] <br>
+**Output Format:** [NIfTI volumes, JSON result metadata, and HTML summary card] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Paired CT image and mask NIfTI volumes, result JSON with label mapping, geometry metadata, and verifier guidance] <br>
+**Other Properties Related to Output:** [None] <br>
+
+## Evaluation Agents Used: <br>
+- claude-code <br>
+- codex <br>
+
+
+
+## Evaluation Tasks: <br>
+2 evaluation tasks where the skill was expected to activate, with 2 attempts per task. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -39,10 +48,28 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+25%) | 100% (+25%) |
+| Correctness | 4 | 93% (+3%) | 91% (+51%) |
+| Discoverability | 4 | 74% (-3%) | 72% (+19%) |
+| Effectiveness | 4 | 75% (+12%) | 70% (+58%) |
+| Efficiency | 4 | 55% (+2%) | 58% (+16%) |
 
 ## Skill Version(s): <br>
-58b9ee3 (source: git SHA, committed 2026-05-28) <br>
+ac94e25 (source: git SHA, committed 2026-05-30) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
