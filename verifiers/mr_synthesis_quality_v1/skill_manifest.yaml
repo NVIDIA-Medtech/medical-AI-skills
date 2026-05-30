@@ -1,0 +1,91 @@
+id: medagent.verifiers.mr_synthesis_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: mr_synthesis_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for NV-Generate-MR image-only evidence packs
+    produced by nv_generate_mr or nv_generate_mr_brain. Re-reads generated
+    NIfTI images and checks source-pack success, official upstream entrypoint,
+    model inventory, modality/version identity, sample count, shape and spacing
+    consistency, finite nonconstant nonnegative voxel values, aggregate-flag
+    honesty, runtime identity, and non-clinical scope disclosure.
+  scope: development
+  not_for:
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+    - production training-data approval
+
+inputs:
+  - name: nv_generate_mr_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by skills/nv-generate-mr
+      or skills/nv-generate-mr-brain. The verifier reads output.json,
+      validation_summary.json, manifest.json, and generated image artifacts.
+
+outputs:
+  - name: mr_synthesis_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies:
+    nibabel: ">=4.0"
+    numpy: ">=1.23"
+  side_effects:
+    pip_packages:
+      - nibabel>=4.0
+      - numpy>=1.23
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    This verifier checks image artifact readability and basic numeric/geometry
+    invariants. It does not validate anatomical realism, radiologic quality,
+    diagnostic utility, or suitability as training data.
+  - >
+    Passing nonconstant/nonnegative/finite checks means the image is not an
+    obvious empty or corrupt output; it does not prove the upstream diffusion
+    model behaved correctly.
+  - >
+    The verifier does not re-run synthesis and cannot prove stochastic
+    repeatability without a promoted multi-run evidence study.
+
+validation:
+  expected_runtime_seconds:
+    max: 30.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.mr_synthesis_quality_v1}
+    - {path: target.skill_id, contains_any_of: [medagent.nv_generate_mr, medagent.nv_generate_mr_brain]}
+    - {path: target.source_overall_status, eq: passed}
+    - {path: mr_quality.acceptable, eq: true}
+    - {path: mr_quality.output_skill, contains_any_of: [nv_generate_mr, nv_generate_mr_brain]}
+    - {path: mr_quality.num_samples, gte: 1}
+    - {path: mr_quality.all_images_readable, eq: true}
+    - {path: mr_quality.all_shapes_match_requested, eq: true}
+    - {path: mr_quality.all_spacing_match_requested, eq: true}
+    - {path: mr_quality.all_images_finite, eq: true}
+    - {path: mr_quality.all_images_nonconstant, eq: true}
+    - {path: mr_quality.all_images_nonnegative, eq: true}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    fixture_builder: fixtures/build_fixtures.py
+    runs: 2

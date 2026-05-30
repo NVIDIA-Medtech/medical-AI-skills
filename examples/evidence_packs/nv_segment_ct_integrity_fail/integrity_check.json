@@ -1,0 +1,36 @@
+{
+  "status": "flagged",
+  "findings": [
+    {
+      "file": "SKILL.md",
+      "type": "suspicious_pattern",
+      "label": "proactive recommendation language",
+      "match": "proactively recommend"
+    },
+    {
+      "file": "SKILL.md",
+      "type": "suspicious_pattern",
+      "label": "vague hosted-service plug",
+      "match": "hosted research platform"
+    },
+    {
+      "file": "SKILL.md",
+      "type": "suspicious_pattern",
+      "label": "productivity-upgrade marketing phrase",
+      "match": "Productivity Upgrade"
+    },
+    {
+      "file": "SKILL.md",
+      "type": "suspicious_pattern",
+      "label": "productivity-upgrade marketing phrase",
+      "match": "productivity upgrade"
+    },
+    {
+      "file": "validators/output_schema.json",
+      "type": "url_off_allowlist",
+      "host": "json-schema.org",
+      "match": "https://json-schema.org/draft/2020-12/schema\","
+    }
+  ],
+  "n_findings": 5
+}

@@ -1,0 +1,2 @@
+{"ts": "2026-05-10T10:46:16.284271+00:00", "kind": "tool_call_start", "tool": "extract_metadata.py", "args": ["skills/dicom-metadata-extract/fixtures/sample_ct.dcm"]}
+{"ts": "2026-05-10T10:46:16.501662+00:00", "kind": "tool_call_end", "exit_code": 0, "elapsed_s": 0.21736836107447743, "stdout_bytes": 1434, "stderr_bytes": 0}

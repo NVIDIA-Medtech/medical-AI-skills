@@ -1,0 +1,47 @@
+{
+  "captured_at": "2026-05-26T04:18:28.415245+00:00",
+  "gpu": {
+    "available": false,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [],
+    "note": "GPU probe skipped: manifest does not declare requires_gpu."
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container digest/labels not captured by MVP provenance. Add via skill-side instrumentation when the wrapper spawns docker."
+  },
+  "network": {
+    "declared_endpoints": [],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --out>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --out>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --out>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level",
+        "change": "untracked"
+      }
+    ]
+  }
+}

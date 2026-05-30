@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-05-11T06:53:19.772256+00:00",
+  "finished_at": "2026-05-11T06:58:57.437091+00:00",
+  "elapsed_seconds": 337.66481913000007,
+  "case_count": 44,
+  "jobs": 1,
+  "environment": {
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+    "executable": "python3"
+  }
+}

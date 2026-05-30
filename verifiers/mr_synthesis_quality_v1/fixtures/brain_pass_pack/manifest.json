@@ -1,0 +1,8 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "mr_brain_pass_pack_run",
+  "skill_id": "medagent.nv_generate_mr_brain",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-generate-mr-brain"
+}

@@ -1,0 +1,8 @@
+{
+  "skill_id": "medagent.dicom_metadata_extract",
+  "skill_version": "0.1.0",
+  "fixture": {
+    "path": "skills/dicom-metadata-extract/fixtures/sample_ct.dcm",
+    "is_dir": false
+  }
+}

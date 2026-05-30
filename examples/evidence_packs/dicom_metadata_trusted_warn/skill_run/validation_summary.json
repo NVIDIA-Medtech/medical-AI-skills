@@ -1,0 +1,161 @@
+{
+  "schema": "skills/dicom-metadata-extract/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/dicom-metadata-extract/fixtures/sample_ct.dcm",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "skills/dicom-metadata-extract/fixtures/sample_ct.dcm",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_size_budget",
+      "size_bytes": 9190,
+      "max_size_bytes": 104857600,
+      "status": "passed"
+    },
+    {
+      "name": "dicom_readable",
+      "path": "skills/dicom-metadata-extract/fixtures/sample_ct.dcm",
+      "status": "passed",
+      "modality": "CT",
+      "series_instance_uid": "1.2.826.0.1.3680043.8.498.31550974118702976965686593096238327316"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "modality",
+        "matches": ".+"
+      },
+      "actual": "CT",
+      "ok": true,
+      "reason": "matched '.+'"
+    },
+    {
+      "check": {
+        "path": "phi_present",
+        "exists": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "present (expected)"
+    },
+    {
+      "check": {
+        "path": "phi_scope_disclaimer",
+        "matches": "Standard DICOM"
+      },
+      "actual": "Standard DICOM PS3.15 basic-profile tags only. Private tags (odd group) NOT checked. Burnt-in pixel text NOT detected. Use a proper de-identifier for clinical or regulatory work.",
+      "ok": true,
+      "reason": "matched 'Standard DICOM'"
+    },
+    {
+      "check": {
+        "path": "study.StudyInstanceUID",
+        "matches": ".+"
+      },
+      "actual": "1.2.826.0.1.3680043.8.498.70205069167432896821744418685172690618",
+      "ok": true,
+      "reason": "matched '.+'"
+    },
+    {
+      "check": {
+        "path": "image.Rows",
+        "gt": 0
+      },
+      "actual": 64,
+      "ok": true,
+      "reason": "64 > 0"
+    },
+    {
+      "check": {
+        "path": "image.Columns",
+        "gt": 0
+      },
+      "actual": 64,
+      "ok": true,
+      "reason": "64 > 0"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 0.23529724999389146,
+      "min": null,
+      "max": 5,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 2.124453,
+      "min": null,
+      "max": 5,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 79.7109375,
+      "min": null,
+      "max": 250,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "passed",
+  "env_pin_results": [
+    {
+      "package": "pydicom",
+      "constraint": ">=2.4,<5",
+      "source": "eval_engine_host",
+      "installed": "3.0.2",
+      "ok": true,
+      "reason": "satisfies constraint"
+    }
+  ],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

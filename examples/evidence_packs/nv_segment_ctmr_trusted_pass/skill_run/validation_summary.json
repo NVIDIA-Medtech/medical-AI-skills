@@ -1,0 +1,201 @@
+{
+  "schema": "skills/nv-segment-ctmr/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "status": "passed"
+    },
+    {
+      "name": "nifti_readable",
+      "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "status": "passed",
+      "shape": [
+        512,
+        512,
+        40
+      ]
+    },
+    {
+      "name": "host_has_cuda",
+      "requires_gpu": "cuda",
+      "gpu_fallback": null,
+      "have_cuda": true,
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "skill",
+        "eq": "nv_segment_ctmr"
+      },
+      "actual": "nv_segment_ctmr",
+      "ok": true,
+      "reason": "'nv_segment_ctmr' == 'nv_segment_ctmr'"
+    },
+    {
+      "check": {
+        "path": "input.ndim",
+        "eq": 3
+      },
+      "actual": 3,
+      "ok": true,
+      "reason": "3 == 3"
+    },
+    {
+      "check": {
+        "path": "input.modality",
+        "matches": "^(CT_BODY|MRI_BODY|MRI_BRAIN)$"
+      },
+      "actual": "CT_BODY",
+      "ok": true,
+      "reason": "matched '^(CT_BODY|MRI_BODY|MRI_BRAIN)$'"
+    },
+    {
+      "check": {
+        "path": "invocation.official_entrypoint",
+        "eq": "python -m monai.bundle run"
+      },
+      "actual": "python -m monai.bundle run",
+      "ok": true,
+      "reason": "'python -m monai.bundle run' == 'python -m monai.bundle run'"
+    },
+    {
+      "check": {
+        "path": "invocation.exit_code",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "invocation.model_inventory.model_pt_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.geometry.shape_match",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.geometry.spacing_match",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.geometry.affine_match",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.label_set_valid",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.any_label_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 9.58230546300183,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 16.269721,
+      "min": null,
+      "max": 3600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 1988.33984375,
+      "min": 200,
+      "max": 32000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 6.138312146593526,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 14516.0,
+      "min": null,
+      "max": 48000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

@@ -1,0 +1,55 @@
+{
+  "captured_at": "2026-05-26T01:25:16.560064+00:00",
+  "gpu": {
+    "available": false,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [],
+    "note": "GPU probe skipped: manifest does not declare requires_gpu."
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container digest/labels not captured by MVP provenance. Add via skill-side instrumentation when the wrapper spawns docker."
+  },
+  "network": {
+    "declared_endpoints": [],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "${out}/volume.nii.gz",
+        "resolved": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 7534,
+        "mtime": 1779754333.1185849
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "${out}/volume.nii.gz",
+        "resolved": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 7534,
+        "mtime": 1779758716.4755242
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "${out}/volume.nii.gz",
+        "resolved": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "modified",
+        "size_delta_bytes": 0
+      }
+    ]
+  }
+}

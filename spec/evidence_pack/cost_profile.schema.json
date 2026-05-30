@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/cost_profile.schema.json",
+  "title": "Evidence pack cost_profile.json",
+  "description": "Measured cost (wall, CPU, RSS, GPU, tokens), self-reported cost from the skill, and the envelope evaluation against manifest validation.expected_cost.",
+  "type": "object",
+  "required": ["measured", "self_reported", "evaluation"],
+  "properties": {
+    "measured": {
+      "type": "object",
+      "properties": {
+        "wall_seconds": { "type": ["number", "null"] },
+        "cpu_seconds": { "type": ["number", "null"] },
+        "rss_mb_peak": { "type": ["number", "null"] },
+        "gpu_seconds": { "type": ["number", "null"] },
+        "gpu_memory_mb_peak": { "type": ["number", "null"] },
+        "per_gpu": { "type": "object" },
+        "have_nvidia_smi": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "self_reported": { "type": "object" },
+    "evaluation": {
+      "type": "object",
+      "required": ["status", "results"],
+      "properties": {
+        "status": { "type": "string" },
+        "results": { "type": "array", "items": { "type": "object" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "<repo>/skills/nv-segment-ct/validators/output_schema.json",
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "output.any_label_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.class_counts.spleen",
+        "gt": 0
+      },
+      "actual": 27993,
+      "ok": true,
+      "reason": "27993 > 0"
+    },
+    {
+      "check": {
+        "path": "output.class_counts.liver",
+        "gt": 0
+      },
+      "actual": 287451,
+      "ok": true,
+      "reason": "287451 > 0"
+    },
+    {
+      "check": {
+        "path": "model_load.missing_keys",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "model_load.unexpected_keys",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": "<env>/lib/python3.12/site-packages/torch/nn/modules/module.py:1790: UserWarning: input's size at dim=0 does not match num_features. You can silence this warning by not passing in num_features, which is not used because affine=False\n  return forward_call(*args, **kwargs)\n"
+}

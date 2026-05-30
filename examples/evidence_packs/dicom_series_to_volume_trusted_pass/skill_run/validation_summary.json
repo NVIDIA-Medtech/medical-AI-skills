@@ -1,0 +1,156 @@
+{
+  "schema": "skills/dicom-series-to-volume/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/dicom-series-to-volume/fixtures/clean_axial",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_directory",
+      "path": "skills/dicom-series-to-volume/fixtures/clean_axial",
+      "status": "passed"
+    },
+    {
+      "name": "dicom_series_readable",
+      "path": "skills/dicom-series-to-volume/fixtures/clean_axial",
+      "status": "passed",
+      "readable_files": 32
+    },
+    {
+      "name": "dicom_series_single_series",
+      "status": "passed",
+      "series_instance_uid_count": 1
+    },
+    {
+      "name": "dicom_series_modality_consistent",
+      "status": "passed",
+      "modalities": [
+        "CT"
+      ]
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "modality",
+        "eq": "CT"
+      },
+      "actual": "CT",
+      "ok": true,
+      "reason": "'CT' == 'CT'"
+    },
+    {
+      "check": {
+        "path": "n_slices",
+        "gt": 1
+      },
+      "actual": 32,
+      "ok": true,
+      "reason": "32 > 1"
+    },
+    {
+      "check": {
+        "path": "single_series",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "inconsistent_shape",
+        "eq": false
+      },
+      "actual": false,
+      "ok": true,
+      "reason": "False == False"
+    },
+    {
+      "check": {
+        "path": "output.axcodes",
+        "eq": [
+          "L",
+          "P",
+          "S"
+        ]
+      },
+      "actual": [
+        "L",
+        "P",
+        "S"
+      ],
+      "ok": true,
+      "reason": "['L', 'P', 'S'] == ['L', 'P', 'S']"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 0.2711961790046189,
+      "min": null,
+      "max": 10,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 2.08976,
+      "min": null,
+      "max": 10,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 84.5703125,
+      "min": null,
+      "max": 500,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 0.0,
+      "min": null,
+      "max": 0,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

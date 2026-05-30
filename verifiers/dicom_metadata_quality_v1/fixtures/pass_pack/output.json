@@ -1,0 +1,18 @@
+{
+  "path": "skills/dicom-metadata-extract/fixtures/sample_ct.dcm",
+  "transfer_syntax": {
+    "uid": "1.2.840.10008.1.2.1",
+    "name": "Explicit VR Little Endian"
+  },
+  "modality": "CT",
+  "study": {
+    "StudyInstanceUID": "1.2.826.0.1.3680043.8.498.1"
+  },
+  "image": {
+    "Rows": 64,
+    "Columns": 64
+  },
+  "phi_present": false,
+  "phi_tags_found": [],
+  "phi_scope_disclaimer": "Standard DICOM PS3.15 basic-profile tags only. Private tags (odd group) NOT checked. Burnt-in pixel text NOT detected."
+}

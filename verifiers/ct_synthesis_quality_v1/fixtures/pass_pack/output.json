@@ -1,0 +1,134 @@
+{
+  "skill": "nv_generate_ct_rflow",
+  "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-ct)",
+  "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+  "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-CT",
+  "license": "NVIDIA Open Model License (commercial-friendly)",
+  "input": {
+    "config_infer_override_path": null,
+    "config_infer_override": {},
+    "anatomy_list_requested": [
+      "spleen",
+      "lung tumor"
+    ],
+    "body_region_requested": [
+      "chest"
+    ],
+    "num_output_samples_requested": 1,
+    "output_size_requested": [
+      256,
+      256,
+      256
+    ],
+    "spacing_requested": [
+      1.5,
+      1.5,
+      2.0
+    ],
+    "random_seed": 0,
+    "version": "rflow-ct"
+  },
+  "output": {
+    "directory": "<pack>",
+    "samples": [
+      {
+        "image_path": "sample_20260519_120000_000000_image.nii.gz",
+        "label_path": "sample_20260519_120000_000000_label.nii.gz",
+        "image_readable": true,
+        "label_readable": true,
+        "image_shape": [
+          8,
+          8,
+          8
+        ],
+        "label_shape": [
+          8,
+          8,
+          8
+        ],
+        "image_spacing": [
+          1.5,
+          1.5,
+          2.0
+        ],
+        "label_spacing": [
+          1.5,
+          1.5,
+          2.0
+        ],
+        "label_ids_present": [
+          3,
+          23
+        ],
+        "label_id_count": 2,
+        "label_foreground_voxels": 28,
+        "shape_match": true,
+        "spacing_match": true,
+        "affine_match": true,
+        "image_hu_min": -999.5189208984375,
+        "image_hu_max": 595.535888671875,
+        "image_hu_negative_present": true,
+        "image_hu_bone_present": true,
+        "image_nonconstant": true
+      }
+    ],
+    "num_samples": 1,
+    "all_pairs_readable": true,
+    "all_geometry_consistent": true,
+    "any_foreground_present": true,
+    "all_images_nonconstant": true,
+    "all_images_hu_like": true,
+    "union_label_ids_present": [
+      3,
+      23
+    ],
+    "output_label_mapping": [
+      {
+        "anatomy": "spleen",
+        "maisi_label_id": 3,
+        "output_label_id": 3
+      },
+      {
+        "anatomy": "lung tumor",
+        "maisi_label_id": 23,
+        "output_label_id": 23
+      }
+    ],
+    "expected_output_label_ids": [
+      3,
+      23
+    ],
+    "missing_expected_output_label_ids": [],
+    "all_effective_anatomy_labels_present": true
+  },
+  "invocation": {
+    "upstream_root": "/<home>/nv-generate-ctmr",
+    "upstream_commit": "0000000000000000000000000000000000000000",
+    "command": [
+      "python",
+      "-m",
+      "scripts.inference",
+      "--version",
+      "rflow-ct"
+    ],
+    "exit_code": 0,
+    "subprocess_seconds": 60.0,
+    "model_inventory": {
+      "all_present": true,
+      "files": []
+    },
+    "rendered_infer_config": {
+      "num_output_samples": 1
+    },
+    "rendered_env_output_dir": "<pack>"
+  },
+  "runtime": {
+    "subprocess_seconds": 60.0,
+    "device": "cuda"
+  },
+  "logs": {
+    "stdout_tail": "",
+    "stderr_tail": ""
+  },
+  "intended_use_disclaimer": "Engineering verification only."
+}

@@ -1,0 +1,59 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "141a1068ce38",
+  "skill_id": "medagent.verifiers.nv_reason_cxr_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/nv_reason_cxr_quality_v1",
+  "repo_git_sha": "27e4c10dd89466f94318f9571ebdc74142ae8960",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/forbidden_phrase_pack/agent_run_trace.jsonl",
+    "fixtures/forbidden_phrase_pack/artifacts/input_synthetic_chest_xray.png",
+    "fixtures/forbidden_phrase_pack/cost_profile.json",
+    "fixtures/forbidden_phrase_pack/environment.lock",
+    "fixtures/forbidden_phrase_pack/integrity_check.json",
+    "fixtures/forbidden_phrase_pack/manifest.json",
+    "fixtures/forbidden_phrase_pack/output.json",
+    "fixtures/forbidden_phrase_pack/provenance.json",
+    "fixtures/forbidden_phrase_pack/replay.sh",
+    "fixtures/forbidden_phrase_pack/runtime_profile.json",
+    "fixtures/forbidden_phrase_pack/validation_summary.json",
+    "fixtures/forbidden_phrase_pack/workflow_run_record.md",
+    "fixtures/pass_pack/agent_run_trace.jsonl",
+    "fixtures/pass_pack/artifacts/input_synthetic_chest_xray.png",
+    "fixtures/pass_pack/cost_profile.json",
+    "fixtures/pass_pack/environment.lock",
+    "fixtures/pass_pack/integrity_check.json",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/provenance.json",
+    "fixtures/pass_pack/replay.sh",
+    "fixtures/pass_pack/runtime_profile.json",
+    "fixtures/pass_pack/validation_summary.json",
+    "fixtures/pass_pack/workflow_run_record.md",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_nv_reason_cxr_quality_grade.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run",
+    "sha256": "a9b2ed64a8694c55fad4f8d285ffc286ab6a0a70b2eb26f856af7b18e7e16201",
+    "size_bytes": 27409,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/nv_reason_cxr_quality_v1/scripts/grade.py",
+    "examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

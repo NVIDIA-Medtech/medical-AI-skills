@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/skill_manifest.schema.json",
+  "title": "Medical AI Skills skill_manifest.yaml",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "license",
+    "intended_use",
+    "inputs",
+    "outputs",
+    "runtime"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "version": { "type": ["string", "number"] },
+    "upstream_refs": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Machine-readable upstream provenance for wrapped tools, model repos, hosted models, or package APIs whose behaviour the skill depends on. Each entry must carry a concrete git commit, model/repo revision, package version, or package version constraint.",
+      "items": { "$ref": "#/$defs/upstream_ref" }
+    },
+    "license": { "type": "string", "minLength": 1 },
+    "intended_use": {
+      "type": "object",
+      "required": ["summary"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "scope": true,
+        "not_for": { "type": "array", "items": true }
+      },
+      "additionalProperties": true
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "formats": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "schema": { "type": "string", "minLength": 1 },
+          "formats": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "paired_verifiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["planned", "implemented"] },
+          "checks": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "runtime": { "$ref": "#/$defs/runtime" },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "phi_scope_disclaimer": { "type": "string" },
+    "validation": { "$ref": "#/$defs/validation" },
+    "negative_fixtures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "expected_overall": { "type": "string" },
+          "expected_failed_gate": { "type": "string" },
+          "failure_reason": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "cost": {
+      "type": "object",
+      "description": "Advisory agent token-cost metadata (not enforced by eval_engine gates).",
+      "additionalProperties": true
+    },
+    "transport": {
+      "type": "string",
+      "description": "Optional packaging hint for agent runtimes (e.g. anthropic-skill)."
+    },
+    "benchmarks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Optional list of benchmark dataset IDs (matching benchmarks/<id>.benchmark.yaml) that this skill opts into. Advisory; consumed by eval_engine/render_baselines.py to assemble the cross-skill matrix."
+    },
+    "license_restrictions": {
+      "type": "object",
+      "description": "Optional machine-readable description of licence restrictions beyond the top-level `license` field. Useful when the wrapped tool's code and weights have different terms, or when weight licences vary by task. Schema is permissive — common subkeys are `code`, `weights_default`, and `weights_per_task` (a {task: licence_tier} map). Downstream tooling MAY gate on these fields.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "runtime": {
+      "type": "object",
+      "required": ["language", "entrypoint"],
+      "properties": {
+        "language": { "type": "string", "minLength": 1 },
+        "python": { "type": "string" },
+        "entrypoint": { "type": "string", "minLength": 1 },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command template rendered by eval_engine. Tokens: ${python}, ${script}, ${fixture}, ${out}, ${skill_dir}, ${env.VAR}. When omitted, the engine falls back to [${python}, ${script}, ${fixture}]."
+        },
+        "dependencies": {
+          "type": ["object", "array"],
+          "additionalProperties": true
+        },
+        "test_dependencies": {
+          "type": ["object", "array"],
+          "additionalProperties": true
+        },
+        "env_required": { "type": "array", "items": { "type": "string" } },
+        "env_optional": { "type": "array", "items": { "type": "string" } },
+        "env_conditional": { "type": ["array", "object"], "items": true },
+        "external_assets": { "type": "array", "items": true },
+        "llm": { "type": "object", "additionalProperties": true },
+        "optional_llm_verifier": { "type": "object", "additionalProperties": true },
+        "side_effects": { "$ref": "#/$defs/side_effects" }
+      },
+      "additionalProperties": false
+    },
+    "upstream_ref": {
+      "type": "object",
+      "required": ["kind", "name"],
+      "properties": {
+        "kind": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "repo_url": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "repo_id": { "type": "string", "minLength": 1 },
+        "git_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{7,40}$"
+        },
+        "revision": { "type": "string", "minLength": 1 },
+        "version": { "type": ["string", "number"] },
+        "version_constraint": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" }
+      },
+      "anyOf": [
+        { "required": ["git_commit"] },
+        { "required": ["revision"] },
+        { "required": ["version"] },
+        { "required": ["version_constraint"] }
+      ],
+      "additionalProperties": true
+    },
+    "side_effects": {
+      "type": "object",
+      "properties": {
+        "pip_packages": { "type": "array", "items": { "type": "string" } },
+        "fixture_builder_pip_packages": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "local_writes": { "type": "array", "items": { "$ref": "#/$defs/path_decl" } },
+        "home_writes": { "type": "array", "items": { "$ref": "#/$defs/path_decl" } },
+        "network_endpoints": { "type": "array", "items": { "type": "string" } },
+        "requires_docker": { "type": "boolean" },
+        "requires_gpu": { "type": ["boolean", "string", "null"] },
+        "gpu_fallback": { "type": "string" },
+        "environment": {
+          "type": "object",
+          "description": "How the skill expects the caller's runtime environment to be managed, including whether package installation may modify the active user-selected environment.",
+          "properties": {
+            "clean_environment_required": { "type": "boolean" },
+            "clean_environment_recommended": { "type": "boolean" },
+            "modifies_active_python_environment": { "type": "boolean" },
+            "user_environment_modification_ok": { "type": "boolean" },
+            "recommended_isolation": { "type": "string" },
+            "notes": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "env_required": { "type": "array", "items": { "type": "string" } },
+        "env_optional": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "path_decl": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "required": ["path"],
+          "properties": {
+            "path": { "type": "string" },
+            "approx_mb_max": { "type": "number" },
+            "optional": { "type": "boolean" }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "expected_runtime_seconds": { "$ref": "#/$defs/runtime_envelope" },
+        "sanity_checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sanity_check" }
+        },
+        "expected_cost": {
+          "type": "object",
+          "properties": {
+            "wall_seconds": { "$ref": "#/$defs/bounds" },
+            "cpu_seconds": { "$ref": "#/$defs/bounds" },
+            "rss_mb_peak": { "$ref": "#/$defs/bounds" },
+            "gpu_seconds": { "$ref": "#/$defs/bounds" },
+            "gpu_memory_mb_peak": { "$ref": "#/$defs/bounds" },
+            "llm_tokens_input": { "$ref": "#/$defs/bounds" },
+            "llm_tokens_output": { "$ref": "#/$defs/bounds" }
+          },
+          "additionalProperties": false
+        },
+        "env_pin": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "factual_echo": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "input_path": { "type": "string" },
+              "output_path": { "type": "string" },
+              "output_paths": { "type": "array", "items": { "type": "string" } },
+              "mode": { "type": "string" },
+              "case_insensitive": { "type": "boolean" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "runtime_integrity": {
+          "type": "object",
+          "properties": {
+            "paths": { "type": "array", "items": { "type": "string" } },
+            "patterns_file": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "integrity": true,
+        "reproducibility": { "$ref": "#/$defs/reproducibility" },
+        "benchmark_sanity_checks": true,
+        "benchmark": true
+      },
+      "additionalProperties": false
+    },
+    "reproducibility": {
+      "type": "object",
+      "required": ["mode", "fixture"],
+      "properties": {
+        "mode": {
+          "enum": ["repeat", "preflight"],
+          "description": "`repeat` runs the spec at least twice and compares outputs/artifact hashes. `preflight` is only for specs whose declared external runtime prevents local execution; it must include a reason."
+        },
+        "fixture": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Fixture path relative to the skill/verifier directory unless absolute."
+        },
+        "fixture_builder": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional repo-local script, relative to the skill/verifier directory, that creates the declared fixture when binary fixture files are intentionally gitignored."
+        },
+        "runs": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 5,
+          "default": 2
+        },
+        "expected_status": {
+          "type": "string",
+          "description": "Expected validation_summary.overall_status for every repeat-mode run. Defaults to `passed`."
+        },
+        "env": {
+          "type": "object",
+          "description": "Environment overrides used only by eval_engine/reproducibility.py, for deterministic mock-mode repeats.",
+          "additionalProperties": { "type": ["string", "number", "boolean"] }
+        },
+        "ignore_paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional regular expressions over dotted output paths to ignore when comparing repeated output payloads."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required by audit policy when mode is `preflight`."
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime_envelope": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "inference_path": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "sanity_check": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "eq": true,
+        "ne": true,
+        "gt": { "type": "number" },
+        "gte": { "type": "number" },
+        "lt": { "type": "number" },
+        "lte": { "type": "number" },
+        "matches": { "type": "string" },
+        "length_eq": { "type": "integer", "minimum": 0 },
+        "length_gte": { "type": "integer", "minimum": 0 },
+        "length_lte": { "type": "integer", "minimum": 0 },
+        "contains": true,
+        "contains_any_of": { "type": "array" },
+        "exists": { "type": "boolean" }
+      },
+      "anyOf": [
+        { "required": ["eq"] },
+        { "required": ["ne"] },
+        { "required": ["gt"] },
+        { "required": ["gte"] },
+        { "required": ["lt"] },
+        { "required": ["lte"] },
+        { "required": ["matches"] },
+        { "required": ["length_eq"] },
+        { "required": ["length_gte"] },
+        { "required": ["length_lte"] },
+        { "required": ["contains"] },
+        { "required": ["contains_any_of"] },
+        { "required": ["exists"] }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "2be2250061c9",
+  "skill_id": "medagent.nv_generate_mr_brain",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-generate-mr-brain",
+  "repo_git_sha": "92cf4e8304f837df1129850550aaed5670493cdb",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/README.md",
+    "fixtures/default_mri_t1.json",
+    "fixtures/mri_flair_skull_stripped.json",
+    "fixtures/mri_t2.json",
+    "references/fov-and-downloads.md",
+    "requirements.txt",
+    "scripts/run_mr_brain.py",
+    "skill_manifest.yaml",
+    "tests/test_run_mr_brain.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "sha256": "1ac5e95ebeb304bed0534b9be30c464b98b9c482a17f7640b1884511c2fc647d",
+    "size_bytes": 289,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/nv-generate-mr-brain/scripts/run_mr_brain.py",
+    "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+    "--output-dir",
+    "runs/nv_generate_mr_brain_trusted_hash_current/skill_run/samples",
+    "--modality",
+    "mri_t1"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

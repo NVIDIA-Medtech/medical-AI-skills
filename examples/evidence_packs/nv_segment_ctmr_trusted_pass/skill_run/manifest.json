@@ -1,0 +1,43 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "b7c04abe9f70",
+  "skill_id": "medagent.nv_segment_ctmr",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-segment-ctmr",
+  "repo_git_sha": "cbdba910b87eb0281ea75ebb91eaf4054fdb91b4",
+  "environment": {
+    "fingerprint": "07e2f23b55078ba4",
+    "pip_freeze_lines": 430,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/README.md",
+    "requirements.txt",
+    "scripts/run_ctmr.py",
+    "skill_manifest.yaml",
+    "tests/test_run_ctmr.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+    "sha256": "18fcb3df7da91366440dc4e14a9cc814024fce4df73db999b1d32e659ad127f9",
+    "size_bytes": 11352181,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/nv-segment-ctmr/scripts/run_ctmr.py",
+    "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+    "--output-dir",
+    "runs/nv_segment_ctmr_trusted_pass_current/skill_run/segment_ctmr_outputs",
+    "--modality",
+    "CT_BODY"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

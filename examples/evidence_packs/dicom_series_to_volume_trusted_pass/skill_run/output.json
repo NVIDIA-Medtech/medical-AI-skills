@@ -1,0 +1,74 @@
+{
+  "skill": "dicom_series_to_volume",
+  "n_slices": 32,
+  "single_series": true,
+  "series_instance_uid": "1.2.826.0.1.3680043.8.498.34592247408981119827086557674534754293",
+  "series_instance_uid_count": 1,
+  "modality": "CT",
+  "modalities": [
+    "CT"
+  ],
+  "dicom_metadata": {
+    "Modality": "CT",
+    "BodyPartExamined": "ABDOMEN",
+    "StudyInstanceUID": "1.2.826.0.1.3680043.8.498.51867841225106029517805824877861521047",
+    "SeriesInstanceUID": "1.2.826.0.1.3680043.8.498.34592247408981119827086557674534754293",
+    "StudyDescription": "Synthetic CT fixture for orientation gate demo",
+    "SeriesDescription": "Synthetic axial CT",
+    "StudyDate": "20260509"
+  },
+  "input_dir": "skills/dicom-series-to-volume/fixtures/clean_axial",
+  "output": {
+    "path": "examples/evidence_packs/dicom_series_to_volume_trusted_pass/skill_run/volume.nii.gz",
+    "shape": [
+      64,
+      64,
+      32
+    ],
+    "spacing": [
+      1.0,
+      1.0,
+      2.0
+    ],
+    "affine": [
+      [
+        -1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        -1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        2.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "axcodes": [
+      "L",
+      "P",
+      "S"
+    ]
+  },
+  "hu_range": [
+    -1000.0,
+    60.0
+  ],
+  "inconsistent_shape": false,
+  "runtime": {
+    "conversion_seconds": 0.012
+  },
+  "intended_use_disclaimer": "Engineering verification only. Not a vetted clinical DICOM-to-NIfTI converter; does not auto-reorient. A downstream gate is expected to assert orientation before this volume is fed to a model."
+}

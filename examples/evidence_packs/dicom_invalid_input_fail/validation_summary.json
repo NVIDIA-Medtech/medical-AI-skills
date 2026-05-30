@@ -1,0 +1,40 @@
+{
+  "schema": "<repo>/skills/dicom-metadata-extract/validators/output_schema.json",
+  "preflight_status": "failed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "<repo>/examples/fixtures/not_a_dicom.txt",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "<repo>/examples/fixtures/not_a_dicom.txt",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_size_budget",
+      "size_bytes": 127,
+      "max_size_bytes": 104857600,
+      "status": "passed"
+    },
+    {
+      "name": "dicom_readable",
+      "path": "<repo>/examples/fixtures/not_a_dicom.txt",
+      "status": "failed",
+      "error": "File is missing DICOM File Meta Information header or the 'DICM' prefix is missing from the header. Use force=True to force reading."
+    }
+  ],
+  "schema_status": "skipped",
+  "sanity_status": "skipped",
+  "sanity_results": [],
+  "runtime_status": "skipped",
+  "runtime_reason": null,
+  "overall_status": "preflight_failed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 2,
+  "stderr_excerpt": "preflight failed; skill was not executed"
+}

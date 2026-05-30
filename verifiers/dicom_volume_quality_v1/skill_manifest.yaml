@@ -1,0 +1,59 @@
+id: medagent.verifiers.dicom_volume_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: dicom_volume_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for dicom_series_to_volume evidence packs. Audits
+    source-pack success and checks that the declared NIfTI artifact matches the
+    JSON shape, spacing, affine orientation, and voxel range evidence.
+  scope: development
+  not_for:
+    - clinical deployment
+    - autonomous diagnosis
+    - regulatory submission
+inputs:
+  - name: dicom_series_to_volume_evidence_pack
+    type: directory_path
+    description: Evidence pack directory from skills/dicom-series-to-volume.
+outputs:
+  - name: dicom_volume_quality_report
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies:
+    nibabel: ">=4.0"
+    numpy: ">=1.23"
+  side_effects:
+    pip_packages: [nibabel>=4.0, numpy>=1.23]
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+limitations:
+  - Audits the emitted NIfTI and JSON evidence; it does not re-read DICOM inputs.
+  - Does not prove clinical correctness of orientation or HU scaling.
+  - Does not repair non-canonical orientation, spacing, or voxel metadata.
+validation:
+  expected_runtime_seconds:
+    max: 10.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.dicom_volume_quality_v1}
+    - {path: target.skill_id, matches: "dicom_series_to_volume"}
+    - {path: volume_quality.n_fail, eq: 0}
+    - {path: volume_quality.acceptable, eq: true}
+    - {path: volume_quality.axcodes, eq: ["L", "P", "S"]}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    fixture_builder: fixtures/build_fixtures.py
+    runs: 2

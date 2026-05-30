@@ -1,0 +1,164 @@
+{
+  "schema": "skills/nv-reason-cxr/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+      "status": "passed"
+    },
+    {
+      "name": "host_has_cuda",
+      "requires_gpu": "cuda",
+      "gpu_fallback": "cpu_or_mock_is_slow",
+      "have_cuda": false,
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "skill",
+        "eq": "nv_reason_cxr"
+      },
+      "actual": "nv_reason_cxr",
+      "ok": true,
+      "reason": "'nv_reason_cxr' == 'nv_reason_cxr'"
+    },
+    {
+      "check": {
+        "path": "input.image.format",
+        "matches": "^(png|jpeg)$"
+      },
+      "actual": "png",
+      "ok": true,
+      "reason": "matched '^(png|jpeg)$'"
+    },
+    {
+      "check": {
+        "path": "input.image.width",
+        "gte": 1
+      },
+      "actual": 96,
+      "ok": true,
+      "reason": "96 >= 1"
+    },
+    {
+      "check": {
+        "path": "input.image.height",
+        "gte": 1
+      },
+      "actual": 96,
+      "ok": true,
+      "reason": "96 >= 1"
+    },
+    {
+      "check": {
+        "path": "input.image.sha256",
+        "matches": "^[0-9a-f]{64}$"
+      },
+      "actual": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf",
+      "ok": true,
+      "reason": "matched '^[0-9a-f]{64}$'"
+    },
+    {
+      "check": {
+        "path": "output.response_text",
+        "length_gte": 1
+      },
+      "actual": "Mock NV-Reason-CXR response for a generated synthetic chest X-ray image. No clinical finding is asserted; this response only verifies image handling, prompt wiring, JSON output, and evidence-pack gates.",
+      "ok": true,
+      "reason": "len=202 >= 1"
+    },
+    {
+      "check": {
+        "path": "runtime.model",
+        "eq": "nvidia/NV-Reason-CXR-3B"
+      },
+      "actual": "nvidia/NV-Reason-CXR-3B",
+      "ok": true,
+      "reason": "'nvidia/NV-Reason-CXR-3B' == 'nvidia/NV-Reason-CXR-3B'"
+    },
+    {
+      "check": {
+        "path": "runtime.mode",
+        "matches": "^(mock|hf_transformers)$"
+      },
+      "actual": "mock",
+      "ok": true,
+      "reason": "matched '^(mock|hf_transformers)$'"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 0.07839634300034959,
+      "min": null,
+      "max": 900,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 0.083246,
+      "min": null,
+      "max": 900,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 501.1796875,
+      "min": null,
+      "max": 16000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 0.0,
+      "min": null,
+      "max": 900,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 0.0,
+      "min": null,
+      "max": 24000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": ""
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Medical AI Skills Benchmark Dataset Manifest",
+  "type": "object",
+  "required": ["format", "dataset", "cases"],
+  "additionalProperties": true,
+  "properties": {
+    "format": {
+      "const": "benchmark_dataset"
+    },
+    "source": {
+      "type": "string"
+    },
+    "dataset": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ground_truth": {
+      "type": "string"
+    },
+    "inclusion": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "license": {
+      "type": "string"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["string", "number"]
+          },
+          "input": {
+            "type": "string"
+          },
+          "fixture": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "ground_truth": {
+            "type": "string"
+          },
+          "gt": {
+            "type": "string"
+          },
+          "label": {
+            "type": ["integer", "string"]
+          },
+          "labels": {
+            "$ref": "#/$defs/labels"
+          },
+          "gt_labels": {
+            "$ref": "#/$defs/labels"
+          }
+        },
+        "anyOf": [
+          {"required": ["input"]},
+          {"required": ["fixture"]},
+          {"required": ["image"]}
+        ]
+      }
+    },
+    "prediction": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sanity_checks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "$defs": {
+    "labels": {
+      "oneOf": [
+        {"type": "integer"},
+        {"type": "string"},
+        {
+          "type": "array",
+          "items": {"type": "integer"}
+        }
+      ]
+    }
+  }
+}

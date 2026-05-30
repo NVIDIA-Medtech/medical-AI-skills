@@ -1,0 +1,2 @@
+This is an intentionally invalid fixture used to demonstrate evidence-pack
+preflight failure handling. It is not a DICOM file.

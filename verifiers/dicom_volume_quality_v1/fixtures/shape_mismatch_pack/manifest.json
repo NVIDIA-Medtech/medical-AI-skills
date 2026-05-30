@@ -1,0 +1,8 @@
+{
+  "skill_id": "medagent.dicom_series_to_volume",
+  "skill_version": "0.1.0",
+  "fixture": {
+    "path": "skills/dicom-series-to-volume/fixtures/clean_axial",
+    "is_dir": true
+  }
+}

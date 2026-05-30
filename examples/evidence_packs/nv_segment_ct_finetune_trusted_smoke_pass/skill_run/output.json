@@ -1,0 +1,287 @@
+{
+  "skill": "nv_segment_ct_finetune",
+  "model": "NVIDIA-Medtech/NV-Segment-CT (VISTA3D)",
+  "model_repo": "https://huggingface.co/nvidia/NV-Segment-CT",
+  "version": "0.4.1",
+  "input": {
+    "dataset_dir": "<repo>/skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "datalist": "<repo>/skills/nv-segment-ct-finetune/fixtures/spleen_micro/datalist.json",
+    "n_train_cases": 4,
+    "label_mappings": {
+      "default": [
+        [
+          1,
+          3
+        ]
+      ]
+    },
+    "label_mapping_resolution": {
+      "source": "anatomy_lookup",
+      "anatomy": "spleen",
+      "user_idx": 1,
+      "vista3d_idx": 3
+    },
+    "dataset_audit": {
+      "dataset_dir": "<repo>/skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+      "datalist_source": "caller_provided",
+      "datalist_path": "<repo>/skills/nv-segment-ct-finetune/fixtures/spleen_micro/datalist.json",
+      "n_pairs": 4
+    },
+    "smoke": true,
+    "sanity": false,
+    "auto_seg": false,
+    "formal_eval": false
+  },
+  "environment": {
+    "gpu_count": 1,
+    "gpu_name": "NVIDIA RTX 6000 Ada Generation",
+    "gpu_total_mb": 49140,
+    "gpu_free_mb": 48342,
+    "host_ram_mb": 61915,
+    "cuda_available": true,
+    "python": "3.12.3",
+    "packages": {
+      "monai": "1.4.0",
+      "torch": "2.12.0",
+      "nibabel": "5.4.2",
+      "scipy": "1.16.0",
+      "typer": "0.25.1",
+      "PyYAML": "6.0.3"
+    },
+    "torch_cuda": "13.0",
+    "torch_cuda_available": true
+  },
+  "plan": {
+    "patch_size": [
+      192,
+      192,
+      128
+    ],
+    "train_dataset_cache_rate": 1.0,
+    "epochs": 2,
+    "learning_rate": 5e-05,
+    "nproc_per_node": 1,
+    "multi_gpu": false,
+    "formal_eval": false,
+    "auto_seg": false,
+    "force_single_gpu": true,
+    "preset": "smoke",
+    "rationale": [
+      "patch_size=[192, 192, 128] (chose for free GPU=48342 MiB)",
+      "cache_rate=1.0 (RAM=61915 MiB, n_train=4)",
+      "epochs=2",
+      "learning_rate=5e-05",
+      "nproc_per_node=1",
+      "bundle prompt-mix training",
+      "single-gpu smoke preset"
+    ]
+  },
+  "invocation": {
+    "command": "<tmp>/nvseg-m14/bin/python -m monai.bundle run --config_file '['\"'\"'configs/train.json'\"'\"','\"'\"'configs/train_continual.json'\"'\"','\"'\"'configs/auto_override.json'\"'\"','\"'\"'configs/dfw_no_logging.json'\"'\"']' --bundle_root <repo>/skills/nv-segment-ct-finetune/bundle",
+    "commands": {
+      "eval_pretrained": null,
+      "finetune": "<tmp>/nvseg-m14/bin/python -m monai.bundle run --config_file '['\"'\"'configs/train.json'\"'\"','\"'\"'configs/train_continual.json'\"'\"','\"'\"'configs/auto_override.json'\"'\"','\"'\"'configs/dfw_no_logging.json'\"'\"']' --bundle_root <repo>/skills/nv-segment-ct-finetune/bundle",
+      "eval_finetuned": null
+    },
+    "command_prefix": "<tmp>/nvseg-m14/bin/python -m monai.bundle run",
+    "config_stack": [
+      "configs/train.json",
+      "configs/train_continual.json",
+      "configs/auto_override.json",
+      "configs/dfw_no_logging.json"
+    ],
+    "eval_config_stack": null,
+    "phase_return_codes": {
+      "eval_pretrained": null,
+      "finetune": 0,
+      "eval_finetuned": null
+    },
+    "multi_gpu": false,
+    "cwd": "<repo>/skills/nv-segment-ct-finetune/bundle",
+    "override_file": "configs/auto_override.json",
+    "no_logging_file": "configs/dfw_no_logging.json"
+  },
+  "output": {
+    "finetuned_ckpt": "<repo>/runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run/artifacts/checkpoints/model_finetune.pt",
+    "finetuned_ckpt_exists": true,
+    "pretrained_ckpt": "<repo>/skills/nv-segment-ct-finetune/bundle/models/model.pt",
+    "recommended_ckpt": "<repo>/skills/nv-segment-ct-finetune/bundle/models/model.pt",
+    "checkpoint_comparisons_to_pretrained": {
+      "best": {
+        "reference": "<repo>/skills/nv-segment-ct-finetune/bundle/models/model.pt",
+        "candidate": "<repo>/runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run/artifacts/checkpoints/model_finetune.pt",
+        "compared": true,
+        "weights_identical": false,
+        "same_keys": true,
+        "missing_keys_count": 0,
+        "extra_keys_count": 0,
+        "tensor_count": 259,
+        "differing_tensors": 254,
+        "shape_or_dtype_mismatches": 0,
+        "max_abs_diff": 2.0384788513183594e-05,
+        "total_abs_diff": 2190.8705276759865,
+        "examples": [
+          {
+            "key": "class_head.class_embeddings.weight",
+            "shape": [
+              512,
+              48
+            ],
+            "max_abs_diff": 1.6033649444580078e-05,
+            "sum_abs_diff": 0.007101601455360651
+          },
+          {
+            "key": "class_head.image_post_mapping.0.layer.conv1.conv.weight",
+            "shape": [
+              48,
+              48,
+              3,
+              3,
+              3
+            ],
+            "max_abs_diff": 1.905485987663269e-05,
+            "sum_abs_diff": 0.5770076513290405
+          },
+          {
+            "key": "class_head.image_post_mapping.0.layer.conv2.conv.weight",
+            "shape": [
+              48,
+              48,
+              3,
+              3,
+              3
+            ],
+            "max_abs_diff": 1.9024184439331293e-05,
+            "sum_abs_diff": 0.558189868927002
+          },
+          {
+            "key": "class_head.image_post_mapping.1.layer.conv1.conv.weight",
+            "shape": [
+              48,
+              48,
+              3,
+              3,
+              3
+            ],
+            "max_abs_diff": 1.8978025764226913e-05,
+            "sum_abs_diff": 0.5468716025352478
+          },
+          {
+            "key": "class_head.image_post_mapping.1.layer.conv2.conv.weight",
+            "shape": [
+              48,
+              48,
+              3,
+              3,
+              3
+            ],
+            "max_abs_diff": 1.8980354070663452e-05,
+            "sum_abs_diff": 0.543691098690033
+          }
+        ]
+      }
+    },
+    "finetuned_ckpt_matches_pretrained_weights": false,
+    "baseline_val_dice": 0.0,
+    "best_val_dice": 0.0002,
+    "best_epoch_index": 2,
+    "improvement_over_baseline": 0.0002,
+    "regressed": false,
+    "improved": false,
+    "training_start_val_dice": 0.0,
+    "training_best_val_dice": 0.0002,
+    "training_best_epoch_index": 2,
+    "formal_eval_enabled": false,
+    "formal_pretrained_val_dice": null,
+    "formal_finetuned_val_dice": null,
+    "formal_improvement_over_pretrained": null,
+    "formal_regressed": null,
+    "formal_improved": null,
+    "val_dice_per_epoch": [
+      0.0,
+      0.0,
+      0.0002
+    ],
+    "train_loss_first": 0.0206,
+    "train_loss_last": 0.028,
+    "train_loss_finite": true,
+    "oom": false,
+    "sanity_reference_checks": null,
+    "sanity_recovery_demonstrated": null
+  },
+  "runtime": {
+    "wall_seconds": 37.465,
+    "peak_gpu_mb": 24629,
+    "phase_peak_gpu_mb": {
+      "finetune": 24629
+    },
+    "return_code": 0,
+    "log_path": "<repo>/runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run/artifacts/finetune.log",
+    "log_tail": [
+      "Loading dataset:  33%|\u2588\u2588\u2588\u258e      | 1/3 [00:00<00:00,  3.52it/s]",
+      "Loading dataset: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 3/3 [00:00<00:00, 10.56it/s]",
+      "",
+      "Loading dataset:   0%|          | 0/1 [00:00<?, ?it/s]",
+      "Loading dataset: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 1/1 [00:00<00:00, 36.89it/s]",
+      "<tmp>/nvseg-m14/lib/python3.12/site-packages/monai/engines/trainer.py:54: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.",
+      "  self.scaler = torch.cuda.amp.GradScaler() if self.amp else None",
+      "<tmp>/nvseg-m14/lib/python3.12/site-packages/monai/inferers/utils.py:225: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)",
+      "  win_data = inputs[unravel_slice[0]].to(sw_device)",
+      "<tmp>/nvseg-m14/lib/python3.12/site-packages/monai/inferers/utils.py:361: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:347.)",
+      "  out[idx_zm] += p",
+      "2026-05-26 05:17:56,161 - INFO - Epoch[0] Metrics -- val_mean_dice: 0.0000 ",
+      "2026-05-26 05:17:56,161 - INFO - Key metric: val_mean_dice best value: 0.0 at epoch: 0",
+      "<home>/anaconda3/envs/py312/lib/python3.12/site-packages/torch/functional.py:505: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at /pytorch/aten/src/ATen/native/TensorShape.cpp:4382.)",
+      "  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]",
+      "2026-05-26 05:17:57,887 - INFO - Epoch: 1/2, Iter: 1/3 -- train_loss: 0.0206 ",
+      "2026-05-26 05:17:58,837 - INFO - Epoch: 1/2, Iter: 2/3 -- train_loss: 0.0191 ",
+      "2026-05-26 05:17:59,763 - INFO - Epoch: 1/2, Iter: 3/3 -- train_loss: 0.2618 ",
+      "2026-05-26 05:18:00,192 - INFO - Epoch[1] Metrics -- val_mean_dice: 0.0000 ",
+      "2026-05-26 05:18:00,192 - INFO - Key metric: val_mean_dice best value: 0.0 at epoch: 0",
+      "2026-05-26 05:18:01,212 - INFO - Epoch: 2/2, Iter: 1/3 -- train_loss: 0.5555 ",
+      "2026-05-26 05:18:01,862 - INFO - Epoch: 2/2, Iter: 2/3 -- train_loss: 1.1288 ",
+      "2026-05-26 05:18:02,397 - INFO - Epoch: 2/2, Iter: 3/3 -- train_loss: 0.0280 ",
+      "2026-05-26 05:18:02,808 - INFO - Epoch[2] Metrics -- val_mean_dice: 0.0002 ",
+      "2026-05-26 05:18:02,808 - INFO - Key metric: val_mean_dice best value: 0.00016456842422485352 at epoch: 2"
+    ]
+  },
+  "cost": {
+    "steps": [
+      {
+        "step": "env_detect",
+        "label": "Step 2: detect GPU + RAM",
+        "seconds": 0.723
+      },
+      {
+        "step": "dataset_audit",
+        "label": "Step 0: audit inputs + build datalist",
+        "seconds": 0.0
+      },
+      {
+        "step": "plan",
+        "label": "Step 2: compose plan + override",
+        "seconds": 2.059
+      },
+      {
+        "step": "eval_pretrained",
+        "label": "Step 4a: evaluate pretrained checkpoint",
+        "seconds": 0.0,
+        "peak_gpu_mb": 0
+      },
+      {
+        "step": "bundle_run",
+        "label": "Step 5: monai.bundle run + log parse",
+        "seconds": 34.07,
+        "peak_gpu_mb": 24629
+      },
+      {
+        "step": "eval_finetuned",
+        "label": "Step 6: evaluate fine-tuned checkpoint",
+        "seconds": 0.0,
+        "peak_gpu_mb": 0
+      }
+    ],
+    "total_seconds": 36.852
+  },
+  "intended_use_disclaimer": "Engineering verification only. Output is NOT clinically meaningful. This wrapper invokes the upstream `monai.bundle run` finetune entry described in NV-Segment-CT's finetune.md; it does not modify training."
+}

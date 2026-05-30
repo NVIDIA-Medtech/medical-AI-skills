@@ -1,0 +1,9 @@
+{
+  "measured": {},
+  "self_reported": {},
+  "evaluation": {
+    "status": "skipped",
+    "results": [],
+    "reason": "benchmark runner does not yet capture per-run cost; per-case timing is in dataset_run.jsonl"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "artifact_inventory": {
+    "failed_checks": [],
+    "samples": [
+      {
+        "image_bytes": 10984688,
+        "image_path_declared": "<repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples/sample_20260526_042618_406127_image.nii.gz",
+        "image_resolved": true,
+        "image_sha256": "c40cdee0ba78b1ae3c095962f8aca68898e29a4b27dc385959f4e8ba3af60fa9",
+        "label_bytes": 293199,
+        "label_path_declared": "<repo>/runs/nv_generate_ct_rflow_trusted_hash_current/skill_run/samples/sample_20260526_042618_406127_label.nii.gz",
+        "label_resolved": true,
+        "label_sha256": "608adc6afd0cff3fab1d5bbcbba3f1ae7f3030b896d73328cce661f12110096e"
+      }
+    ],
+    "verdict": "pass"
+  },
+  "geometry_consistency": {
+    "failed_checks": [],
+    "verdict": "pass"
+  },
+  "image_hu_plausibility": {
+    "failed_checks": [],
+    "verdict": "pass"
+  },
+  "label_set_sanity": {
+    "failed_checks": [],
+    "union_label_ids_present": [
+      1
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "target": {
+    "evidence_pack": "runs/nv_generate_ct_rflow_trusted_hash_current/skill_run",
+    "num_samples_declared": 1,
+    "skill_id": "medagent.nv_generate_ct_rflow",
+    "source_overall_status": "passed"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.ct_synthesis_quality_v1",
+    "version": "0.1.0"
+  }
+}

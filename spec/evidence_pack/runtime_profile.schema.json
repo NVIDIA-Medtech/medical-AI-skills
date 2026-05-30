@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/runtime_profile.schema.json",
+  "title": "Evidence pack runtime_profile.json",
+  "description": "Wall-clock timing and host environment snapshot for one run.",
+  "type": "object",
+  "required": ["started_at", "finished_at", "elapsed_seconds", "environment"],
+  "properties": {
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "elapsed_seconds": { "type": "number", "minimum": 0 },
+    "exit_code": {
+      "type": "integer",
+      "description": "Present for skill_run and llm_skill_run packs. Benchmark packs aggregate per-case exit codes in dataset_run.jsonl and omit this field."
+    },
+    "case_count": { "type": "integer", "minimum": 0 },
+    "jobs": { "type": "integer", "minimum": 0 },
+    "environment": {
+      "type": "object",
+      "required": ["python_version", "platform"],
+      "properties": {
+        "python_version": { "type": "string" },
+        "platform": { "type": "string" },
+        "executable": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

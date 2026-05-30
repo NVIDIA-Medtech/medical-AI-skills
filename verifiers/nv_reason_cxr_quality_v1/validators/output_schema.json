@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nv_reason_cxr_quality_v1 output",
+  "type": "object",
+  "required": ["verifier", "target", "cxr_quality", "checks", "overall"],
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": ["evidence_pack", "skill_id", "source_overall_status", "fixture_path"],
+      "properties": {
+        "evidence_pack": {"type": "string"},
+        "skill_id": {"type": "string"},
+        "source_overall_status": {"type": ["string", "null"]},
+        "fixture_path": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "cxr_quality": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "acceptable",
+        "mock_mode",
+        "forbidden_finding_count",
+        "forbidden_findings",
+        "case_id",
+        "image_format",
+        "image_sha256",
+        "model"
+      ],
+      "properties": {
+        "verdict": {"type": "string", "enum": ["pass", "fail"]},
+        "acceptable": {"type": "boolean"},
+        "mock_mode": {"type": "boolean"},
+        "forbidden_finding_count": {"type": "integer", "minimum": 0},
+        "forbidden_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "pattern", "match"],
+            "properties": {
+              "label": {"type": "string"},
+              "pattern": {"type": "string"},
+              "match": {"type": "string"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "case_id": {"type": ["string", "null"]},
+        "image_format": {"type": ["string", "null"]},
+        "image_sha256": {"type": ["string", "null"]},
+        "model": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "reason"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"type": "string", "enum": ["pass", "fail", "warn"]},
+          "reason": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "overall": {"type": "string", "enum": ["pass", "fail"]}
+  },
+  "additionalProperties": false
+}

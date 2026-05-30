@@ -1,0 +1,97 @@
+id: medagent.verifiers.ct_segmentation_finetune_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: ct_segmentation_finetune_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for nv_segment_ct_finetune evidence packs. Audits
+    the finetuned checkpoint at output.finetuned_ckpt, the training
+    trajectory (val_dice_per_epoch, train_loss, OOM, improvement over
+    baseline), and the recorded input.dataset_audit signals (shape /
+    orientation consistency, CT HU range, anatomy-specific volume bounds,
+    label coverage against label_mappings.default). CPU-only and does not
+    re-run training.
+  scope: development
+  not_for:
+    - clinical deployment
+    - clinical interpretation
+    - autonomous diagnosis
+    - regulatory submission
+    - any model selection / promotion decision for patient-facing use
+
+inputs:
+  - name: nv_segment_ct_finetune_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by
+      skills/nv-segment-ct-finetune. The verifier reads output.json,
+      validation_summary.json, manifest.json, and the checkpoint file
+      referenced by output.finetuned_ckpt.
+
+outputs:
+  - name: ct_segmentation_finetune_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies:
+    # torch is optional: when present we report parameter count and key
+    # shape from the checkpoint; otherwise the checkpoint integrity tier
+    # degrades to a size/extension check. Mirrors how the sibling
+    # ct_segmentation_quality_v1 treats scipy.
+    torch: optional
+  test_dependencies:
+    jsonschema: ">=4.0"
+  side_effects:
+    pip_packages:
+      - torch
+    local_writes:
+      - {path: "<caller-provided --out>", approx_mb_max: 1}
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    Does not re-run the upstream evaluate config against a held-out split.
+    Per-class Dice / IoU values are read from the pack's recorded
+    val_dice_per_epoch trajectory, not independently re-derived. The v2
+    of this verifier is planned to close that gap.
+  - >
+    Checkpoint integrity is best-effort: when torch is unavailable the
+    verifier confirms the file exists and is of plausible size (>= 1 MB)
+    but cannot inspect parameter shapes.
+  - >
+    Anatomy-specific volume bounds are population-typical adult ranges
+    pulled from the wrapper's own audit; pediatric or pathologically-
+    enlarged training sets can fail intentionally.
+
+validation:
+  expected_runtime_seconds:
+    max: 20.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.ct_segmentation_finetune_quality_v1}
+    - {path: target.skill_id, contains_any_of: [nv_segment_ct_finetune, medagent.nv_segment_ct_finetune]}
+    - {path: artifact_inventory.checkpoint_resolved, eq: true}
+    - {path: training_trajectory.train_loss_finite, eq: true}
+    - {path: training_trajectory.oom, eq: false}
+    - {path: training_trajectory.verdict, eq: pass}
+    - {path: dataset_audit_review.verdict, eq: pass}
+    - {path: label_coverage.verdict, contains_any_of: [pass, skipped]}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    fixture_builder: fixtures/build_fixtures.py
+    runs: 2

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/validation_summary.schema.json",
+  "title": "Evidence pack validation_summary.json",
+  "description": "Per-run gate roll-up. The overall_status and integrity_status fields are the headline trust signal.",
+  "type": "object",
+  "required": [
+    "preflight_status",
+    "sanity_status",
+    "overall_status",
+    "integrity_status",
+    "errors"
+  ],
+  "properties": {
+    "schema": { "type": ["string", "null"] },
+    "preflight_status": {
+      "type": "string",
+      "enum": ["passed", "failed", "env_skip", "skipped"]
+    },
+    "preflight": { "type": "array", "items": { "type": "object" } },
+    "schema_status": {
+      "type": "string",
+      "description": "Output-payload schema gate. Values include passed, failed, skipped, skipped (no schema)."
+    },
+    "sanity_status": {
+      "type": "string",
+      "enum": ["passed", "failed", "skipped"]
+    },
+    "sanity_results": { "type": "array", "items": { "type": "object" } },
+    "runtime_status": { "type": "string" },
+    "runtime_reason": { "type": ["string", "null"] },
+    "cost_status": { "type": "string" },
+    "cost_results": { "type": "array", "items": { "type": "object" } },
+    "env_pin_status": { "type": "string" },
+    "env_pin_results": { "type": "array", "items": { "type": "object" } },
+    "factual_echo_status": { "type": "string" },
+    "factual_echo_results": { "type": "array", "items": { "type": "object" } },
+    "model_identity_status": { "type": "string" },
+    "model_identity_results": { "type": "array", "items": { "type": "object" } },
+    "runtime_integrity_status": { "type": "string" },
+    "runtime_integrity_findings": { "type": "array", "items": { "type": "object" } },
+    "overall_status": { "type": "string", "minLength": 1 },
+    "integrity_status": { "type": "string", "enum": ["clean", "minor", "flagged", "skipped"] },
+    "integrity_n_findings": { "type": "integer", "minimum": 0 },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "parse_error": { "type": ["string", "null"] },
+    "exit_code": { "type": "integer" },
+    "stderr_excerpt": { "type": "string" },
+    "case_count": { "type": "integer", "minimum": 0 },
+    "pass_count": { "type": "integer", "minimum": 0 },
+    "fail_count": { "type": "integer", "minimum": 0 },
+    "coverage_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+  },
+  "additionalProperties": true
+}

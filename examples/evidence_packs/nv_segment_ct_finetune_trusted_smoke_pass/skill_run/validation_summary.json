@@ -1,0 +1,206 @@
+{
+  "schema": "skills/nv-segment-ct-finetune/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+      "status": "passed"
+    },
+    {
+      "name": "host_has_cuda",
+      "requires_gpu": "cuda",
+      "gpu_fallback": "cpu",
+      "have_cuda": true,
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "plan.patch_size",
+        "length_eq": 3
+      },
+      "actual": [
+        192,
+        192,
+        128
+      ],
+      "ok": true,
+      "reason": "len=3 == 3"
+    },
+    {
+      "check": {
+        "path": "invocation.config_stack",
+        "contains": "configs/train.json"
+      },
+      "actual": [
+        "configs/train.json",
+        "configs/train_continual.json",
+        "configs/auto_override.json",
+        "configs/dfw_no_logging.json"
+      ],
+      "ok": true,
+      "reason": "member match"
+    },
+    {
+      "check": {
+        "path": "invocation.config_stack",
+        "contains": "configs/train_continual.json"
+      },
+      "actual": [
+        "configs/train.json",
+        "configs/train_continual.json",
+        "configs/auto_override.json",
+        "configs/dfw_no_logging.json"
+      ],
+      "ok": true,
+      "reason": "member match"
+    },
+    {
+      "check": {
+        "path": "invocation.command_prefix",
+        "contains": "monai.bundle"
+      },
+      "actual": "<tmp>/nvseg-m14/bin/python -m monai.bundle run",
+      "ok": true,
+      "reason": "substring match"
+    },
+    {
+      "check": {
+        "path": "output.oom",
+        "eq": false
+      },
+      "actual": false,
+      "ok": true,
+      "reason": "False == False"
+    },
+    {
+      "check": {
+        "path": "output.train_loss_finite",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.finetuned_ckpt_exists",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.regressed",
+        "eq": false
+      },
+      "actual": false,
+      "ok": true,
+      "reason": "False == False"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 40.48563696499332,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 45.307794,
+      "min": null,
+      "max": 7200,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 6064.52734375,
+      "min": 500,
+      "max": 32000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 8.263943211974793,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 24476.0,
+      "min": null,
+      "max": 80000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "passed",
+  "env_pin_results": [
+    {
+      "package": "monai",
+      "constraint": "==1.4.0",
+      "source": "output.environment.packages",
+      "installed": "1.4.0",
+      "ok": true,
+      "reason": "satisfies constraint"
+    },
+    {
+      "package": "torch",
+      "constraint": ">=2.0,<3",
+      "source": "output.environment.packages",
+      "installed": "2.12.0",
+      "ok": true,
+      "reason": "satisfies constraint"
+    },
+    {
+      "package": "transformers",
+      "constraint": ">=4.40,<5",
+      "source": "eval_engine_host",
+      "installed": "4.57.6",
+      "ok": true,
+      "reason": "satisfies constraint"
+    },
+    {
+      "package": "huggingface_hub",
+      "constraint": ">=0.20,<1",
+      "source": "eval_engine_host",
+      "installed": "0.36.2",
+      "ok": true,
+      "reason": "satisfies constraint"
+    }
+  ],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": "WARNING: Skipping <HOME>/anaconda3/envs/py312/lib/python3.12/site-packages/certifi-2025.6.15.dist-info due to invalid metadata entry 'name'\nRequirement already satisfied: monai==1.4.0 in <tmp>/nvseg-m14/lib/python3.12/site-packages (1.4.0)\nRequirement already satisfied: numpy<2 in <tmp>/nvseg-m14/lib/python3.12/site-packages (1.26.4)\nRequirement already satisfied: torch>=1.9 in <HOME>/anaconda3/envs/py312/lib/python3.12/site-packages (from monai==1.4.0) (2.12.0)\nRequirement already satisfied: file"
+}

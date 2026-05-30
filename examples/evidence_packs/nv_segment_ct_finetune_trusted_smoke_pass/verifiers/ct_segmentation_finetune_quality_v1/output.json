@@ -1,0 +1,54 @@
+{
+  "artifact_inventory": {
+    "checkpoint_loadable": true,
+    "checkpoint_param_count": 217965054,
+    "checkpoint_path": "<repo>/runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run/artifacts/checkpoints/model_finetune.pt",
+    "checkpoint_resolved": true,
+    "checkpoint_size_bytes": 871971832,
+    "torch_available": true
+  },
+  "dataset_audit_review": {
+    "anatomy": null,
+    "anatomy_volume_all_in_range": null,
+    "failed_checks": [],
+    "hu_range_negative_present": null,
+    "image_looks_like_ct": null,
+    "orientation_consistent": null,
+    "shape_consistent": null,
+    "verdict": "pass"
+  },
+  "label_coverage": {
+    "missing_user_labels": [],
+    "user_labels_declared": [
+      1
+    ],
+    "user_labels_seen_in_sample": [],
+    "verdict": "skipped"
+  },
+  "overall": "pass",
+  "target": {
+    "checkpoint_path": "<repo>/runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run/artifacts/checkpoints/model_finetune.pt",
+    "evidence_pack": "<repo>/runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run",
+    "sanity": false,
+    "skill_id": "medagent.nv_segment_ct_finetune",
+    "smoke": true,
+    "source_overall_status": "passed"
+  },
+  "training_trajectory": {
+    "baseline_val_dice": 0.0,
+    "best_val_dice": 0.0002,
+    "epochs_declared": 2,
+    "epochs_recorded": 3,
+    "failed_checks": [],
+    "improvement_over_baseline": 0.0002,
+    "oom": false,
+    "regressed": false,
+    "sanity_recovery_demonstrated": null,
+    "train_loss_finite": true,
+    "verdict": "pass"
+  },
+  "verifier": {
+    "id": "medagent.verifiers.ct_segmentation_finetune_quality_v1",
+    "version": "0.1.0"
+  }
+}

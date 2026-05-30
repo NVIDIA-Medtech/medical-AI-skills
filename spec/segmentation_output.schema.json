@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://medagent.nvidia.com/spec/segmentation_output.schema.json#v1.0.0",
+  "title": "SegmentationOutputEnvelope",
+  "description": "Canonical shared envelope for segmentation skill output payloads. Defines the minimum structural contract for nv_segment_ct-style output payloads. Skill-specific fields are permitted alongside these. See docs/spec-model.md for placement rationale.",
+  "type": "object",
+  "required": ["invocation", "output", "runtime"],
+  "properties": {
+    "invocation": {
+      "description": "Provenance of the underlying tool invocation (command, identity, exit status). Shape is skill-specific; segmentation skills guarantee this key is an object.",
+      "type": "object"
+    },
+    "output": {
+      "description": "Structured summary of produced segmentation artefacts. Shape is skill-specific; segmentation skills guarantee this key is an object.",
+      "type": "object"
+    },
+    "runtime": {
+      "description": "Wall-clock timing captured by the wrapper. Shape is skill-specific; segmentation skills guarantee this key is an object.",
+      "type": "object"
+    },
+    "skill": {
+      "description": "Short skill identifier string (nv_segment_ct only).",
+      "type": "string"
+    },
+    "model": {
+      "description": "Human-readable model name/version (nv_segment_ct only).",
+      "type": "string"
+    },
+    "model_repo": {
+      "description": "Canonical model repository URL or identifier (nv_segment_ct only).",
+      "type": "string"
+    },
+    "license": {
+      "description": "Model licence name (nv_segment_ct only).",
+      "type": "string"
+    },
+    "input": {
+      "description": "Summary of the input artefact passed to the skill (nv_segment_ct only).",
+      "type": "object"
+    },
+    "intended_use_disclaimer": {
+      "description": "Free-text disclaimer asserting non-clinical scope (nv_segment_ct only).",
+      "type": "string"
+    },
+    "logs": {
+      "description": "Optional stdout/stderr tails captured from a wrapped subprocess.",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,38 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "8b009bc17c0a",
+  "skill_id": "medagent.nv_generate_ct_rflow",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-generate-ct-rflow",
+  "repo_git_sha": "9c79985c0e4cc4aad97e4bae5514cd733ddc9b5f",
+  "environment": {
+    "fingerprint": "a455f451dd5d3444",
+    "pip_freeze_lines": 401,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "fixtures/default_config_infer.json",
+    "scripts/run_rflow_ct.py",
+    "skill_manifest.yaml",
+    "tests/test_run_rflow_ct.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-generate-ct-rflow/fixtures/default_config_infer.json",
+    "sha256": "59e81d33e194b42634a02d75beb84b664446159decf3f169b3523c334c3fd5c0",
+    "size_bytes": 623,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py",
+    "skills/nv-generate-ct-rflow/fixtures/default_config_infer.json",
+    "--output-dir",
+    "runs/nv_generate_ct_rflow_gpu_demo/samples"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

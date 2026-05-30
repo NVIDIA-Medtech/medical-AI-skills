@@ -1,0 +1,46 @@
+functions:
+  read_file:
+    _type: read_file
+  list_directory:
+    _type: list_directory
+  dicom_meta_extract:
+    _type: dicom_meta_extract
+  dicom_series_to_volume:
+    _type: dicom_series_to_volume
+  finetune_smoke:
+    _type: finetune_smoke
+  nv_segment_ct:
+    _type: nv_segment_ct
+
+llms:
+  nim_llm:
+    _type: nim
+    model_name: meta/llama-3.3-70b-instruct
+    temperature: 0.0
+    max_tokens: 512
+
+workflow:
+  _type: tool_calling_agent
+  tool_names:
+    - read_file
+    - list_directory
+    - dicom_meta_extract
+    - dicom_series_to_volume
+    - finetune_smoke
+    - nv_segment_ct
+  llm_name: nim_llm
+  verbose: true
+  max_iterations: 8
+
+eval:
+  general:
+    max_concurrency: 1
+    output:
+      dir: ./runs/nat_token_audit/
+      cleanup: false
+    dataset:
+      _type: json
+      file_path: tools/nat_audit/data/eval.json
+    profiler:
+      compute_llm_metrics: true
+      csv_exclude_io_text: true

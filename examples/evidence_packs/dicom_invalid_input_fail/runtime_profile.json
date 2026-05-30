@@ -1,0 +1,11 @@
+{
+  "started_at": "2026-05-04T11:48:58.936893+00:00",
+  "finished_at": "2026-05-04T11:48:58.936902+00:00",
+  "elapsed_seconds": 0.0,
+  "exit_code": 2,
+  "environment": {
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35",
+    "executable": "<env>/bin/python3"
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "captured_at": "2026-05-26T04:18:26.860459+00:00",
+  "gpu": {
+    "available": true,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "uuid": "GPU-95d20cf6-6e5f-d0cd-7c5c-1caad640b18e",
+        "driver_version": "580.159.04",
+        "compute_cap": "8.9",
+        "memory_total_mb": 49140.0,
+        "memory_free_mb": 48342.0,
+        "memory_used_mb": 145.0,
+        "mig_mode_current": "[N/A]"
+      }
+    ],
+    "nvcc_release": "Cuda compilation tools, release 13.2, V13.2.78"
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container digest/labels not captured by MVP provenance. Add via skill-side instrumentation when the wrapper spawns docker."
+  },
+  "network": {
+    "declared_endpoints": [
+      "https://huggingface.co",
+      "https://raw.githubusercontent.com"
+    ],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/",
+        "resolved": "skills/nv-segment-ct-finetune/bundle",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 66,
+        "total_bytes": 3488112382
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/auto_override.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/auto_override.json",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 1055,
+        "mtime": 1779768950.4558613
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 992,
+        "mtime": 1779725576.314886
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 53,
+        "mtime": 1779768950.4558613
+      },
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/",
+        "resolved": "skills/nv-segment-ct-finetune/bundle",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 66,
+        "total_bytes": 3488112416
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/auto_override.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/auto_override.json",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 1089,
+        "mtime": 1779769069.323405
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 992,
+        "mtime": 1779725576.314886
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json",
+        "exists": true,
+        "is_file": true,
+        "size_bytes": 53,
+        "mtime": 1779769069.323405
+      },
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/",
+        "resolved": "skills/nv-segment-ct-finetune/bundle",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "grew",
+        "entries_delta": 0,
+        "bytes_delta": 34
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/auto_override.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/auto_override.json",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "modified",
+        "size_delta_bytes": 34
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "size_delta_bytes": 0
+      },
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json",
+        "resolved": "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "modified",
+        "size_delta_bytes": 0
+      },
+      {
+        "kind": "local_writes",
+        "declared": "<caller-provided --output-dir>",
+        "status": "skipped",
+        "reason": "templated path; cannot resolve at engine level",
+        "change": "untracked"
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      }
+    ]
+  }
+}
