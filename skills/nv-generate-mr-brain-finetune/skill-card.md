@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval. <br>
+Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. <br>
 
 This skill is for research and development only. <br>
 
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers finetuning the NV-Generate-CTMR MR-brain diffusion model on custom NIfTI training volumes for research and development purposes. <br>
+Developers and researchers finetuning the NV-Generate-CTMR MR-brain diffusion UNet on custom NIfTI brain MRI volumes for medical imaging research. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,17 +19,23 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Generate-CTMR upstream repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [NV-Generate-CTMR Repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Files, Configuration instructions] <br>
-**Output Format:** [Markdown with inline bash code blocks] <br>
+**Output Type(s):** [Files, Shell commands] <br>
+**Output Format:** [JSON result summary and NIfTI checkpoint files] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Produces staged config JSONs, latent embeddings, finetuned checkpoints, optional inference NIfTI volumes, and a workflow_summary.json] <br>
+**Other Properties Related to Output:** [Writes staged configs, latent embeddings, finetuned checkpoints, optional inference images, and logs under the caller-provided output directory] <br>
+
+## Evaluation Agents Used: <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
+
+
 
 ## Evaluation Tasks: <br>
-Evaluated via NVSkills-Eval external profile: 9 Tier-1 static validation checks and 2 Tier-2 deduplication checks. Overall verdict: PASS. <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 2 attempts per task, 50% pass threshold). Overall verdict: PASS. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -39,10 +45,28 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 94% (+11%) | 85% (+48%) |
+| Discoverability | 4 | 90% (-6%) | 67% (+13%) |
+| Effectiveness | 4 | 77% (+8%) | 55% (+43%) |
+| Efficiency | 4 | 67% (-7%) | 49% (+7%) |
 
 ## Skill Version(s): <br>
-6b36b2c (source: git SHA, committed 2026-05-29) <br>
+44792da (source: git SHA, committed 2026-05-30) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
