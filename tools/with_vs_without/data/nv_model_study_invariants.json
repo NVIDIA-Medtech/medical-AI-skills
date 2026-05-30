@@ -1,13 +1,13 @@
 {
-  "audit_status": "incomplete",
+  "audit_status": "complete",
   "audit_summary": {
-    "complete_skills": 0,
-    "issue_count": 243,
-    "outcomes_complete": 0,
-    "outcomes_support_skill_advantage": 0,
-    "prompt_artifacts_complete": 0,
+    "complete_skills": 9,
+    "issue_count": 0,
+    "outcomes_complete": 9,
+    "outcomes_support_skill_advantage": 9,
+    "prompt_artifacts_complete": 9,
     "skills": 9,
-    "study_artifacts_complete": 0
+    "study_artifacts_complete": 9
   },
   "backend_protocols": [
     {
@@ -157,10 +157,10 @@
   "experiment_id": "nv-model-with-vs-without",
   "fingerprints": {
     "documents": "843b53d5d6b9ff1bc5d604f13ee3a3148ba3a50c4173c4f12bbbce63b01c1686",
-    "material": "4e19e50ae581d0c2e8559bd2d99fbb2c6c45bebd638ebf2fff7dd958e1553499",
-    "outcomes": "b3b4601f0fd405369e9c40f172c63524a3de7141a3f77ff6c42b38f7a9a6739a",
+    "material": "85229d5b60903f27af0543628e4b114455d061a13c129d2b245ca7d228ba18db",
+    "outcomes": "44941570c8a8db556a7ee24c9bcc1997e4a0617a35f7dc7362d6eae6d21f3a65",
     "payload": "58ab479d8ccb6e53afaddf5ec5d957acba7bc9dcc691771b2a6e4300e52b2af3",
-    "prompt_artifacts": "9da8ed4d474c6fd5d8569f8925bc767777e7d64d6018d2be79e874946f7676e4",
+    "prompt_artifacts": "f05eb9eec501b1920cbeb9b0ed4485dfc011cb444c3d004ea1c3950198bc95f6",
     "source_fixtures": "00d66fc99b059937f7ecfa7bf274faf514e36d1b73e99f75c411bcd223d9c2f8"
   },
   "generated_by": "tools/with_vs_without/write_nv_model_invariants.py",
@@ -243,16 +243,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "fbab47b0a5da02451c70923e5d017a4e9bdefe826ecdd27dc789d720d13e58e4",
+          "mode_fingerprint": "3f44e2caa33c6f986fc2fb1b4dbe5344b96fedc8584132441036f900a5ecb275",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -263,19 +263,19 @@
             {
               "arm": "with",
               "backend": "nemotron",
-              "mean_score": 5.0,
-              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
-              "pass_count": 3,
+              "mean_score": 3.3333333333333335,
+              "outcome_fingerprint": "865ca045eaa2158db3c13ba6614e3a7608c1a52d2b6f0796671ec0d6b815824e",
+              "pass_count": 2,
               "repeat_count": 3,
               "scores": [
                 5,
                 5,
-                5
+                0
               ],
               "steps_to_pass": [
                 0,
                 0,
-                0
+                Infinity
               ]
             },
             {
@@ -298,27 +298,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "e3ae8706dc53fd08d8e31da7fa6e8c425fd6ca4e4bb4e57f3eacb8bb781b4d9f",
+          "mode_fingerprint": "bdb5f45f7fa225e5e663625f377a53588cc77c7c6556a9db85d5c4236880535d",
           "paired_outcome": {
-            "decisive_pairs": 3,
+            "decisive_pairs": 2,
             "expected_pairs": 3,
             "matched": 3,
-            "one_sided_sign_test_p": 0.125,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "one_sided_sign_test_p": 0.25,
+            "reason": "SKILL.md wins 2/3 matched pair(s); README-only wins 0/3; sign-test p=0.25",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
-            "ties": 0,
-            "with_wins": 3,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 1,
+            "with_wins": 2,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_generate_ct_rflow",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -398,16 +398,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "8cb53b6a0ba08c850b801d5a7043972990f82005178c898fa9d6d23c8b28fe2c",
+          "mode_fingerprint": "6f7b6421320ba3b7fb8edc2e400ee8b0faf88777faaa5228f29bc6dd02db478f",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -453,27 +453,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "665c99adf444f4d6731f79541cb731c5142aaabc1f951ea0f395baecde0610c9",
+          "mode_fingerprint": "215ac886a6ab154b3cf07b5a1c2fa98fe91ece442e87eac9dfaf1d97e322218b",
           "paired_outcome": {
             "decisive_pairs": 3,
             "expected_pairs": 3,
             "matched": 3,
             "one_sided_sign_test_p": 0.125,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 3,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_generate_mr",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -553,16 +553,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "75161b87c65f87a5435609e62eaf5888ca8e560ebfb2222959d2bfb2e038707e",
+          "mode_fingerprint": "a734ad9c1dde6a5785726ec49a2575b439a78dbf886584fe5ee3fc060364f1f7",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -573,18 +573,18 @@
             {
               "arm": "with",
               "backend": "nemotron",
-              "mean_score": 3.3333333333333335,
-              "outcome_fingerprint": "cfb65b0521cd0ba2a286830d3556b0c44aa91262b994290c4f3edb7dac40a1d6",
-              "pass_count": 2,
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
               "repeat_count": 3,
               "scores": [
                 5,
-                0,
+                5,
                 5
               ],
               "steps_to_pass": [
                 0,
-                Infinity,
+                0,
                 0
               ]
             },
@@ -608,27 +608,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "0b5c86b2d02cbe0a9a45c2a4ea1f5825b633eb4849f522020ddfba78fc4db869",
+          "mode_fingerprint": "4d5d72667f9b5051bef2f17e83b80f9438c2851bccf28909a7777b35130cfba4",
           "paired_outcome": {
             "decisive_pairs": 3,
             "expected_pairs": 3,
             "matched": 3,
-            "one_sided_sign_test_p": 0.5,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
-            "with_wins": 2,
-            "without_wins": 1
+            "with_wins": 3,
+            "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_generate_mr_brain",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -708,16 +708,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "41b7f759df83a30e751c233d5348b679e4c6a702033204fc3e11780dae6acc21",
+          "mode_fingerprint": "18de243e216e4964756c4f2e17f9e74f79ac95f1e16ca2af06657a66c04a5c1e",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -728,19 +728,19 @@
             {
               "arm": "with",
               "backend": "nemotron",
-              "mean_score": 3.3333333333333335,
-              "outcome_fingerprint": "865ca045eaa2158db3c13ba6614e3a7608c1a52d2b6f0796671ec0d6b815824e",
-              "pass_count": 2,
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
               "repeat_count": 3,
               "scores": [
                 5,
                 5,
-                0
+                5
               ],
               "steps_to_pass": [
                 0,
                 0,
-                Infinity
+                0
               ]
             },
             {
@@ -763,27 +763,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "db39f8dc64e46ba1644fa837e8bdbda90e360d44ec878271ea71de98c68c7f2b",
+          "mode_fingerprint": "575ad6077b9a7e4c785065d2affc747bab327f3123c526e720285990236749b5",
           "paired_outcome": {
-            "decisive_pairs": 2,
+            "decisive_pairs": 3,
             "expected_pairs": 3,
             "matched": 3,
-            "one_sided_sign_test_p": 0.25,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
-            "ties": 1,
-            "with_wins": 2,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_generate_mr_brain_finetune",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -863,16 +863,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "88a286cf333d7db182829ed43f4c6ea5bdc28a99787fb23b7e59d68d7f9c7d87",
+          "mode_fingerprint": "a36f4b5ff184b62bab7e278de69b9d3b953e2d6a90199ae3d0089c38cb1fdc6c",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -918,27 +918,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "d14bd56b109b0128fc1b9e53e089848c8d233cfe453f0d7eaa6cd35e7fbb13e1",
+          "mode_fingerprint": "3f3ef618b3f1f0d1f178b6f5125286a24edd6b4485844e27b6008cab3799ef80",
           "paired_outcome": {
             "decisive_pairs": 3,
             "expected_pairs": 3,
             "matched": 3,
             "one_sided_sign_test_p": 0.125,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 3,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_generate_vae_finetune",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -1018,16 +1018,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "9d2e3ef21eceaf14a3888002211aa2abf416eaa006ab5bb5aaae1b1bfdb581ae",
+          "mode_fingerprint": "fff083dc08a6cdf733986802c399f874c5b709ba58e553bf30b49427c8f423c5",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -1073,27 +1073,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "12021fe690b35d1ee571374681ec30ae9daf63c0b8b61891da7d30093906225a",
+          "mode_fingerprint": "1a067a8f933455636a3b9315b323518517c25792a866bb88ed61ac55a7878ceb",
           "paired_outcome": {
             "decisive_pairs": 2,
             "expected_pairs": 3,
             "matched": 3,
             "one_sided_sign_test_p": 0.25,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "reason": "SKILL.md wins 2/3 matched pair(s); README-only wins 0/3; sign-test p=0.25",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 1,
             "with_wins": 2,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_reason_cxr",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -1173,16 +1173,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "269d5bcd8395bff0f63194bfdb95a63fc75b1920f17a5cd0994f51bee96109b7",
+          "mode_fingerprint": "6542db7ff3f4286612dff3fda3eb13a7bc242ff9fa9718f8ba54f999cacdcdcb",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -1228,27 +1228,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "43bff6bcaca6b870bf572d981d8cb6adf5c1074c636fcf121e6056df0b9aff66",
+          "mode_fingerprint": "511ec71050209fbe14ced412e0ac643e72a2c0eaf778219117bffeb271e4d17a",
           "paired_outcome": {
             "decisive_pairs": 3,
             "expected_pairs": 3,
             "matched": 3,
             "one_sided_sign_test_p": 0.125,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 3,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_segment_ct",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -1257,19 +1257,19 @@
             {
               "arm": "with",
               "backend": "gpt55",
-              "mean_score": 5.0,
-              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
-              "pass_count": 3,
+              "mean_score": 4.666666666666667,
+              "outcome_fingerprint": "88db4b526edd04d10ad6c64e7e595908c613115d0625d8ff04132268a7d04f3d",
+              "pass_count": 2,
               "repeat_count": 3,
               "scores": [
                 5,
                 5,
-                5
+                4
               ],
               "steps_to_pass": [
                 0,
                 0,
-                0
+                Infinity
               ]
             },
             {
@@ -1293,18 +1293,18 @@
             {
               "arm": "with",
               "backend": "opus",
-              "mean_score": 5.0,
-              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
-              "pass_count": 3,
+              "mean_score": 4.666666666666667,
+              "outcome_fingerprint": "f39aa3892a8fc8f1b602ba11d820fa25f5938a8be9c5580114dca42ed14a1d89",
+              "pass_count": 2,
               "repeat_count": 3,
               "scores": [
                 5,
-                5,
+                4,
                 5
               ],
               "steps_to_pass": [
                 0,
-                0,
+                Infinity,
                 0
               ]
             },
@@ -1328,18 +1328,18 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "00008da622f335b6f6523846640cfd171f770f08b25f29d9b5065f9fd192571c",
+          "mode_fingerprint": "f04918cc7c84a04c54d8eacf6ff32106561c866b1e6e898131a1c234d59f22bb",
           "paired_outcome": {
-            "decisive_pairs": 6,
+            "decisive_pairs": 4,
             "expected_pairs": 6,
             "matched": 6,
-            "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "one_sided_sign_test_p": 0.0625,
+            "reason": "SKILL.md wins 4/6 matched pair(s); README-only wins 0/6; sign-test p=0.0625",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
-            "ties": 0,
-            "with_wins": 6,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 2,
+            "with_wins": 4,
             "without_wins": 0
           }
         },
@@ -1348,18 +1348,18 @@
             {
               "arm": "with",
               "backend": "nemotron",
-              "mean_score": 5.0,
-              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
-              "pass_count": 3,
+              "mean_score": 4.666666666666667,
+              "outcome_fingerprint": "f39aa3892a8fc8f1b602ba11d820fa25f5938a8be9c5580114dca42ed14a1d89",
+              "pass_count": 2,
               "repeat_count": 3,
               "scores": [
                 5,
-                5,
+                4,
                 5
               ],
               "steps_to_pass": [
                 0,
-                0,
+                Infinity,
                 0
               ]
             },
@@ -1383,27 +1383,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "292cf3dc7e3778d93c49e6663a871cb4f2979c296760e6bdd9215117b4695a70",
+          "mode_fingerprint": "432b19ecf24c26644e5357c41a22ff9e971491a9c3aebad0dd83f36aea589258",
           "paired_outcome": {
-            "decisive_pairs": 3,
+            "decisive_pairs": 2,
             "expected_pairs": 3,
             "matched": 3,
-            "one_sided_sign_test_p": 0.125,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "one_sided_sign_test_p": 0.25,
+            "reason": "SKILL.md wins 2/3 matched pair(s); README-only wins 0/3; sign-test p=0.25",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
-            "ties": 0,
-            "with_wins": 3,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 1,
+            "with_wins": 2,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_segment_ct_finetune",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     },
     {
       "modes": [
@@ -1483,16 +1483,16 @@
             }
           ],
           "mode": "codex-opus",
-          "mode_fingerprint": "b060eae45c279d10ee466d8ab05e9bbc6e256c59441e1d39af2c9aaac54fd205",
+          "mode_fingerprint": "6bb6a283c891db4fbf9baa1f84901a57b4db638bb015f0467c3d3f57e945b31d",
           "paired_outcome": {
             "decisive_pairs": 6,
             "expected_pairs": 6,
             "matched": 6,
             "one_sided_sign_test_p": 0.015625,
-            "reason": "study artifact audit for codex-opus has 12 issue(s)",
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 6,
             "without_wins": 0
@@ -1538,27 +1538,27 @@
             }
           ],
           "mode": "nemotron-correction",
-          "mode_fingerprint": "0d0aa7dfd4c61cfbc4adbfcf51136a283656e06605a44de2cfc57ba634f17d71",
+          "mode_fingerprint": "b8323c9b1392b85a0011f7b7617e274d58c7e8a35c37bca833f7c2db835fd41f",
           "paired_outcome": {
             "decisive_pairs": 3,
             "expected_pairs": 3,
             "matched": 3,
             "one_sided_sign_test_p": 0.125,
-            "reason": "study artifact audit for nemotron-correction has 6 issue(s)",
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
             "signal": "SKILL.md paired advantage",
-            "status": "incomplete",
-            "supports_skill_advantage": false,
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
             "ties": 0,
             "with_wins": 3,
             "without_wins": 0
           }
         }
       ],
-      "outcome_status": "incomplete",
-      "prompt_artifact_status": "incomplete",
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
       "skill": "nv_segment_ctmr",
-      "status": "incomplete",
-      "study_artifact_status": "incomplete"
+      "status": "complete",
+      "study_artifact_status": "complete"
     }
   ],
   "payload_fingerprint": "58ab479d8ccb6e53afaddf5ec5d957acba7bc9dcc691771b2a6e4300e52b2af3",
@@ -1567,63 +1567,63 @@
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_ct_rflow_prompts.json",
       "record_count": 18,
-      "sha256": "d91b4af1b9d05f3d3c810b2f3b4b1154b9e9fef677fe6422e59b04cfe573a59c",
+      "sha256": "cef0aebfd2868e8018686e14c8855561a188c2d55370935b6d96d0be14f4c9b3",
       "skill": "nv_generate_ct_rflow"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_prompts.json",
       "record_count": 18,
-      "sha256": "356d82626f2df651d85474cceae0bb6ce99d2b120c3e12fe309ba15f70d687c2",
+      "sha256": "f3421f9548b1862dcfc9cde1d0069aba8a7cd3b3d3e30d99d5ce8b5d88421f4d",
       "skill": "nv_generate_mr"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_prompts.json",
       "record_count": 18,
-      "sha256": "851f4e76743da4a9095da857900039e19e6900e8d20cfe76b2c7dc6217df45af",
+      "sha256": "27e248f56fd4c970f26cd88f154b0c5df5ed6790b84a745a9e2f14480aa0e1d6",
       "skill": "nv_generate_mr_brain"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_finetune_prompts.json",
       "record_count": 18,
-      "sha256": "ee6a6a42d13b2cd7e28eba5e59504425eb736723bc3b06fe7dca1bd857556196",
+      "sha256": "57183db8da43e2c11279e7afe8433041ff327cbace3db0c3d14bf3e132cda7fd",
       "skill": "nv_generate_mr_brain_finetune"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_vae_finetune_prompts.json",
       "record_count": 18,
-      "sha256": "ab9d61242de74b05e92e0bc73e06e5f69258a43e6bf2a5cfabc7c5476d81c6e7",
+      "sha256": "9c907873eeda89ebc9408b7cfbd60d8359b18d98b24ec707c818ae728e4f03ac",
       "skill": "nv_generate_vae_finetune"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_reason_cxr_prompts.json",
       "record_count": 18,
-      "sha256": "3128c0c4a951e9fb440695ffa9615b517443c5e7b452e1f5d3743eca1dc1d0f8",
+      "sha256": "18e5b05b3b6a269a76220ac246a3bac564a3c0e630b35318b52cacb30e1c7b96",
       "skill": "nv_reason_cxr"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_segment_ct_prompts.json",
       "record_count": 18,
-      "sha256": "f31038bd20b5d7cbe9ab3f986fec0774c618d4e3ae0733420b0b61006d7c22e0",
+      "sha256": "09988b17705438d5953cfab5e36419241e2bf3c51e39a51043306c87e3f02c20",
       "skill": "nv_segment_ct"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_segment_ct_finetune_prompts.json",
       "record_count": 18,
-      "sha256": "ddffda689f067ae5291c7e853196c5c5be84a93e095921d53cf68b65f701b59d",
+      "sha256": "53c8efc052da372fe5358bdf34d7f8ee21751cf1a5092a0b2b1a7496027482b8",
       "skill": "nv_segment_ct_finetune"
     },
     {
       "exists": true,
       "path": "tools/nat_audit/data/eval_nv_model_studies_nv_segment_ctmr_prompts.json",
       "record_count": 18,
-      "sha256": "1db3b414c8d806250ee8666c211c47607046769da55eb74bf0493afb3b2eb894",
+      "sha256": "da7ea4feaebfb8c9f6b915bd7f6400c359bc67b6ea8f233201b5bef9ebe4e842",
       "skill": "nv_segment_ctmr"
     }
   ],
