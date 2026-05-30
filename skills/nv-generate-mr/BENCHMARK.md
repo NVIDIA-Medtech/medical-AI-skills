@@ -7,14 +7,18 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-generate-mr`
-- Evaluation date: 2026-05-28
+- Evaluation date: 2026-05-30
 - NVSkills-Eval profile: `external`
+- Environment: `local`
+- Dataset: 2 evaluation tasks
+- Attempts per task: 2
+- Pass threshold: 50%
 - Overall verdict: PASS
-- Tier 3 live agent evaluation: not available in this report
 
 ## Agents Used
 
-- Tier 3 agent details were not available in this report.
+- `claude-code`
+- `codex`
 
 ## Metrics Used
 
@@ -28,27 +32,47 @@ Reported benchmark dimensions:
 
 Underlying evaluation signals used in this run:
 
-- No Tier 3 evaluation signal details were available in this report.
+- `security` (Security): checks for unsafe operations, secret leakage, and unauthorized access.
+- `skill_execution` (Skill Execution): verifies that the agent loaded the expected skill and workflow.
+- `skill_efficiency` (Efficiency): checks routing quality, decoy avoidance, and redundant tool usage.
+- `accuracy` (Accuracy): grades final-answer correctness against the reference answer.
+- `goal_accuracy` (Goal Accuracy): checks whether the overall user task completed successfully.
+- `behavior_check` (Behavior Check): verifies expected behavior steps, including safety expectations.
+- `token_efficiency` (Token Efficiency): compares token usage with and without the skill.
 
 ## Test Tasks
 
-Tier 3 evaluation task details were not available in this report.
+The benchmark dataset contained 2 evaluation tasks:
+
+- Positive tasks: 1 tasks where the skill was expected to activate.
+- Negative tasks: 1 tasks where no skill was expected.
+- Unlabeled tasks: 0 tasks where positive/negative intent could not be inferred.
+
+Task composition is derived from the evaluation dataset when possible. Entries with `expected_skill` set are treated as positive skill-activation cases, while entries with `expected_skill: null` are treated as negative activation cases.
 
 ## Results
 
-Tier 3 dimension rollup was not available in this report.
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 100% (+13%) | 85% (+32%) |
+| Discoverability | 4 | 100% (+5%) | 81% (+5%) |
+| Effectiveness | 4 | 100% (+31%) | 69% (+46%) |
+| Efficiency | 4 | 93% (+16%) | 68% (+4%) |
+
+Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 9 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 11 total findings.
 
 Top findings:
 
 - MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:14`)
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-generate-mr/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'BENCHMARK.md' in skill root (`skills/nv-generate-mr/BENCHMARK.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-mr/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-mr/skill_manifest.yaml`)
+- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill uses Bash as an allowed tool and instructs agents to run shell commands including pip installs, git clones, en (`SKILL.md:1`)
+- MEDIUM SECURITY/Unknown (SQP-2): The manifest lists HuggingFace and GitHub as network endpoints and the external_assets section describes downloading up  (`skill_manifest.yaml:93`)
+- MEDIUM SECURITY/Unknown (SQP-2): The manifest acknowledges that `modifies_active_python_environment: true` and lists numerous pip packages (torch>=2.1, m (`skill_manifest.yaml:102`)
 
 ## Tier 2: Deduplication Summary
 

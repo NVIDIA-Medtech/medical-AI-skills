@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers generating synthetic body MRI volumes for research, development, and engineering validation using NVIDIA's NV-Generate-CTMR rflow-mr workflow. <br>
+Developers and engineers generating synthetic body MRI volumes for research and development workflows using the NV-Generate-CTMR rflow-mr image-only synthesis pipeline. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,16 +19,26 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [FOV and Downloads](references/fov-and-downloads.md) <br>
-- [NV-Generate-CTMR MR Image Generation](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation) <br>
-- [NV-Generate-MR Model (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
+- [NV-Generate-CTMR GitHub Repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [NV-Generate-CTMR MR Image Generation Guide](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation) <br>
+- [NV-Generate-MR Model Weights (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
+- [FOV and Downloads Reference](references/fov-and-downloads.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Files, JSON] <br>
-**Output Format:** [NIfTI volumes and structured JSON] <br>
+**Output Type(s):** [Shell commands, JSON] <br>
+**Output Format:** [JSON evidence pack with NIfTI volume paths] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Validation gates check shape, spacing, finite/nonconstant voxels, and model inventory] <br>
+
+## Evaluation Agents Used: <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
+
+
+
+## Evaluation Tasks: <br>
+Evaluated against 2 tasks (1 positive skill-activation, 1 negative activation) with 2 attempts per task via NVSkills-Eval. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -38,7 +48,25 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | Claude Code | Codex |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 100% (+13%) | 85% (+32%) |
+| Discoverability | 4 | 100% (+5%) | 81% (+5%) |
+| Effectiveness | 4 | 100% (+31%) | 69% (+46%) |
+| Efficiency | 4 | 93% (+16%) | 68% (+4%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
