@@ -1,0 +1,84 @@
+id: medagent.verifiers.nv_reason_cxr_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: nv_reason_cxr_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for nv_reason_cxr evidence packs. Audits
+    source-pack success, fixture binding, generated/read image artifact
+    metadata and hash, NV-Reason-CXR runtime identity, output text shape,
+    limitation disclosure, and absence of conservative forbidden overreach
+    phrases.
+  scope: development
+  not_for:
+    - clinical interpretation
+    - regulatory submission
+    - autonomous diagnosis
+    - treatment decisions
+    - patient-facing report generation
+
+inputs:
+  - name: nv_reason_cxr_evidence_pack
+    type: directory_path
+    description: >
+      Directory containing an evidence pack produced by skills/nv-reason-cxr.
+      The verifier reads output.json, validation_summary.json, manifest.json,
+      the recorded fixture, and the recorded image artifact.
+
+outputs:
+  - name: nv_reason_cxr_quality_report
+    type: json
+    schema: validators/output_schema.json
+
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional: []
+
+limitations:
+  - >
+    This verifier checks engineering invariants over the evidence pack. It
+    does not validate chest X-ray interpretation, clinical correctness, model
+    quality, report completeness, or medical actionability.
+  - >
+    Forbidden-phrase detection is regex-based and intentionally conservative.
+    Passing it means no known overreach phrase was found, not that generated
+    prose is clinically safe.
+  - >
+    Mock-mode packs prove wrapper, fixture, image, and gate wiring only. They
+    do not prove live NV-Reason-CXR-3B model behavior.
+
+validation:
+  expected_runtime_seconds:
+    max: 30.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.nv_reason_cxr_quality_v1}
+    - {path: target.skill_id, eq: medagent.nv_reason_cxr}
+    - {path: target.source_overall_status, eq: passed}
+    - {path: cxr_quality.acceptable, eq: true}
+    - {path: cxr_quality.mock_mode, eq: true}
+    - {path: cxr_quality.forbidden_finding_count, eq: 0}
+    - {path: cxr_quality.case_id, eq: synthetic-cxr-smoke}
+    - {path: cxr_quality.image_format, eq: png}
+    - {path: cxr_quality.image_sha256, matches: "^[0-9a-f]{64}$"}
+    - {path: cxr_quality.model, eq: nvidia/NV-Reason-CXR-3B}
+    - {path: overall, eq: pass}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

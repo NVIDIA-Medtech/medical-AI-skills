@@ -1,0 +1,35 @@
+id: medagent.fixtures.well_formed_target_skill
+version: 0.1.0
+license: Apache-2.0
+intended_use:
+  summary: Minimal positive fixture for skill_completeness_v1 — not a real skill.
+  scope: development
+  not_for: [clinical, regulatory, autonomous decisions]
+inputs:
+  - name: stub
+    type: file_path
+outputs:
+  - name: stub_result
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/stub.py
+  side_effects:
+    pip_packages: []
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+limitations:
+  - This skill does not actually do anything; it is a fixture for the
+    skill_completeness_v1 verifier.
+validation:
+  expected_runtime_seconds:
+    max: 1.0
+  sanity_checks:
+    - path: status
+      eq: ok

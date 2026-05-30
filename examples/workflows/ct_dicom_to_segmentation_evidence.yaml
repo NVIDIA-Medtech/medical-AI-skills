@@ -1,0 +1,25 @@
+workflow_id: ct_dicom_to_segmentation_evidence
+description: |
+  Flagship Workflow 1: CT DICOM to segmentation evidence.
+
+  Path:
+    DICOM series
+      -> dicom_series_to_volume (metadata + geometry preflight, DICOM-to-NIfTI)
+      -> nv_segment_ct (trusted)
+      -> ct_segmentation_quality_v1
+      -> workflow / trust summary
+
+  Halts before segmentation when convert fails (e.g. LR-flipped orientation).
+  Not the primary skill-user path; see skills/*/SKILL.md for direct invocation.
+
+steps:
+  - id: convert
+    skill: skills/dicom-series-to-volume
+    inputs:
+      fixture: ${input}
+
+  - id: segment
+    skill: skills/nv-segment-ct
+    trusted: true
+    inputs:
+      fixture: ${convert.output.path}

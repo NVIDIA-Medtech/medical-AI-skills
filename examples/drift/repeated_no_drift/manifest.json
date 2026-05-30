@@ -1,0 +1,40 @@
+{
+  "run_id": "9879f47bfb1a",
+  "skill_id": "medagent.nv_segment_ct",
+  "skill_version": "0.1.0",
+  "skill_dir": "<repo>/skills/nv-segment-ct",
+  "environment": {
+    "fingerprint": "d92debdb9b28db6a",
+    "pip_freeze_lines": 3,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "bundle/.cache/huggingface/.gitignore",
+    "bundle/.cache/huggingface/download/vista3d_pretrained_model/model.safetensors.lock",
+    "bundle/.cache/huggingface/download/vista3d_pretrained_model/model.safetensors.metadata",
+    "bundle/inference.json",
+    "bundle/label_dict.json",
+    "bundle/metadata.json",
+    "bundle/vista3d_pretrained_model/model.safetensors",
+    "fixtures/spleen_03.nii.gz",
+    "fixtures/spleen_03_seg.nii.gz",
+    "scripts/segment_ct.py",
+    "skill_manifest.yaml",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "<repo>/skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+    "sha256": "18fcb3df7da91366440dc4e14a9cc814024fce4df73db999b1d32e659ad127f9",
+    "size_bytes": 11352181,
+    "is_dir": false
+  },
+  "command": [
+    "<env>/bin/python3",
+    "<repo>/skills/nv-segment-ct/scripts/segment_ct.py",
+    "<repo>/skills/nv-segment-ct/fixtures/spleen_03.nii.gz"
+  ],
+  "eval_engine_script": "<repo>/eval_engine/run.py"
+}

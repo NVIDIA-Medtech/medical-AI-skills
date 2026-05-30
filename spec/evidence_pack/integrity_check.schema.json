@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/integrity_check.schema.json",
+  "title": "Evidence pack integrity_check.json",
+  "description": "Static integrity scan output for the skill directory referenced by this pack.",
+  "type": "object",
+  "required": ["status", "findings", "n_findings"],
+  "properties": {
+    "status": { "type": "string", "enum": ["clean", "minor", "flagged", "skipped", "delegated"] },
+    "findings": { "type": "array", "items": { "type": "object" } },
+    "n_findings": { "type": "integer", "minimum": 0 }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://medical-ai-skills.local/spec/evidence_pack/pack-descriptor",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack.schema.json",
+  "title": "Evidence pack directory contract",
+  "description": "Pack-level descriptor. NOT a JSON Schema for a single document; it describes which files must exist in an evidence pack directory and which JSON Schema (if any) each file conforms to. Read by eval_engine.validate_pack.",
+  "pack_format_version": "1.0.0",
+  "supported_pack_format_versions": ["1.0.0"],
+  "files": {
+    "manifest.json": {
+      "required": true,
+      "type": "json",
+      "schema": "evidence_pack/manifest.schema.json",
+      "purpose": "Run identity, environment fingerprint, command, fixture or benchmark-manifest hash, file list."
+    },
+    "validation_summary.json": {
+      "required": true,
+      "type": "json",
+      "schema": "evidence_pack/validation_summary.schema.json",
+      "purpose": "Per-gate status roll-up and overall verdict."
+    },
+    "runtime_profile.json": {
+      "required": true,
+      "type": "json",
+      "schema": "evidence_pack/runtime_profile.schema.json",
+      "purpose": "Wall-clock timing and host environment snapshot."
+    },
+    "cost_profile.json": {
+      "required": true,
+      "type": "json",
+      "schema": "evidence_pack/cost_profile.schema.json",
+      "purpose": "Measured + self-reported cost and envelope evaluation."
+    },
+    "integrity_check.json": {
+      "required": true,
+      "type": "json",
+      "schema": "evidence_pack/integrity_check.schema.json",
+      "purpose": "Static integrity findings for the skill directory."
+    },
+    "agent_run_trace.jsonl": {
+      "required": true,
+      "type": "jsonl",
+      "schema": "evidence_pack/agent_run_trace.schema.json",
+      "purpose": "Process and optional LLM trace; one JSON record per line."
+    },
+    "environment.lock": {
+      "required": true,
+      "type": "text",
+      "purpose": "pip-freeze snapshot for the runner's Python environment."
+    },
+    "workflow_run_record.md": {
+      "required": true,
+      "type": "markdown",
+      "purpose": "Human-readable run summary."
+    },
+    "replay.sh": {
+      "required": true,
+      "type": "shell",
+      "purpose": "Best-effort replay script."
+    },
+    "output.json": {
+      "required": false,
+      "type": "json",
+      "purpose": "Parsed skill output. Absent when the skill failed before producing output."
+    },
+    "provenance.json": {
+      "required": false,
+      "type": "json",
+      "schema": "evidence_pack/provenance.schema.json",
+      "purpose": "Host GPU/CUDA identity and before/after deltas for declared side-effect paths. Written by full-run packs; absent on preflight-only packs."
+    },
+    "llm_interaction.json": {
+      "required": false,
+      "type": "json",
+      "purpose": "LLM-mediated packs only. Backend, model, prompts, and token accounting."
+    },
+    "dataset_run.jsonl": {
+      "required": false,
+      "type": "jsonl",
+      "purpose": "Benchmark packs only. One record per case."
+    },
+    "skill_run/": {
+      "required": false,
+      "type": "subpack",
+      "purpose": "LLM-mediated packs may nest a deterministic skill run pack here."
+    },
+    "drift_report.md": {
+      "required": false,
+      "type": "markdown",
+      "purpose": "Optional drift comparison written by eval_engine.diff_runs."
+    },
+    "trust_summary.json": {
+      "required": false,
+      "type": "json",
+      "schema": "evidence_pack/trust_summary.schema.json",
+      "purpose": "Trusted-run summary (skill pack + paired-verifier packs). Written by the trusted-run path; not present in unverified packs."
+    },
+    "arms/with_skill.json": {
+      "required": false,
+      "type": "json",
+      "purpose": "Paired-eval with-skill arm response, parsed payload, and assertion results."
+    },
+    "arms/without_skill.json": {
+      "required": false,
+      "type": "json",
+      "purpose": "Paired-eval without-skill arm response, parsed payload, and assertion results."
+    },
+    "paired_eval.md": {
+      "required": false,
+      "type": "markdown",
+      "purpose": "Human-readable paired with-skill / without-skill comparison report."
+    }
+  },
+  "versioning_policy": {
+    "additive_minor": "New optional files, new optional fields, new gate values.",
+    "breaking_major": "Removing/renaming files, removing required fields, changing the meaning of an existing status value.",
+    "missing_version": "Packs without pack_format_version are pre-1.0 and may not satisfy this descriptor."
+  }
+}

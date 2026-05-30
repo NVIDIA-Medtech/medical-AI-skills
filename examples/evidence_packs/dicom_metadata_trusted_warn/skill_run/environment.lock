@@ -1,0 +1,4 @@
+# Compact example environment lock.
+# Full pip freeze omitted from git; regenerate the pack for a complete local lock.
+# Packages preserved from validation.env_pin results:
+pydicom==3.0.2

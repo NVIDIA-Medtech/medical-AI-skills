@@ -1,0 +1,20 @@
+workflow_id: orientation_safe_segmentation
+description: |
+  Two-step pipeline that turns a DICOM series into a NIfTI volume and then
+  runs VISTA3D segmentation on it. The orientation gate on step 1 is what
+  makes this "safe": if the DICOM headers declare an unexpected
+  orientation (e.g. an LR-flipped ImageOrientationPatient) the workflow
+  halts before any compute is spent in VISTA3D and before any
+  segmentation mask gets stamped with a misleading patient-side label.
+
+steps:
+  - id: convert
+    skill: skills/dicom-series-to-volume
+    inputs:
+      fixture: ${input}
+
+  - id: segment
+    skill: skills/nv-segment-ct
+    trusted: true
+    inputs:
+      fixture: ${convert.output.path}

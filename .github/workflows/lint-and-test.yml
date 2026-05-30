@@ -1,0 +1,66 @@
+name: lint-and-test
+
+on:
+  pull_request:
+  push:
+    # `dev` is the review window on NVIDIA-Medtech/medical-AI-skills before
+    # promotion to `main`; we want the no-GPU floor to run there too.
+    branches: [main, dev]
+  workflow_dispatch:
+
+# This is the no-GPU floor. It runs the structural lints and the
+# pytest subset that does not require CUDA, Docker, or NVIDIA model
+# bundles. Heavier verification (segmentation runs, HoloHub apps,
+# benchmark matrices on MSD09 data) is intentionally not in CI: the
+# Medical AI Skills enforces it locally via `make verify` and `make
+# verify-skills`, and the evidence-pack drift report catches
+# regressions when those local runs are re-recorded.
+#
+# Cost target: under 3 minutes on the GitHub-hosted ubuntu-latest
+# runner. Anything that would push past that belongs in a
+# self-hosted GPU runner job, not here.
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install no-GPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Pin to the smallest set the no-GPU suite actually imports.
+          # The full skill stack (monai, torch, holoscan, ...) is
+          # deliberately not installed here; tests that import those
+          # are guarded by importorskip or behave as integration tests
+          # invoked only via `make verify`.
+          pip install \
+            "pyyaml>=6.0" \
+            "jsonschema>=4.21" \
+            "numpy>=1.23" \
+            "scipy>=1.10" \
+            "nibabel>=4.0" \
+            "pydicom>=2.4,<5" \
+            "typer>=0.9" \
+            "pytest>=8.0"
+
+      - name: Lint repository
+        run: make lint
+
+      - name: Run no-GPU pytest suite
+        env:
+          # The harness Step-0 cache check expects datasets under
+          # .workbench_data/; CI does not stage these, so any test that
+          # touches them must skip. Skills whose wrappers need torch/
+          # monai/holoscan defer those imports inside functions so test
+          # collection succeeds under the minimal dep set.
+          MOCK_LLM: "1"
+        run: make test

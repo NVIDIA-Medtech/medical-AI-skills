@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/scenario.schema.json",
+  "title": "Paired skill validation scenario",
+  "description": "Runnable with-skill / without-skill paired comparison scenario consumed by tools.validate_skill.run.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "skill",
+    "task",
+    "fixture",
+    "assertions",
+    "with_skill_docs",
+    "without_skill_docs",
+    "backend"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "skill": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "task": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fixture": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {"$ref": "#/$defs/json_path_value_assertion"},
+          {"$ref": "#/$defs/json_path_contains_assertion"},
+          {"$ref": "#/$defs/text_contains_assertion"},
+          {"$ref": "#/$defs/text_not_contains_assertion"}
+        ]
+      }
+    },
+    "with_skill_docs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "without_skill_docs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "backend": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "const": "mock"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "literal": {
+      "type": ["string", "number", "integer", "boolean", "null"]
+    },
+    "assertion_base": {
+      "type": "object",
+      "required": ["id", "kind", "params"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "kind": {"type": "string"},
+        "params": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "json_path_value_assertion": {
+      "allOf": [
+        {"$ref": "#/$defs/assertion_base"},
+        {
+          "properties": {
+            "kind": {"const": "json_path_value"},
+            "params": {
+              "type": "object",
+              "required": ["path", "expected"],
+              "properties": {
+                "path": {"type": "string", "minLength": 1},
+                "expected": {"$ref": "#/$defs/literal"}
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "json_path_contains_assertion": {
+      "allOf": [
+        {"$ref": "#/$defs/assertion_base"},
+        {
+          "properties": {
+            "kind": {"const": "json_path_contains"},
+            "params": {
+              "type": "object",
+              "required": ["path", "expected"],
+              "properties": {
+                "path": {"type": "string", "minLength": 1},
+                "expected": {"$ref": "#/$defs/literal"}
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "text_contains_assertion": {
+      "allOf": [
+        {"$ref": "#/$defs/assertion_base"},
+        {
+          "properties": {
+            "kind": {"const": "text_contains"},
+            "params": {
+              "type": "object",
+              "required": ["substring"],
+              "properties": {
+                "substring": {"type": "string", "minLength": 1}
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "text_not_contains_assertion": {
+      "allOf": [
+        {"$ref": "#/$defs/assertion_base"},
+        {
+          "properties": {
+            "kind": {"const": "text_not_contains"},
+            "params": {
+              "type": "object",
+              "required": ["substring"],
+              "properties": {
+                "substring": {"type": "string", "minLength": 1}
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}

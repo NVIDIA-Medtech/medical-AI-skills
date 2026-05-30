@@ -1,0 +1,7 @@
+# Compact example environment lock.
+# Full pip freeze omitted from git; regenerate the pack for a complete local lock.
+# Packages preserved from validation.env_pin results:
+huggingface_hub==0.36.2
+monai==1.4.0
+torch==2.12.0
+transformers==4.57.6

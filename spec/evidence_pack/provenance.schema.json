@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/provenance.schema.json",
+  "title": "Evidence pack provenance.json",
+  "description": "Host-level provenance: GPU/CUDA identity from nvidia-smi+nvcc and before/after deltas for declared side-effect paths. Container and network observation are placeholders until per-skill instrumentation lands.",
+  "type": "object",
+  "required": ["captured_at", "gpu", "container", "network", "side_effects"],
+  "properties": {
+    "captured_at": { "type": "string", "format": "date-time" },
+    "gpu": {
+      "type": "object",
+      "required": ["available", "have_nvidia_smi", "have_nvcc", "gpus"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "have_nvidia_smi": { "type": "boolean" },
+        "have_nvcc": { "type": "boolean" },
+        "gpus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "index": {},
+              "name": { "type": "string" },
+              "uuid": { "type": "string" },
+              "driver_version": { "type": "string" },
+              "compute_cap": { "type": "string" },
+              "memory_total_mb": {},
+              "memory_free_mb": {},
+              "memory_used_mb": {},
+              "mig_mode_current": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "nvcc_release": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "container": {
+      "type": "object",
+      "required": ["requires_docker"],
+      "properties": {
+        "requires_docker": { "type": "boolean" },
+        "image_digest_observed": { "type": ["string", "null"] },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "network": {
+      "type": "object",
+      "required": ["declared_endpoints"],
+      "properties": {
+        "declared_endpoints": { "type": "array", "items": { "type": "string" } },
+        "observed_endpoints": { "type": ["array", "null"], "items": { "type": "string" } },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "side_effects": {
+      "type": "object",
+      "required": ["before", "after", "findings"],
+      "properties": {
+        "before": { "type": "array", "items": { "type": "object" } },
+        "after": { "type": "array", "items": { "type": "object" } },
+        "findings": { "type": "array", "items": { "type": "object" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

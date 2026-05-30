@@ -1,0 +1,3 @@
+# Compact example environment lock.
+# Full pip freeze omitted from git; regenerate the pack for a complete local lock.
+# No validation.env_pin packages were evaluated for this example pack.

@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/agent_run_trace.schema.json",
+  "title": "Evidence pack agent_run_trace.jsonl record",
+  "description": "Schema for one line of agent_run_trace.jsonl. New records use event_type and timestamp; validate-pack --allow-legacy accepts historical kind/ts aliases by normalizing them before validation.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "timestamp"
+  ],
+  "properties": {
+    "trace_schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actor": {
+      "type": "string"
+    },
+    "tool": {
+      "type": "string"
+    },
+    "command": {
+      "oneOf": [
+        {"type": "string"},
+        {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      ]
+    },
+    "cwd": {
+      "type": "string"
+    },
+    "inputs": {},
+    "outputs": {},
+    "status": {
+      "type": [
+        "string",
+        "integer",
+        "boolean",
+        "null"
+      ]
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "files_read": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "files_written": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "approval_required": {
+      "type": "boolean"
+    },
+    "approval_result": {
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
+    },
+    "model": {
+      "type": "string"
+    },
+    "prompt_ref": {
+      "type": [
+        "string",
+        "object",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "null"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "description": "Legacy alias for event_type; still emitted for older readers."
+    },
+    "ts": {
+      "type": "string",
+      "description": "Legacy alias for timestamp; still emitted for older readers."
+    },
+    "args": {
+      "description": "Legacy alias for inputs."
+    },
+    "elapsed_s": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias for duration_seconds."
+    },
+    "elapsed_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Legacy alias for duration_seconds."
+    },
+    "exit_code": {
+      "type": "integer"
+    },
+    "stdout_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stderr_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "backend": {
+      "type": "string"
+    },
+    "base_url": {
+      "type": "string"
+    },
+    "usage": {
+      "type": "object"
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

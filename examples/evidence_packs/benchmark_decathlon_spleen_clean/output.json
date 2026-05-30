@@ -1,0 +1,49 @@
+{
+  "skill": {
+    "id": "medagent.nv_segment_ct",
+    "version": "0.2.0",
+    "entrypoint": "scripts/run_vista3d.py"
+  },
+  "benchmark": {
+    "manifest_path": ".workbench_data/datasets/decathlon_spleen.benchmark.yaml",
+    "source": "medical_decathlon",
+    "dataset": "Task09_Spleen",
+    "license": "CC-BY-SA 4.0",
+    "inclusion": {
+      "modality": "CT",
+      "body_part": "abdomen"
+    },
+    "case_count_declared": 41,
+    "case_count_run": 41
+  },
+  "output": {
+    "case_count": 41,
+    "pass_count": 41,
+    "fail_count": 0,
+    "coverage_pct": 100.0,
+    "dice": {
+      "count": 41,
+      "mean": 0.957753869075467,
+      "median": 0.9608419814293517,
+      "p10": 0.9422318784714313,
+      "min": 0.9159687588218688,
+      "max": 0.9722633891472897
+    },
+    "iou": {
+      "count": 41,
+      "mean": 0.9191507239923281,
+      "median": 0.9246351028989609,
+      "p10": 0.890773563027994,
+      "min": 0.8449652777777777,
+      "max": 0.9460238925813934
+    },
+    "hd": {
+      "count": 41,
+      "mean": 5.70262753187017,
+      "median": 5.0,
+      "p10": 3.9269145096143316,
+      "min": 3.2362229509135885,
+      "max": 12.155402676194772
+    }
+  }
+}

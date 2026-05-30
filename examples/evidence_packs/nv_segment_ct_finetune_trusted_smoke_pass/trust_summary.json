@@ -1,0 +1,74 @@
+{
+  "pack_format_version": "1.0.0",
+  "trust_format_version": "1.2.0",
+  "run_id": "367aa9ba00dd",
+  "produced_at": "2026-05-26T04:18:29.279091+00:00",
+  "skill_id": "medagent.nv_segment_ct_finetune",
+  "skill_version": "0.4.1",
+  "skill_pack": "skill_run",
+  "skill_overall": "passed",
+  "skill_exit_code": 0,
+  "verifiers": [
+    {
+      "id": "medagent.verifiers.ct_segmentation_finetune_quality_v1",
+      "declared_status": "implemented",
+      "pack": "verifiers/ct_segmentation_finetune_quality_v1",
+      "exit_code": 0,
+      "overall": "passed",
+      "checks": [],
+      "hashes": {
+        "manifest.json": "b6274c4805acaa27994e4761e6998eb251a47ebbbb4babaa720e3dd4c2a287cd",
+        "validation_summary.json": "5d2b3266dd4ae61f0d2db2a6c9f9aef36ed1f9f166d3e5171911d1a1f1445175",
+        "output.json": "80e80d2294e89312c0f5e4219b9ef925130bafda2da9d6b9e5c81bfec1c8d7c0",
+        "provenance.json": "c04b4e241bcdddb7d16c480b61f4843dc313f149254b82462a98da23df277833",
+        "agent_run_trace.jsonl": "7a58995979a55fa4f8fca8d580db217adf83cb25fbdd676081553bf906bfab0a"
+      },
+      "hard_failure_count": 0,
+      "warning_count": 0,
+      "semantic_overall": "pass",
+      "semantic_failure_count": 0,
+      "semantic_warning_count": 0,
+      "failure_findings": [],
+      "warning_findings": []
+    }
+  ],
+  "gaps": [],
+  "implemented_verifiers": [
+    "medagent.verifiers.ct_segmentation_finetune_quality_v1"
+  ],
+  "planned_verifier_gaps": [],
+  "env_skipped_verifier_gaps": [],
+  "warning_findings": [],
+  "evidence_packs": [
+    {
+      "role": "skill",
+      "id": "medagent.nv_segment_ct_finetune",
+      "pack": "skill_run",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "ba5be4e66d005bebaf85bb4d799a35c1b3972fef2ad970912947db85894e6cbd",
+        "validation_summary.json": "72c2635b1b41d2707f7a71baf26a23e35c8e9b7fa50629bf46785022ad215ad1",
+        "output.json": "d62a7a41b4197cc8259d5399acfe0ec1d34568e2bfe6977148e0f7d53af5f32c",
+        "provenance.json": "48650784f474f25b72a503194e23818fb46006b14ece0adce9abd5b7ebccc5b3",
+        "agent_run_trace.jsonl": "45ebcd373f752fcac2bef8373ce85d097176fb0ef767ef71142d97b59c37536a"
+      },
+      "exit_code": 0
+    },
+    {
+      "role": "verifier",
+      "id": "medagent.verifiers.ct_segmentation_finetune_quality_v1",
+      "pack": "verifiers/ct_segmentation_finetune_quality_v1",
+      "overall": "passed",
+      "hashes": {
+        "manifest.json": "b6274c4805acaa27994e4761e6998eb251a47ebbbb4babaa720e3dd4c2a287cd",
+        "validation_summary.json": "5d2b3266dd4ae61f0d2db2a6c9f9aef36ed1f9f166d3e5171911d1a1f1445175",
+        "output.json": "80e80d2294e89312c0f5e4219b9ef925130bafda2da9d6b9e5c81bfec1c8d7c0",
+        "provenance.json": "c04b4e241bcdddb7d16c480b61f4843dc313f149254b82462a98da23df277833",
+        "agent_run_trace.jsonl": "7a58995979a55fa4f8fca8d580db217adf83cb25fbdd676081553bf906bfab0a"
+      },
+      "exit_code": 0
+    }
+  ],
+  "overall": "passed",
+  "curation_note": "Committed smoke trust anchor omits the generated 872 MB model_finetune.pt checkpoint and raw MONAI logs. The checkpoint existed during the paired verifier run; verifier output records its size, loadability, parameter count, and training-trajectory verdict. This is plumbing evidence only, not full Task06 quality or convergence evidence."
+}

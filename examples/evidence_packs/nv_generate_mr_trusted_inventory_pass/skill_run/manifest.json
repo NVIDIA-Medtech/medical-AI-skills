@@ -1,0 +1,47 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "dc4bd8b8d8d5",
+  "skill_id": "medagent.nv_generate_mr",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-generate-mr",
+  "repo_git_sha": "92cf4e8304f837df1129850550aaed5670493cdb",
+  "environment": {
+    "fingerprint": "d92debdb9b28db6a",
+    "pip_freeze_lines": 3,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/README.md",
+    "fixtures/default_mri_t1.json",
+    "fixtures/mri_flair.json",
+    "fixtures/mri_t2.json",
+    "references/fov-and-downloads.md",
+    "requirements.txt",
+    "scripts/run_mr.py",
+    "skill_manifest.yaml",
+    "tests/test_run_mr.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-generate-mr/fixtures/default_mri_t1.json",
+    "sha256": "ad15245d12c06339757456313e2ea6ad6c76b5c85214436d65cfe6d218dfb693",
+    "size_bytes": 313,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/nv-generate-mr/scripts/run_mr.py",
+    "skills/nv-generate-mr/fixtures/default_mri_t1.json",
+    "--output-dir",
+    "runs/nv_generate_mr_trusted_hash_current/skill_run/samples",
+    "--modality",
+    "mri_t1"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

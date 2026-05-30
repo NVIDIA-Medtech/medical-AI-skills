@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "skill_completeness_v1 report",
+  "type": "object",
+  "required": ["skill", "verifier_version", "target_skill",
+               "tier1_structural", "tier2_spec_honesty",
+               "tier3_documentation", "tier4_tests",
+               "overall", "blocking_issues_count", "advisory_issues_count"],
+  "properties": {
+    "skill": {"const": "skill_completeness_v1"},
+    "verifier_version": {"type": "string"},
+    "target_skill": {"type": "string"},
+    "tier1_structural": {"$ref": "#/$defs/tier"},
+    "tier2_spec_honesty": {"$ref": "#/$defs/tier"},
+    "tier3_documentation": {"$ref": "#/$defs/tier"},
+    "tier4_tests": {"$ref": "#/$defs/tier"},
+    "capability_lifecycle": {"$ref": "#/$defs/capability_lifecycle"},
+    "overall": {"enum": ["pass", "fail"]},
+    "blocking_issues_count": {"type": "integer", "minimum": 0},
+    "advisory_issues_count": {"type": "integer", "minimum": 0}
+  },
+  "$defs": {
+    "capability_lifecycle": {
+      "type": "object",
+      "required": ["status", "order", "source", "requirements"],
+      "properties": {
+        "status": {
+          "enum": ["draft", "runnable", "gated", "verified", "published"]
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "enum": ["draft", "runnable", "gated", "verified", "published"]
+          }
+        },
+        "source": {"type": "string"},
+        "requirements": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/lifecycle_requirement"}
+        }
+      }
+    },
+    "lifecycle_requirement": {
+      "type": "object",
+      "required": ["status", "met", "evidence", "gaps"],
+      "properties": {
+        "status": {
+          "enum": ["draft", "runnable", "gated", "verified", "published"]
+        },
+        "met": {"type": "boolean"},
+        "evidence": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "gaps": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "tier": {
+      "type": "object",
+      "required": ["tier_id", "verdict"],
+      "properties": {
+        "tier_id": {"type": "string"},
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "reason": {"type": "string"},
+        "checks_passed": {"type": "integer", "minimum": 0},
+        "checks_total": {"type": "integer", "minimum": 0},
+        "blocking_issues": {"type": "array"},
+        "advisory_issues": {"type": "array"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"verdict": {"enum": ["pass", "fail"]}},
+            "required": ["verdict"]
+          },
+          "then": {
+            "required": [
+              "checks_passed",
+              "checks_total",
+              "blocking_issues",
+              "advisory_issues"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

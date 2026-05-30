@@ -1,0 +1,2 @@
+{"ts": "2026-05-04T11:48:58.936893+00:00", "kind": "preflight_start", "tool": "extract_metadata.py", "args": ["<repo>/examples/fixtures/not_a_dicom.txt"]}
+{"ts": "2026-05-04T11:48:58.936902+00:00", "kind": "preflight_end", "status": "failed"}

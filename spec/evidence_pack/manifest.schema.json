@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/manifest.schema.json",
+  "title": "Evidence pack manifest.json",
+  "description": "Run-identity manifest written into every evidence pack. Distinct from skill_manifest.yaml. Carries pack_format_version that gates the rest of the pack contract.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "environment",
+    "command",
+    "eval_engine_script"
+  ],
+  "properties": {
+    "pack_format_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the pack contract. Major bump is breaking; minor/patch are additive."
+    },
+    "pack_kind": {
+      "type": "string",
+      "enum": ["skill_run", "benchmark_run", "llm_skill_run", "workflow_run", "paired_eval"],
+      "description": "Discriminator for kind-specific fields. Skill-level pack readers may treat this as advisory."
+    },
+    "run_id": { "type": "string", "minLength": 1 },
+    "skill_id": { "type": ["string", "null"] },
+    "skill_version": { "type": ["string", "number", "null"] },
+    "skill_dir": { "type": "string" },
+    "repo_git_sha": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "HEAD commit SHA of Medical AI Skills repo when the pack was written. Null when not run inside a git tree."
+    },
+    "environment": {
+      "type": "object",
+      "required": ["fingerprint", "python_version", "platform"],
+      "properties": {
+        "fingerprint": { "type": "string" },
+        "pip_freeze_lines": { "type": "integer", "minimum": 0 },
+        "pip_freeze_path": { "type": "string" },
+        "python_version": { "type": "string" },
+        "platform": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "skill_dir_files": { "type": "array", "items": { "type": "string" } },
+    "fixture": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" },
+        "sha256": { "type": ["string", "null"] },
+        "size_bytes": { "type": ["integer", "null"] },
+        "is_dir": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "benchmark_manifest": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" },
+        "sha256": { "type": ["string", "null"] },
+        "size_bytes": { "type": ["integer", "null"] },
+        "format": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "case_count": { "type": "integer", "minimum": 0 },
+    "command": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "eval_engine_script": { "type": "string" }
+  },
+  "additionalProperties": true
+}

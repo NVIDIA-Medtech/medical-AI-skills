@@ -1,0 +1,2 @@
+{"ts": "2026-05-19T08:52:05.436864+00:00", "kind": "tool_call_start", "tool": "run_rflow_ct.py", "args": ["skills/nv-generate-ct-rflow/fixtures/default_config_infer.json"]}
+{"ts": "2026-05-19T08:53:32.610138+00:00", "kind": "tool_call_end", "exit_code": 0, "elapsed_s": 87.17297120799776, "stdout_bytes": 14390, "stderr_bytes": 0}

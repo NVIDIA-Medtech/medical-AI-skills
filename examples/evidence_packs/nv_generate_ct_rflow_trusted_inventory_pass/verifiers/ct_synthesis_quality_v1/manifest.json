@@ -1,0 +1,52 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "e0e922134014",
+  "skill_id": "medagent.verifiers.ct_synthesis_quality_v1",
+  "skill_version": "0.1.0",
+  "skill_dir": "verifiers/ct_synthesis_quality_v1",
+  "repo_git_sha": "54d807b1858e19d917aa0efaa3b709aff5d40973",
+  "environment": {
+    "fingerprint": "d92debdb9b28db6a",
+    "pip_freeze_lines": 3,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "SKILL.md",
+    "conftest.py",
+    "fixtures/build_fixtures.py",
+    "fixtures/constant_image_pack/manifest.json",
+    "fixtures/constant_image_pack/output.json",
+    "fixtures/constant_image_pack/sample_20260519_120000_000000_image.nii.gz",
+    "fixtures/constant_image_pack/sample_20260519_120000_000000_label.nii.gz",
+    "fixtures/constant_image_pack/validation_summary.json",
+    "fixtures/out_of_range_label_pack/manifest.json",
+    "fixtures/out_of_range_label_pack/output.json",
+    "fixtures/out_of_range_label_pack/sample_20260519_120000_000000_image.nii.gz",
+    "fixtures/out_of_range_label_pack/sample_20260519_120000_000000_label.nii.gz",
+    "fixtures/out_of_range_label_pack/validation_summary.json",
+    "fixtures/pass_pack/manifest.json",
+    "fixtures/pass_pack/output.json",
+    "fixtures/pass_pack/sample_20260519_120000_000000_image.nii.gz",
+    "fixtures/pass_pack/sample_20260519_120000_000000_label.nii.gz",
+    "fixtures/pass_pack/validation_summary.json",
+    "scripts/grade.py",
+    "skill_manifest.yaml",
+    "tests/test_synthesis_quality_grade.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "runs/nv_generate_ct_rflow_trusted_hash_current/skill_run",
+    "sha256": "faaac376b19a0f193ed053fee2000bbb6dcf28f9ff54d1f0b97deea1eb47b610",
+    "size_bytes": 11590270,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "verifiers/ct_synthesis_quality_v1/scripts/grade.py",
+    "runs/nv_generate_ct_rflow_trusted_hash_current/skill_run"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

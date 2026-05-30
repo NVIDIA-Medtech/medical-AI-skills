@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ct_segmentation_finetune_quality_v1 output",
+  "type": "object",
+  "required": [
+    "verifier",
+    "target",
+    "artifact_inventory",
+    "training_trajectory",
+    "dataset_audit_review",
+    "label_coverage",
+    "overall"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "evidence_pack",
+        "skill_id",
+        "source_overall_status",
+        "checkpoint_path",
+        "smoke",
+        "sanity"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "evidence_pack": {"type": "string"},
+        "skill_id": {"type": "string"},
+        "source_overall_status": {"type": "string"},
+        "checkpoint_path": {"type": ["string", "null"]},
+        "smoke": {"type": "boolean"},
+        "sanity": {"type": "boolean"}
+      }
+    },
+    "artifact_inventory": {
+      "type": "object",
+      "required": [
+        "checkpoint_path",
+        "checkpoint_resolved",
+        "checkpoint_size_bytes",
+        "checkpoint_loadable",
+        "checkpoint_param_count",
+        "torch_available"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "checkpoint_path": {"type": ["string", "null"]},
+        "checkpoint_resolved": {"type": "boolean"},
+        "checkpoint_size_bytes": {"type": ["integer", "null"]},
+        "checkpoint_loadable": {"type": ["boolean", "null"]},
+        "checkpoint_param_count": {"type": ["integer", "null"]},
+        "torch_available": {"type": "boolean"}
+      }
+    },
+    "training_trajectory": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "epochs_recorded",
+        "epochs_declared",
+        "train_loss_finite",
+        "oom",
+        "best_val_dice",
+        "baseline_val_dice",
+        "improvement_over_baseline",
+        "regressed",
+        "sanity_recovery_demonstrated",
+        "failed_checks"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {"enum": ["pass", "fail"]},
+        "epochs_recorded": {"type": "integer", "minimum": 0},
+        "epochs_declared": {"type": ["integer", "null"]},
+        "train_loss_finite": {"type": "boolean"},
+        "oom": {"type": "boolean"},
+        "best_val_dice": {"type": ["number", "null"]},
+        "baseline_val_dice": {"type": ["number", "null"]},
+        "improvement_over_baseline": {"type": ["number", "null"]},
+        "regressed": {"type": ["boolean", "null"]},
+        "sanity_recovery_demonstrated": {"type": ["boolean", "null"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "dataset_audit_review": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "shape_consistent",
+        "orientation_consistent",
+        "image_looks_like_ct",
+        "hu_range_negative_present",
+        "anatomy",
+        "anatomy_volume_all_in_range",
+        "failed_checks"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "shape_consistent": {"type": ["boolean", "null"]},
+        "orientation_consistent": {"type": ["boolean", "null"]},
+        "image_looks_like_ct": {"type": ["boolean", "null"]},
+        "hu_range_negative_present": {"type": ["boolean", "null"]},
+        "anatomy": {"type": ["string", "null"]},
+        "anatomy_volume_all_in_range": {"type": ["boolean", "null"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "label_coverage": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "user_labels_declared",
+        "user_labels_seen_in_sample",
+        "missing_user_labels"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "user_labels_declared": {"type": "array", "items": {"type": "integer"}},
+        "user_labels_seen_in_sample": {"type": "array", "items": {"type": "integer"}},
+        "missing_user_labels": {"type": "array", "items": {"type": "integer"}}
+      }
+    },
+    "overall": {"enum": ["pass", "fail"]}
+  }
+}

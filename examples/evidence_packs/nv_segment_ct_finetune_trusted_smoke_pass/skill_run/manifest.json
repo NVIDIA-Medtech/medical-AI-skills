@@ -1,0 +1,49 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "f5160921bf6b",
+  "skill_id": "medagent.nv_segment_ct_finetune",
+  "skill_version": "0.4.1",
+  "skill_dir": "skills/nv-segment-ct-finetune",
+  "repo_git_sha": "500ab9f360d7d25d6673e99f6b6969594882c4fc",
+  "environment": {
+    "fingerprint": "966b9af29b2b1037",
+    "pip_freeze_lines": 7,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "BENCHMARK.md",
+    "SKILL.md",
+    "evals/evals.json",
+    "fixtures/spleen_micro/datalist.json",
+    "fixtures/spleen_micro/imagesTr/spleen_00.nii.gz",
+    "fixtures/spleen_micro/imagesTr/spleen_01.nii.gz",
+    "fixtures/spleen_micro/imagesTr/spleen_02.nii.gz",
+    "fixtures/spleen_micro/imagesTr/spleen_03.nii.gz",
+    "fixtures/spleen_micro/labelsTr/spleen_00.nii.gz",
+    "fixtures/spleen_micro/labelsTr/spleen_01.nii.gz",
+    "fixtures/spleen_micro/labelsTr/spleen_02.nii.gz",
+    "fixtures/spleen_micro/labelsTr/spleen_03.nii.gz",
+    "references/task06-and-results.md",
+    "scripts/run_finetune.py",
+    "skill_manifest.yaml",
+    "tests/test_run_finetune.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "sha256": "20018681fcd2aa9831af042da4574777c109b135af9664da27cb94d382355c49",
+    "size_bytes": 12761707,
+    "is_dir": true
+  },
+  "command": [
+    "python3",
+    "skills/nv-segment-ct-finetune/scripts/run_finetune.py",
+    "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+    "--output-dir",
+    "runs/nv_segment_ct_finetune_trusted_smoke_pass/skill_run/artifacts"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

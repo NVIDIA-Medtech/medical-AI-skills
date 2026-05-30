@@ -1,0 +1,8 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "regress_pack_run",
+  "skill_id": "nv_segment_ct_finetune",
+  "skill_version": "0.3.0",
+  "skill_dir": "skills/nv-segment-ct-finetune"
+}

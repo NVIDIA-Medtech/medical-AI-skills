@@ -1,0 +1,1792 @@
+{
+  "audit_status": "complete",
+  "audit_summary": {
+    "complete_skills": 9,
+    "issue_count": 0,
+    "outcomes_complete": 9,
+    "outcomes_support_skill_advantage": 9,
+    "prompt_artifacts_complete": 9,
+    "skills": 9,
+    "study_artifacts_complete": 9
+  },
+  "backend_protocols": [
+    {
+      "backend": "opus",
+      "chat_attempt_timeout_seconds": 420,
+      "endpoint": "https://inference-api.nvidia.com/v1",
+      "extra_body": {},
+      "max_tokens": null,
+      "model": "aws/anthropic/bedrock-claude-opus-4-7",
+      "protocol_sha256": "ed842ba0f38ef12bfc8daf6667b0993ee72b7b15d477912e2dc542f878fcb6fe",
+      "retry_attempts": 4,
+      "temperature": null,
+      "top_p": null,
+      "urlopen_timeout_seconds": 300
+    },
+    {
+      "backend": "nemotron",
+      "chat_attempt_timeout_seconds": 420,
+      "endpoint": "https://inference-api.nvidia.com/v1",
+      "extra_body": {},
+      "max_tokens": null,
+      "model": "nvidia/nvidia/nemotron-3-super-v3",
+      "protocol_sha256": "e57c4f87f00b6626f7f38ec129a21c2ed31886307b9919ed731beccff2a08a2d",
+      "retry_attempts": 4,
+      "temperature": null,
+      "top_p": null,
+      "urlopen_timeout_seconds": 300
+    },
+    {
+      "backend": "gpt55",
+      "chat_attempt_timeout_seconds": 420,
+      "endpoint": "https://inference-api.nvidia.com/v1",
+      "extra_body": {},
+      "max_tokens": null,
+      "model": "openai/openai/gpt-5.5",
+      "protocol_sha256": "3681190c06abc87692355a0e03991a4e924eea06cc7671107478670118a46e0a",
+      "retry_attempts": 4,
+      "temperature": null,
+      "top_p": null,
+      "urlopen_timeout_seconds": 300
+    }
+  ],
+  "documents": [
+    {
+      "byte_count": 11769,
+      "exists": true,
+      "path": "skills/nv-generate-ct-rflow/SKILL.md",
+      "sha256": "e8702afe4aa5595981568bcbfae42fc9983a4157a5f3f55535e840ef1bd6146a"
+    },
+    {
+      "byte_count": 12390,
+      "exists": true,
+      "path": "skills/nv-generate-mr-brain-finetune/SKILL.md",
+      "sha256": "28e484c8db14cab245bf47efb0086d6671212203121a8bf4e2868f0b4fe6fce6"
+    },
+    {
+      "byte_count": 7728,
+      "exists": true,
+      "path": "skills/nv-generate-mr-brain/SKILL.md",
+      "sha256": "8316176e458c4dec0d6d944abef4a1a3bbe9d59a8f02a8554a840ff439bac62e"
+    },
+    {
+      "byte_count": 7767,
+      "exists": true,
+      "path": "skills/nv-generate-mr/SKILL.md",
+      "sha256": "741869fbcdd72090b08faa6faecff98fa71b9eb181f9553a5bdc31e2a5b228f1"
+    },
+    {
+      "byte_count": 11869,
+      "exists": true,
+      "path": "skills/nv-generate-vae-finetune/SKILL.md",
+      "sha256": "37db630719ca8ce8e36ddd22651ad71caeb4e20e21bf168aff167e370e03f4cc"
+    },
+    {
+      "byte_count": 8867,
+      "exists": true,
+      "path": "skills/nv-reason-cxr/SKILL.md",
+      "sha256": "da42291a59214708480c60feddbb6610184693452b70d59177352b1dc7b194ba"
+    },
+    {
+      "byte_count": 8665,
+      "exists": true,
+      "path": "skills/nv-segment-ct-finetune/SKILL.md",
+      "sha256": "80ef55a2afb8ab9918b720231697f1c931807f433314767293bfd73e23bf24a7"
+    },
+    {
+      "byte_count": 6728,
+      "exists": true,
+      "path": "skills/nv-segment-ct/SKILL.md",
+      "sha256": "60960bb8d4b22af58830dbf4c7aa277f2a2666079703f16269e3cab44ed944ec"
+    },
+    {
+      "byte_count": 8524,
+      "exists": true,
+      "path": "skills/nv-segment-ctmr/SKILL.md",
+      "sha256": "5174e8f90b6cb3084c6b66b3bb4acb7e76df0e44ebe9cdf1660e017ea4b42b3d"
+    },
+    {
+      "byte_count": 10553,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_generate_ct_rflow_NV-Generate-CTMR_infer_mask-image-paired.md",
+      "sha256": "3dc93284de5b95acaf7cf15623c952d32b5cdafadcb17e89e1e7a21a99f7dd16"
+    },
+    {
+      "byte_count": 8402,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+      "sha256": "adf89220c49438ab2bace1219c89852fcca7a1ba373982c8b91e7e53d92a5e43"
+    },
+    {
+      "byte_count": 3348,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_generate_mr_brain_finetune_NV-Generate-CTMR_train_diff_unet.md",
+      "sha256": "4d0c35a7161215e42ee2237973264c8e0c6babb2dffe99afa32f13c1b5a052ce"
+    },
+    {
+      "byte_count": 3049,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_generate_vae_finetune_NV-Generate-CTMR_train_vae.md",
+      "sha256": "039d040ca973076ce0dec2d93fad8520e1bf9f3fe06cfa630b0825207058636b"
+    },
+    {
+      "byte_count": 13426,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_reason_cxr_NV-Reason-CXR_README.md",
+      "sha256": "957dda83c2427073f1395b4bd3479bce6048eddb3a9fa7183b80e316a02b2330"
+    },
+    {
+      "byte_count": 8723,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_NV-Segment-CTMR_README.md",
+      "sha256": "a1e44a7fbcadb76abc2e85e46b51ec727b6d0a48448d07eb91f2b65e2bf1f639"
+    },
+    {
+      "byte_count": 11429,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+      "sha256": "260f6b279514d57d585e9836c39cd675e3e8d0891de2fabfad1f01b0f52b13e4"
+    },
+    {
+      "byte_count": 14052,
+      "exists": true,
+      "path": "tools/with_vs_without/upstream_docs/nv_segment_ctmr_NV-Segment-CTMR_README.md",
+      "sha256": "2038e32a38b4dee8bef5bc764b8aa5a8a6cbb0b123898c9c70e3676a7bc507e6"
+    }
+  ],
+  "experiment_id": "nv-model-with-vs-without",
+  "fingerprints": {
+    "documents": "87cfa20dd7dd38128a1405018e98fbdbe25995af242af2b1b6283c03f6f5eb67",
+    "material": "732f9c500f98364c247b596090ac0f965300e94bc41b441cbb0661a86c0a9dbd",
+    "outcomes": "22f4abdde0554e055a9b5427e84f95885848c9924156ef5f186b6df065b4d99f",
+    "payload": "3f2a5a0c6db89e1461270ddf84256664c9e5b0e8c49714922694e4310eb75846",
+    "prompt_artifacts": "9da8ed4d474c6fd5d8569f8925bc767777e7d64d6018d2be79e874946f7676e4",
+    "source_fixtures": "00d66fc99b059937f7ecfa7bf274faf514e36d1b73e99f75c411bcd223d9c2f8"
+  },
+  "generated_by": "tools/with_vs_without/write_nv_model_invariants.py",
+  "outcomes": [
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 3.3333333333333335,
+              "outcome_fingerprint": "e9e3103fc2bdf4667172323b43b8ac1ab069e295dcaa14520a27a8a5fc7ccb7b",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                2,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "3f44e2caa33c6f986fc2fb1b4dbe5344b96fedc8584132441036f900a5ecb275",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 2.0,
+              "outcome_fingerprint": "8d1f0d65922e39732d99630fcb595f3a0fe1e45996f2c458d1daa397f61169d5",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                3,
+                0
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "575ad6077b9a7e4c785065d2affc747bab327f3123c526e720285990236749b5",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_generate_ct_rflow",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 3.0,
+              "outcome_fingerprint": "75b64718a6080479e08da6eb71c76208fbbd7dcfdaf29e70fbbf9fe0daa62389",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                2,
+                3,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "6f7b6421320ba3b7fb8edc2e400ee8b0faf88777faaa5228f29bc6dd02db478f",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 1.0,
+              "outcome_fingerprint": "06cd55c5d4805874ebd2ebd283b0540fe5684016031271979ad301c2047f7e2c",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                0,
+                0,
+                3
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "215ac886a6ab154b3cf07b5a1c2fa98fe91ece442e87eac9dfaf1d97e322218b",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_generate_mr",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 3.6666666666666665,
+              "outcome_fingerprint": "b03c75a5f9226fd98b67cb52b9ecf11cb7a188a0b0e739e62728c8dadd65a0a4",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "a734ad9c1dde6a5785726ec49a2575b439a78dbf886584fe5ee3fc060364f1f7",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 3.3333333333333335,
+              "outcome_fingerprint": "cfb65b0521cd0ba2a286830d3556b0c44aa91262b994290c4f3edb7dac40a1d6",
+              "pass_count": 2,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                0,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                Infinity,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 1.0,
+              "outcome_fingerprint": "cca5a2eff9a98156ac2c4fd5d067558fd6a0311ab881bdbb1b487f2eb3db2047",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                0,
+                3,
+                0
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "a10682c553aece7938670aaef035d48cff9f8a58ca941fbb3fabdac0573cc2de",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.5,
+            "reason": "SKILL.md wins 2/3 matched pair(s); README-only wins 1/3; sign-test p=0.5",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 2,
+            "without_wins": 1
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_generate_mr_brain",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 1.3333333333333333,
+              "outcome_fingerprint": "1cd306da07c8b40acbdf6fa3a280c60f9316ba534873cca954d5fbf0e184aea7",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                1,
+                2,
+                1
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "18de243e216e4964756c4f2e17f9e74f79ac95f1e16ca2af06657a66c04a5c1e",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 3.3333333333333335,
+              "outcome_fingerprint": "865ca045eaa2158db3c13ba6614e3a7608c1a52d2b6f0796671ec0d6b815824e",
+              "pass_count": 2,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                0
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                Infinity
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 2.0,
+              "outcome_fingerprint": "8d1f0d65922e39732d99630fcb595f3a0fe1e45996f2c458d1daa397f61169d5",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                3,
+                0
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "bdb5f45f7fa225e5e663625f377a53588cc77c7c6556a9db85d5c4236880535d",
+          "paired_outcome": {
+            "decisive_pairs": 2,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.25,
+            "reason": "SKILL.md wins 2/3 matched pair(s); README-only wins 0/3; sign-test p=0.25",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 1,
+            "with_wins": 2,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_generate_mr_brain_finetune",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 3.0,
+              "outcome_fingerprint": "d5ce5315d44455329614d84f3dbbd15e8fa9b53d3b7836ca1cb9d56017ab5f6c",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                3,
+                3
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 3.0,
+              "outcome_fingerprint": "d5ce5315d44455329614d84f3dbbd15e8fa9b53d3b7836ca1cb9d56017ab5f6c",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                3,
+                3
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "a36f4b5ff184b62bab7e278de69b9d3b953e2d6a90199ae3d0089c38cb1fdc6c",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 2.0,
+              "outcome_fingerprint": "7a52a3e0502d9774cbacf39915b5e18f9bba9045ad39fd5a815d4fe775df14e2",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                0,
+                3,
+                3
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "3f3ef618b3f1f0d1f178b6f5125286a24edd6b4485844e27b6008cab3799ef80",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_generate_vae_finetune",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 2.6666666666666665,
+              "outcome_fingerprint": "ac94e2a80817a12681d3f76245668cbc2d51c37315462de792b57028a7554c72",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                2,
+                2,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "fff083dc08a6cdf733986802c399f874c5b709ba58e553bf30b49427c8f423c5",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 3.3333333333333335,
+              "outcome_fingerprint": "cfb65b0521cd0ba2a286830d3556b0c44aa91262b994290c4f3edb7dac40a1d6",
+              "pass_count": 2,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                0,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                Infinity,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 2.6666666666666665,
+              "outcome_fingerprint": "6c6ae615517d09b76739c66bd4e52f001580a129b333ae22fe8954fb754b2dea",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                0,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "1a067a8f933455636a3b9315b323518517c25792a866bb88ed61ac55a7878ceb",
+          "paired_outcome": {
+            "decisive_pairs": 2,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.25,
+            "reason": "SKILL.md wins 2/3 matched pair(s); README-only wins 0/3; sign-test p=0.25",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 1,
+            "with_wins": 2,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_reason_cxr",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 3.0,
+              "outcome_fingerprint": "d5ce5315d44455329614d84f3dbbd15e8fa9b53d3b7836ca1cb9d56017ab5f6c",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                3,
+                3
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 3.6666666666666665,
+              "outcome_fingerprint": "b03c75a5f9226fd98b67cb52b9ecf11cb7a188a0b0e739e62728c8dadd65a0a4",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "6542db7ff3f4286612dff3fda3eb13a7bc242ff9fa9718f8ba54f999cacdcdcb",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 0.6666666666666666,
+              "outcome_fingerprint": "77982d282a326ddb812f0a65bb0d44d97c283c2b5e5fec81775b9da7887dd7a0",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                0,
+                2,
+                0
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "511ec71050209fbe14ced412e0ac643e72a2c0eaf778219117bffeb271e4d17a",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_segment_ct",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "edf835f8ad1e46920d45344c06b04642588756aca464629f8a42d27b8d1e8808",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 1.3333333333333333,
+              "outcome_fingerprint": "c129f4cb16c81005f082fcd96c4ea98b361eb0dc0a26f2571da40224f041b49c",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                0,
+                4,
+                0
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "c6c39c186f572a91d11bd3fb4e76ed9b21bc007b1c59e6b70c483f4bf75dfee2",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_segment_ct_finetune",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    },
+    {
+      "modes": [
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "gpt55",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "gpt55",
+              "mean_score": 3.6666666666666665,
+              "outcome_fingerprint": "b03c75a5f9226fd98b67cb52b9ecf11cb7a188a0b0e739e62728c8dadd65a0a4",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                3,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            },
+            {
+              "arm": "with",
+              "backend": "opus",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "opus",
+              "mean_score": 4.0,
+              "outcome_fingerprint": "2ccd77d5d79db4ffe02936c83acd652942b40808fbf84f64c7a73e49c80f3ea6",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                4,
+                4,
+                4
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "codex-opus",
+          "mode_fingerprint": "6bb6a283c891db4fbf9baa1f84901a57b4db638bb015f0467c3d3f57e945b31d",
+          "paired_outcome": {
+            "decisive_pairs": 6,
+            "expected_pairs": 6,
+            "matched": 6,
+            "one_sided_sign_test_p": 0.015625,
+            "reason": "SKILL.md wins 6/6 matched pair(s); README-only wins 0/6; sign-test p=0.01562",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 6,
+            "without_wins": 0
+          }
+        },
+        {
+          "aggregate_summaries": [
+            {
+              "arm": "with",
+              "backend": "nemotron",
+              "mean_score": 5.0,
+              "outcome_fingerprint": "935dc9fa264ed2bf728415000269b44d06624c55917e30c80c7b370bd3dbd1e2",
+              "pass_count": 3,
+              "repeat_count": 3,
+              "scores": [
+                5,
+                5,
+                5
+              ],
+              "steps_to_pass": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "arm": "without",
+              "backend": "nemotron",
+              "mean_score": 0.0,
+              "outcome_fingerprint": "4b64e7f7331ec7f2d19f0e19aeeeaafff11ed8a08f41cee28d0e8da6c533fff0",
+              "pass_count": 0,
+              "repeat_count": 3,
+              "scores": [
+                0,
+                0,
+                0
+              ],
+              "steps_to_pass": [
+                Infinity,
+                Infinity,
+                Infinity
+              ]
+            }
+          ],
+          "mode": "nemotron-correction",
+          "mode_fingerprint": "b8323c9b1392b85a0011f7b7617e274d58c7e8a35c37bca833f7c2db835fd41f",
+          "paired_outcome": {
+            "decisive_pairs": 3,
+            "expected_pairs": 3,
+            "matched": 3,
+            "one_sided_sign_test_p": 0.125,
+            "reason": "SKILL.md wins 3/3 matched pair(s); README-only wins 0/3; sign-test p=0.125",
+            "signal": "SKILL.md paired advantage",
+            "status": "supports_skill_advantage",
+            "supports_skill_advantage": true,
+            "ties": 0,
+            "with_wins": 3,
+            "without_wins": 0
+          }
+        }
+      ],
+      "outcome_status": "supports_skill_advantage",
+      "prompt_artifact_status": "complete",
+      "skill": "nv_segment_ctmr",
+      "status": "complete",
+      "study_artifact_status": "complete"
+    }
+  ],
+  "payload_fingerprint": "3f2a5a0c6db89e1461270ddf84256664c9e5b0e8c49714922694e4310eb75846",
+  "prompt_artifacts": [
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_ct_rflow_prompts.json",
+      "record_count": 18,
+      "sha256": "d91b4af1b9d05f3d3c810b2f3b4b1154b9e9fef677fe6422e59b04cfe573a59c",
+      "skill": "nv_generate_ct_rflow"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_prompts.json",
+      "record_count": 18,
+      "sha256": "356d82626f2df651d85474cceae0bb6ce99d2b120c3e12fe309ba15f70d687c2",
+      "skill": "nv_generate_mr"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_prompts.json",
+      "record_count": 18,
+      "sha256": "851f4e76743da4a9095da857900039e19e6900e8d20cfe76b2c7dc6217df45af",
+      "skill": "nv_generate_mr_brain"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_mr_brain_finetune_prompts.json",
+      "record_count": 18,
+      "sha256": "ee6a6a42d13b2cd7e28eba5e59504425eb736723bc3b06fe7dca1bd857556196",
+      "skill": "nv_generate_mr_brain_finetune"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_generate_vae_finetune_prompts.json",
+      "record_count": 18,
+      "sha256": "ab9d61242de74b05e92e0bc73e06e5f69258a43e6bf2a5cfabc7c5476d81c6e7",
+      "skill": "nv_generate_vae_finetune"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_reason_cxr_prompts.json",
+      "record_count": 18,
+      "sha256": "3128c0c4a951e9fb440695ffa9615b517443c5e7b452e1f5d3743eca1dc1d0f8",
+      "skill": "nv_reason_cxr"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_segment_ct_prompts.json",
+      "record_count": 18,
+      "sha256": "f31038bd20b5d7cbe9ab3f986fec0774c618d4e3ae0733420b0b61006d7c22e0",
+      "skill": "nv_segment_ct"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_segment_ct_finetune_prompts.json",
+      "record_count": 18,
+      "sha256": "ddffda689f067ae5291c7e853196c5c5be84a93e095921d53cf68b65f701b59d",
+      "skill": "nv_segment_ct_finetune"
+    },
+    {
+      "exists": true,
+      "path": "tools/nat_audit/data/eval_nv_model_studies_nv_segment_ctmr_prompts.json",
+      "record_count": 18,
+      "sha256": "1db3b414c8d806250ee8666c211c47607046769da55eb74bf0493afb3b2eb894",
+      "skill": "nv_segment_ctmr"
+    }
+  ],
+  "protocol": {
+    "arms": [
+      "with",
+      "without"
+    ],
+    "direct_prompt_style": "minimal",
+    "max_correction_steps": 0,
+    "modes": [
+      "codex-opus",
+      "nemotron-correction"
+    ],
+    "path_prompt_style": "path",
+    "repeats": 3,
+    "skills": [
+      "nv_generate_ct_rflow",
+      "nv_generate_mr",
+      "nv_generate_mr_brain",
+      "nv_generate_mr_brain_finetune",
+      "nv_generate_vae_finetune",
+      "nv_reason_cxr",
+      "nv_segment_ct",
+      "nv_segment_ct_finetune",
+      "nv_segment_ctmr"
+    ]
+  },
+  "record_policy": {
+    "excluded_fields": [
+      "absolute local paths",
+      "generated commands",
+      "provider responses",
+      "stdout/stderr tails",
+      "token usage",
+      "timestamps",
+      "run logs",
+      "environment.lock content",
+      "downloaded model/cache paths"
+    ],
+    "raw_records_location": "runs/with_vs_without_nv/",
+    "track_in_git": true
+  },
+  "schema_version": 1,
+  "source_fixtures": [
+    {
+      "byte_count": 850,
+      "exists": true,
+      "kind": "file",
+      "path": "skills/nv-generate-ct-rflow/fixtures/chest_lung_tumor_controllable.json",
+      "sha256": "074c95c4061edb307ce6874050c1d086eb50adaa0c47f3cbda26f7a9f92148c4",
+      "tracked_file_count": 1
+    },
+    {
+      "byte_count": 313,
+      "exists": true,
+      "kind": "file",
+      "path": "skills/nv-generate-mr/fixtures/default_mri_t1.json",
+      "sha256": "4bacbc5f1e195024aac80751b6a638b058f39486433f3761258d7074c403fc1b",
+      "tracked_file_count": 1
+    },
+    {
+      "byte_count": 289,
+      "exists": true,
+      "kind": "file",
+      "path": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+      "sha256": "9b486d3113d5fb4fe7bd7e6040c8744b65fb6aab8e8ed25e2ca45afbb2a7e47d",
+      "tracked_file_count": 1
+    },
+    {
+      "byte_count": 491,
+      "exists": true,
+      "kind": "directory",
+      "path": "skills/nv-generate-mr-brain-finetune/fixtures",
+      "sha256": "de65fb740ad535e9a49e3e73645c22287dc6b483998b104232e1dd740c722c78",
+      "tracked_file_count": 3
+    },
+    {
+      "byte_count": 527,
+      "exists": true,
+      "kind": "directory",
+      "path": "skills/nv-generate-vae-finetune/fixtures",
+      "sha256": "174da13d67e452a295b63f10c0e147f5b21aceef345ba6460793e10e87f5cce7",
+      "tracked_file_count": 4
+    },
+    {
+      "byte_count": 387,
+      "exists": true,
+      "kind": "file",
+      "path": "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+      "sha256": "d5f75aa99e9852bde2341d0a2cc186ae1c1484646580eb68b8870e076d0d4067",
+      "tracked_file_count": 1
+    },
+    {
+      "byte_count": 11352181,
+      "exists": true,
+      "kind": "file",
+      "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "sha256": "18fcb3df7da91366440dc4e14a9cc814024fce4df73db999b1d32e659ad127f9",
+      "tracked_file_count": 0
+    },
+    {
+      "byte_count": 507,
+      "exists": true,
+      "kind": "directory",
+      "path": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+      "sha256": "8addfea9e1183739301a6b0dcb48803057f4dab3ce9b5f74c32709909e7f5f2c",
+      "tracked_file_count": 1
+    },
+    {
+      "byte_count": 11352181,
+      "exists": true,
+      "kind": "file",
+      "path": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "sha256": "18fcb3df7da91366440dc4e14a9cc814024fce4df73db999b1d32e659ad127f9",
+      "tracked_file_count": 0
+    }
+  ],
+  "staged_inputs": [
+    {
+      "skill": "nv_generate_ct_rflow",
+      "source_fixture": "skills/nv-generate-ct-rflow/fixtures/chest_lung_tumor_controllable.json",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_ct_rflow/request.json"
+    },
+    {
+      "skill": "nv_generate_mr",
+      "source_fixture": "skills/nv-generate-mr/fixtures/default_mri_t1.json",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json"
+    },
+    {
+      "skill": "nv_generate_mr_brain",
+      "source_fixture": "skills/nv-generate-mr-brain/fixtures/default_mri_t1.json",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain/request.json"
+    },
+    {
+      "skill": "nv_generate_mr_brain_finetune",
+      "source_fixture": "skills/nv-generate-mr-brain-finetune/fixtures",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_mr_brain_finetune/input_dataset"
+    },
+    {
+      "skill": "nv_generate_vae_finetune",
+      "source_fixture": "skills/nv-generate-vae-finetune/fixtures",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_generate_vae_finetune/input_dataset"
+    },
+    {
+      "skill": "nv_reason_cxr",
+      "source_fixture": "skills/nv-reason-cxr/fixtures/synthetic_cxr_input.json",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_reason_cxr/request.json"
+    },
+    {
+      "skill": "nv_segment_ct",
+      "source_fixture": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct/input.nii.gz"
+    },
+    {
+      "skill": "nv_segment_ct_finetune",
+      "source_fixture": "skills/nv-segment-ct-finetune/fixtures/spleen_micro",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ct_finetune/input_dataset"
+    },
+    {
+      "skill": "nv_segment_ctmr",
+      "source_fixture": "skills/nv-segment-ct/fixtures/spleen_03.nii.gz",
+      "staged_user_input": "runs/with_vs_without_nv/_inputs/nv_segment_ctmr/input.nii.gz"
+    }
+  ]
+}

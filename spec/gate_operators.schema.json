@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/gate_operators.schema.json",
+  "title": "Medical AI Skills sanity-check gate operator",
+  "type": "object",
+  "required": ["path"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Dotted path into output.json."
+    },
+    "eq": true,
+    "ne": true,
+    "gt": { "type": "number" },
+    "gte": { "type": "number" },
+    "lt": { "type": "number" },
+    "lte": { "type": "number" },
+    "matches": { "type": "string" },
+    "length_eq": { "type": "integer", "minimum": 0 },
+    "length_gte": { "type": "integer", "minimum": 0 },
+    "length_lte": { "type": "integer", "minimum": 0 },
+    "contains": true,
+    "contains_any_of": { "type": "array" },
+    "exists": { "type": "boolean" }
+  },
+  "anyOf": [
+    { "required": ["eq"] },
+    { "required": ["ne"] },
+    { "required": ["gt"] },
+    { "required": ["gte"] },
+    { "required": ["lt"] },
+    { "required": ["lte"] },
+    { "required": ["matches"] },
+    { "required": ["length_eq"] },
+    { "required": ["length_gte"] },
+    { "required": ["length_lte"] },
+    { "required": ["contains"] },
+    { "required": ["contains_any_of"] },
+    { "required": ["exists"] }
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,82 @@
+{
+  "skill": "nv_generate_mr",
+  "model": "NVIDIA-Medtech/NV-Generate-CTMR (rflow-mr)",
+  "model_repo": "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR",
+  "model_weights_repo": "https://huggingface.co/nvidia/NV-Generate-MR",
+  "license": "NVIDIA Non-Commercial weights; wrapper Apache-2.0",
+  "input": {
+    "model_config_override_path": null,
+    "model_config_override": {},
+    "modality_name": "mri_t1",
+    "modality_code": 9,
+    "dim_requested": [8, 8, 8],
+    "spacing_requested": [1.5, 1.5, 2.0],
+    "num_inference_steps_requested": 30,
+    "cfg_guidance_scale_requested": 15,
+    "random_seed": 0,
+    "version": "rflow-mr"
+  },
+  "output": {
+    "directory": "<repo>/verifiers/mr_synthesis_quality_v1/fixtures/constant_image_pack",
+    "samples": [
+      {
+        "image_path": "<repo>/verifiers/ct_synthesis_quality_v1/fixtures/constant_image_pack/sample_20260519_120000_000000_image.nii.gz",
+        "image_readable": true,
+        "image_shape": [8, 8, 8],
+        "requested_shape": [8, 8, 8],
+        "shape_match_requested": true,
+        "image_spacing": [1.5, 1.5, 2.0],
+        "requested_spacing": [1.5, 1.5, 2.0],
+        "spacing_match_requested": true,
+        "finite_fraction": 1.0,
+        "all_finite": true,
+        "intensity_min": 0.0,
+        "intensity_max": 23.0,
+        "intensity_mean": 0.060547,
+        "intensity_std": 1.211013,
+        "image_nonconstant": true,
+        "image_nonnegative": true
+      }
+    ],
+    "num_samples": 1,
+    "all_images_readable": true,
+    "all_shapes_match_requested": true,
+    "all_spacing_match_requested": true,
+    "all_images_finite": true,
+    "all_images_nonconstant": true,
+    "all_images_nonnegative": true
+  },
+  "invocation": {
+    "official_entrypoint": "python -m scripts.diff_model_infer",
+    "upstream_root": "<stub_nv_generate_root>",
+    "upstream_commit": "0000000000000000000000000000000000000000",
+    "command": ["python", "-m", "scripts.diff_model_infer"],
+    "exit_code": 0,
+    "subprocess_seconds": 60.0,
+    "model_inventory": {
+      "all_present": true,
+      "files": [
+        {"path": "models/autoencoder_v2.pt", "present": true, "bytes": 1, "sha256": "stub"},
+        {"path": "models/diff_unet_3d_rflow-mr.pt", "present": true, "bytes": 1, "sha256": "stub"}
+      ]
+    },
+    "rendered_model_config": {
+      "diffusion_unet_inference": {
+        "dim": [8, 8, 8],
+        "spacing": [1.5, 1.5, 2.0],
+        "modality": 9
+      }
+    },
+    "rendered_env_output_dir": "<repo>/verifiers/mr_synthesis_quality_v1/fixtures/constant_image_pack",
+    "rendered_env_output_prefix": "mr_mri_t1"
+  },
+  "runtime": {
+    "subprocess_seconds": 60.0,
+    "device": "cuda"
+  },
+  "logs": {
+    "stdout_tail": "",
+    "stderr_tail": ""
+  },
+  "intended_use_disclaimer": "Engineering verification only. Output is synthetic and NOT clinically meaningful. This wrapper invokes the upstream scripts.diff_model_infer entry point from the NV-Generate-CTMR README; it does not modify diffusion sampling or autoencoder decoding."
+}

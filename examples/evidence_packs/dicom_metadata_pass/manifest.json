@@ -1,0 +1,37 @@
+{
+  "run_id": "8162bcc6d926",
+  "skill_id": "medagent.dicom_metadata_extract",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/dicom-metadata-extract",
+  "environment": {
+    "fingerprint": "3830197683d05047",
+    "pip_freeze_lines": 4,
+    "pip_freeze_path": "environment.lock",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.8.0-107-generic-x86_64-with-glibc2.35"
+  },
+  "skill_dir_files": [
+    "AGENTS.md",
+    "SKILL.md",
+    "fixtures/generate_sample.py",
+    "fixtures/real_ct/CT_DICOM_SINGLE.zip",
+    "fixtures/real_ct/CT_DICOM_SINGLE/7106",
+    "fixtures/sample_ct.dcm",
+    "scripts/extract_metadata.py",
+    "skill_manifest.yaml",
+    "tests/test_basic.py",
+    "validators/output_schema.json"
+  ],
+  "fixture": {
+    "path": "skills/dicom-metadata-extract/fixtures/sample_ct.dcm",
+    "sha256": "4143f3313661cabac059776d00a589168f0268ec5528930b7e67af61c7b2d70a",
+    "size_bytes": 9190,
+    "is_dir": false
+  },
+  "command": [
+    "python3",
+    "skills/dicom-metadata-extract/scripts/extract_metadata.py",
+    "skills/dicom-metadata-extract/fixtures/sample_ct.dcm"
+  ],
+  "eval_engine_script": "eval_engine/run.py"
+}

@@ -1,0 +1,78 @@
+{
+  "verifier": {
+    "id": "medagent.verifiers.dicom_metadata_quality_v1",
+    "version": "0.1.0"
+  },
+  "target": {
+    "evidence_pack": "examples/evidence_packs/dicom_metadata_trusted_warn/skill_run",
+    "skill_id": "medagent.dicom_metadata_extract",
+    "source_overall_status": "passed"
+  },
+  "metadata_quality": {
+    "n_fail": 0,
+    "n_warn": 1,
+    "verdict": "warn",
+    "acceptable": true
+  },
+  "checks": [
+    {
+      "name": "target_skill_matches",
+      "status": "pass",
+      "reason": "skill_id='medagent.dicom_metadata_extract'"
+    },
+    {
+      "name": "source_pack_passed",
+      "status": "pass",
+      "reason": "source pack overall='passed'"
+    },
+    {
+      "name": "modality_present",
+      "status": "pass",
+      "reason": "modality='CT'"
+    },
+    {
+      "name": "transfer_syntax_present",
+      "status": "pass",
+      "reason": "transfer_syntax={'uid': '1.2.840.10008.1.2.1', 'name': 'Explicit VR Little Endian'}"
+    },
+    {
+      "name": "study_uid_present",
+      "status": "pass",
+      "reason": "StudyInstanceUID='1.2.826.0.1.3680043.8.498.70205069167432896821744418685172690618'"
+    },
+    {
+      "name": "image_dimensions_positive",
+      "status": "pass",
+      "reason": "Rows=64, Columns=64"
+    },
+    {
+      "name": "phi_flag_is_boolean",
+      "status": "pass",
+      "reason": "phi_present=True"
+    },
+    {
+      "name": "phi_tags_list_shape",
+      "status": "pass",
+      "reason": "phi_tags_found must be a list of tag-name strings"
+    },
+    {
+      "name": "phi_flag_consistent",
+      "status": "pass",
+      "reason": "phi_present=True, n_phi_tags=6"
+    },
+    {
+      "name": "phi_scope_disclosed",
+      "status": "pass",
+      "reason": "scope disclaimer must mention standard DICOM, private tags, and burnt-in pixel limits"
+    },
+    {
+      "name": "standard_phi_present",
+      "status": "warn",
+      "reason": "standard PHI tags present: PatientName, PatientID, PatientBirthDate, PatientSex, InstitutionName, ReferringPhysicianName"
+    }
+  ],
+  "warnings": [
+    "standard PHI tags present: PatientName, PatientID, PatientBirthDate, PatientSex, InstitutionName, ReferringPhysicianName"
+  ],
+  "overall": "warn"
+}

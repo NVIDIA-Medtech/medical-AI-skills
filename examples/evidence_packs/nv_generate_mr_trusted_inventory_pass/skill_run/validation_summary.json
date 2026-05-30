@@ -1,0 +1,191 @@
+{
+  "schema": "skills/nv-generate-mr/validators/output_schema.json",
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "fixture_exists",
+      "path": "skills/nv-generate-mr/fixtures/default_mri_t1.json",
+      "status": "passed"
+    },
+    {
+      "name": "fixture_is_file",
+      "path": "skills/nv-generate-mr/fixtures/default_mri_t1.json",
+      "status": "passed"
+    },
+    {
+      "name": "host_has_cuda",
+      "requires_gpu": "cuda",
+      "gpu_fallback": null,
+      "have_cuda": true,
+      "status": "passed"
+    }
+  ],
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "skill",
+        "eq": "nv_generate_mr"
+      },
+      "actual": "nv_generate_mr",
+      "ok": true,
+      "reason": "'nv_generate_mr' == 'nv_generate_mr'"
+    },
+    {
+      "check": {
+        "path": "invocation.official_entrypoint",
+        "eq": "python -m scripts.diff_model_infer"
+      },
+      "actual": "python -m scripts.diff_model_infer",
+      "ok": true,
+      "reason": "'python -m scripts.diff_model_infer' == 'python -m scripts.diff_model_infer'"
+    },
+    {
+      "check": {
+        "path": "invocation.exit_code",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "invocation.model_inventory.all_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.num_samples",
+        "gte": 1
+      },
+      "actual": 1,
+      "ok": true,
+      "reason": "1 >= 1"
+    },
+    {
+      "check": {
+        "path": "output.all_images_readable",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_shapes_match_requested",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_spacing_match_requested",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_images_finite",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_images_nonconstant",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.all_images_nonnegative",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "cost_status": "passed",
+  "cost_results": [
+    {
+      "key": "wall_seconds",
+      "actual": 11.932277757005068,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "cpu_seconds",
+      "actual": 20.226454,
+      "min": null,
+      "max": 3600,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "rss_mb_peak",
+      "actual": 2219.45703125,
+      "min": 500,
+      "max": 32000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_seconds",
+      "actual": 5.846816100932483,
+      "min": null,
+      "max": 1800,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    },
+    {
+      "key": "gpu_memory_mb_peak",
+      "actual": 9204.0,
+      "min": null,
+      "max": 48000,
+      "ok": true,
+      "reason": null,
+      "source": "measured"
+    }
+  ],
+  "env_pin_status": "skipped",
+  "env_pin_results": [],
+  "factual_echo_status": "skipped",
+  "factual_echo_results": [],
+  "model_identity_status": "skipped",
+  "model_identity_results": [],
+  "runtime_integrity_status": "skipped",
+  "runtime_integrity_findings": [],
+  "overall_status": "passed",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": "[nv_generate_mr] preflight: dim=[128, 256, 256] spacing=[1.25, 1.0, 1.0] modality=mri_t1(9) steps=30\n[nv_generate_mr] cost estimate: ~60.0s wall, ~16.0 GB VRAM peak, ~16.0 MB disk. GPU: NVIDIA RTX 6000 Ada Generation (47.4 GB)\n"
+}

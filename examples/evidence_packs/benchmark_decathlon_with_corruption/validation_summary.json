@@ -1,0 +1,72 @@
+{
+  "preflight_status": "passed",
+  "preflight": [
+    {
+      "name": "benchmark_manifest_exists",
+      "path": ".workbench_data/datasets/decathlon_spleen_with_corruption.benchmark.yaml",
+      "status": "passed"
+    },
+    {
+      "name": "benchmark_manifest_is_file",
+      "path": ".workbench_data/datasets/decathlon_spleen_with_corruption.benchmark.yaml",
+      "status": "passed"
+    },
+    {
+      "name": "benchmark_manifest_format",
+      "status": "passed",
+      "format": "benchmark_dataset"
+    },
+    {
+      "name": "case_count",
+      "status": "passed",
+      "count": 44
+    }
+  ],
+  "sanity_status": "failed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "output.dice.mean",
+        "gte": 0.85
+      },
+      "actual": 0.9355890403848778,
+      "ok": true,
+      "reason": "0.9355890403848778 >= 0.85"
+    },
+    {
+      "check": {
+        "path": "output.dice.p10",
+        "gte": 0.5
+      },
+      "actual": 0.9408993838173975,
+      "ok": true,
+      "reason": "0.9408993838173975 >= 0.5"
+    },
+    {
+      "check": {
+        "path": "output.dice.min",
+        "gte": 0.5
+      },
+      "actual": 0.0,
+      "ok": false,
+      "reason": "NOT 0.0 >= 0.5"
+    },
+    {
+      "check": {
+        "path": "output.fail_count",
+        "lte": 0
+      },
+      "actual": 1,
+      "ok": false,
+      "reason": "NOT 1 <= 0"
+    }
+  ],
+  "overall_status": "failed (case execution/metrics)",
+  "integrity_status": "clean",
+  "integrity_n_findings": 0,
+  "case_count": 44,
+  "pass_count": 43,
+  "fail_count": 1,
+  "coverage_pct": 97.727273,
+  "errors": []
+}

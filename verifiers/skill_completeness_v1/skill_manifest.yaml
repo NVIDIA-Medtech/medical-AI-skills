@@ -1,0 +1,85 @@
+id: medagent.verifiers.skill_completeness_v1
+version: 0.3.8
+license: Apache-2.0
+intended_use:
+  summary: |
+    Meta-skill that grades another skill directory against the
+    structural and manifest-spec requirements documented in
+    CONTRIBUTING.md and AGENTS.md PLUS the Anthropic Agent Skills
+    authoring rules at
+    https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices.
+    Outputs a per-tier audit report. Tier 1 (blocking) + Tier 2 (mixed
+    severity) are deterministic. Tier 3 is an opt-in NVIDIA-hosted LLM
+    review of documentation quality and best-practices alignment. Tier 4
+    (test quality) is deferred.
+  scope: development
+  not_for:
+    - clinical interpretation
+    - regulatory submission
+    - autonomous decisions about which skills to land or remove
+inputs:
+  - name: target_skill
+    type: directory_path
+    description: Path to the skill directory to grade.
+outputs:
+  - name: completeness_report
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  optional_llm_verifier:
+    endpoint: https://inference-api.nvidia.com/v1
+    model: azure/openai/gpt-5.5
+    temperature: 0.0
+    max_tokens: 4096
+    prompt_reference: reference/agent_skill_best_practices.md
+  dependencies:
+    pyyaml: ">=6.0"
+  side_effects:
+    pip_packages: [pyyaml>=6.0]
+    local_writes: []
+    home_writes: []
+    network_endpoints:
+      - https://inference-api.nvidia.com
+    requires_docker: false
+    requires_gpu: none
+    env_required: []
+    env_optional:
+      - LLM_VERIFIER          # optional: set to "1" to enable Tier 3
+      - NV_INFER_TOKEN     # required when LLM_VERIFIER=1
+limitations:
+  - Tier 3 is skipped unless LLM_VERIFIER=1 and an NVIDIA inference key is
+    available via NV_INFER_TOKEN.
+  - Tier 3 findings are advisory. The LLM cannot autonomously reject a
+    skill that passed deterministic gates.
+  - Tier 4 (test quality via execution + coverage assessment) is not yet
+    implemented; the output block is marked verdict=skipped.
+  - The pip-import-vs-declared-packages check uses a small
+    import-name-to-pip-package map and can yield false-positive
+    advisory issues for less-common packages.
+  - Schema-vs-sanity-path cross-validation is best-effort and does
+    not resolve JSON Schema $ref / inheritance.
+  - Reference-depth check looks one level past SKILL.md; it does
+    not detect cycles or fully traverse arbitrary chains.
+  - The third-person heuristic for `description` only flags first-30-
+    character offenders; a description that switches to first person
+    later in the string is not flagged.
+validation:
+  expected_runtime_seconds:
+    max: 60.0
+  sanity_checks:
+    - path: tier1_structural.verdict
+      contains_any_of: [pass, fail]
+    - path: tier2_spec_honesty.verdict
+      contains_any_of: [pass, fail]
+    - path: overall
+      contains_any_of: [pass, fail]
+    - path: blocking_issues_count
+      gte: 0
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/well_formed_target_skill
+    runs: 2

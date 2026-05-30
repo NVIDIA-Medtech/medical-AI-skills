@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nvidia.com/medical-ai-skills/spec/benchmark_result.schema.json#v1.0.0",
+  "title": "Medical AI Skills Benchmark Result (aggregate output of run_benchmark.py)",
+  "description": "Shape of output.json inside a benchmark evidence pack (pack_kind == benchmark_run). One benchmark result corresponds to one skill running over one benchmark manifest's cases. Consumed by eval_engine/render_baselines.py to build the cross-skill matrix.",
+  "type": "object",
+  "required": ["skill", "benchmark", "output"],
+  "additionalProperties": true,
+  "properties": {
+    "skill": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": ["string", "null"]},
+        "entrypoint": {"type": "string"}
+      }
+    },
+    "benchmark": {
+      "type": "object",
+      "required": ["manifest_path"],
+      "additionalProperties": true,
+      "properties": {
+        "manifest_path": {"type": "string"},
+        "source": {"type": ["string", "null"]},
+        "dataset": {"type": ["string", "null"]},
+        "license": {"type": ["string", "null"]},
+        "case_count_declared": {"type": ["integer", "null"]},
+        "case_count_run": {"type": "integer", "minimum": 0}
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "case_count",
+        "pass_count",
+        "fail_count",
+        "coverage_pct",
+        "dice",
+        "iou",
+        "hd"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "case_count": {"type": "integer", "minimum": 0},
+        "pass_count": {"type": "integer", "minimum": 0},
+        "fail_count": {"type": "integer", "minimum": 0},
+        "coverage_pct": {"type": "number", "minimum": 0, "maximum": 100},
+        "coverage_pct_ci_95": {"$ref": "#/$defs/wilson_ci_pct"},
+        "dice": {"$ref": "#/$defs/metric_summary"},
+        "iou": {"$ref": "#/$defs/metric_summary"},
+        "hd": {"$ref": "#/$defs/metric_summary"}
+      }
+    }
+  },
+  "$defs": {
+    "wilson_ci_pct": {
+      "type": "object",
+      "required": ["level", "method", "lower_pct", "upper_pct"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {"type": "number", "minimum": 0, "maximum": 1},
+        "method": {"type": "string", "enum": ["wilson"]},
+        "lower_pct": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "upper_pct": {"type": ["number", "null"], "minimum": 0, "maximum": 100}
+      }
+    },
+    "metric_summary": {
+      "type": "object",
+      "required": ["count", "mean", "median", "p10", "min", "max"],
+      "additionalProperties": false,
+      "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "mean": {"type": ["number", "null"]},
+        "median": {"type": ["number", "null"]},
+        "p10": {"type": ["number", "null"]},
+        "min": {"type": ["number", "null"]},
+        "max": {"type": ["number", "null"]}
+      }
+    }
+  }
+}

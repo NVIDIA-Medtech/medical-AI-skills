@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CTSynthesisQualityV1Report",
+  "type": "object",
+  "required": [
+    "verifier",
+    "target",
+    "artifact_inventory",
+    "geometry_consistency",
+    "image_hu_plausibility",
+    "label_set_sanity",
+    "declared_anatomy_coverage",
+    "anatomy_hu_plausibility",
+    "overall"
+  ],
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"const": "medagent.verifiers.ct_synthesis_quality_v1"},
+        "version": {"type": "string"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["evidence_pack", "skill_id", "source_overall_status", "num_samples_declared"],
+      "properties": {
+        "evidence_pack": {"type": "string"},
+        "skill_id": {"type": "string"},
+        "source_overall_status": {"type": "string"},
+        "num_samples_declared": {"type": "integer", "minimum": 0}
+      }
+    },
+    "artifact_inventory": {
+      "type": "object",
+      "required": ["verdict", "samples", "failed_checks"],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "samples": {"type": "array"},
+        "failed_checks": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "geometry_consistency": {
+      "type": "object",
+      "required": ["verdict", "failed_checks"],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "image_hu_plausibility": {
+      "type": "object",
+      "required": ["verdict", "failed_checks"],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "label_set_sanity": {
+      "type": "object",
+      "required": ["verdict", "failed_checks", "union_label_ids_present"],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}},
+        "union_label_ids_present": {"type": "array", "items": {"type": "integer"}}
+      }
+    },
+    "declared_anatomy_coverage": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "failed_checks",
+        "expected_output_label_ids",
+        "observed_label_ids",
+        "missing_expected_output_label_ids"
+      ],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}},
+        "expected_output_label_ids": {"type": "array", "items": {"type": "integer"}},
+        "observed_label_ids": {"type": "array", "items": {"type": "integer"}},
+        "missing_expected_output_label_ids": {"type": "array", "items": {"type": "integer"}}
+      }
+    },
+    "anatomy_hu_plausibility": {
+      "type": "object",
+      "required": ["verdict", "failed_checks", "checked_anatomies"],
+      "properties": {
+        "verdict": {"enum": ["pass", "fail", "skipped"]},
+        "failed_checks": {"type": "array", "items": {"type": "string"}},
+        "checked_anatomies": {"type": "array"}
+      }
+    },
+    "overall": {"enum": ["pass", "fail"]}
+  }
+}

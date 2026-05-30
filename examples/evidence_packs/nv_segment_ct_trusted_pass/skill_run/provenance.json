@@ -1,0 +1,87 @@
+{
+  "captured_at": "2026-05-26T01:48:10.873465+00:00",
+  "gpu": {
+    "available": false,
+    "have_nvidia_smi": true,
+    "have_nvcc": true,
+    "gpus": [],
+    "nvcc_release": "Cuda compilation tools, release 13.2, V13.2.78"
+  },
+  "container": {
+    "requires_docker": false,
+    "image_digest_observed": null,
+    "note": "Container digest/labels not captured by MVP provenance. Add via skill-side instrumentation when the wrapper spawns docker."
+  },
+  "network": {
+    "declared_endpoints": [
+      "https://huggingface.co",
+      "https://msd-for-monai.s3-us-west-2.amazonaws.com"
+    ],
+    "observed_endpoints": null,
+    "note": "Endpoint observation not implemented; tracked as planned work."
+  },
+  "side_effects": {
+    "before": [
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct/bundle/",
+        "resolved": "skills/nv-segment-ct/bundle",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 48,
+        "total_bytes": 2616060377
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "after": [
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct/bundle/",
+        "resolved": "skills/nv-segment-ct/bundle",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 48,
+        "total_bytes": 2616060377
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "exists": true,
+        "is_dir": true,
+        "n_entries": 101,
+        "total_bytes": 58512883828
+      }
+    ],
+    "findings": [
+      {
+        "kind": "local_writes",
+        "declared": "skills/nv-segment-ct/bundle/",
+        "resolved": "skills/nv-segment-ct/bundle",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      },
+      {
+        "kind": "home_writes",
+        "declared": "~/.cache/huggingface/",
+        "resolved": "~/.cache/huggingface",
+        "before_exists": true,
+        "after_exists": true,
+        "change": "unchanged",
+        "entries_delta": 0,
+        "bytes_delta": 0
+      }
+    ]
+  }
+}

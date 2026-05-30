@@ -1,0 +1,57 @@
+{
+  "skill": {
+    "id": "medagent.nv_segment_ct",
+    "version": "0.2.0",
+    "entrypoint": "scripts/run_vista3d.py"
+  },
+  "benchmark": {
+    "manifest_path": "benchmarks/ct_segmentation_spleen_msd09.benchmark.yaml",
+    "source": "msd09_spleen",
+    "dataset": "ct_segmentation_spleen_msd09",
+    "license": "CC-BY-SA-4.0",
+    "inclusion": {
+      "modality": "CT",
+      "body_part": "abdomen",
+      "target_organ": "spleen",
+      "slice_count": ">=80"
+    },
+    "case_count_declared": 5,
+    "case_count_run": 5
+  },
+  "output": {
+    "case_count": 5,
+    "pass_count": 5,
+    "fail_count": 0,
+    "coverage_pct": 100.0,
+    "coverage_pct_ci_95": {
+      "level": 0.95,
+      "method": "wilson",
+      "lower_pct": 56.551754,
+      "upper_pct": 100.0
+    },
+    "dice": {
+      "count": 5,
+      "mean": 0.9579706145258683,
+      "median": 0.9567655448359116,
+      "p10": 0.9520963510921372,
+      "min": 0.9512626369442917,
+      "max": 0.9660578640796352
+    },
+    "iou": {
+      "count": 5,
+      "mean": 0.9193858442135303,
+      "median": 0.9171145949981336,
+      "p10": 0.9085742298818651,
+      "min": 0.9070551602858848,
+      "max": 0.9343442253852028
+    },
+    "hd": {
+      "count": 5,
+      "mean": 6.149269469054147,
+      "median": 5.0,
+      "p10": 5.0,
+      "min": 5.0,
+      "max": 10.0
+    }
+  }
+}

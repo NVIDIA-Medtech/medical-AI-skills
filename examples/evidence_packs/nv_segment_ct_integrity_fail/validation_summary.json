@@ -1,0 +1,61 @@
+{
+  "schema": "<repo>/skills/nv-segment-ct/validators/output_schema.json",
+  "schema_status": "passed",
+  "sanity_status": "passed",
+  "sanity_results": [
+    {
+      "check": {
+        "path": "output.any_label_present",
+        "eq": true
+      },
+      "actual": true,
+      "ok": true,
+      "reason": "True == True"
+    },
+    {
+      "check": {
+        "path": "output.class_counts.spleen",
+        "gt": 0
+      },
+      "actual": 27993,
+      "ok": true,
+      "reason": "27993 > 0"
+    },
+    {
+      "check": {
+        "path": "output.class_counts.liver",
+        "gt": 0
+      },
+      "actual": 287451,
+      "ok": true,
+      "reason": "287451 > 0"
+    },
+    {
+      "check": {
+        "path": "model_load.missing_keys",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    },
+    {
+      "check": {
+        "path": "model_load.unexpected_keys",
+        "eq": 0
+      },
+      "actual": 0,
+      "ok": true,
+      "reason": "0 == 0"
+    }
+  ],
+  "runtime_status": "within_envelope",
+  "runtime_reason": null,
+  "overall_status": "failed (sanity/runtime/integrity gate)",
+  "integrity_status": "flagged",
+  "integrity_n_findings": 5,
+  "errors": [],
+  "parse_error": null,
+  "exit_code": 0,
+  "stderr_excerpt": "<env>/lib/python3.12/site-packages/cupy/_environment.py:596: UserWarning: \n--------------------------------------------------------------------------------\n\n  CuPy may not function correctly because multiple CuPy packages are installed\n  in your environment:\n\n    cupy-cuda12x, cupy-cuda13x\n\n  Follow these steps to resolve this issue:\n\n    1. For all packages listed above, run the following command to remove all\n       existing CuPy installations:\n\n         $ pip unins"
+}

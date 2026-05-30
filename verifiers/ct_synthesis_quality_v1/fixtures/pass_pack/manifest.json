@@ -1,0 +1,8 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "pass_pack_run",
+  "skill_id": "nv_generate_ct_rflow",
+  "skill_version": "0.1.0",
+  "skill_dir": "skills/nv-generate-ct-rflow"
+}

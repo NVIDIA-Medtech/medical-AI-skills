@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medical-ai-skills.local/spec/evidence_pack/trust_summary.schema.json",
+  "title": "Trusted-run trust_summary.json",
+  "description": "Top-level summary written by eval_engine.run_trusted. Links the skill pack and per-verifier packs, with explicit gaps for planned verifiers.",
+  "type": "object",
+  "required": [
+    "pack_format_version",
+    "trust_format_version",
+    "skill_id",
+    "skill_pack",
+    "skill_overall",
+    "verifiers",
+    "gaps",
+    "overall"
+  ],
+  "properties": {
+    "pack_format_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "trust_format_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "run_id": { "type": "string" },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "skill_id": { "type": "string", "minLength": 1 },
+    "skill_version": { "type": ["string", "number", "null"] },
+    "skill_pack": { "type": "string", "minLength": 1 },
+    "skill_overall": { "type": "string" },
+    "skill_exit_code": { "type": "integer" },
+    "verifiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "declared_status", "pack", "overall"],
+        "properties": {
+          "id": { "type": "string" },
+          "declared_status": { "type": "string" },
+          "pack": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "overall": { "type": "string" },
+          "checks": { "type": "array", "items": { "type": "string" } },
+          "hashes": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "hard_failure_count": { "type": "integer", "minimum": 0 },
+          "warning_count": { "type": "integer", "minimum": 0 },
+          "semantic_overall": { "type": ["string", "null"] },
+          "semantic_failure_count": { "type": "integer", "minimum": 0 },
+          "semantic_warning_count": { "type": "integer", "minimum": 0 },
+          "failure_findings": { "type": "array", "items": { "type": "string" } },
+          "warning_findings": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "declared_status", "reason"],
+        "properties": {
+          "id": { "type": ["string", "null"] },
+          "declared_status": { "type": "string" },
+          "reason": { "type": "string" },
+          "checks": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "implemented_verifiers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "planned_verifier_gaps": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "env_skipped_verifier_gaps": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "warning_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "pack": { "type": "string" },
+          "warning_count": { "type": "integer", "minimum": 0 },
+          "warnings": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "evidence_packs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "pack", "overall", "hashes"],
+        "properties": {
+          "role": { "type": "string", "enum": ["skill", "verifier"] },
+          "id": { "type": ["string", "null"] },
+          "pack": { "type": "string" },
+          "overall": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "hashes": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "overall": {
+      "type": "string",
+      "enum": ["passed", "failed", "gap", "warn", "no_verifiers"]
+    }
+  },
+  "additionalProperties": true
+}

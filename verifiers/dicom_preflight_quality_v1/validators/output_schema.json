@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dicom_preflight_quality_v1 output",
+  "type": "object",
+  "required": ["verifier", "target", "preflight_gate", "checks", "overall"],
+  "properties": {
+    "verifier": {
+      "type": "object",
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "target": {"type": "object"},
+    "preflight_gate": {
+      "type": "object",
+      "required": ["findings", "n_fail", "n_warn", "verdict", "acceptable"],
+      "properties": {
+        "findings": {"type": "array"},
+        "n_fail": {"type": "integer"},
+        "n_warn": {"type": "integer"},
+        "verdict": {"type": "string", "enum": ["pass", "warn", "fail"]},
+        "acceptable": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "checks": {"type": "array"},
+    "overall": {"type": "string", "enum": ["pass", "warn", "fail"]}
+  },
+  "additionalProperties": false
+}
