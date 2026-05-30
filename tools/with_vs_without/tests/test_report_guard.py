@@ -81,11 +81,14 @@ def test_report_generation_can_skip_guard_for_debugging(monkeypatch) -> None:
     monkeypatch.setattr(reports, "write_nemotron", lambda skill: {"skill": skill, "nemotron_with_pass": 1})
     overview_calls: list[tuple[list[dict[str, object]], list[dict[str, object]]]] = []
     monkeypatch.setattr(reports, "write_overview", lambda codex, nemotron: overview_calls.append((codex, nemotron)))
+    snapshot_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(reports, "write_snapshot", lambda **kwargs: snapshot_calls.append(kwargs))
 
     rc = reports.main(["--allow-incomplete"])
 
     assert rc == 0
     assert overview_calls
+    assert snapshot_calls == [{"repeats": reports.DIRECT_REPEATS}]
 
 
 def test_paired_outcome_summary_matches_backend_and_repeat() -> None:

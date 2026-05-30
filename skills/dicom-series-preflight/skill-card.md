@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill for engineering-time DICOM series preflight, scanning directories for corruption, orientation issues, PHI-tag presence, and consistency before conversion or model inference. <br>
+Developers and engineers use this skill for engineering-time header-only preflight checks on DICOM series directories before conversion or model inference, verifying orientation, consistency, and PHI-tag presence. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,15 +19,24 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Skill Manifest](skill_manifest.yaml) <br>
-- [Output Schema](validators/output_schema.json) <br>
+- [Output Schema (validators/output_schema.json)](validators/output_schema.json) <br>
+- [Skill Manifest (skill_manifest.yaml)](skill_manifest.yaml) <br>
 
 
 ## Skill Output: <br>
 **Output Type(s):** [JSON] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Structured preflight report with inventory, orientation, consistency, PHI flags, findings, and verdict (pass/warn/fail)] <br>
+**Other Properties Related to Output:** [None] <br>
+
+## Evaluation Agents Used: <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
+
+
+
+## Evaluation Tasks: <br>
+Evaluated against 3 evaluation tasks with 2 attempts per task (6 total runs per agent). Pass threshold: 50%. Overall verdict: PASS. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -37,7 +46,25 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 6 | 100% (+0%) | 100% (+0%) |
+| Correctness | 6 | 82% (+7%) | 60% (+15%) |
+| Discoverability | 6 | 81% (+10%) | 59% (+6%) |
+| Effectiveness | 6 | 67% (+11%) | 37% (+16%) |
+| Efficiency | 6 | 63% (+14%) | 50% (+7%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
