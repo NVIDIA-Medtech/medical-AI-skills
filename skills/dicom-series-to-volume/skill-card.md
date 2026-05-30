@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. Not for multi-frame DICOM or clinical use. <br>
+Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. <br>
 
 This skill is for research and development only. <br>
 
@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache 2.0 <br>
+Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers performing engineering-time conversion of a single-series CT DICOM directory to a HU-scaled NIfTI volume with affine and axcodes derived from DICOM headers. <br>
+Developers and engineers use this skill to convert a single CT DICOM series directory to a Hounsfield-unit-scaled NIfTI volume with computed affine and orientation metadata for engineering verification workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,15 +19,24 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [skill_manifest.yaml](skill_manifest.yaml) <br>
-- [Output JSON Schema](validators/output_schema.json) <br>
+- [Skill Manifest](skill_manifest.yaml) <br>
+- [Output Schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
 **Output Type(s):** [Files, JSON] <br>
-**Output Format:** [NIfTI volume (.nii.gz) and JSON summary on stdout] <br>
+**Output Format:** [NIfTI volume (.nii.gz) and JSON summary] <br>
 **Output Parameters:** [1D] <br>
 **Other Properties Related to Output:** [None] <br>
+
+## Evaluation Agents Used: <br>
+- `claude-code` <br>
+- `codex` <br>
+
+
+
+## Evaluation Tasks: <br>
+Evaluated against 2 evaluation tasks (1 positive skill-activation, 1 negative) with 2 attempts per task. Pass threshold: 50%. Overall verdict: PASS. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -37,7 +46,25 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+0%) | 100% (+0%) |
+| Correctness | 4 | 100% (+11%) | 88% (+1%) |
+| Discoverability | 4 | 97% (-2%) | 86% (+4%) |
+| Effectiveness | 4 | 92% (+10%) | 74% (+6%) |
+| Efficiency | 4 | 84% (+0%) | 76% (+13%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>

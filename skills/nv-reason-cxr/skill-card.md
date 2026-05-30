@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache 2.0 <br>
+Apache-2.0 <br>
 ## Use Case: <br>
-Developers and medtech engineers use this skill to run NV-Reason-CXR-3B chest X-ray inference for research and development, producing structured JSON engineering evidence. <br>
+Developers and engineers running NV-Reason-CXR-3B chest X-ray inference for engineering evaluation, smoke testing, and wrapper-behavior verification. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -27,10 +27,16 @@ Mitigation: Review and scan skill before deployment. <br>
 **Output Type(s):** [JSON] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Structured response with input image metadata, prompt, response text, runtime identity, and limitations] <br>
+**Other Properties Related to Output:** [Structured output includes input image metadata, prompt, response text, runtime identity, and limitations] <br>
+
+## Evaluation Agents Used: <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
+
+
 
 ## Evaluation Tasks: <br>
-NVSkills-Eval external profile: 9 Tier 1 static validation checks and 2 Tier 2 deduplication checks. Overall verdict: PASS. Tier 3 live agent evaluation not available in this report. <br>
+Evaluated against 2 positive skill-activation tasks with 2 attempts per task via NVSkills-Eval (external profile). <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -40,7 +46,25 @@ Reported benchmark dimensions: <br>
 - Effectiveness: Checks whether the agent performs measurably better with the skill than without it. <br>
 - Efficiency: Checks whether the agent uses fewer tokens and avoids redundant work. <br>
 
+Underlying evaluation signals used in this run: <br>
+- `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- `skill_execution`: Verifies that the agent loaded the expected skill and workflow. <br>
+- `skill_efficiency`: Checks routing quality, decoy avoidance, and redundant tool usage. <br>
+- `accuracy`: Grades final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Checks whether the overall user task completed successfully. <br>
+- `behavior_check`: Verifies expected behavior steps, including safety expectations. <br>
+- `token_efficiency`: Compares token usage with and without the skill. <br>
 
+
+
+## Evaluation Results: <br>
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 4 | 100% (+0%) | 100% (+25%) |
+| Correctness | 4 | 75% (+16%) | 97% (+44%) |
+| Discoverability | 4 | 46% (+3%) | 86% (+57%) |
+| Effectiveness | 4 | 96% (+22%) | 97% (+26%) |
+| Efficiency | 4 | 51% (+7%) | 75% (+41%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
