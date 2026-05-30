@@ -6,8 +6,8 @@ allowed-tools: Bash
 metadata:
   author: "NVIDIA MedTech <noreply@nvidia.com>"
   tags:
-    - medtech
-    - dicom
+    - MedTech
+    - DICOM
     - verifier
 ---
 
