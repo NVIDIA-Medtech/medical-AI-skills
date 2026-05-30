@@ -6,9 +6,9 @@ allowed-tools: Bash
 metadata:
   author: NVIDIA MedTech Team
   tags:
-    - medtech
-    - dicom
-    - nifti
+    - MedTech
+    - DICOM
+    - NIfTI
 ---
 
 # dicom_series_to_volume

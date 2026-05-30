@@ -6,8 +6,8 @@ allowed-tools: Bash
 metadata:
   author: NVIDIA MedTech Team
   tags:
-    - medtech
-    - cxr
+    - MedTech
+    - CXR
     - reasoning
 ---
 
