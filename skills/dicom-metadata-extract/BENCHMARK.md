@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `dicom-metadata-extract`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -55,10 +55,10 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
 | Security | 4 | 100% (+0%) | 100% (+0%) |
-| Correctness | 4 | 97% (+10%) | 83% (+21%) |
-| Discoverability | 4 | 90% (+31%) | 70% (+8%) |
-| Effectiveness | 4 | 91% (+2%) | 73% (+30%) |
-| Efficiency | 4 | 69% (+27%) | 55% (+5%) |
+| Correctness | 4 | 94% (+9%) | 85% (+25%) |
+| Discoverability | 4 | 88% (+18%) | 65% (+8%) |
+| Effectiveness | 4 | 85% (+5%) | 74% (+38%) |
+| Efficiency | 4 | 68% (+16%) | 46% (+4%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
@@ -68,11 +68,11 @@ Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found
 
 Top findings:
 
-- MEDIUM PII/ip_addresses: Non-RFC1918 IP address (`fixtures/generate_sample.py:17`)
 - MEDIUM PII/ip_addresses: Non-RFC1918 IP address (`fixtures/generate_sample.py:33`)
-- MEDIUM PII/ip_addresses: Non-RFC1918 IP address (`fixtures/generate_sample.py:35`)
+- MEDIUM PII/ip_addresses: Non-RFC1918 IP address (`fixtures/generate_sample.py:49`)
+- MEDIUM PII/ip_addresses: Non-RFC1918 IP address (`fixtures/generate_sample.py:51`)
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/dicom-metadata-extract/SKILL.md`)
-- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill declares no explicit permissions in its manifest yet exercises file_read, file_write, and shell capabilities v (`SKILL.md:1`)
+- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill declares use of Bash (shell execution) and performs file read/write operations via Python scripts, but has no  (`SKILL.md:1`)
 
 ## Tier 2: Deduplication Summary
 

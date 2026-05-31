@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Generate synthetic DICOM CT series fixtures for the dicom_series_to_volume skill.
 
 Produces two series:
@@ -11,6 +26,7 @@ something to look at if the workflow proceeds past the orientation gate.
 No real PHI; PatientName / PatientID set to synthetic values. Engineering
 verification only -- not a clinical fixture.
 """
+
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +38,7 @@ from pydicom.uid import (
 )
 
 ROOT = Path(__file__).resolve().parent
-SHAPE = (32, 64, 64)            # (n_slices, rows, cols)
+SHAPE = (32, 64, 64)  # (n_slices, rows, cols)
 SLICE_SPACING_MM = 2.0
 PIXEL_SPACING_MM = tuple(float(x) for x in ("1.0", "1.0"))
 
@@ -46,13 +62,19 @@ def _make_volume() -> np.ndarray:
     zz = np.arange(n_slices)[:, None, None]
     yyy = np.arange(rows)[None, :, None]
     xxx = np.arange(cols)[None, None, :]
-    blob = ((zz - blob_z) ** 2 + (yyy - blob_y) ** 2 + (xxx - blob_x) ** 2) < rad ** 2
+    blob = ((zz - blob_z) ** 2 + (yyy - blob_y) ** 2 + (xxx - blob_x) ** 2) < rad**2
     vol[blob] = 60.0
     return vol
 
 
-def _make_dataset(slice_idx: int, pixel_2d: np.ndarray, series_uid: str, study_uid: str,
-                  iop: list[float], position: list[float]) -> FileDataset:
+def _make_dataset(
+    slice_idx: int,
+    pixel_2d: np.ndarray,
+    series_uid: str,
+    study_uid: str,
+    iop: list[float],
+    position: list[float],
+) -> FileDataset:
     """Build one CT slice DICOM with the given orientation + position."""
     file_meta = Dataset()
     file_meta.MediaStorageSOPClassUID = CTImageStorage
@@ -131,7 +153,7 @@ def write_series(out_dir: Path, iop: list[float], series_label: str) -> None:
 
 def main() -> None:
     write_series(ROOT / "clean_axial", iop=[1, 0, 0, 0, 1, 0], series_label="clean")
-    write_series(ROOT / "flipped_lr",  iop=[-1, 0, 0, 0, 1, 0], series_label="flipped_lr")
+    write_series(ROOT / "flipped_lr", iop=[-1, 0, 0, 0, 1, 0], series_label="flipped_lr")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """DICOM-series-to-volume skill.
 
 Reads a single-series DICOM directory, sorts by ImagePositionPatient z,
@@ -8,6 +23,7 @@ plus a JSON summary that includes the resulting axcodes.
 
 Engineering verification only. Not a vetted clinical converter.
 """
+
 import json
 import time
 from pathlib import Path
@@ -52,7 +68,9 @@ def _missing_required_tags(datasets: list[pydicom.Dataset]) -> list[str]:
     return sorted(missing)
 
 
-def _affine_from_dicom(first: pydicom.Dataset, last: pydicom.Dataset, n_slices: int) -> tuple[np.ndarray, np.ndarray]:
+def _affine_from_dicom(
+    first: pydicom.Dataset, last: pydicom.Dataset, n_slices: int
+) -> tuple[np.ndarray, np.ndarray]:
     """Build a NIfTI-style RAS+ affine from DICOM ImageOrientationPatient + PixelSpacing.
 
     DICOM is LPS+; NIfTI is conventionally RAS+. We negate the first two rows
@@ -60,8 +78,8 @@ def _affine_from_dicom(first: pydicom.Dataset, last: pydicom.Dataset, n_slices: 
     interpretable as RAS-convention.
     """
     iop = np.array(first.ImageOrientationPatient, dtype=float)
-    row_dir = iop[:int("3")]   # column direction in patient (LPS) space
-    col_dir = iop[int("3"):]   # row direction in patient (LPS) space
+    row_dir = iop[: int("3")]  # column direction in patient (LPS) space
+    col_dir = iop[int("3") :]  # row direction in patient (LPS) space
     px_y, px_x = float(first.PixelSpacing[0]), float(first.PixelSpacing[1])
 
     ipp_first = np.array(first.ImagePositionPatient, dtype=float)
@@ -76,10 +94,10 @@ def _affine_from_dicom(first: pydicom.Dataset, last: pydicom.Dataset, n_slices: 
 
     # LPS affine
     affine_lps = np.eye(int("4"))
-    affine_lps[:int("3"), 0] = row_dir * px_x
-    affine_lps[:int("3"), 1] = col_dir * px_y
-    affine_lps[:int("3"), 2] = slice_dir * slice_spacing
-    affine_lps[:int("3"), int("3")] = ipp_first
+    affine_lps[: int("3"), 0] = row_dir * px_x
+    affine_lps[: int("3"), 1] = col_dir * px_y
+    affine_lps[: int("3"), 2] = slice_dir * slice_spacing
+    affine_lps[: int("3"), int("3")] = ipp_first
 
     # LPS -> RAS conversion: negate first two rows
     lps_to_ras = np.diag([float("-1.0"), float("-1.0"), float("1.0"), float("1.0")])
@@ -126,7 +144,7 @@ def main(
 
     # Sort by ImagePositionPatient projected onto cross(row, col) (slice axis).
     iop = np.array(datasets[0].ImageOrientationPatient, dtype=float)
-    slice_axis = np.cross(iop[:int("3")], iop[int("3"):])
+    slice_axis = np.cross(iop[: int("3")], iop[int("3") :])
 
     def _z_proj(ds):
         return float(np.dot(np.array(ds.ImagePositionPatient, dtype=float), slice_axis))

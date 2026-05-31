@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill for extracting structured metadata from DICOM files and checking for the presence of standard PHI tags during development and review workflows. <br>
+Developers and engineers use this skill to extract selected metadata from DICOM files and flag standard-tag PHI presence during development-time review. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,15 +19,15 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Skill Manifest](skill_manifest.yaml) <br>
 - [Output Schema](validators/output_schema.json) <br>
+- [Skill Manifest](skill_manifest.yaml) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Analysis] <br>
+**Output Type(s):** [JSON, Analysis] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Validates against validators/output_schema.json] <br>
+**Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Agents Used: <br>
 - `claude-code` <br>
@@ -36,7 +36,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 0 negative cases). Pass threshold: 50%. Overall verdict: PASS. <br>
+Evaluated against 2 evaluation tasks (positive skill-activation cases, 2 attempts per task, 50% pass threshold). Overall verdict: PASS. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -61,10 +61,10 @@ Underlying evaluation signals used in this run: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
 | Security | 4 | 100% (+0%) | 100% (+0%) |
-| Correctness | 4 | 97% (+10%) | 83% (+21%) |
-| Discoverability | 4 | 90% (+31%) | 70% (+8%) |
-| Effectiveness | 4 | 91% (+2%) | 73% (+30%) |
-| Efficiency | 4 | 69% (+27%) | 55% (+5%) |
+| Correctness | 4 | 94% (+9%) | 85% (+25%) |
+| Discoverability | 4 | 88% (+18%) | 65% (+8%) |
+| Effectiveness | 4 | 85% (+5%) | 74% (+38%) |
+| Efficiency | 4 | 68% (+16%) | 46% (+4%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>

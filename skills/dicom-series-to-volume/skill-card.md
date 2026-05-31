@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. <br>
+Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. Not for multi-frame DICOM or clinical use. <br>
 
 This skill is for research and development only. <br>
 
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill to convert a single CT DICOM series directory to a Hounsfield-unit-scaled NIfTI volume with computed affine and orientation metadata for engineering verification workflows. <br>
+Developers and engineers converting single-series CT DICOM directories to HU-scaled NIfTI volumes with geometry evidence for downstream medical imaging pipelines. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -25,18 +25,18 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Skill Output: <br>
 **Output Type(s):** [Files, JSON] <br>
-**Output Format:** [NIfTI volume (.nii.gz) and JSON summary] <br>
+**Output Format:** [NIfTI volume (.nii.gz) plus JSON summary] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Key output fields: n_slices, series_instance_uid, output.shape, output.spacing, output.axcodes, output.affine, hu_range, runtime.conversion_seconds] <br>
 
 ## Evaluation Agents Used: <br>
-- `claude-code` <br>
-- `codex` <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
 
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (1 positive skill-activation, 1 negative) with 2 attempts per task. Pass threshold: 50%. Overall verdict: PASS. <br>
+2 evaluation tasks (1 positive skill-activation, 1 negative activation), 2 attempts per task, 50% pass threshold. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -60,11 +60,11 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 100% (+0%) |
-| Correctness | 4 | 100% (+11%) | 88% (+1%) |
-| Discoverability | 4 | 97% (-2%) | 86% (+4%) |
-| Effectiveness | 4 | 92% (+10%) | 74% (+6%) |
-| Efficiency | 4 | 84% (+0%) | 76% (+13%) |
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 98% (+6%) | 90% (+6%) |
+| Discoverability | 4 | 94% (-3%) | 82% (+3%) |
+| Effectiveness | 4 | 98% (+17%) | 82% (+4%) |
+| Efficiency | 4 | 81% (-3%) | 72% (+10%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
