@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-reason-cxr`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,11 +54,11 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 100% (+25%) |
-| Correctness | 4 | 75% (+16%) | 97% (+44%) |
-| Discoverability | 4 | 46% (+3%) | 86% (+57%) |
-| Effectiveness | 4 | 96% (+22%) | 97% (+26%) |
-| Efficiency | 4 | 51% (+7%) | 75% (+41%) |
+| Security | 4 | 100% (+0%) | 100% (+0%) |
+| Correctness | 4 | 75% (+3%) | 95% (+25%) |
+| Discoverability | 4 | 44% (-6%) | 84% (+54%) |
+| Effectiveness | 4 | 93% (+12%) | 96% (+3%) |
+| Efficiency | 4 | 47% (-7%) | 74% (+41%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
@@ -69,9 +69,9 @@ Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found
 Top findings:
 
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-reason-cxr/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-reason-cxr/validators`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-reason-cxr/skill_manifest.yaml`)
 - LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-reason-cxr/fixtures`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-reason-cxr/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-reason-cxr/validators`)
 - LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-reason-cxr/tests`)
 
 ## Tier 2: Deduplication Summary
