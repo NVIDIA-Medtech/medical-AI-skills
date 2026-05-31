@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify nv_generate_ct_rflow evidence packs for engineering-floor quality.
 
 Four tiers, each emitting a sub-verdict:
@@ -25,6 +40,7 @@ diffusion sampler ran with the user-declared anatomy_list, see the wrapper's
 own `output.union_label_ids_present` (recorded by run_rflow_ct.py) — this
 verifier reports the same field for cross-check parity.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -200,11 +216,15 @@ def _geometry_consistency(records: list[dict[str, Any]]) -> dict[str, Any]:
             failed.append(f"sample[{i}]: image or label unreadable")
             continue
         if not r.get("shape_match"):
-            failed.append(f"sample[{i}]: shape mismatch image={r.get('image_shape')} label={r.get('label_shape')}")
+            failed.append(
+                f"sample[{i}]: shape mismatch image={r.get('image_shape')} label={r.get('label_shape')}"
+            )
         if not r.get("spacing_match"):
             failed.append(f"sample[{i}]: spacing mismatch")
         if not r.get("affine_match"):
-            failed.append(f"sample[{i}]: affine mismatch (max_abs_diff={r.get('affine_max_abs_diff')})")
+            failed.append(
+                f"sample[{i}]: affine mismatch (max_abs_diff={r.get('affine_max_abs_diff')})"
+            )
     return {"verdict": "pass" if not failed else "fail", "failed_checks": failed}
 
 
@@ -276,9 +296,13 @@ def _declared_anatomy_coverage(output: dict[str, Any], labels: dict[str, Any]) -
             if not isinstance(anatomy, str) or not anatomy:
                 failed.append(f"output_label_mapping[{i}] has invalid anatomy {anatomy!r}")
             if not isinstance(maisi_label_id, int):
-                failed.append(f"output_label_mapping[{i}] has invalid maisi_label_id {maisi_label_id!r}")
+                failed.append(
+                    f"output_label_mapping[{i}] has invalid maisi_label_id {maisi_label_id!r}"
+                )
             if not isinstance(output_label_id, int) or output_label_id <= 0:
-                failed.append(f"output_label_mapping[{i}] has invalid output_label_id {output_label_id!r}")
+                failed.append(
+                    f"output_label_mapping[{i}] has invalid output_label_id {output_label_id!r}"
+                )
                 continue
             expected_output_ids.add(output_label_id)
 
@@ -296,7 +320,9 @@ def _declared_anatomy_coverage(output: dict[str, Any], labels: dict[str, Any]) -
     }
 
 
-def _anatomy_hu_plausibility(records: list[dict[str, Any]], output: dict[str, Any]) -> dict[str, Any]:
+def _anatomy_hu_plausibility(
+    records: list[dict[str, Any]], output: dict[str, Any]
+) -> dict[str, Any]:
     failed: list[str] = []
     checked: list[dict[str, Any]] = []
     mapping = output.get("output_label_mapping") or []

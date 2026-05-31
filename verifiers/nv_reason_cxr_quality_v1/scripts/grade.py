@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify nv_reason_cxr evidence packs."""
+
 from __future__ import annotations
 
 import hashlib
@@ -132,18 +148,22 @@ def _forbidden_findings(text: Any) -> list[dict[str, str]]:
         try:
             match = re.search(item["pattern"], text, flags=re.IGNORECASE | re.DOTALL)
         except re.error:
-            findings.append({
-                "label": item["label"],
-                "pattern": item["pattern"],
-                "match": "<invalid regex>",
-            })
+            findings.append(
+                {
+                    "label": item["label"],
+                    "pattern": item["pattern"],
+                    "match": "<invalid regex>",
+                }
+            )
             continue
         if match:
-            findings.append({
-                "label": item["label"],
-                "pattern": item["pattern"],
-                "match": match.group(0),
-            })
+            findings.append(
+                {
+                    "label": item["label"],
+                    "pattern": item["pattern"],
+                    "match": match.group(0),
+                }
+            )
     return findings
 
 
@@ -260,9 +280,11 @@ def grade(pack_dir: Path) -> dict[str, Any]:
         make_check(
             "forbidden_phrases_absent",
             not forbidden,
-            "no treatment/regulatory/patient-directed/absolute-certainty phrases found"
-            if not forbidden
-            else f"matches={forbidden}",
+            (
+                "no treatment/regulatory/patient-directed/absolute-certainty phrases found"
+                if not forbidden
+                else f"matches={forbidden}"
+            ),
         ),
     ]
 

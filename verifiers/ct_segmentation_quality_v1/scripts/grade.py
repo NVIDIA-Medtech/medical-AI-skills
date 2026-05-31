@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify CT segmentation evidence packs for CT-segmentation quality floors.
 
 This verifier sits outside the wrapper. The wrapper proves VISTA3D ran and
@@ -6,6 +21,7 @@ produced a geometrically-aligned, label-set-valid mask; this verifier asks
 whether the mask passes a per-case anatomy plausibility floor (and, when a
 ground-truth label map is referenced by the pack, a per-class Dice/IoU floor).
 """
+
 from __future__ import annotations
 
 import sys
@@ -82,6 +98,7 @@ def _connected_component_stats(mask: np.ndarray) -> tuple[int, float]:
         return 0, 0.0
     try:
         from scipy.ndimage import label  # type: ignore
+
         structure = np.ones((3, 3, 3), dtype=np.uint8)
         labeled, n = label(mask, structure=structure)
         if n == 0:
@@ -118,18 +135,20 @@ def _per_class_stats(
             components_ok = True
             frac_ok = True
             bounds = None
-        rows.append({
-            "label_id": label_id,
-            "name": inv_label_dict.get(label_id, f"label_id_{label_id}"),
-            "voxel_count": voxel_count,
-            "volume_ml": volume_ml,
-            "component_count": n_components,
-            "largest_cc_fraction": round(largest_fraction, 4),
-            "volume_bounds_ok": bool(volume_ok),
-            "components_ok": bool(components_ok),
-            "largest_cc_fraction_ok": bool(frac_ok),
-            "bounds": bounds,
-        })
+        rows.append(
+            {
+                "label_id": label_id,
+                "name": inv_label_dict.get(label_id, f"label_id_{label_id}"),
+                "voxel_count": voxel_count,
+                "volume_ml": volume_ml,
+                "component_count": n_components,
+                "largest_cc_fraction": round(largest_fraction, 4),
+                "volume_bounds_ok": bool(volume_ok),
+                "components_ok": bool(components_ok),
+                "largest_cc_fraction_ok": bool(frac_ok),
+                "bounds": bounds,
+            }
+        )
     return rows
 
 
@@ -145,14 +164,10 @@ def _cross_class_checks(
     if cross_floors.get("liver_gt_spleen") and liver and spleen:
         if liver["volume_ml"] > spleen["volume_ml"]:
             liver_status = "pass"
-            liver_reason = (
-                f"liver={liver['volume_ml']} mL > spleen={spleen['volume_ml']} mL"
-            )
+            liver_reason = f"liver={liver['volume_ml']} mL > spleen={spleen['volume_ml']} mL"
         else:
             liver_status = "fail"
-            liver_reason = (
-                f"liver={liver['volume_ml']} mL <= spleen={spleen['volume_ml']} mL"
-            )
+            liver_reason = f"liver={liver['volume_ml']} mL <= spleen={spleen['volume_ml']} mL"
         liver_block = {
             "status": liver_status,
             "reason": liver_reason,
@@ -191,18 +206,18 @@ def _cross_class_checks(
         mean = (a + b) / 2.0 if (a + b) > 0 else 0.0
         rel = abs(a - b) / mean if mean > 0 else 0.0
         pair_ok = rel <= max_diff
-        pairs.append({
-            "label_ids": list(pair_key),
-            "names": [row["name"], partner["name"]],
-            "volumes_ml": [a, b],
-            "relative_diff": round(rel, 4),
-            "ok": pair_ok,
-        })
+        pairs.append(
+            {
+                "label_ids": list(pair_key),
+                "names": [row["name"], partner["name"]],
+                "volumes_ml": [a, b],
+                "relative_diff": round(rel, 4),
+                "ok": pair_ok,
+            }
+        )
         if worst_diff is None or rel > worst_diff:
             worst_diff = rel
-        sym_status = (
-            "pass" if all(p["ok"] for p in pairs) else "fail"
-        )
+        sym_status = "pass" if all(p["ok"] for p in pairs) else "fail"
         sym_reason = (
             f"worst relative_diff={worst_diff:.3f} <= {max_diff}"
             if sym_status == "pass"
@@ -225,7 +240,9 @@ def _anatomy_plausibility(
     output_payload: dict[str, Any],
     bounds_table: dict[str, Any],
     inv_label_dict: dict[int, str],
-) -> tuple[dict[str, Any], dict[str, Any], np.ndarray | None, nib.spatialimages.SpatialImage | None]:
+) -> tuple[
+    dict[str, Any], dict[str, Any], np.ndarray | None, nib.spatialimages.SpatialImage | None
+]:
     """Return (artifact_inventory, anatomy_plausibility, mask_array, mask_img)."""
     output = output_payload.get("output") or {}
     declared_shape = output.get("shape") or []
@@ -284,9 +301,7 @@ def _anatomy_plausibility(
         mask_arr, voxel_volume_ml, label_ids_present, inv_label_dict, bounds_table
     )
 
-    fail_volume = [
-        row["name"] for row in per_class if not row["volume_bounds_ok"]
-    ]
+    fail_volume = [row["name"] for row in per_class if not row["volume_bounds_ok"]]
     fail_components = [
         row["name"]
         for row in per_class
@@ -308,17 +323,21 @@ def _anatomy_plausibility(
         make_check(
             "all_classes_within_volume_bounds",
             len(fail_volume) == 0,
-            "all per-class volumes within population bounds"
-            if not fail_volume
-            else f"classes outside bounds: {fail_volume}",
+            (
+                "all per-class volumes within population bounds"
+                if not fail_volume
+                else f"classes outside bounds: {fail_volume}"
+            ),
             failing=fail_volume,
         ),
         make_check(
             "no_fragmented_classes",
             len(fail_components) == 0,
-            "no class exceeds CC cap or fails largest-CC fraction"
-            if not fail_components
-            else f"fragmented classes: {fail_components}",
+            (
+                "no class exceeds CC cap or fails largest-CC fraction"
+                if not fail_components
+                else f"fragmented classes: {fail_components}"
+            ),
             failing=fail_components,
         ),
         make_check(
@@ -397,9 +416,7 @@ def _gt_metrics(
             **skipped,
             "verdict": "fail",
             "acceptable": False,
-            "reason": (
-                f"GT shape {gt_arr.shape} != predicted shape {mask_arr.shape}"
-            ),
+            "reason": (f"GT shape {gt_arr.shape} != predicted shape {mask_arr.shape}"),
         }
 
     label_ids_pred = sorted(int(v) for v in np.unique(mask_arr) if int(v) != 0)
@@ -409,9 +426,7 @@ def _gt_metrics(
         return {
             "verdict": "skipped",
             "acceptable": True,
-            "reason": (
-                "no overlap between predicted/requested classes and GT classes"
-            ),
+            "reason": ("no overlap between predicted/requested classes and GT classes"),
             "ground_truth_path": _public_path(gt_path),
             "per_class": [],
             "checks": [],
@@ -430,14 +445,16 @@ def _gt_metrics(
         floor = floors.get(str(label_id))
         dice_floor = float(floor) if isinstance(floor, (int, float)) else None
         dice_ok = dice_floor is None or dice >= dice_floor
-        per_class.append({
-            "label_id": label_id,
-            "name": inv_label_dict.get(label_id, f"label_id_{label_id}"),
-            "dice": round(dice, 4),
-            "iou": round(iou, 4),
-            "dice_floor": dice_floor,
-            "dice_ok": bool(dice_ok),
-        })
+        per_class.append(
+            {
+                "label_id": label_id,
+                "name": inv_label_dict.get(label_id, f"label_id_{label_id}"),
+                "dice": round(dice, 4),
+                "iou": round(iou, 4),
+                "dice_floor": dice_floor,
+                "dice_ok": bool(dice_ok),
+            }
+        )
 
     failing = [row["name"] for row in per_class if not row["dice_ok"]]
     checks = [
@@ -553,9 +570,7 @@ def grade(pack_dir: Path) -> dict[str, Any]:
     inventory, plausibility, mask_arr, mask_img = _anatomy_plausibility(
         mask_path, output_payload, bounds_table, inv_label_dict
     )
-    gt = _gt_metrics(
-        mask_arr, mask_img, gt_path, list(requested), bounds_table, inv_label_dict
-    )
+    gt = _gt_metrics(mask_arr, mask_img, gt_path, list(requested), bounds_table, inv_label_dict)
 
     # Did the segmentation deliver only what was asked for? Anatomy
     # plausibility per-class doesn't catch "segmented everything instead of
