@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers running NV-Reason-CXR-3B chest X-ray inference for engineering evaluation, smoke testing, and wrapper-behavior verification. <br>
+Developers and engineers use this skill to run NV-Reason-CXR chest X-ray reasoning inference and command-shape smoke tests for engineering validation and research purposes. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -20,14 +20,13 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
 - [NV-Reason-CXR GitHub Repository](https://github.com/NVIDIA-Medtech/NV-Reason-CXR) <br>
-- [NV-Reason-CXR-3B Hugging Face Model](https://huggingface.co/nvidia/NV-Reason-CXR-3B) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [JSON] <br>
+**Output Type(s):** [Analysis, JSON] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Structured output includes input image metadata, prompt, response text, runtime identity, and limitations] <br>
+**Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Agents Used: <br>
 - Claude Code (`claude-code`) <br>
@@ -36,7 +35,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 positive skill-activation tasks with 2 attempts per task via NVSkills-Eval (external profile). <br>
+Evaluated against 2 evaluation tasks with 2 attempts per task; pass threshold 50%. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -60,14 +59,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 100% (+25%) |
-| Correctness | 4 | 75% (+16%) | 97% (+44%) |
-| Discoverability | 4 | 46% (+3%) | 86% (+57%) |
-| Effectiveness | 4 | 96% (+22%) | 97% (+26%) |
-| Efficiency | 4 | 51% (+7%) | 75% (+41%) |
+| Security | 4 | 100% (+0%) | 100% (+0%) |
+| Correctness | 4 | 75% (+3%) | 95% (+25%) |
+| Discoverability | 4 | 44% (-6%) | 84% (+54%) |
+| Effectiveness | 4 | 93% (+12%) | 96% (+3%) |
+| Efficiency | 4 | 47% (-7%) | 74% (+41%) |
 
 ## Skill Version(s): <br>
-0.1.0 (source: skill_manifest.yaml) <br>
+fe88034 (source: git SHA, committed 2026-05-31) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
