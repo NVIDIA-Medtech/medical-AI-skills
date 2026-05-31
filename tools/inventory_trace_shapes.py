@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Inventory agent_run_trace.jsonl field shapes across evidence packs."""
+
 from __future__ import annotations
 
 import argparse
@@ -8,7 +24,6 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TRACE_NAME = "agent_run_trace.jsonl"
@@ -74,18 +89,22 @@ def _read_trace(path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]
         try:
             payload = json.loads(line)
         except Exception as exc:
-            errors.append({
-                "path": _repo_relative(path),
-                "line": line_number,
-                "error": str(exc),
-            })
+            errors.append(
+                {
+                    "path": _repo_relative(path),
+                    "line": line_number,
+                    "error": str(exc),
+                }
+            )
             continue
         if not isinstance(payload, dict):
-            errors.append({
-                "path": _repo_relative(path),
-                "line": line_number,
-                "error": "record is not a JSON object",
-            })
+            errors.append(
+                {
+                    "path": _repo_relative(path),
+                    "line": line_number,
+                    "error": "record is not a JSON object",
+                }
+            )
             continue
         records.append(payload)
     return records, errors
@@ -123,11 +142,13 @@ def inventory_trace_shapes(roots: list[Path] | None = None) -> dict[str, Any]:
             fields = tuple(sorted(record))
             shape_counts[fields] += 1
             if len(shape_examples[fields]) < MAX_EXAMPLES_PER_SHAPE:
-                shape_examples[fields].append({
-                    "path": rel,
-                    "line": line_index,
-                    "record": record,
-                })
+                shape_examples[fields].append(
+                    {
+                        "path": rel,
+                        "line": line_index,
+                        "record": record,
+                    }
+                )
             field_counts.update(record.keys())
             event_counts[_event_value(record)] += 1
             for stable_field, aliases in CANDIDATE_FIELDS.items():
@@ -139,38 +160,47 @@ def inventory_trace_shapes(roots: list[Path] | None = None) -> dict[str, Any]:
     candidate_fields = []
     for stable_field, aliases in CANDIDATE_FIELDS.items():
         observed = candidate_present_counts[stable_field]
-        candidate_fields.append({
-            "field": stable_field,
-            "aliases": list(aliases),
-            "observed_records": observed,
-            "missing_records": total_records - observed,
-            "alias_counts": dict(sorted(candidate_alias_counts[stable_field].items())),
-        })
+        candidate_fields.append(
+            {
+                "field": stable_field,
+                "aliases": list(aliases),
+                "observed_records": observed,
+                "missing_records": total_records - observed,
+                "alias_counts": dict(sorted(candidate_alias_counts[stable_field].items())),
+            }
+        )
 
     shapes = []
     for fields, count in shape_counts.most_common():
-        shapes.append({
-            "fields": list(fields),
-            "record_count": count,
-            "examples": shape_examples[fields],
-        })
+        shapes.append(
+            {
+                "fields": list(fields),
+                "record_count": count,
+                "examples": shape_examples[fields],
+            }
+        )
 
-    return _json_safe({
-        "trace_inventory_version": "0.1.0",
-        "roots": [_repo_relative((root if root.is_absolute() else REPO_ROOT / root)) for root in scan_roots],
-        "files_scanned": len(trace_files),
-        "records_scanned": total_records,
-        "parse_errors": parse_errors,
-        "records_by_file": records_by_file,
-        "observed_fields": dict(field_counts.most_common()),
-        "event_counts": dict(event_counts.most_common()),
-        "record_shapes": shapes,
-        "candidate_stable_fields": candidate_fields,
-        "notes": [
-            "This report inventories existing records only; it does not validate or migrate packs.",
-            "Use observed aliases to design a future compatibility schema for agent_run_trace.jsonl.",
-        ],
-    })
+    return _json_safe(
+        {
+            "trace_inventory_version": "0.1.0",
+            "roots": [
+                _repo_relative((root if root.is_absolute() else REPO_ROOT / root))
+                for root in scan_roots
+            ],
+            "files_scanned": len(trace_files),
+            "records_scanned": total_records,
+            "parse_errors": parse_errors,
+            "records_by_file": records_by_file,
+            "observed_fields": dict(field_counts.most_common()),
+            "event_counts": dict(event_counts.most_common()),
+            "record_shapes": shapes,
+            "candidate_stable_fields": candidate_fields,
+            "notes": [
+                "This report inventories existing records only; it does not validate or migrate packs.",
+                "Use observed aliases to design a future compatibility schema for agent_run_trace.jsonl.",
+            ],
+        }
+    )
 
 
 def render_markdown(report: dict[str, Any]) -> str:
@@ -249,7 +279,9 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--out", type=Path, help="Write JSON report to this path.")
     parser.add_argument("--markdown-out", type=Path, help="Write Markdown report to this path.")
-    parser.add_argument("--format", choices=("json", "markdown"), default="json", help="Stdout format.")
+    parser.add_argument(
+        "--format", choices=("json", "markdown"), default="json", help="Stdout format."
+    )
     return parser.parse_args(argv)
 
 

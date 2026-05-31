@@ -1,0 +1,37 @@
+# Copyright check exclude patterns (one regex per line; lines starting with # are comments).
+# Shared by check_copyright.py and add_copyright_headers.py.
+#
+# Usage:
+#   python3 .github/workflows/scripts/check_copyright.py . \
+#     --exclude-config .github/workflows/scripts/copyright_excludes.txt
+#
+# Bundles, downloaded models, and local run/output dirs are gitignored and not
+# project-authored, so they must never be headered or checked.
+skills/.*/bundle/
+skills/.*/bundles/
+\.workbench_data/
+runs/
+__pycache__/
+\.pytest_cache/
+# Private working notes (gitignored).
+discussions/
+
+# Local virtualenvs / vendored site-packages (never project-authored).
+\.venv/
+venv/
+site-packages/
+node_modules/
+\.tox/
+
+# request-nvskills-ci.yml is owned/validated by the NVSkills CI integration; leave it unheadered.
+\.github/workflows/request-nvskills-ci\.yml
+
+# Bot-generated NVSkills signing artifacts (committed by svc-nvskills-signing).
+(^|/)skill-card\.md$
+(^|/)BENCHMARK\.md$
+(^|/)skill\.oms\.sig$
+
+# Test-skill fixtures: deliberately structured as skills (own skill_manifest.yaml) so the
+# completeness verifier can grade them. Headering them makes NVCARPS detect-changes treat
+# them as nested resource roots (disallowed). Mirrors eval_engine/manifest.py.
+verifiers/skill_completeness_v1/fixtures/

@@ -1,9 +1,25 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Render a compact Markdown review packet from an evidence pack.
 
 This is an additive maintainer view: it reads existing pack files and does not
 change the evidence-pack format.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -145,7 +161,9 @@ def _skill_manifest_from_run(run_manifest: dict[str, Any], *, pack_dir: Path) ->
     return _load_yaml(skill_dir / "skill_manifest.yaml")
 
 
-def _pack_kind(root: Path, trust_summary: dict[str, Any] | None, run_manifest: dict[str, Any] | None) -> str:
+def _pack_kind(
+    root: Path, trust_summary: dict[str, Any] | None, run_manifest: dict[str, Any] | None
+) -> str:
     if trust_summary is not None:
         return "trusted_run"
     if run_manifest:
@@ -174,7 +192,12 @@ def _expected_file_gaps(pack_dir: Path) -> tuple[list[str], list[str]]:
         if not (pack_dir / name).exists():
             if required:
                 missing_required.append(name)
-            elif name in {"provenance.json", "llm_interaction.json", "dataset_run.jsonl", "trust_summary.json"}:
+            elif name in {
+                "provenance.json",
+                "llm_interaction.json",
+                "dataset_run.jsonl",
+                "trust_summary.json",
+            }:
                 missing_optional.append(name)
     return missing_required, missing_optional
 
@@ -202,7 +225,9 @@ def _validation_gate_rows(summary: dict[str, Any] | None) -> list[list[Any]]:
         detail = summary.get(detail_key) if detail_key else None
         if isinstance(detail, list):
             failed = [item for item in detail if isinstance(item, dict) and item.get("ok") is False]
-            reason = f"{len(failed)} failed / {len(detail)} total" if failed else f"{len(detail)} total"
+            reason = (
+                f"{len(failed)} failed / {len(detail)} total" if failed else f"{len(detail)} total"
+            )
         elif detail:
             reason = detail
         else:
@@ -350,15 +375,16 @@ def _artifact_rows_and_gaps(
             recorded_hash = fixture.get("sha256") or "-"
             if actual_hash not in {"-", recorded_hash}:
                 gaps.append(
-                    "local fixture hash differs from manifest fixture hash: "
-                    f"{fixture_path}"
+                    "local fixture hash differs from manifest fixture hash: " f"{fixture_path}"
                 )
-            rows.append([
-                "fixture",
-                fixture_path,
-                recorded_hash,
-                fixture.get("size_bytes") or "-",
-            ])
+            rows.append(
+                [
+                    "fixture",
+                    fixture_path,
+                    recorded_hash,
+                    fixture.get("size_bytes") or "-",
+                ]
+            )
     if output:
         seen: set[tuple[str, str]] = set()
         for dotted_path, raw_path in _artifact_paths(output):
@@ -383,13 +409,7 @@ def _trace_digest(trace_records: list[dict[str, Any]], trace_errors: list[str]) 
         str(r.get("kind") or r.get("event_type") or r.get("type") or "unknown")
         for r in trace_records
     )
-    tools = sorted(
-        {
-            str(r.get("tool"))
-            for r in trace_records
-            if r.get("tool")
-        }
-    )
+    tools = sorted({str(r.get("tool")) for r in trace_records if r.get("tool")})
     models = sorted(
         {
             str(r.get("model") or r.get("model_name"))
@@ -397,13 +417,11 @@ def _trace_digest(trace_records: list[dict[str, Any]], trace_errors: list[str]) 
             if r.get("model") or r.get("model_name")
         }
     )
-    commands = [
-        r.get("command")
-        for r in trace_records
-        if r.get("command")
-    ][:MAX_LIST_ITEMS]
+    commands = [r.get("command") for r in trace_records if r.get("command")][:MAX_LIST_ITEMS]
     files_read = sorted({str(v) for r in trace_records for v in _as_list(r.get("files_read"))})
-    files_written = sorted({str(v) for r in trace_records for v in _as_list(r.get("files_written"))})
+    files_written = sorted(
+        {str(v) for r in trace_records for v in _as_list(r.get("files_written"))}
+    )
     approvals = [r for r in trace_records if r.get("approval_required") or r.get("approval_result")]
 
     lines = [
@@ -417,9 +435,13 @@ def _trace_digest(trace_records: list[dict[str, Any]], trace_errors: list[str]) 
     if commands:
         lines.append(_bullet("Commands: " + "; ".join(_scalar(c) for c in commands)))
     if files_read:
-        lines.append(_bullet("Files read: " + ", ".join(f"`{p}`" for p in files_read[:MAX_LIST_ITEMS])))
+        lines.append(
+            _bullet("Files read: " + ", ".join(f"`{p}`" for p in files_read[:MAX_LIST_ITEMS]))
+        )
     if files_written:
-        lines.append(_bullet("Files written: " + ", ".join(f"`{p}`" for p in files_written[:MAX_LIST_ITEMS])))
+        lines.append(
+            _bullet("Files written: " + ", ".join(f"`{p}`" for p in files_written[:MAX_LIST_ITEMS]))
+        )
     if approvals:
         lines.append(_bullet(f"Approval events: `{len(approvals)}`"))
     if trace_errors:
@@ -456,7 +478,9 @@ def _provenance_lines(provenance: dict[str, Any] | None) -> tuple[list[str], lis
                 else f"available={_scalar(gpu.get('available'))}, nvidia-smi={_scalar(gpu.get('have_nvidia_smi'))}, nvcc={_scalar(gpu.get('have_nvcc'))}"
             )
         ),
-        _bullet(f"Container requires Docker: `{_scalar(container.get('requires_docker'))}`; digest: `{_scalar(container.get('image_digest_observed'))}`"),
+        _bullet(
+            f"Container requires Docker: `{_scalar(container.get('requires_docker'))}`; digest: `{_scalar(container.get('image_digest_observed'))}`"
+        ),
         _bullet(
             "Network declared: "
             + (
@@ -544,17 +568,21 @@ def _trust_evidence_rows(trust_summary: dict[str, Any] | None) -> list[list[Any]
     for pack in trust_summary.get("evidence_packs") or []:
         if not isinstance(pack, dict):
             continue
-        rows.append([
-            pack.get("role"),
-            pack.get("id"),
-            pack.get("pack"),
-            pack.get("overall"),
-            _hash_digest(pack.get("hashes") or {}),
-        ])
+        rows.append(
+            [
+                pack.get("role"),
+                pack.get("id"),
+                pack.get("pack"),
+                pack.get("overall"),
+                _hash_digest(pack.get("hashes") or {}),
+            ]
+        )
     return rows
 
 
-def _verifier_rows(root: Path, trust_summary: dict[str, Any] | None) -> tuple[list[list[Any]], list[str]]:
+def _verifier_rows(
+    root: Path, trust_summary: dict[str, Any] | None
+) -> tuple[list[list[Any]], list[str]]:
     if not trust_summary:
         return [], []
     rows: list[list[Any]] = []
@@ -566,17 +594,21 @@ def _verifier_rows(root: Path, trust_summary: dict[str, Any] | None) -> tuple[li
         vpack = root / str(pack_rel) if pack_rel else None
         vval, _ = _read_json(vpack / "validation_summary.json") if vpack else (None, "missing")
         vout, _ = _read_json(vpack / "output.json") if vpack else (None, "missing")
-        rows.append([
-            verifier.get("id"),
-            verifier.get("overall"),
-            verifier.get("declared_status"),
-            pack_rel,
-            _scalar(vval.get("overall_status") if vval else "-"),
-            _verifier_issue_summary(vout, verifier),
-        ])
+        rows.append(
+            [
+                verifier.get("id"),
+                verifier.get("overall"),
+                verifier.get("declared_status"),
+                pack_rel,
+                _scalar(vval.get("overall_status") if vval else "-"),
+                _verifier_issue_summary(vout, verifier),
+            ]
+        )
     for gap in trust_summary.get("gaps", []):
         if isinstance(gap, dict):
-            gaps.append(f"{gap.get('id') or 'unknown'} ({gap.get('declared_status')}): {gap.get('reason')}")
+            gaps.append(
+                f"{gap.get('id') or 'unknown'} ({gap.get('declared_status')}): {gap.get('reason')}"
+            )
     return rows, gaps
 
 
@@ -591,7 +623,9 @@ def _reviewer_checklist(
 ) -> list[str]:
     items: list[str] = []
     if failures:
-        items.append("Confirm each failing gate is expected for this pack, or regenerate/fix the skill before citing it.")
+        items.append(
+            "Confirm each failing gate is expected for this pack, or regenerate/fix the skill before citing it."
+        )
     else:
         items.append("Confirm the gate table matches the claim being reviewed.")
     if evidence_gaps:
@@ -599,11 +633,17 @@ def _reviewer_checklist(
     if trust_summary is None and paired_verifier_obligations:
         items.append("Use `make run-trusted` when paired verifier coverage is required.")
     elif trust_summary is None:
-        items.append("No trusted-run summary is present; inspect the single-pack evidence directly.")
+        items.append(
+            "No trusted-run summary is present; inspect the single-pack evidence directly."
+        )
     else:
-        items.append("Open verifier packs only for any failed, warning, skipped, or gap rows above.")
+        items.append(
+            "Open verifier packs only for any failed, warning, skipped, or gap rows above."
+        )
     if provenance_gaps:
-        items.append("Inspect upstream logs or rerun with stronger instrumentation for provenance gaps.")
+        items.append(
+            "Inspect upstream logs or rerun with stronger instrumentation for provenance gaps."
+        )
     if verdict == "passed":
         items.append("Check limitations before promoting this pack as reference evidence.")
     return [_bullet(item) for item in items]
@@ -643,10 +683,15 @@ def render_review_packet(pack_dir: Path | str) -> str:
         evidence_gaps.append(f"validation_summary.json {validation_err}")
     if missing_required:
         evidence_gaps.append("missing required pack files: " + ", ".join(missing_required))
-    if "provenance.json" in missing_optional and validation_summary.get("overall_status") == "passed":
+    if (
+        "provenance.json" in missing_optional
+        and validation_summary.get("overall_status") == "passed"
+    ):
         evidence_gaps.append("provenance.json missing from passed pack")
     if not skill_manifest and run_manifest.get("skill_dir"):
-        evidence_gaps.append("current skill_manifest.yaml could not be read; verifier obligations and limitations may be stale")
+        evidence_gaps.append(
+            "current skill_manifest.yaml could not be read; verifier obligations and limitations may be stale"
+        )
     source_supports_verifier_claims = _source_supports_verifier_claims(validation_summary)
     paired_verifier_obligations = (
         bool(skill_manifest.get("paired_verifiers")) and source_supports_verifier_claims
@@ -689,33 +734,68 @@ def render_review_packet(pack_dir: Path | str) -> str:
     if trust_summary:
         lines.append(_bullet(f"Trust overall: `{trust_summary.get('overall')}`"))
     if failures:
-        lines.append(_bullet("Hard failures: " + "; ".join(f"`{f}`" for f in failures[:MAX_LIST_ITEMS])))
+        lines.append(
+            _bullet("Hard failures: " + "; ".join(f"`{f}`" for f in failures[:MAX_LIST_ITEMS]))
+        )
     if warnings:
         lines.append(_bullet("Warnings: " + "; ".join(f"`{w}`" for w in warnings[:MAX_LIST_ITEMS])))
     if evidence_gaps or trust_gaps:
         all_gaps = evidence_gaps + trust_gaps
-        lines.append(_bullet("Evidence gaps: " + "; ".join(_scalar(g) for g in all_gaps[:MAX_LIST_ITEMS])))
+        lines.append(
+            _bullet("Evidence gaps: " + "; ".join(_scalar(g) for g in all_gaps[:MAX_LIST_ITEMS]))
+        )
     lines.append("")
 
     lines.append("## Capability And Invocation")
     invocation_rows = [
-        ["skill_id", run_manifest.get("skill_id") or trust_summary.get("skill_id") if trust_summary else run_manifest.get("skill_id")],
-        ["skill_version", run_manifest.get("skill_version") or (trust_summary.get("skill_version") if trust_summary else None)],
+        [
+            "skill_id",
+            (
+                run_manifest.get("skill_id") or trust_summary.get("skill_id")
+                if trust_summary
+                else run_manifest.get("skill_id")
+            ),
+        ],
+        [
+            "skill_version",
+            run_manifest.get("skill_version")
+            or (trust_summary.get("skill_version") if trust_summary else None),
+        ],
         ["pack_dir", _display_path(main_pack)],
         ["run_id", run_manifest.get("run_id")],
         ["repo_git_sha", run_manifest.get("repo_git_sha")],
-        ["fixture", (run_manifest.get("fixture") or {}).get("path") if isinstance(run_manifest.get("fixture"), dict) else "-"],
+        [
+            "fixture",
+            (
+                (run_manifest.get("fixture") or {}).get("path")
+                if isinstance(run_manifest.get("fixture"), dict)
+                else "-"
+            ),
+        ],
         ["command", " ".join(str(x) for x in run_manifest.get("command", []))],
-        ["replay", _display_path(main_pack / "replay.sh") if (main_pack / "replay.sh").exists() else "-"],
+        [
+            "replay",
+            _display_path(main_pack / "replay.sh") if (main_pack / "replay.sh").exists() else "-",
+        ],
     ]
     if runtime_profile:
-        invocation_rows.extend([
-            ["elapsed_seconds", runtime_profile.get("elapsed_seconds")],
-            ["runtime_exit_code", runtime_profile.get("exit_code")],
-        ])
+        invocation_rows.extend(
+            [
+                ["elapsed_seconds", runtime_profile.get("elapsed_seconds")],
+                ["runtime_exit_code", runtime_profile.get("exit_code")],
+            ]
+        )
     if cost_profile:
-        measured = cost_profile.get("measured") if isinstance(cost_profile.get("measured"), dict) else {}
-        for key in ("wall_seconds", "cpu_seconds", "rss_mb_peak", "gpu_seconds", "gpu_memory_mb_peak"):
+        measured = (
+            cost_profile.get("measured") if isinstance(cost_profile.get("measured"), dict) else {}
+        )
+        for key in (
+            "wall_seconds",
+            "cpu_seconds",
+            "rss_mb_peak",
+            "gpu_seconds",
+            "gpu_memory_mb_peak",
+        ):
             if key in measured:
                 invocation_rows.append([f"cost.{key}", measured.get(key)])
     lines.extend(_table(["Field", "Value"], invocation_rows))
@@ -732,16 +812,18 @@ def render_review_packet(pack_dir: Path | str) -> str:
 
     lines.append("## Verifier Findings")
     if verifier_rows:
-        lines.extend(_table(["Verifier", "Overall", "Declared", "Pack", "Pack Gate", "Findings"], verifier_rows))
+        lines.extend(
+            _table(
+                ["Verifier", "Overall", "Declared", "Pack", "Pack Gate", "Findings"], verifier_rows
+            )
+        )
     elif trust_summary:
         lines.append("_No verifier packs were recorded._")
     else:
         paired = skill_manifest.get("paired_verifiers") if skill_manifest else None
         if paired:
             if not source_supports_verifier_claims:
-                lines.append(
-                    "_Verifier coverage skipped because the source pack did not pass._"
-                )
+                lines.append("_Verifier coverage skipped because the source pack did not pass._")
                 lines.append("")
             rows = [
                 [entry.get("id"), entry.get("status"), entry.get("consumes"), entry.get("purpose")]
@@ -750,7 +832,9 @@ def render_review_packet(pack_dir: Path | str) -> str:
             ]
             lines.extend(_table(["Declared Verifier", "Status", "Consumes", "Purpose"], rows))
         else:
-            lines.append("_No paired verifiers declared in the current manifest, or manifest unavailable._")
+            lines.append(
+                "_No paired verifiers declared in the current manifest, or manifest unavailable._"
+            )
     if trust_gaps:
         lines.append("")
         lines.append("Verifier gaps:")
@@ -760,7 +844,9 @@ def render_review_packet(pack_dir: Path | str) -> str:
 
     if trust_summary:
         lines.append("## Trust Evidence")
-        lines.extend(_table(["Role", "ID", "Pack", "Overall", "Hashes"], _trust_evidence_rows(trust_summary)))
+        lines.extend(
+            _table(["Role", "ID", "Pack", "Overall", "Hashes"], _trust_evidence_rows(trust_summary))
+        )
         warning_findings = trust_summary.get("warning_findings") or []
         if warning_findings:
             lines.append("")

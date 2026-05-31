@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Manifest-declared validation gate evaluators."""
+
 from __future__ import annotations
 
 import re
@@ -37,7 +53,9 @@ def _evaluate_env_pin(env_pin: dict | None, output_payload: dict | None = None) 
         return {"status": "skipped", "results": [], "reason": "no env_pin declared"}
 
     try:
-        from importlib.metadata import PackageNotFoundError, version as _pkg_version
+        from importlib.metadata import PackageNotFoundError
+        from importlib.metadata import version as _pkg_version
+
         from packaging.specifiers import InvalidSpecifier, SpecifierSet
         from packaging.version import InvalidVersion, Version
     except ImportError as e:
@@ -69,8 +87,7 @@ def _evaluate_env_pin(env_pin: dict | None, output_payload: dict | None = None) 
             ok = Version(installed) in specset
             entry["ok"] = ok
             entry["reason"] = (
-                "satisfies constraint" if ok
-                else f"{installed} does not satisfy {spec}"
+                "satisfies constraint" if ok else f"{installed} does not satisfy {spec}"
             )
         except (InvalidVersion, InvalidSpecifier) as e:
             entry.update({"ok": False, "reason": f"version-check error: {e}"})
@@ -123,28 +140,44 @@ def _evaluate_sanity_checks(payload: dict, checks: list) -> list:
             try:
                 pat = re.compile(c["matches"])
                 ok = isinstance(val, str) and bool(pat.search(val))
-                reason = f"matched {c['matches']!r}" if ok else f"NOT matched {c['matches']!r} on {val!r}"
+                reason = (
+                    f"matched {c['matches']!r}"
+                    if ok
+                    else f"NOT matched {c['matches']!r} on {val!r}"
+                )
             except re.error as e:
                 ok = False
                 reason = f"invalid regex {c['matches']!r}: {e}"
         elif "length_eq" in c:
             try:
                 ok = len(val) == c["length_eq"]
-                reason = f"len={len(val)} == {c['length_eq']}" if ok else f"len={len(val)} != {c['length_eq']}"
+                reason = (
+                    f"len={len(val)} == {c['length_eq']}"
+                    if ok
+                    else f"len={len(val)} != {c['length_eq']}"
+                )
             except TypeError:
                 ok = False
                 reason = f"value not lengthable: {type(val).__name__}"
         elif "length_gte" in c:
             try:
                 ok = len(val) >= c["length_gte"]
-                reason = f"len={len(val)} >= {c['length_gte']}" if ok else f"len={len(val)} < {c['length_gte']}"
+                reason = (
+                    f"len={len(val)} >= {c['length_gte']}"
+                    if ok
+                    else f"len={len(val)} < {c['length_gte']}"
+                )
             except TypeError:
                 ok = False
                 reason = f"value not lengthable: {type(val).__name__}"
         elif "length_lte" in c:
             try:
                 ok = len(val) <= c["length_lte"]
-                reason = f"len={len(val)} <= {c['length_lte']}" if ok else f"len={len(val)} > {c['length_lte']}"
+                reason = (
+                    f"len={len(val)} <= {c['length_lte']}"
+                    if ok
+                    else f"len={len(val)} > {c['length_lte']}"
+                )
             except TypeError:
                 ok = False
                 reason = f"value not lengthable: {type(val).__name__}"
@@ -176,7 +209,9 @@ def _evaluate_sanity_checks(payload: dict, checks: list) -> list:
             should_exist = bool(c["exists"])
             present = val is not None
             ok = present == should_exist
-            reason = ("present" if present else "absent") + (" (expected)" if ok else " (unexpected)")
+            reason = ("present" if present else "absent") + (
+                " (expected)" if ok else " (unexpected)"
+            )
         results.append({"check": c, "actual": val, "ok": ok, "reason": reason})
     return results
 
@@ -194,8 +229,11 @@ def _missing_output_sanity_results(checks: list) -> list:
 
 
 def _sanity_status(results: list) -> str:
-    return "passed" if results and all(r["ok"] for r in results) else (
-        "failed" if any(not r["ok"] for r in results) else "skipped")
+    return (
+        "passed"
+        if results and all(r["ok"] for r in results)
+        else ("failed" if any(not r["ok"] for r in results) else "skipped")
+    )
 
 
 def _flatten_strings(val) -> list[str]:
@@ -212,7 +250,9 @@ def _flatten_strings(val) -> list[str]:
     return out
 
 
-def _evaluate_factual_echo(input_payload: dict, output_payload: dict, decls: list) -> tuple[str, list]:
+def _evaluate_factual_echo(
+    input_payload: dict, output_payload: dict, decls: list
+) -> tuple[str, list]:
     """Verify values drawn from an input fixture appear in declared output paths."""
     results = []
     if not decls:
@@ -235,7 +275,11 @@ def _evaluate_factual_echo(input_payload: dict, output_payload: dict, decls: lis
                 ok = any(isinstance(a, str) and a.lower() == in_val.lower() for a in actuals)
             else:
                 ok = any(a == in_val for a in actuals)
-            reason = f"input={in_val!r} in {out_paths!r}" if ok else f"input={in_val!r} not equal to any of {actuals!r}"
+            reason = (
+                f"input={in_val!r} in {out_paths!r}"
+                if ok
+                else f"input={in_val!r} not equal to any of {actuals!r}"
+            )
         elif mode == "any_contains":
             target = str(in_val)
             blobs = []
@@ -245,13 +289,24 @@ def _evaluate_factual_echo(input_payload: dict, output_payload: dict, decls: lis
                 ok = any(target.lower() in b.lower() for b in blobs)
             else:
                 ok = any(target in b for b in blobs)
-            reason = f"{target!r} found in {out_paths!r}" if ok else f"{target!r} not found in any of {out_paths!r}"
+            reason = (
+                f"{target!r} found in {out_paths!r}"
+                if ok
+                else f"{target!r} not found in any of {out_paths!r}"
+            )
         else:
             reason = f"unknown mode {mode!r}"
-        results.append({
-            "input_path": input_path, "mode": mode, "output_paths": out_paths,
-            "input_value": in_val, "case_insensitive": ci, "ok": ok, "reason": reason,
-        })
+        results.append(
+            {
+                "input_path": input_path,
+                "mode": mode,
+                "output_paths": out_paths,
+                "input_value": in_val,
+                "case_insensitive": ci,
+                "ok": ok,
+                "reason": reason,
+            }
+        )
     status = "passed" if all(r["ok"] for r in results) else "failed"
     return status, results
 
@@ -269,17 +324,24 @@ def _evaluate_model_identity(manifest: dict, output_payload: dict) -> tuple[str,
             continue
         actual = runtime_blob.get(field)
         ok = actual == declared
-        results.append({
-            "field": field, "declared": declared, "actual": actual,
-            "ok": ok, "reason": f"{actual!r} == {declared!r}" if ok else f"{actual!r} != {declared!r}",
-        })
+        results.append(
+            {
+                "field": field,
+                "declared": declared,
+                "actual": actual,
+                "ok": ok,
+                "reason": f"{actual!r} == {declared!r}" if ok else f"{actual!r} != {declared!r}",
+            }
+        )
     if not results:
         return "skipped", results
     status = "passed" if all(r["ok"] for r in results) else "failed"
     return status, results
 
 
-def _evaluate_runtime_integrity(output_payload: dict, decl: dict, skill_dir: Path) -> tuple[str, list]:
+def _evaluate_runtime_integrity(
+    output_payload: dict, decl: dict, skill_dir: Path
+) -> tuple[str, list]:
     """Reapply the integrity-scan pattern bank to manifest-declared output paths."""
     if not decl:
         return "skipped", []
@@ -300,8 +362,12 @@ def _evaluate_runtime_integrity(output_payload: dict, decl: dict, skill_dir: Pat
         for blob in _flatten_strings(_resolve_path(output_payload, p)):
             for pat, label in bank:
                 for m in pat.finditer(blob):
-                    findings.append({
-                        "path": p, "label": label, "match": m.group(0)[:160],
-                    })
+                    findings.append(
+                        {
+                            "path": p,
+                            "label": label,
+                            "match": m.group(0)[:160],
+                        }
+                    )
     status = "clean" if not findings else "flagged"
     return status, findings

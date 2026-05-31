@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Run reviewed NV with-vs-without direct-study remediation commands."""
+
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import shlex
 import subprocess
 import sys
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Callable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -16,7 +32,6 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from tools.with_vs_without import approval_packet_nv_model_studies as approval  # noqa: E402
 from tools.with_vs_without import run_nv_model_studies as studies  # noqa: E402
-
 
 APPROVAL_FLAG = studies.EXTERNAL_LLM_DATA_TRANSFER_FLAG
 DEFAULT_LOG = REPO_ROOT / "runs" / "with_vs_without_nv" / "approved_reruns.jsonl"
@@ -28,8 +43,14 @@ def _command_argv(command: str) -> list[str]:
 
 def _validate_approved_command(command: str) -> list[str]:
     argv = _command_argv(command)
-    if len(argv) < 3 or argv[0] != "python" or argv[1] != "tools/with_vs_without/run_nv_model_studies.py":
-        raise ValueError("approved rerun command must call the NV study runner via repo-relative python")
+    if (
+        len(argv) < 3
+        or argv[0] != "python"
+        or argv[1] != "tools/with_vs_without/run_nv_model_studies.py"
+    ):
+        raise ValueError(
+            "approved rerun command must call the NV study runner via repo-relative python"
+        )
     value_options = {"--skills", "--mode", "--prompt-style", "--max-correction-steps", "--repeats"}
     flag_options = {"--resume-missing", APPROVAL_FLAG}
     values: dict[str, list[str]] = {}
@@ -48,7 +69,9 @@ def _validate_approved_command(command: str) -> list[str]:
             if not option_values:
                 raise ValueError(f"approved rerun command option has no value: {token}")
             if token != "--skills" and len(option_values) != 1:
-                raise ValueError(f"approved rerun command option must have exactly one value: {token}")
+                raise ValueError(
+                    f"approved rerun command option must have exactly one value: {token}"
+                )
             values[token] = option_values
             continue
         if token in flag_options:
@@ -77,7 +100,9 @@ def _validate_approved_command(command: str) -> list[str]:
         actual = values[option][0]
         if actual not in allowed:
             expected = ", ".join(sorted(allowed))
-            raise ValueError(f"approved rerun command has invalid {option}: expected {expected}, got {actual}")
+            raise ValueError(
+                f"approved rerun command has invalid {option}: expected {expected}, got {actual}"
+            )
     invalid_skills = sorted(skill for skill in values["--skills"] if skill not in studies.SCENARIOS)
     if invalid_skills:
         raise ValueError(f"approved rerun command has invalid skill(s): {invalid_skills}")
@@ -140,8 +165,12 @@ def build_plan(*, mode: str = "all", repeats: int = studies.DIRECT_REPEATS) -> d
         "approval_errors": packet.get("approval_errors", []),
         "approval_coverage": packet.get("approval_coverage", {}),
         "command_count": len(commands),
-        "pending_initial_external_calls": packet["data_transfer"]["summary"]["pending_initial_calls"],
-        "max_possible_repair_calls": packet["data_transfer"]["summary"]["max_possible_repair_calls"],
+        "pending_initial_external_calls": packet["data_transfer"]["summary"][
+            "pending_initial_calls"
+        ],
+        "max_possible_repair_calls": packet["data_transfer"]["summary"][
+            "max_possible_repair_calls"
+        ],
         "commands": commands,
     }
 
@@ -400,8 +429,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.repeats != studies.DIRECT_REPEATS:
         parser.error(
-            "approved rerun orchestration currently requires "
-            f"--repeats {studies.DIRECT_REPEATS}"
+            "approved rerun orchestration currently requires " f"--repeats {studies.DIRECT_REPEATS}"
         )
     if args.execute and not args.confirm_external_llm_data_transfer:
         parser.error(f"--execute requires {APPROVAL_FLAG}")

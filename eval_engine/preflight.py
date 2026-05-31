@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Input and host-environment preflight checks for single-skill runs."""
+
 from __future__ import annotations
 
 import os
@@ -33,8 +49,14 @@ def _check_dicom_file(path: Path) -> dict:
 def _check_dicom_series(path: Path) -> list[dict]:
     checks: list[dict] = []
     if not path.is_dir():
-        return [{"name": "dicom_series_readable", "path": _public_path(path), "status": "failed",
-                 "error": "fixture is not a directory"}]
+        return [
+            {
+                "name": "dicom_series_readable",
+                "path": _public_path(path),
+                "status": "failed",
+                "error": "fixture is not a directory",
+            }
+        ]
 
     try:
         import pydicom
@@ -48,32 +70,51 @@ def _check_dicom_series(path: Path) -> list[dict]:
             except Exception:
                 continue
         if not readable:
-            return [{"name": "dicom_series_readable", "path": _public_path(path), "status": "failed",
-                     "error": "no readable DICOM files found"}]
+            return [
+                {
+                    "name": "dicom_series_readable",
+                    "path": _public_path(path),
+                    "status": "failed",
+                    "error": "no readable DICOM files found",
+                }
+            ]
 
         series_uids = {str(getattr(ds, "SeriesInstanceUID", "")) for ds in readable}
         series_uids.discard("")
         modalities = {str(getattr(ds, "Modality", "")) for ds in readable}
         modalities.discard("")
-        checks.append({
-            "name": "dicom_series_readable",
-            "path": _public_path(path),
-            "status": "passed",
-            "readable_files": len(readable),
-        })
-        checks.append({
-            "name": "dicom_series_single_series",
-            "status": "passed" if len(series_uids) <= 1 else "failed",
-            "series_instance_uid_count": len(series_uids),
-        })
-        checks.append({
-            "name": "dicom_series_modality_consistent",
-            "status": "passed" if len(modalities) <= 1 else "failed",
-            "modalities": sorted(modalities),
-        })
+        checks.append(
+            {
+                "name": "dicom_series_readable",
+                "path": _public_path(path),
+                "status": "passed",
+                "readable_files": len(readable),
+            }
+        )
+        checks.append(
+            {
+                "name": "dicom_series_single_series",
+                "status": "passed" if len(series_uids) <= 1 else "failed",
+                "series_instance_uid_count": len(series_uids),
+            }
+        )
+        checks.append(
+            {
+                "name": "dicom_series_modality_consistent",
+                "status": "passed" if len(modalities) <= 1 else "failed",
+                "modalities": sorted(modalities),
+            }
+        )
         return checks
     except Exception as e:
-        return [{"name": "dicom_series_readable", "path": _public_path(path), "status": "failed", "error": str(e)}]
+        return [
+            {
+                "name": "dicom_series_readable",
+                "path": _public_path(path),
+                "status": "failed",
+                "error": str(e),
+            }
+        ]
 
 
 def _check_gxf_replayer_dir(path: Path) -> dict:
@@ -143,14 +184,14 @@ def _check_nifti_file(path: Path) -> dict:
 def _cuda_available() -> bool:
     """Cheap host-side CUDA probe."""
     try:
-        proc = subprocess.run(["nvidia-smi", "-L"], capture_output=True,
-                              text=True, timeout=5)
+        proc = subprocess.run(["nvidia-smi", "-L"], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0 and proc.stdout.strip():
             return True
     except Exception:
         pass
     try:
         import torch  # type: ignore
+
         return bool(torch.cuda.is_available())
     except Exception:
         return False
@@ -166,7 +207,9 @@ def _docker_daemon_reachable() -> bool:
     try:
         proc = subprocess.run(
             ["docker", "info", "--format", "{{.ServerVersion}}"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         return proc.returncode == 0 and bool(proc.stdout.strip())
     except Exception:
@@ -182,8 +225,7 @@ def _env_required(manifest: dict) -> list[str]:
     runtime = manifest.get("runtime", {}) or {}
     side_effects = runtime.get("side_effects", {}) or {}
     seen: list[str] = []
-    for source in (runtime.get("env_required") or [],
-                   side_effects.get("env_required") or []):
+    for source in (runtime.get("env_required") or [], side_effects.get("env_required") or []):
         for entry in source:
             if isinstance(entry, str):
                 name = entry
@@ -213,57 +255,75 @@ def _environment_preflight(manifest: dict) -> tuple[str, str, list[dict]]:
 
     if requires_gpu not in (None, "none", False):
         have_cuda = _cuda_available()
-        checks.append({
-            "name": "host_has_cuda",
-            "requires_gpu": requires_gpu,
-            "gpu_fallback": gpu_fallback,
-            "have_cuda": have_cuda,
-            "status": "passed" if have_cuda else ("passed" if gpu_fallback else "skipped"),
-        })
+        checks.append(
+            {
+                "name": "host_has_cuda",
+                "requires_gpu": requires_gpu,
+                "gpu_fallback": gpu_fallback,
+                "have_cuda": have_cuda,
+                "status": "passed" if have_cuda else ("passed" if gpu_fallback else "skipped"),
+            }
+        )
         if not have_cuda and not gpu_fallback:
-            return "skip", (
-                f"manifest declares requires_gpu={requires_gpu!r} with no "
-                f"gpu_fallback; host has no CUDA. Skipping skill execution "
-                f"honestly rather than forcing a CUDA-deserialization failure."
-            ), checks
+            return (
+                "skip",
+                (
+                    f"manifest declares requires_gpu={requires_gpu!r} with no "
+                    f"gpu_fallback; host has no CUDA. Skipping skill execution "
+                    f"honestly rather than forcing a CUDA-deserialization failure."
+                ),
+                checks,
+            )
 
     # Docker daemon check. The CLI binary alone is not enough — the daemon
     # has to be reachable for `./holohub run` and any container-mode wrapper.
     if requires_docker:
         have_docker = _docker_daemon_reachable()
-        checks.append({
-            "name": "docker_daemon_reachable",
-            "have_docker": have_docker,
-            "status": "passed" if have_docker else "failed",
-        })
+        checks.append(
+            {
+                "name": "docker_daemon_reachable",
+                "have_docker": have_docker,
+                "status": "passed" if have_docker else "failed",
+            }
+        )
         if not have_docker:
-            return "failed", (
-                "manifest declares requires_docker=true but the Docker "
-                "daemon is not reachable on this host. Start it (e.g. "
-                "`sudo systemctl start docker`) or run the skill on a host "
-                "with Docker available."
-            ), checks
+            return (
+                "failed",
+                (
+                    "manifest declares requires_docker=true but the Docker "
+                    "daemon is not reachable on this host. Start it (e.g. "
+                    "`sudo systemctl start docker`) or run the skill on a host "
+                    "with Docker available."
+                ),
+                checks,
+            )
 
     # Required environment variables — both runtime.env_required and
     # side_effects.env_required are valid declaration sites.
     missing_env: list[str] = []
     for name in _env_required(manifest):
         present = os.environ.get(name) not in (None, "")
-        checks.append({
-            "name": f"env_required:{name}",
-            "env_var": name,
-            "present": present,
-            "status": "passed" if present else "failed",
-        })
+        checks.append(
+            {
+                "name": f"env_required:{name}",
+                "env_var": name,
+                "present": present,
+                "status": "passed" if present else "failed",
+            }
+        )
         if not present:
             missing_env.append(name)
     if missing_env:
-        return "failed", (
-            "manifest declares runtime.env_required="
-            + repr(missing_env)
-            + " but those environment variables are not set. Export them "
-              "before invoking the skill (see SKILL.md for usage)."
-        ), checks
+        return (
+            "failed",
+            (
+                "manifest declares runtime.env_required="
+                + repr(missing_env)
+                + " but those environment variables are not set. Export them "
+                "before invoking the skill (see SKILL.md for usage)."
+            ),
+            checks,
+        )
 
     return "ok", "", checks
 
@@ -275,35 +335,55 @@ def _preflight_checks(manifest: dict, fixture: Path) -> tuple[str, list[dict]]:
     formats = set(inp.get("formats", []) or [])
 
     if "default_sentinel" in formats and str(fixture) == "default":
-        checks.append({
-            "name": "fixture_default_sentinel",
-            "path": "default",
-            "status": "passed",
-        })
+        checks.append(
+            {
+                "name": "fixture_default_sentinel",
+                "path": "default",
+                "status": "passed",
+            }
+        )
         return "passed", checks
 
     exists = fixture.exists()
-    checks.append({"name": "fixture_exists", "path": _public_path(fixture), "status": "passed" if exists else "failed"})
+    checks.append(
+        {
+            "name": "fixture_exists",
+            "path": _public_path(fixture),
+            "status": "passed" if exists else "failed",
+        }
+    )
     if not exists:
         return "failed", checks
 
     input_type = inp.get("type")
     if input_type in ("file", "file_path"):
-        checks.append({"name": "fixture_is_file", "path": _public_path(fixture),
-                       "status": "passed" if fixture.is_file() else "failed"})
+        checks.append(
+            {
+                "name": "fixture_is_file",
+                "path": _public_path(fixture),
+                "status": "passed" if fixture.is_file() else "failed",
+            }
+        )
     elif input_type in ("directory", "directory_path"):
-        checks.append({"name": "fixture_is_directory", "path": _public_path(fixture),
-                       "status": "passed" if fixture.is_dir() else "failed"})
+        checks.append(
+            {
+                "name": "fixture_is_directory",
+                "path": _public_path(fixture),
+                "status": "passed" if fixture.is_dir() else "failed",
+            }
+        )
 
     max_size = inp.get("max_size_bytes")
     if max_size is not None:
         size = _path_size(fixture)
-        checks.append({
-            "name": "fixture_size_budget",
-            "size_bytes": size,
-            "max_size_bytes": max_size,
-            "status": "passed" if size <= max_size else "failed",
-        })
+        checks.append(
+            {
+                "name": "fixture_size_budget",
+                "size_bytes": size,
+                "max_size_bytes": max_size,
+                "status": "passed" if size <= max_size else "failed",
+            }
+        )
 
     if "dicom_series" in formats:
         checks.extend(_check_dicom_series(fixture))

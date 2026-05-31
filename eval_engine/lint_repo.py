@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Mechanical doc + structure lints for Medical AI Skills.
 
 Codex-style "doc gardening" — a small set of rules that keep this repo
@@ -58,9 +73,7 @@ MAX_ARCHITECTURE_LINES = 150
 MAX_TEXT_SCAN_BYTES = 2 * 1024 * 1024
 MAX_PUBLIC_FILE_BYTES = 50 * 1024 * 1024
 
-IMPORT_HARNESS_RE = re.compile(
-    r"^\s*(?:from\s+eval_engine|import\s+eval_engine)\b", re.M
-)
+IMPORT_HARNESS_RE = re.compile(r"^\s*(?:from\s+eval_engine|import\s+eval_engine)\b", re.M)
 LOCAL_HOME_PATH_RE = re.compile("/" + r"(?:home|Users)/[A-Za-z0-9._-]+")
 RUNTIME_UPSTREAM_PATCH_RE = re.compile(
     r"\b(?:"
@@ -147,10 +160,7 @@ def _has_tracked_upstream_ref(manifest: dict) -> bool:
     if not isinstance(refs, list) or not refs:
         return False
     version_keys = ("git_commit", "revision", "version", "version_constraint")
-    return all(
-        isinstance(ref, dict) and any(ref.get(key) for key in version_keys)
-        for ref in refs
-    )
+    return all(isinstance(ref, dict) and any(ref.get(key) for key in version_keys) for ref in refs)
 
 
 def _pkg_name_from_spec(spec: str) -> str | None:
@@ -383,9 +393,7 @@ def lint() -> tuple[list[dict], list[dict]]:
         if not skill_md.exists():
             errors.append({"rule": "E3", "path": rel, "msg": "missing SKILL.md"})
         if not manifest_path.exists():
-            errors.append(
-                {"rule": "E3", "path": rel, "msg": "missing skill_manifest.yaml"}
-            )
+            errors.append({"rule": "E3", "path": rel, "msg": "missing skill_manifest.yaml"})
             continue
 
         try:
@@ -456,9 +464,7 @@ def lint() -> tuple[list[dict], list[dict]]:
 
         # W1
         outputs = manifest.get("outputs", []) or []
-        json_outputs = [
-            o for o in outputs if isinstance(o, dict) and o.get("type") == "json"
-        ]
+        json_outputs = [o for o in outputs if isinstance(o, dict) and o.get("type") == "json"]
         if json_outputs and not any(o.get("schema") for o in json_outputs):
             warnings.append(
                 {

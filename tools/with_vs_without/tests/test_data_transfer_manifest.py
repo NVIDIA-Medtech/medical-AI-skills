@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 from pathlib import Path
 
@@ -64,7 +79,9 @@ def test_manifest_lists_pending_initial_calls_without_full_prompts(tmp_path: Pat
     assert manifest["network_calls_made"] is False
     assert len(manifest["payload_fingerprint"]) == 64
     assert manifest["summary"]["pending_initial_calls"] == 2
-    assert manifest["summary"]["max_possible_repair_calls"] == 2 * studies.DIRECT_MAX_CORRECTION_STEPS
+    assert (
+        manifest["summary"]["max_possible_repair_calls"] == 2 * studies.DIRECT_MAX_CORRECTION_STEPS
+    )
     assert manifest["summary"]["reused_repeats"] == 0
     assert manifest["summary"]["prompt_policy_issue_count"] == 0
     assert manifest["prompt_policy_issues"] == []
@@ -72,12 +89,10 @@ def test_manifest_lists_pending_initial_calls_without_full_prompts(tmp_path: Pat
     pending_transfer = manifest["summary"]["pending_transfer"]
     assert pending_transfer["pending_initial_calls"] == 2
     assert pending_transfer["total_initial_bytes"] == sum(
-        entry["system_prompt_bytes"] + entry["user_prompt_bytes"]
-        for entry in manifest["entries"]
+        entry["system_prompt_bytes"] + entry["user_prompt_bytes"] for entry in manifest["entries"]
     )
     assert pending_transfer["embedded_document_bytes"] == sum(
-        sum(doc["byte_count"] for doc in entry["documentation"])
-        for entry in manifest["entries"]
+        sum(doc["byte_count"] for doc in entry["documentation"]) for entry in manifest["entries"]
     )
     assert pending_transfer["by_endpoint_model"][0]["pending_initial_calls"] == 2
     assert pending_transfer["by_skill"][0]["skill"] == "nv_reason_cxr"
@@ -166,12 +181,7 @@ def test_manifest_can_include_full_prompts_for_local_review(tmp_path: Path) -> N
 
 def test_manifest_respects_resume_missing_for_valid_repeats(tmp_path: Path) -> None:
     skill = "nv_reason_cxr"
-    repeat_path = (
-        tmp_path
-        / f"{skill}_nemotron_correction"
-        / "repeats"
-        / "with_repeat_1.json"
-    )
+    repeat_path = tmp_path / f"{skill}_nemotron_correction" / "repeats" / "with_repeat_1.json"
     _write_json(repeat_path, _valid_repeat(skill, "nemotron-correction", "nemotron", "with", 1))
 
     manifest = transfer.build_manifest(

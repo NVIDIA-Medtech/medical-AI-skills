@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Evidence-pack writers for single-skill eval_engine runs."""
+
 from __future__ import annotations
 
 import json
@@ -137,18 +153,24 @@ def write_preflight_pack(
     integrity = _integrity_scan(skill_dir)
     _write_json(out / "integrity_check.json", integrity)
     cost_eval = {"status": "skipped", "results": []}
-    _write_json(out / "cost_profile.json", {
-        "measured": {},
-        "self_reported": {},
-        "evaluation": cost_eval,
-    })
-    _write_json(out / "runtime_profile.json", {
-        "started_at": started_at,
-        "finished_at": finished_at,
-        "elapsed_seconds": 0.0,
-        "exit_code": proc_returncode,
-        "environment": _runtime_summary(),
-    })
+    _write_json(
+        out / "cost_profile.json",
+        {
+            "measured": {},
+            "self_reported": {},
+            "evaluation": cost_eval,
+        },
+    )
+    _write_json(
+        out / "runtime_profile.json",
+        {
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "elapsed_seconds": 0.0,
+            "exit_code": proc_returncode,
+            "environment": _runtime_summary(),
+        },
+    )
 
     pip_freeze_text = _pip_freeze()
     (out / "environment.lock").write_text(pip_freeze_text)
@@ -199,7 +221,8 @@ def write_preflight_pack(
         "exit_code": proc_returncode,
         "stderr_excerpt": (
             f"environment preflight skipped execution: {env_reason}"
-            if is_env_skip else (
+            if is_env_skip
+            else (
                 "preflight failed; skill was not executed.\n\n"
                 + (_first_input(manifest).get("fixture_help") or "").strip()
             ).rstrip()
@@ -232,10 +255,12 @@ def write_preflight_pack(
         "",
         "## Caveats",
         (
-            "- Skill was skipped because the host environment did not satisfy "
-            "the manifest's declared requirements: " + env_reason
-        ) if is_env_skip else (
-            "- Skill was not executed because preflight failed."
+            (
+                "- Skill was skipped because the host environment did not satisfy "
+                "the manifest's declared requirements: " + env_reason
+            )
+            if is_env_skip
+            else ("- Skill was not executed because preflight failed.")
         ),
         "- Engineering-time evidence; not clinical or regulatory artefact.",
     ]
@@ -321,20 +346,26 @@ def write_full_pack(
 ) -> tuple[dict, dict, dict]:
     _write_trace(out, trace_records)
     _write_json(out / "integrity_check.json", integrity)
-    _write_json(out / "cost_profile.json", {
-        "measured": cost_profile,
-        "self_reported": self_reported_cost,
-        "evaluation": cost_eval,
-    })
+    _write_json(
+        out / "cost_profile.json",
+        {
+            "measured": cost_profile,
+            "self_reported": self_reported_cost,
+            "evaluation": cost_eval,
+        },
+    )
 
     _write_json(out / "validation_summary.json", validation_summary)
-    _write_json(out / "runtime_profile.json", {
-        "started_at": started_at,
-        "finished_at": finished_at,
-        "elapsed_seconds": elapsed,
-        "exit_code": proc_returncode,
-        "environment": _runtime_summary(),
-    })
+    _write_json(
+        out / "runtime_profile.json",
+        {
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "elapsed_seconds": elapsed,
+            "exit_code": proc_returncode,
+            "environment": _runtime_summary(),
+        },
+    )
 
     pip_freeze_text = _pip_freeze()
     (out / "environment.lock").write_text(pip_freeze_text)
@@ -393,11 +424,13 @@ def write_full_pack(
         lines.append(FENCE)
     elif validation_summary["parse_error"]:
         lines.append("Could not parse skill output: " + validation_summary["parse_error"])
-    lines.extend([
-        "",
-        "## Caveats",
-        "- Best-effort replay only; not deterministic across env changes.",
-        "- Engineering-time evidence; not clinical or regulatory artefact.",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Caveats",
+            "- Best-effort replay only; not deterministic across env changes.",
+            "- Engineering-time evidence; not clinical or regulatory artefact.",
+        ]
+    )
     (out / "workflow_run_record.md").write_text("\n".join(lines))
     return integrity, validation_summary, bundle_manifest

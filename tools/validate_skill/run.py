@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Run one paired with-skill / without-skill validation scenario."""
+
 from __future__ import annotations
 
 import argparse
@@ -88,7 +104,9 @@ def _resolve_repo_path(raw: str, *, field: str) -> Path:
     return candidate
 
 
-def _semantic_checks(scenario_path: Path, scenario: dict, backend_override: str | None) -> tuple[Path, Path, list[Path], list[Path], str]:
+def _semantic_checks(
+    scenario_path: Path, scenario: dict, backend_override: str | None
+) -> tuple[Path, Path, list[Path], list[Path], str]:
     skill = scenario["skill"]
     expected_dir = (REPO_ROOT / "skills" / skill / "evals").resolve()
     try:
@@ -102,8 +120,12 @@ def _semantic_checks(scenario_path: Path, scenario: dict, backend_override: str 
     if not fixture.exists():
         raise ScenarioError(f"fixture not found: {scenario['fixture']}")
 
-    with_docs = [_resolve_repo_path(p, field="with_skill_docs") for p in scenario["with_skill_docs"]]
-    without_docs = [_resolve_repo_path(p, field="without_skill_docs") for p in scenario["without_skill_docs"]]
+    with_docs = [
+        _resolve_repo_path(p, field="with_skill_docs") for p in scenario["with_skill_docs"]
+    ]
+    without_docs = [
+        _resolve_repo_path(p, field="without_skill_docs") for p in scenario["without_skill_docs"]
+    ]
     for doc in with_docs + without_docs:
         if not doc.is_file():
             raise ScenarioError(f"doc path not found: {_public_path(doc)}")
@@ -173,7 +195,11 @@ def _mock_response(scenario_id: str, arm: str, fixture: Path) -> tuple[str, dict
                 "Use a proper de-identifier for clinical or regulatory work."
             ),
         }
-        return json.dumps(payload, indent=2), {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+        return json.dumps(payload, indent=2), {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
 
     if arm == "without_skill":
         text = (
@@ -243,7 +269,9 @@ def _excerpt(text: str, limit: int = 1200) -> str:
     return text if len(text) <= limit else text[:limit].rstrip() + "\n..."
 
 
-def _render_report(scenario: dict, backend: str, with_arm: dict, without_arm: dict, overall: str) -> str:
+def _render_report(
+    scenario: dict, backend: str, with_arm: dict, without_arm: dict, overall: str
+) -> str:
     lines = [
         "# Paired Eval Report (mock backend; runner mechanics only, not behavioral validation)",
         "",
@@ -292,9 +320,7 @@ def _replay_text(scenario_path: Path, out_root: Path, backend: str) -> str:
         '  REPO_ROOT="$(dirname "$REPO_ROOT")"\n'
         "done\n"
         '[ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root (looked for Makefile)"; exit 1; }\n'
-        'cd "$REPO_ROOT"\n'
-        + " ".join(shlex.quote(part) for part in cmd)
-        + "\n"
+        'cd "$REPO_ROOT"\n' + " ".join(shlex.quote(part) for part in cmd) + "\n"
     )
 
 
@@ -394,33 +420,51 @@ def _write_pack(
     }
     _write_json(pack_dir / "validation_summary.json", validation_summary)
 
-    _write_json(pack_dir / "runtime_profile.json", {
-        "started_at": started_at,
-        "finished_at": finished_at,
-        "elapsed_seconds": elapsed,
-        "exit_code": 0,
-        "environment": _runtime_summary(),
-    })
-    _write_json(pack_dir / "cost_profile.json", {
-        "measured": {
-            "wall_seconds": elapsed,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0,
+    _write_json(
+        pack_dir / "runtime_profile.json",
+        {
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "elapsed_seconds": elapsed,
+            "exit_code": 0,
+            "environment": _runtime_summary(),
         },
-        "self_reported": {},
-        "evaluation": {"status": "skipped", "results": []},
-    })
-    _write_json(pack_dir / "integrity_check.json", {"status": "skipped", "findings": [], "n_findings": 0})
+    )
+    _write_json(
+        pack_dir / "cost_profile.json",
+        {
+            "measured": {
+                "wall_seconds": elapsed,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            },
+            "self_reported": {},
+            "evaluation": {"status": "skipped", "results": []},
+        },
+    )
+    _write_json(
+        pack_dir / "integrity_check.json", {"status": "skipped", "findings": [], "n_findings": 0}
+    )
     _write_json(pack_dir / "arms" / "with_skill.json", with_arm)
     _write_json(pack_dir / "arms" / "without_skill.json", without_arm)
 
     trace = [
         {"ts": started_at, "kind": "scenario_start", "scenario_id": scenario["scenario_id"]},
         {"ts": started_at, "kind": "arm_start", "arm": "with_skill"},
-        {"ts": finished_at, "kind": "arm_end", "arm": "with_skill", "assertions_failed": with_arm["assertions_failed"]},
+        {
+            "ts": finished_at,
+            "kind": "arm_end",
+            "arm": "with_skill",
+            "assertions_failed": with_arm["assertions_failed"],
+        },
         {"ts": started_at, "kind": "arm_start", "arm": "without_skill"},
-        {"ts": finished_at, "kind": "arm_end", "arm": "without_skill", "assertions_failed": without_arm["assertions_failed"]},
+        {
+            "ts": finished_at,
+            "kind": "arm_end",
+            "arm": "without_skill",
+            "assertions_failed": without_arm["assertions_failed"],
+        },
         {"ts": finished_at, "kind": "scenario_end", "overall_status": overall},
     ]
     _write_jsonl(pack_dir / "agent_run_trace.jsonl", trace)

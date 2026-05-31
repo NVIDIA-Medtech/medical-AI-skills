@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Summarize skill_completeness_v1 batch audits with expected-negative handling."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 EXPECTED_NEGATIVE_TARGET = "negative_sloppy_skill"
@@ -41,16 +57,8 @@ def row_from_output(path: Path, *, target: str | None = None) -> dict[str, Any]:
 def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     real_rows = [row for row in rows if row.get("target") != EXPECTED_NEGATIVE_TARGET]
     negative_rows = [row for row in rows if row.get("target") == EXPECTED_NEGATIVE_TARGET]
-    unexpected_failures = [
-        row
-        for row in real_rows
-        if row.get("overall") != "pass"
-    ]
-    advisory_failures = [
-        row
-        for row in real_rows
-        if int(row.get("advisory") or 0) > 0
-    ]
+    unexpected_failures = [row for row in real_rows if row.get("overall") != "pass"]
+    advisory_failures = [row for row in real_rows if int(row.get("advisory") or 0) > 0]
     calibration_failures: list[dict[str, Any]] = []
     if len(negative_rows) != 1:
         calibration_failures.append(
@@ -168,8 +176,7 @@ def format_summary(summary: dict[str, Any]) -> str:
         lines.extend(["", f"Unexpected real-spec failures: {failed}"])
     if summary["advisory_failures"]:
         failed = ", ".join(
-            f"{row['target']} ({row['advisory']})"
-            for row in summary["advisory_failures"]
+            f"{row['target']} ({row['advisory']})" for row in summary["advisory_failures"]
         )
         lines.extend(["", f"Real-spec advisory issues must be resolved: {failed}"])
     if summary["calibration_failures"]:
@@ -182,8 +189,7 @@ def main(argv: list[str] | None = None) -> int:
     args = argv if argv is not None else sys.argv[1:]
     if len(args) != 1:
         sys.stderr.write(
-            "Usage: python -m eval_engine.skill_audit_summary "
-            "<out_root|output.json>\n"
+            "Usage: python -m eval_engine.skill_audit_summary " "<out_root|output.json>\n"
         )
         return 2
     path = Path(args[0])

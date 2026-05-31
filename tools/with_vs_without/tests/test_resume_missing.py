@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from pathlib import Path
 
 from tools.with_vs_without import run_nv_model_studies as studies
@@ -14,9 +29,13 @@ def _safe_marker_for_arm(skill: str, arm: str) -> str:
     return scenario.tier1[0]
 
 
-def _fake_result(backend: studies.Backend, arm: str, repeat: int, out_dir: Path) -> dict[str, object]:
+def _fake_result(
+    backend: studies.Backend, arm: str, repeat: int, out_dir: Path
+) -> dict[str, object]:
     skill = "nv_segment_ct"
-    staged_input = studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(studies.REPO_ROOT)
+    staged_input = studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(
+        studies.REPO_ROOT
+    )
     command = (
         f"python {_safe_marker_for_arm(skill, arm)} {staged_input} "
         f"--output-dir {out_dir.relative_to(studies.REPO_ROOT)}"
@@ -31,7 +50,9 @@ def _fake_result(backend: studies.Backend, arm: str, repeat: int, out_dir: Path)
         "arm": arm,
         "repeat": repeat,
         "output_dir": str(out_dir.relative_to(studies.REPO_ROOT)),
-        "staged_user_input": str(studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(studies.REPO_ROOT)),
+        "staged_user_input": str(
+            studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(studies.REPO_ROOT)
+        ),
         "prompt_style": "minimal",
         "attempts": [
             {
@@ -42,7 +63,12 @@ def _fake_result(backend: studies.Backend, arm: str, repeat: int, out_dir: Path)
                 "step": 0,
                 "messages": [
                     {"role": "system", "content": studies.DIRECT_SYSTEM_PROMPT},
-                    {"role": "user", "content": studies._prompt(studies.SCENARIOS[skill], arm, out_dir, "minimal")},
+                    {
+                        "role": "user",
+                        "content": studies._prompt(
+                            studies.SCENARIOS[skill], arm, out_dir, "minimal"
+                        ),
+                    },
                 ],
                 "response": f"```bash\n{command}\n```",
                 "command": command,
@@ -84,7 +110,13 @@ def test_codex_opus_resume_missing_reuses_valid_repeat_json(tmp_path, monkeypatc
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) not in calls
     assert ("gpt55", "without", 1) in calls
@@ -100,7 +132,6 @@ def test_invalid_existing_repeat_is_rerun(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(studies, "STUDY_ROOT", study_root)
 
     skill = "nv_segment_ct"
-    backend = studies.BACKENDS["nemotron"]
     study = study_root / f"{skill}_nemotron_correction"
     invalid_path = study / "repeats" / "with_repeat_1.json"
     studies._write_json(invalid_path, {"backend": "nemotron", "arm": "with", "repeat": 999})
@@ -114,7 +145,13 @@ def test_invalid_existing_repeat_is_rerun(tmp_path, monkeypatch) -> None:
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_nemotron([skill], max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, prompt_style="minimal", repeats=1, resume_missing=True)
+    studies.run_nemotron(
+        [skill],
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        prompt_style="minimal",
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("with", 1) in calls
     assert ("without", 1) in calls
@@ -197,7 +234,13 @@ def test_resume_rejects_repeat_from_old_staged_input_protocol(tmp_path, monkeypa
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -228,7 +271,13 @@ def test_resume_rejects_repeat_from_wrong_prompt_style(tmp_path, monkeypatch) ->
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -259,7 +308,13 @@ def test_resume_rejects_repeat_from_wrong_initial_prompt(tmp_path, monkeypatch) 
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -279,8 +334,7 @@ def test_resume_rejects_repeat_with_response_command_mismatch(tmp_path, monkeypa
         studies._repeat_out_dir(skill, "codex_opus", backend, "with", 1),
     )
     old["attempts"][0]["response"] = (
-        f"```bash\n{old['command']}\n```\n"
-        "```bash\npython different.py\n```"
+        f"```bash\n{old['command']}\n```\n" "```bash\npython different.py\n```"
     )
     studies._write_json(repeat_path, old)
 
@@ -293,7 +347,13 @@ def test_resume_rejects_repeat_with_response_command_mismatch(tmp_path, monkeypa
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -312,7 +372,11 @@ def test_resume_rejects_repeat_with_stale_leaky_repair_prompt(tmp_path, monkeypa
         1,
         studies._repeat_out_dir(skill, "codex_opus", backend, "without", 1),
     )
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
     local_path = "/" + "home/wenqil/private"
     repair_prompt = (
         "The previous command did not pass verification. "
@@ -357,7 +421,13 @@ def test_resume_rejects_repeat_with_stale_leaky_repair_prompt(tmp_path, monkeypa
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "without", 1) in calls
 
@@ -376,7 +446,11 @@ def test_resume_rejects_repeat_with_wrong_repair_message_roles(tmp_path, monkeyp
         1,
         studies._repeat_out_dir(skill, "codex_opus", backend, "with", 1),
     )
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
     repair_prompt = (
         "The previous command did not pass verification. "
         "Use only the failure details below to repair the bash command. "
@@ -417,7 +491,13 @@ def test_resume_rejects_repeat_with_wrong_repair_message_roles(tmp_path, monkeyp
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -436,7 +516,11 @@ def test_resume_rejects_repeat_with_response_history_mismatch(tmp_path, monkeypa
         1,
         studies._repeat_out_dir(skill, "codex_opus", backend, "with", 1),
     )
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
     repair_prompt = (
         "The previous command did not pass verification. "
         "Use only the failure details below to repair the bash command. "
@@ -478,7 +562,13 @@ def test_resume_rejects_repeat_with_response_history_mismatch(tmp_path, monkeypa
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -497,8 +587,17 @@ def test_resume_rejects_repeat_with_repair_prompt_mismatch(tmp_path, monkeypatch
         1,
         studies._repeat_out_dir(skill, "codex_opus", backend, "with", 1),
     )
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
-    failed_execution = {"exit_code": 1, "stderr_tail": "exit 1", "stdout_tail": "", "generated_files": []}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
+    failed_execution = {
+        "exit_code": 1,
+        "stderr_tail": "exit 1",
+        "stdout_tail": "",
+        "generated_files": [],
+    }
     first_response = "```bash\npython bad.py\n```"
     repair_prompt = (
         studies._feedback(
@@ -539,7 +638,13 @@ def test_resume_rejects_repeat_with_repair_prompt_mismatch(tmp_path, monkeypatch
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
@@ -570,12 +675,20 @@ def test_resume_rejects_repeat_with_stale_top_level_result(tmp_path, monkeypatch
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls
 
 
-def test_resume_rejects_repeat_without_attempt_response_usage_or_model(tmp_path, monkeypatch) -> None:
+def test_resume_rejects_repeat_without_attempt_response_usage_or_model(
+    tmp_path, monkeypatch
+) -> None:
     study_root = tmp_path / "studies"
     monkeypatch.setattr(studies, "STUDY_ROOT", study_root)
 
@@ -608,6 +721,12 @@ def test_resume_rejects_repeat_without_attempt_response_usage_or_model(tmp_path,
 
     monkeypatch.setattr(studies, "_run_repair_loop", fake_run_repair_loop)
 
-    studies.run_codex_opus([skill], "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1, resume_missing=True)
+    studies.run_codex_opus(
+        [skill],
+        "minimal",
+        max_steps=studies.DIRECT_MAX_CORRECTION_STEPS,
+        repeats=1,
+        resume_missing=True,
+    )
 
     assert ("gpt55", "with", 1) in calls

@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Tests for eval_engine.run_trusted."""
+
 import json
 from pathlib import Path
 
@@ -7,8 +23,10 @@ def _trusted_run(run_module, skill, fixture, out):
     return run_module(
         "eval_engine.run_trusted",
         str(skill),
-        "--fixture", str(fixture),
-        "--out", str(out),
+        "--fixture",
+        str(fixture),
+        "--out",
+        str(out),
     )
 
 
@@ -41,27 +59,28 @@ def test_trusted_run_passes_declared_default_sentinel_verbatim(tmp_path, run_mod
     (skill / "scripts").mkdir(parents=True)
     (skill / "SKILL.md").write_text("# Sentinel Skill\n")
     (skill / "skill_manifest.yaml").write_text(
-        "\n".join([
-            "id: test.sentinel_trusted",
-            "version: 0.1.0",
-            "inputs:",
-            "  - name: fixture",
-            "    type: directory_path",
-            "    formats: [default_sentinel]",
-            "outputs:",
-            "  - name: result_json",
-            "    type: json",
-            "runtime:",
-            "  language: python",
-            "  entrypoint: scripts/run.py",
-            "validation:",
-            "  sanity_checks:",
-            "    - {path: output.fixture, eq: default}",
-        ])
+        "\n".join(
+            [
+                "id: test.sentinel_trusted",
+                "version: 0.1.0",
+                "inputs:",
+                "  - name: fixture",
+                "    type: directory_path",
+                "    formats: [default_sentinel]",
+                "outputs:",
+                "  - name: result_json",
+                "    type: json",
+                "runtime:",
+                "  language: python",
+                "  entrypoint: scripts/run.py",
+                "validation:",
+                "  sanity_checks:",
+                "    - {path: output.fixture, eq: default}",
+            ]
+        )
     )
     (skill / "scripts" / "run.py").write_text(
-        "import json, sys\n"
-        "print(json.dumps({'output': {'fixture': sys.argv[1]}}))\n"
+        "import json, sys\n" "print(json.dumps({'output': {'fixture': sys.argv[1]}}))\n"
     )
     out = tmp_path / "trust"
 
@@ -140,6 +159,7 @@ def test_warn_verifier_yields_warn_verdict():
 
 def test_read_verifier_overall_normalizes_pass_warn_fail(tmp_path):
     import json as _json
+
     from eval_engine.run_trusted import _read_verifier_overall
 
     for raw, expected in (("pass", "passed"), ("warn", "warn"), ("fail", "failed")):
@@ -151,6 +171,7 @@ def test_read_verifier_overall_normalizes_pass_warn_fail(tmp_path):
 
 def test_verifier_findings_counts_hard_and_warning_issues(tmp_path):
     import json as _json
+
     from eval_engine.run_trusted import _verifier_findings
 
     vpack = tmp_path / "vpack"
@@ -178,6 +199,7 @@ def test_verifier_findings_counts_hard_and_warning_issues(tmp_path):
 
 def test_verifier_findings_counts_nested_semantic_checks(tmp_path):
     import json as _json
+
     from eval_engine.run_trusted import _verifier_findings
 
     vpack = tmp_path / "vpack"
@@ -232,6 +254,7 @@ def test_verifier_findings_counts_nested_semantic_checks(tmp_path):
 
 def test_verifier_findings_deduplicates_top_level_and_semantic_warnings(tmp_path):
     import json as _json
+
     from eval_engine.run_trusted import _verifier_findings
 
     vpack = tmp_path / "vpack"

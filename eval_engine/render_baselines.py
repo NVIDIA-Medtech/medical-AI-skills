@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Render a cross-skill benchmark matrix from existing benchmark evidence packs.
 
 Reads every benchmark evidence pack under a search root (default `runs/` and
@@ -42,10 +57,20 @@ app = typer.Typer(add_completion=False)
 
 DEFAULT_SEARCH_ROOTS = ("runs", "examples/evidence_packs", "examples/studies")
 DEFAULT_AXES_FALLBACK = (
-    {"name": "dice_mean", "field": "output.dice.mean", "direction": "higher_better", "unit": "ratio"},
+    {
+        "name": "dice_mean",
+        "field": "output.dice.mean",
+        "direction": "higher_better",
+        "unit": "ratio",
+    },
     {"name": "dice_p10", "field": "output.dice.p10", "direction": "higher_better", "unit": "ratio"},
     {"name": "hd_mean_mm", "field": "output.hd.mean", "direction": "lower_better", "unit": "mm"},
-    {"name": "coverage_pct", "field": "output.coverage_pct", "direction": "higher_better", "unit": "percent"},
+    {
+        "name": "coverage_pct",
+        "field": "output.coverage_pct",
+        "direction": "higher_better",
+        "unit": "percent",
+    },
 )
 
 
@@ -129,8 +154,7 @@ def _build_rows(
         skill_id = str(skill.get("id") or manifest.get("skill_id") or "?")
         skill_version = str(skill.get("version") or manifest.get("skill_version") or "")
         values = tuple(
-            (axis["name"], _scalar(_resolve_path(output, axis["field"])))
-            for axis in axes
+            (axis["name"], _scalar(_resolve_path(output, axis["field"]))) for axis in axes
         )
         rows.append(
             BaselineRow(
@@ -183,12 +207,14 @@ def _render_table(
     lines.append(f"## Benchmark matrix — {benchmark_id}")
     lines.append("")
     if not rows:
-        lines.append("_No baselines recorded yet. Run `make run-benchmark` for a participating skill._")
+        lines.append(
+            "_No baselines recorded yet. Run `make run-benchmark` for a participating skill._"
+        )
         lines.append("")
         return "\n".join(lines)
-    header = ["skill", "version"] + [
-        f"{a['name']} ({a.get('direction', '?')})" for a in axes
-    ] + ["pack"]
+    header = (
+        ["skill", "version"] + [f"{a['name']} ({a.get('direction', '?')})" for a in axes] + ["pack"]
+    )
     lines.append("| " + " | ".join(header) + " |")
     lines.append("|" + "|".join(["---"] * len(header)) + "|")
     for row in rows:

@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Trusted-run path: skill + paired verifiers in one directory.
 
 Layout:
@@ -22,6 +37,7 @@ that's N+1 Python cold-starts; acceptable for trust gates that run rarely.
 Usage:
     python -m eval_engine.run_trusted skills/<name> --fixture <path> --out <dir>
 """
+
 from __future__ import annotations
 
 import json
@@ -341,27 +357,31 @@ def main(
         vid = entry.get("id")
         vdir = _resolve_verifier_dir(vid) if vid else None
         if vdir is None:
-            gaps.append({
-                "id": vid,
-                "declared_status": "implemented",
-                "reason": "verifier directory could not be resolved from id",
-            })
+            gaps.append(
+                {
+                    "id": vid,
+                    "declared_status": "implemented",
+                    "reason": "verifier directory could not be resolved from id",
+                }
+            )
             continue
         short = vdir.name
         vpack = verifiers_root / short
         vrc = _run_pack(vdir, skill_pack, vpack)
         voverall = _read_verifier_overall(vpack)
         findings = _verifier_findings(vpack)
-        verifier_results.append({
-            "id": vid,
-            "declared_status": "implemented",
-            "pack": str(vpack.relative_to(out)),
-            "exit_code": vrc,
-            "overall": voverall,
-            "checks": entry.get("checks") or [],
-            "hashes": _pack_hashes(vpack),
-            **findings,
-        })
+        verifier_results.append(
+            {
+                "id": vid,
+                "declared_status": "implemented",
+                "pack": str(vpack.relative_to(out)),
+                "exit_code": vrc,
+                "overall": voverall,
+                "checks": entry.get("checks") or [],
+                "hashes": _pack_hashes(vpack),
+                **findings,
+            }
+        )
         evidence_packs.append(
             _pack_record(
                 role="verifier",
@@ -373,27 +393,30 @@ def main(
             )
         )
         if voverall == VERIFIER_ENV_SKIP:
-            gaps.append({
-                "id": vid,
-                "declared_status": "implemented",
-                "reason": "verifier skipped because its declared environment was unavailable",
-                "checks": entry.get("checks") or [],
-            })
+            gaps.append(
+                {
+                    "id": vid,
+                    "declared_status": "implemented",
+                    "reason": "verifier skipped because its declared environment was unavailable",
+                    "checks": entry.get("checks") or [],
+                }
+            )
 
     for entry in planned:
-        gaps.append({
-            "id": entry.get("id"),
-            "declared_status": entry.get("status", "planned"),
-            "reason": entry.get("notes") or "verifier declared but not yet implemented",
-            "checks": entry.get("checks") or [],
-        })
+        gaps.append(
+            {
+                "id": entry.get("id"),
+                "declared_status": entry.get("status", "planned"),
+                "reason": entry.get("notes") or "verifier declared but not yet implemented",
+                "checks": entry.get("checks") or [],
+            }
+        )
 
     verdict = _verdict(skill_overall, verifier_results, gaps)
-    planned_verifier_gaps = [
-        g for g in gaps if g.get("declared_status") != "implemented"
-    ]
+    planned_verifier_gaps = [g for g in gaps if g.get("declared_status") != "implemented"]
     env_skipped_verifier_gaps = [
-        g for g in gaps
+        g
+        for g in gaps
         if g.get("declared_status") == "implemented"
         and "environment" in str(g.get("reason", "")).lower()
     ]

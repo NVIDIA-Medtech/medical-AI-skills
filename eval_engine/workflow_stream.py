@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Workflow-level Holoscan flow-benchmark stream aggregation for workflow_summary.json."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -24,9 +40,7 @@ def _file_group_summary(blob: dict[str, Any] | None) -> dict[str, Any]:
         "count": int(group.get("count") or 0),
         "total_bytes": int(group.get("total_bytes") or 0),
         "paths": [
-            str(item.get("path"))
-            for item in files
-            if isinstance(item, dict) and item.get("path")
+            str(item.get("path")) for item in files if isinstance(item, dict) and item.get("path")
         ][:20],
     }
 
@@ -79,13 +93,9 @@ def _contract_summary(contract: dict[str, Any]) -> dict[str, Any]:
     return {
         "present": bool(contract.get("present")),
         "path": str(contract.get("path") or ""),
-        "all_assertions_passed": bool(
-            assertions.get("all_required_assertions_passed", False)
-        ),
+        "all_assertions_passed": bool(assertions.get("all_required_assertions_passed", False)),
         "smoke_mode": bool(contract.get("smoke_mode")),
-        "scheduler_coverage_complete": bool(
-            assertions.get("scheduler_coverage_complete", False)
-        ),
+        "scheduler_coverage_complete": bool(assertions.get("scheduler_coverage_complete", False)),
         "latency_budgets_met": bool(assertions.get("latency_budgets_met", False)),
         "latency_budget_results": budget_results,
     }

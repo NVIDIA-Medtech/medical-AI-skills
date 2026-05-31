@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from tools.with_vs_without import write_nv_model_reports as reports
 
 
@@ -29,7 +44,11 @@ def test_incomplete_checked_in_overview_does_not_present_historical_rows_as_curr
 
 
 def _repeat(repeat: int, passed: bool, score: int) -> dict[str, object]:
-    return {"repeat": repeat, "score": {"passed": passed, "score": score, "tiers": []}, "attempts": []}
+    return {
+        "repeat": repeat,
+        "score": {"passed": passed, "score": score, "tiers": []},
+        "attempts": [],
+    }
 
 
 def _aggregate(backend: str, arm: str, repeats: list[dict[str, object]]) -> dict[str, object]:
@@ -64,8 +83,12 @@ def test_report_generation_refuses_incomplete_artifacts(monkeypatch, capsys) -> 
 
     monkeypatch.setattr(reports, "audit_all", lambda repeats: _report("incomplete"))
     monkeypatch.setattr(reports, "write_codex", lambda skill: called.__setitem__("codex", True))
-    monkeypatch.setattr(reports, "write_nemotron", lambda skill: called.__setitem__("nemotron", True))
-    monkeypatch.setattr(reports, "write_overview", lambda codex, nemotron: called.__setitem__("overview", True))
+    monkeypatch.setattr(
+        reports, "write_nemotron", lambda skill: called.__setitem__("nemotron", True)
+    )
+    monkeypatch.setattr(
+        reports, "write_overview", lambda codex, nemotron: called.__setitem__("overview", True)
+    )
 
     rc = reports.main([])
 
@@ -77,10 +100,16 @@ def test_report_generation_refuses_incomplete_artifacts(monkeypatch, capsys) -> 
 def test_report_generation_can_skip_guard_for_debugging(monkeypatch) -> None:
     monkeypatch.setattr(reports, "audit_all", lambda repeats: _report("incomplete"))
     monkeypatch.setattr(reports, "SCENARIOS", {"example": object()})
-    monkeypatch.setattr(reports, "write_codex", lambda skill: {"skill": skill, "codex_with_pass": 1})
-    monkeypatch.setattr(reports, "write_nemotron", lambda skill: {"skill": skill, "nemotron_with_pass": 1})
+    monkeypatch.setattr(
+        reports, "write_codex", lambda skill: {"skill": skill, "codex_with_pass": 1}
+    )
+    monkeypatch.setattr(
+        reports, "write_nemotron", lambda skill: {"skill": skill, "nemotron_with_pass": 1}
+    )
     overview_calls: list[tuple[list[dict[str, object]], list[dict[str, object]]]] = []
-    monkeypatch.setattr(reports, "write_overview", lambda codex, nemotron: overview_calls.append((codex, nemotron)))
+    monkeypatch.setattr(
+        reports, "write_overview", lambda codex, nemotron: overview_calls.append((codex, nemotron))
+    )
     snapshot_calls: list[dict[str, object]] = []
     monkeypatch.setattr(reports, "write_snapshot", lambda **kwargs: snapshot_calls.append(kwargs))
 
@@ -213,10 +242,7 @@ def test_tolerant_command_candidate_is_diagnostic_only() -> None:
 
 def test_nemotron_format_profile_counts_recoverable_guard_ready_command() -> None:
     scenario = reports.SCENARIOS["nv_generate_mr"]
-    output_dir = (
-        "runs/with_vs_without_nv/"
-        "nv_generate_mr_nemotron_correction/with/repeat_1"
-    )
+    output_dir = "runs/with_vs_without_nv/" "nv_generate_mr_nemotron_correction/with/repeat_1"
     record = {
         "backend": "nemotron",
         "backend_label": "Nemotron",
@@ -226,7 +252,7 @@ def test_nemotron_format_profile_counts_recoverable_guard_ready_command() -> Non
                 "repeat": 1,
                 "output_dir": output_dir,
                 "response": (
-                    "export NV_GENERATE_ROOT=\"${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}\" && "
+                    'export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-.workbench_data/upstreams/NV-Generate-CTMR}" && '
                     "python skills/nv-generate-mr/scripts/run_mr.py "
                     "runs/with_vs_without_nv/_inputs/nv_generate_mr/request.json "
                     f"--output-dir {output_dir} --version rflow-mr"
@@ -248,7 +274,9 @@ def test_nemotron_format_profile_counts_recoverable_guard_ready_command() -> Non
 
 def test_paired_outcome_summary_does_not_overstate_readme_win() -> None:
     with_records = [_aggregate("nemotron", "with", [_repeat(1, False, 3), _repeat(2, True, 5)])]
-    without_records = [_aggregate("nemotron", "without", [_repeat(1, True, 5), _repeat(2, True, 5)])]
+    without_records = [
+        _aggregate("nemotron", "without", [_repeat(1, True, 5), _repeat(2, True, 5)])
+    ]
 
     summary = reports._paired_outcome_summary(with_records, without_records)
 
@@ -338,7 +366,9 @@ def _overview_row(skill: str, prefix: str, supports: bool) -> dict[str, object]:
         f"{prefix}_without_pass": 0,
         f"{prefix}_with_repeats": 5,
         f"{prefix}_without_repeats": 5,
-        f"{prefix}_paired_signal": "SKILL.md paired advantage" if supports else "No paired separation",
+        f"{prefix}_paired_signal": (
+            "SKILL.md paired advantage" if supports else "No paired separation"
+        ),
         f"{prefix}_paired_with_wins": 5 if supports else 0,
         f"{prefix}_paired_without_wins": 0,
         f"{prefix}_paired_ties": 0 if supports else 5,

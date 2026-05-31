@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Run per-skill NV model with-vs-without studies.
 
 This runner covers the planned docs that do not yet have bespoke NAT
 orchestrators. It writes generated study JSON/Markdown and generated
 volumes/checkpoints under runs/ so refreshed LLM records remain gitignored.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -33,7 +49,9 @@ PROMPT_ARTIFACT_ROOT = REPO_ROOT / "tools/nat_audit/data"
 CACHE_ROOT = REPO_ROOT / ".workbench_data/with_vs_without_cache"
 
 BASH_BLOCK_RE = re.compile(r"```(?:bash|sh|shell)?\s*\n(.*?)```", re.DOTALL)
-PYTHON_LINE_RE = re.compile(r"(^|\n)\s*(?:[A-Za-z_][A-Za-z0-9_]*=.*\s+)*python[0-9.]*\s+.+", re.DOTALL)
+PYTHON_LINE_RE = re.compile(
+    r"(^|\n)\s*(?:[A-Za-z_][A-Za-z0-9_]*=.*\s+)*python[0-9.]*\s+.+", re.DOTALL
+)
 LOCAL_HOME_PATH_RE = re.compile(r"/(?:home|Users)/[^\s\"']+")
 SHELLISH_START_RE = re.compile(
     r"^\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*=.*\s+)+)?"
@@ -52,8 +70,7 @@ EXTERNAL_LLM_DATA_TRANSFER_NOTICE = (
     "bounded verifier failure summaries to the configured external LLM API."
 )
 DIRECT_SYSTEM_PROMPT = (
-    "You produce reproducible medical-imaging engineering commands. "
-    "Do not make clinical claims."
+    "You produce reproducible medical-imaging engineering commands. " "Do not make clinical claims."
 )
 PROMPT_ARTIFACT_ANSWER = (
     "Backend response is captured in runs/with_vs_without_nv/studies; "
@@ -230,7 +247,9 @@ SCENARIOS: dict[str, Scenario] = {
             "right kidney, and left kidney, and write outputs under {out_dir}."
         ),
         with_doc=("skills/nv-segment-ct/SKILL.md",),
-        without_doc=("tools/with_vs_without/upstream_docs/nv_segment_ct_NV-Segment-CTMR_README.md",),
+        without_doc=(
+            "tools/with_vs_without/upstream_docs/nv_segment_ct_NV-Segment-CTMR_README.md",
+        ),
         tier1=("run_vista3d.py", "monai.bundle", "configs/inference.json"),
         tier2=("spleen_03.nii.gz",),
         tier3=("1", "3", "5", "14"),
@@ -247,12 +266,16 @@ SCENARIOS: dict[str, Scenario] = {
             "workflow and write the label map under {out_dir}."
         ),
         with_doc=("skills/nv-segment-ctmr/SKILL.md",),
-        without_doc=("tools/with_vs_without/upstream_docs/nv_segment_ctmr_NV-Segment-CTMR_README.md",),
+        without_doc=(
+            "tools/with_vs_without/upstream_docs/nv_segment_ctmr_NV-Segment-CTMR_README.md",
+        ),
         tier1=("run_ctmr.py", "monai.bundle", "configs/inference.json"),
         tier2=("spleen_03.nii.gz",),
         tier3=("CT_BODY",),
         timeout_s=2400,
-        env={"NV_SEGMENT_CTMR_ROOT": _p(".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR")},
+        env={
+            "NV_SEGMENT_CTMR_ROOT": _p(".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CTMR")
+        },
     ),
     "nv_segment_ct_finetune": Scenario(
         skill="nv_segment_ct_finetune",
@@ -266,7 +289,9 @@ SCENARIOS: dict[str, Scenario] = {
             "the workflow, and write outputs under {out_dir}."
         ),
         with_doc=("skills/nv-segment-ct-finetune/SKILL.md",),
-        without_doc=("tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",),
+        without_doc=(
+            "tools/with_vs_without/upstream_docs/nv_segment_ct_finetune_NV-Segment-CT_finetune.md",
+        ),
         tier1=("run_finetune.py", "monai.bundle", "train_continual"),
         tier2=("spleen_micro", "datalist"),
         tier3=("smoke", "train_continual", "configs/train.json"),
@@ -284,7 +309,9 @@ SCENARIOS: dict[str, Scenario] = {
             "write the output pair under {out_dir}."
         ),
         with_doc=("skills/nv-generate-ct-rflow/SKILL.md",),
-        without_doc=("tools/with_vs_without/upstream_docs/nv_generate_ct_rflow_NV-Generate-CTMR_infer_mask-image-paired.md",),
+        without_doc=(
+            "tools/with_vs_without/upstream_docs/nv_generate_ct_rflow_NV-Generate-CTMR_infer_mask-image-paired.md",
+        ),
         tier1=("run_rflow_ct.py", "scripts.inference"),
         tier2=("chest_lung_tumor_controllable.json", "config_infer.json"),
         tier3=("rflow-ct", "lung tumor", "chest"),
@@ -302,7 +329,9 @@ SCENARIOS: dict[str, Scenario] = {
             "image and write generated NIfTI volumes under {out_dir}."
         ),
         with_doc=("skills/nv-generate-mr/SKILL.md",),
-        without_doc=("tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",),
+        without_doc=(
+            "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        ),
         tier1=("run_mr.py", "scripts.diff_model_infer"),
         tier2=("default_mri_t1.json", "config_maisi_diff_model_rflow-mr.json"),
         tier3=("rflow-mr", "mri_t1"),
@@ -320,7 +349,9 @@ SCENARIOS: dict[str, Scenario] = {
             "brain MR image and write generated NIfTI volumes under {out_dir}."
         ),
         with_doc=("skills/nv-generate-mr-brain/SKILL.md",),
-        without_doc=("tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",),
+        without_doc=(
+            "tools/with_vs_without/upstream_docs/nv_generate_mr_NV-Generate-CTMR_infer_image-only.md",
+        ),
         tier1=("run_mr_brain.py", "scripts.diff_model_infer"),
         tier2=("default_mri_t1.json", "config_maisi_diff_model_rflow-mr-brain.json"),
         tier3=("rflow-mr-brain", "mri_t1"),
@@ -346,7 +377,11 @@ SCENARIOS: dict[str, Scenario] = {
             "tools/with_vs_without/upstream_docs/"
             "nv_generate_mr_brain_finetune_NV-Generate-CTMR_train_diff_unet.md",
         ),
-        tier1=("run_mr_brain_finetune.py", "scripts.diff_model_train", "scripts.diff_model_create_training_data"),
+        tier1=(
+            "run_mr_brain_finetune.py",
+            "scripts.diff_model_train",
+            "scripts.diff_model_create_training_data",
+        ),
         tier2=("preflight_datalist.json", "preflight_dataset"),
         tier3=("rflow-mr-brain", "mri_t1", "--preflight"),
         timeout_s=900,
@@ -415,7 +450,9 @@ def _read_env_value(name: str) -> str:
                 prefix = f"export {candidate}="
                 if stripped.startswith(prefix):
                     val = stripped.split("=", 1)[1].split("#", 1)[0].strip()
-                    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                    if (val.startswith('"') and val.endswith('"')) or (
+                        val.startswith("'") and val.endswith("'")
+                    ):
                         val = val[1:-1]
                     if val:
                         return val
@@ -488,11 +525,7 @@ def _stage_input(s: Scenario) -> Path:
 def _message_text(message: dict[str, Any]) -> str:
     content = message.get("content")
     if isinstance(content, list):
-        text_parts = [
-            str(part.get("text", part))
-            for part in content
-            if isinstance(part, dict)
-        ]
+        text_parts = [str(part.get("text", part)) for part in content if isinstance(part, dict)]
         if text_parts:
             return "\n".join(text_parts)
     if content:
@@ -503,9 +536,7 @@ def _message_text(message: dict[str, Any]) -> str:
     reasoning_content = message.get("reasoning_content")
     if isinstance(reasoning_content, list):
         text_parts = [
-            str(part.get("text", part))
-            for part in reasoning_content
-            if isinstance(part, dict)
+            str(part.get("text", part)) for part in reasoning_content if isinstance(part, dict)
         ]
         if text_parts:
             return "\n".join(text_parts)
@@ -566,9 +597,13 @@ def _guarded_prompt(s: Scenario, arm: str, out_dir: Path) -> str:
         env_lines = ", ".join(f"{k}={v}" for k, v in s.env.items())
         constraints.append(f"Available runtime environment variables: {env_lines}.")
     if arm == "with":
-        constraints.append(f"Use Medical AI Skills skill {s.skill}; do not inspect unrelated skill internals.")
+        constraints.append(
+            f"Use Medical AI Skills skill {s.skill}; do not inspect unrelated skill internals."
+        )
     else:
-        constraints.append(f"Do not use or mention files under {_skill_doc_dir(s)}/; use only the upstream documentation.")
+        constraints.append(
+            f"Do not use or mention files under {_skill_doc_dir(s)}/; use only the upstream documentation."
+        )
     return (
         f"You are helping run an engineering reproducibility experiment for {s.title}.\n"
         f"Task: {s.task}\n\n"
@@ -592,7 +627,9 @@ def _minimal_prompt(s: Scenario, arm: str, out_dir: Path) -> str:
         "Do not write to or modify .workbench_data/upstreams, $NV_GENERATE_ROOT, or $NV_SEGMENT_CTMR_ROOT; stage any edited runtime files under the requested output directory.",
     ]
     if arm == "with":
-        constraints.append(f"Use Medical AI Skills skill documentation for {s.skill}; do not inspect unrelated skill internals.")
+        constraints.append(
+            f"Use Medical AI Skills skill documentation for {s.skill}; do not inspect unrelated skill internals."
+        )
     else:
         constraints.append(
             f"Use only the upstream documentation below; do not use or mention files under {_skill_doc_dir(s)}/."
@@ -732,12 +769,18 @@ def _protected_upstream_write_reason(cmd: str) -> str | None:
                 return "command redirects output into a protected upstream checkout"
         if command_name in {"cp", "mv", "install", "rsync"}:
             if len(tokens) > 1 and _is_protected_upstream_target(tokens[-1]):
-                return f"command attempts to write to protected upstream checkout via {command_name}"
+                return (
+                    f"command attempts to write to protected upstream checkout via {command_name}"
+                )
         elif command_name in {"tee", "touch", "mkdir"}:
             targets = [token for token in tokens[1:] if not token.startswith("-")]
             if any(_is_protected_upstream_target(target) for target in targets):
-                return f"command attempts to write to protected upstream checkout via {command_name}"
-        elif command_name in inplace_editors and any(token.startswith("-i") for token in tokens[1:]):
+                return (
+                    f"command attempts to write to protected upstream checkout via {command_name}"
+                )
+        elif command_name in inplace_editors and any(
+            token.startswith("-i") for token in tokens[1:]
+        ):
             targets = [token for token in tokens[1:] if not token.startswith("-")]
             if any(_is_protected_upstream_target(target) for target in targets):
                 return f"command attempts in-place editing inside a protected upstream checkout via {command_name}"
@@ -757,7 +800,9 @@ def _safe_to_execute(s: Scenario, arm: str, cmd: str | None, out_dir: Path) -> t
         return False, "command does not reference the neutral staged input path"
     if not any(marker in cmd for marker in s.tier1):
         return False, "command does not reference an expected runnable surface"
-    if arm == "without" and any(marker and marker in cmd for marker in _repair_feedback_forbidden_markers(s, arm)):
+    if arm == "without" and any(
+        marker and marker in cmd for marker in _repair_feedback_forbidden_markers(s, arm)
+    ):
         return False, "without-skill command references forbidden Medical AI Skills skill marker"
     # Guard against high-blast-radius shell operations. The experiment still
     # intentionally executes generated commands, but only if they stay within
@@ -802,8 +847,7 @@ def _shared_cache_env_paths() -> dict[str, Path]:
 
 def _shared_cache_env_records() -> dict[str, str]:
     return {
-        name: str(path.relative_to(REPO_ROOT))
-        for name, path in _shared_cache_env_paths().items()
+        name: str(path.relative_to(REPO_ROOT)) for name, path in _shared_cache_env_paths().items()
     }
 
 
@@ -922,7 +966,9 @@ def _execute(s: Scenario, arm: str, cmd: str | None, out_dir: Path) -> dict[str,
     out_dir.mkdir(parents=True, exist_ok=True)
     env, exec_venv, exec_python, fresh_env_created = _build_isolated_exec_env(out_dir)
     env.update(s.env or {})
-    env.update({name: value for name, value in _protected_upstream_defaults().items() if name not in env})
+    env.update(
+        {name: value for name, value in _protected_upstream_defaults().items() if name not in env}
+    )
     env.setdefault("PYTHONUNBUFFERED", "1")
     protected_snapshot = _snapshot_protected_upstream_configs(s)
     t0 = time.time()
@@ -938,9 +984,7 @@ def _execute(s: Scenario, arm: str, cmd: str | None, out_dir: Path) -> dict[str,
     generated_files = []
     if out_dir.exists():
         generated_files = [
-            str(p.relative_to(REPO_ROOT))
-            for p in sorted(out_dir.rglob("*"))
-            if p.is_file()
+            str(p.relative_to(REPO_ROOT)) for p in sorted(out_dir.rglob("*")) if p.is_file()
         ][:80]
     return {
         "executed": True,
@@ -1095,12 +1139,16 @@ def _tier3_pass(s: Scenario, cmd_text: str, exec_result: dict[str, Any]) -> bool
     return any(m in cmd_text for m in s.tier3)
 
 
-def _score(s: Scenario, cmd: str | None, out_dir: Path, exec_result: dict[str, Any]) -> dict[str, Any]:
+def _score(
+    s: Scenario, cmd: str | None, out_dir: Path, exec_result: dict[str, Any]
+) -> dict[str, Any]:
     cmd_text = cmd or ""
     rel_input = str(_staged_input_path(s).relative_to(REPO_ROOT))
     abs_input = str(_staged_input_path(s))
     tiers: list[dict[str, Any]] = []
-    tiers.append({"tier": 1, "pass": any(m in cmd_text for m in s.tier1), "reason": "entrypoint marker"})
+    tiers.append(
+        {"tier": 1, "pass": any(m in cmd_text for m in s.tier1), "reason": "entrypoint marker"}
+    )
     tiers.append(
         {
             "tier": 2,
@@ -1108,9 +1156,21 @@ def _score(s: Scenario, cmd: str | None, out_dir: Path, exec_result: dict[str, A
             "reason": "user input path marker",
         }
     )
-    tiers.append({"tier": 3, "pass": _tier3_pass(s, cmd_text, exec_result), "reason": "model/modality/control marker"})
+    tiers.append(
+        {
+            "tier": 3,
+            "pass": _tier3_pass(s, cmd_text, exec_result),
+            "reason": "model/modality/control marker",
+        }
+    )
     rel_out = str(out_dir.relative_to(REPO_ROOT))
-    tiers.append({"tier": 4, "pass": rel_out in cmd_text or str(out_dir) in cmd_text, "reason": "output dir marker"})
+    tiers.append(
+        {
+            "tier": 4,
+            "pass": rel_out in cmd_text or str(out_dir) in cmd_text,
+            "reason": "output dir marker",
+        }
+    )
     verified, why = _verify_outputs(s, out_dir, exec_result)
     tiers.append({"tier": 5, "pass": verified, "reason": why})
     return {
@@ -1120,7 +1180,9 @@ def _score(s: Scenario, cmd: str | None, out_dir: Path, exec_result: dict[str, A
     }
 
 
-def _feedback(score: dict[str, Any], exec_result: dict[str, Any], *, scenario: Scenario, arm: str) -> str:
+def _feedback(
+    score: dict[str, Any], exec_result: dict[str, Any], *, scenario: Scenario, arm: str
+) -> str:
     failed = [t for t in score["tiers"] if not t["pass"]]
     detail = {
         "failed_tiers": failed,
@@ -1136,8 +1198,7 @@ def _feedback(score: dict[str, Any], exec_result: dict[str, Any], *, scenario: S
     return (
         "The previous command did not pass verification. "
         "Use only the failure details below to repair the bash command. "
-        "Return a replacement single bash code block.\n"
-        + json.dumps(detail, indent=2)
+        "Return a replacement single bash code block.\n" + json.dumps(detail, indent=2)
     )
 
 
@@ -1391,8 +1452,12 @@ def _prompt_artifact_records(
                             "expected_output_dir": str(out_dir.relative_to(REPO_ROOT)),
                             "staged_user_input": str(_staged_input_path(s).relative_to(REPO_ROOT)),
                             "source_fixture_used_only_for_staging": s.fixture,
-                            "documentation_arm": list(s.with_doc if arm == "with" else s.without_doc),
-                            "documentation": _documentation_records(s.with_doc if arm == "with" else s.without_doc),
+                            "documentation_arm": list(
+                                s.with_doc if arm == "with" else s.without_doc
+                            ),
+                            "documentation": _documentation_records(
+                                s.with_doc if arm == "with" else s.without_doc
+                            ),
                             "correction_budget_steps": max_steps,
                             "repeat_count": repeats,
                             "repair_prompt": repair_prompt,
@@ -1557,7 +1622,9 @@ def _run_repair_loop(
     ]
     attempts: list[dict[str, Any]] = []
     for step in range(max_steps + 1):
-        result = _run_attempt(scenario=scenario, backend=backend, arm=arm, out_dir=out_dir, messages=messages)
+        result = _run_attempt(
+            scenario=scenario, backend=backend, arm=arm, out_dir=out_dir, messages=messages
+        )
         # Keep the saved transcript and the next repair prompt in the same
         # sanitized coordinate system. Otherwise long stderr/stdout tails can
         # cross a different truncation boundary after path redaction.
@@ -1567,10 +1634,14 @@ def _run_repair_loop(
         if result["score"]["passed"]:
             break
         messages.append({"role": "assistant", "content": result["response"]})
-        messages.append({
-            "role": "user",
-            "content": _feedback(result["score"], result["execution"], scenario=scenario, arm=arm),
-        })
+        messages.append(
+            {
+                "role": "user",
+                "content": _feedback(
+                    result["score"], result["execution"], scenario=scenario, arm=arm
+                ),
+            }
+        )
 
     final = dict(attempts[-1])
     final["backend_label"] = backend.label
@@ -1597,7 +1668,11 @@ def _steps_summary(repeats: list[dict[str, Any]]) -> dict[str, Any]:
         "min_resolved": min(resolved) if resolved else None,
         "max_resolved": max(resolved) if resolved else None,
         "values": [
-            ("unresolved" if isinstance(_steps_to_pass(r), float) and math.isinf(_steps_to_pass(r)) else int(_steps_to_pass(r)))
+            (
+                "unresolved"
+                if isinstance(_steps_to_pass(r), float) and math.isinf(_steps_to_pass(r))
+                else int(_steps_to_pass(r))
+            )
             for r in repeats
         ],
     }
@@ -1687,7 +1762,9 @@ def _repeat_trace_is_current(
     attempts = data.get("attempts")
     if not isinstance(attempts, list) or not attempts or len(attempts) > max_steps + 1:
         return False
-    actual_steps = [attempt.get("step") if isinstance(attempt, dict) else None for attempt in attempts]
+    actual_steps = [
+        attempt.get("step") if isinstance(attempt, dict) else None for attempt in attempts
+    ]
     if actual_steps != list(range(len(attempts))):
         return False
 
@@ -1737,7 +1814,9 @@ def _repeat_trace_is_current(
             continue
 
         previous_attempt = attempts[index - 1]
-        previous_response = previous_attempt.get("response") if isinstance(previous_attempt, dict) else None
+        previous_response = (
+            previous_attempt.get("response") if isinstance(previous_attempt, dict) else None
+        )
         assistant_msg = messages[-2] if len(messages) >= 2 else None
         if not isinstance(previous_response, str):
             return False
@@ -1746,12 +1825,18 @@ def _repeat_trace_is_current(
         last_msg = messages[-1] if messages else None
         if not isinstance(last_msg, dict) or last_msg.get("role") != "user":
             return False
-        previous_score = previous_attempt.get("score") if isinstance(previous_attempt, dict) else None
-        previous_execution = previous_attempt.get("execution") if isinstance(previous_attempt, dict) else None
+        previous_score = (
+            previous_attempt.get("score") if isinstance(previous_attempt, dict) else None
+        )
+        previous_execution = (
+            previous_attempt.get("execution") if isinstance(previous_attempt, dict) else None
+        )
         if not isinstance(previous_score, dict) or not isinstance(previous_execution, dict):
             return False
         try:
-            expected_feedback = _feedback(previous_score, previous_execution, scenario=scenario, arm=arm)
+            expected_feedback = _feedback(
+                previous_score, previous_execution, scenario=scenario, arm=arm
+            )
         except Exception:  # noqa: BLE001
             return False
         if last_msg.get("content") != expected_feedback:
@@ -1769,7 +1854,10 @@ def _repeat_trace_is_current(
             return False
         if LOCAL_HOME_PATH_RE.search(content):
             return False
-        if any(marker and marker in content for marker in _repair_feedback_forbidden_markers(scenario, arm)):
+        if any(
+            marker and marker in content
+            for marker in _repair_feedback_forbidden_markers(scenario, arm)
+        ):
             return False
 
     final_attempt = attempts[-1]
@@ -1814,7 +1902,9 @@ def _load_existing_repeat(
         return None
     if not isinstance(data, dict):
         return None
-    expected_out_dir = str(_repeat_out_dir(skill, mode, backend, arm, repeat).relative_to(REPO_ROOT))
+    expected_out_dir = str(
+        _repeat_out_dir(skill, mode, backend, arm, repeat).relative_to(REPO_ROOT)
+    )
     if data.get("backend") != backend.key:
         return None
     if data.get("backend_label") != backend.label:
@@ -2014,9 +2104,7 @@ def run_all_interleaved(
         codex_study = STUDY_ROOT / f"{skill}_codex_opus"
         nemotron_study = STUDY_ROOT / f"{skill}_nemotron_correction"
         codex_results: dict[tuple[str, str], list[dict[str, Any]]] = {
-            (backend.key, arm): []
-            for backend in codex_backends
-            for arm in ("with", "without")
+            (backend.key, arm): [] for backend in codex_backends for arm in ("with", "without")
         }
         nemotron_results: dict[str, list[dict[str, Any]]] = {
             "with": [],
@@ -2078,7 +2166,9 @@ def run_all_interleaved(
             )
             nemotron_rows.append(aggregate)
             _write_json(nemotron_study / f"{arm}.json", aggregate)
-        _write_md(nemotron_study / "comparison.md", f"{skill}: Nemotron baseline study", nemotron_rows)
+        _write_md(
+            nemotron_study / "comparison.md", f"{skill}: Nemotron baseline study", nemotron_rows
+        )
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -2086,7 +2176,9 @@ def main(argv: list[str] | None = None) -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--skills", nargs="*", default=sorted(SCENARIOS), choices=sorted(SCENARIOS))
-    parser.add_argument("--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all")
+    parser.add_argument(
+        "--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all"
+    )
     parser.add_argument("--max-correction-steps", type=int, default=DIRECT_MAX_CORRECTION_STEPS)
     parser.add_argument(
         "--repeats",
@@ -2183,7 +2275,11 @@ def main(argv: list[str] | None = None) -> None:
             f"--max-correction-steps {DIRECT_MAX_CORRECTION_STEPS}; use "
             "--allow-debug-budget only for non-publishable diagnostic runs"
         )
-    if args.allow_debug_budget and args.mode != "prompts" and (non_protocol_repeats or non_protocol_steps):
+    if (
+        args.allow_debug_budget
+        and args.mode != "prompts"
+        and (non_protocol_repeats or non_protocol_steps)
+    ):
         print(
             "[with-vs-without] debug budget enabled: artifacts from this run "
             "are diagnostic only and will not satisfy strict audit.",
@@ -2191,9 +2287,13 @@ def main(argv: list[str] | None = None) -> None:
             flush=True,
         )
     if args.mode == "prompts" and args.prompt_style != "path":
-        parser.error("--mode prompts writes fair NAT/tool-agent prompt artifacts and requires --prompt-style path.")
+        parser.error(
+            "--mode prompts writes fair NAT/tool-agent prompt artifacts and requires --prompt-style path."
+        )
     if args.mode != "prompts" and args.prompt_style == "path":
-        parser.error("--prompt-style path is only for prompt artifacts/tool-agent runs; use minimal for direct API runs.")
+        parser.error(
+            "--prompt-style path is only for prompt artifacts/tool-agent runs; use minimal for direct API runs."
+        )
     if args.mode != "prompts" and args.prompt_style != "minimal":
         parser.error(
             "direct API study modes require --prompt-style minimal; "

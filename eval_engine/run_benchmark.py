@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Benchmark-dataset runner for medagent skills.
 
 Runs a skill once per benchmark case, computes reference segmentation
@@ -63,9 +78,7 @@ class BenchmarkCase:
     input_path: Path
     ground_truth_path: Path
     labels: tuple[int, ...] | None
-    gt_labels: tuple[int, ...] | None = (
-        None  # if set, overrides `labels` for the GT mask
-    )
+    gt_labels: tuple[int, ...] | None = None  # if set, overrides `labels` for the GT mask
 
 
 def _load_dataset(path: Path) -> dict:
@@ -100,9 +113,7 @@ def _coerce_labels(raw, who: str) -> tuple[int, ...] | None:
 
 
 def _case_labels(case: dict, spec: dict) -> tuple[int, ...] | None:
-    raw = case.get(
-        "labels", case.get("label", spec.get("labels", spec.get("metric_labels")))
-    )
+    raw = case.get("labels", case.get("label", spec.get("labels", spec.get("metric_labels"))))
     return _coerce_labels(raw, who=f"case {case.get('id', '?')}")
 
 
@@ -159,9 +170,7 @@ def _cases_from_spec(path: Path, spec: dict, limit: int | None) -> list[Benchmar
     return cases
 
 
-def _load_mask(
-    path: Path, labels: tuple[int, ...] | None
-) -> tuple[np.ndarray, tuple[float, ...]]:
+def _load_mask(path: Path, labels: tuple[int, ...] | None) -> tuple[np.ndarray, tuple[float, ...]]:
     import nibabel as nib
 
     img = nib.load(str(path))
@@ -210,9 +219,7 @@ def _nearest_distances(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return np.asarray(distances, dtype=float)
     except Exception:
         if len(a) * len(b) > 25_000_000:
-            raise RuntimeError(
-                "scipy is required for Hausdorff distance on large masks"
-            )
+            raise RuntimeError("scipy is required for Hausdorff distance on large masks")
         mins: list[np.ndarray] = []
         chunk = 1024
         for start in range(0, len(a), chunk):
@@ -222,9 +229,7 @@ def _nearest_distances(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return np.concatenate(mins) if mins else np.asarray([], dtype=float)
 
 
-def _hausdorff(
-    pred: np.ndarray, gt: np.ndarray, spacing: tuple[float, ...]
-) -> float | None:
+def _hausdorff(pred: np.ndarray, gt: np.ndarray, spacing: tuple[float, ...]) -> float | None:
     if not pred.any() and not gt.any():
         return 0.0
     if not pred.any() or not gt.any():
@@ -272,11 +277,7 @@ def _wilson_score_pct(successes: int, n: int, z: float = 1.959963984540054) -> d
 
 
 def _summary(values: list[float | None]) -> dict:
-    vals = [
-        float(v)
-        for v in values
-        if isinstance(v, (int, float)) and math.isfinite(float(v))
-    ]
+    vals = [float(v) for v in values if isinstance(v, (int, float)) and math.isfinite(float(v))]
     if not vals:
         return {
             "count": 0,
@@ -358,9 +359,7 @@ def _run_case(
         record["prediction_path"] = _public_path(pred_path)
 
         pred_mask, pred_spacing = _load_mask(pred_path, case.labels)
-        gt_mask, gt_spacing = _load_mask(
-            case.ground_truth_path, case.gt_labels or case.labels
-        )
+        gt_mask, gt_spacing = _load_mask(case.ground_truth_path, case.gt_labels or case.labels)
         if pred_mask.shape != gt_mask.shape:
             raise ValueError(
                 f"shape mismatch: prediction {pred_mask.shape}, ground truth {gt_mask.shape}"
@@ -431,13 +430,9 @@ def main(
     benchmark: Path = typer.Option(
         ..., "--benchmark", "--fixture", help="benchmark_dataset YAML manifest"
     ),
-    out: Path = typer.Option(
-        ..., "--out", help="benchmark evidence pack output directory"
-    ),
+    out: Path = typer.Option(..., "--out", help="benchmark evidence pack output directory"),
     jobs: int = typer.Option(1, "--jobs", min=1, help="parallel case subprocesses"),
-    limit: int | None = typer.Option(
-        None, "--limit", min=1, help="optional first-N case limit"
-    ),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="optional first-N case limit"),
 ) -> None:
     skill_dir = skill_dir.resolve()
     benchmark = benchmark.resolve()
@@ -495,9 +490,7 @@ def main(
                     "error": preflight_error,
                 }
             )
-    preflight_status = (
-        "failed" if any(c.get("status") == "failed" for c in preflight) else "passed"
-    )
+    preflight_status = "failed" if any(c.get("status") == "failed" for c in preflight) else "passed"
 
     records: list[dict] = []
     trace_records: list[dict] = [
@@ -505,23 +498,17 @@ def main(
     ]
     if preflight_status == "passed":
         schema = (
-            json.loads(schema_path.read_text())
-            if schema_path and schema_path.exists()
-            else None
+            json.loads(schema_path.read_text()) if schema_path and schema_path.exists() else None
         )
         with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-            futures = [
-                pool.submit(_run_case, case, script, schema, spec)
-                for case in cases
-            ]
+            futures = [pool.submit(_run_case, case, script, schema, spec) for case in cases]
             for fut in concurrent.futures.as_completed(futures):
                 records.append(fut.result())
         records.sort(key=lambda r: r["case_id"])
 
     dataset_run = out / "dataset_run.jsonl"
     dataset_run.write_text(
-        "\n".join(json.dumps(r, sort_keys=True) for r in records)
-        + ("\n" if records else "")
+        "\n".join(json.dumps(r, sort_keys=True) for r in records) + ("\n" if records else "")
     )
 
     fail_count = sum(1 for r in records if r.get("status") != "passed")
@@ -554,14 +541,10 @@ def main(
             "hd": _summary([r.get("metrics", {}).get("hd") for r in records]),
         },
     }
-    (out / "output.json").write_text(
-        json.dumps(output_payload, indent=2, allow_nan=False)
-    )
+    (out / "output.json").write_text(json.dumps(output_payload, indent=2, allow_nan=False))
 
     sanity_checks = _benchmark_checks(manifest, spec)
-    sanity_results = (
-        _evaluate_sanity_checks(output_payload, sanity_checks) if sanity_checks else []
-    )
+    sanity_results = _evaluate_sanity_checks(output_payload, sanity_checks) if sanity_checks else []
     sanity_status = (
         "passed"
         if sanity_results and all(r["ok"] for r in sanity_results)
@@ -639,15 +622,17 @@ def main(
             "platform": platform.platform(),
         },
         "case_count": len(cases),
-        "command": _public_command([
-            sys.executable,
-            str(Path(__file__).resolve()),
-            str(skill_dir),
-            "--benchmark",
-            str(benchmark),
-            "--out",
-            str(out),
-        ]),
+        "command": _public_command(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                str(skill_dir),
+                "--benchmark",
+                str(benchmark),
+                "--out",
+                str(out),
+            ]
+        ),
         "eval_engine_script": _public_path(Path(__file__).resolve()),
     }
     (out / "manifest.json").write_text(json.dumps(bundle_manifest, indent=2))
@@ -687,10 +672,7 @@ def main(
         "# Benchmark Run Record",
         "",
         "- run id: " + run_id,
-        "- skill: "
-        + str(manifest.get("id", "?"))
-        + " v"
-        + str(manifest.get("version", "?")),
+        "- skill: " + str(manifest.get("id", "?")) + " v" + str(manifest.get("version", "?")),
         "- benchmark manifest: " + _public_path(benchmark),
         "- started: " + started_at,
         "- finished: " + finished_at,
@@ -718,11 +700,7 @@ def main(
     typer.echo("  cases: " + str(pass_count) + "/" + str(len(cases)) + " passed")
     typer.echo("  sanity: " + sanity_status)
     typer.echo(
-        "  integrity: "
-        + integrity_status
-        + " ("
-        + str(integrity["n_findings"])
-        + " findings)"
+        "  integrity: " + integrity_status + " (" + str(integrity["n_findings"]) + " findings)"
     )
     typer.echo("  overall: " + overall)
     if overall != "passed":

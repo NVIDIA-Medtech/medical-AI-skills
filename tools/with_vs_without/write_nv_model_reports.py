@@ -1,25 +1,37 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Write final NV with-vs-without skill experiment reports from JSON artifacts."""
 
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import json
 import math
 import re
 import statistics
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from tools.with_vs_without import manifest_nv_model_data_transfer as transfer  # noqa: E402
 from tools.with_vs_without.audit_nv_model_studies import audit_all  # noqa: E402
-from tools.with_vs_without import (
-    manifest_nv_model_data_transfer as transfer,
-)  # noqa: E402
-from tools.with_vs_without.write_nv_model_invariants import write_snapshot  # noqa: E402
 from tools.with_vs_without.run_nv_model_studies import (
     BASH_BLOCK_RE,
     CACHE_ROOT,
@@ -31,6 +43,7 @@ from tools.with_vs_without.run_nv_model_studies import (
     _shared_cache_env_records,
     _staged_input_path,
 )
+from tools.with_vs_without.write_nv_model_invariants import write_snapshot  # noqa: E402
 
 STUDY_ROOT = RUN_ROOT / "studies"
 RUN_ROOT = REPO_ROOT / "runs/with_vs_without_nv"
@@ -112,9 +125,7 @@ def _report_is_complete() -> bool:
 
 def _audit_skill_map() -> dict[str, dict[str, Any]]:
     return {
-        str(item.get("skill", "")): item
-        for item in _REPORT_AUDIT_SKILLS
-        if isinstance(item, dict)
+        str(item.get("skill", "")): item for item in _REPORT_AUDIT_SKILLS if isinstance(item, dict)
     }
 
 
@@ -138,9 +149,7 @@ def _skill_audit_status_text(skill: str) -> str:
     row = _audit_skill_map().get(skill)
     if not row:
         return "Audit record missing for this skill; regenerate the audit before citing results."
-    prompt_status = _audit_status_label(
-        (row.get("prompt_artifact") or {}).get("status")
-    )
+    prompt_status = _audit_status_label((row.get("prompt_artifact") or {}).get("status"))
     study = row.get("study_artifacts") or {}
     study_status = _audit_status_label(study.get("status"))
     outcome = row.get("outcome") or {}
@@ -228,9 +237,7 @@ def _write_incomplete_overview() -> None:
     ]
     for skill in sorted(SCENARIOS):
         codex_doc = REPORT_ROOT / f"with-vs-without-{_slug(skill)}-codex-opus.md"
-        nemo_doc = (
-            REPORT_ROOT / f"with-vs-without-{_slug(skill)}-nemotron-correction.md"
-        )
+        nemo_doc = REPORT_ROOT / f"with-vs-without-{_slug(skill)}-nemotron-correction.md"
         lines.append(
             f"| `{skill}` | `{_rel(codex_doc)}`; `{_rel(nemo_doc)}` | "
             f"{_skill_audit_status_text(skill)} |"
@@ -361,9 +368,7 @@ def _record_summary(record: dict[str, Any]) -> dict[str, Any]:
         "step_values": step_values,
         "resolved_steps": resolved_steps,
         "unresolved_count": len(step_values) - len(resolved_steps),
-        "mean_resolved_steps": (
-            statistics.mean(resolved_steps) if resolved_steps else None
-        ),
+        "mean_resolved_steps": (statistics.mean(resolved_steps) if resolved_steps else None),
     }
 
 
@@ -433,14 +438,12 @@ def _paired_outcome_summary(
     }
 
 
-def _paired_sign_test(
-    with_wins: int, without_wins: int, ties: int, matched: int
-) -> dict[str, Any]:
+def _paired_sign_test(with_wins: int, without_wins: int, ties: int, matched: int) -> dict[str, Any]:
     decisive = with_wins + without_wins
     if decisive:
-        p_value = sum(
-            math.comb(decisive, k) for k in range(with_wins, decisive + 1)
-        ) / (2**decisive)
+        p_value = sum(math.comb(decisive, k) for k in range(with_wins, decisive + 1)) / (
+            2**decisive
+        )
         win_rate = with_wins / decisive
     else:
         p_value = None
@@ -459,11 +462,11 @@ def _paired_outcome_text(summary: dict[str, Any]) -> str:
     p_value = stats.get("one_sided_sign_test_p")
     decisive = stats.get("decisive_pairs")
     if isinstance(p_value, (int, float)) and isinstance(decisive, int):
-        stats_text = f" Exact one-sided sign-test p={p_value:.4g} across {decisive} decisive pair(s)."
-    elif isinstance(decisive, int):
         stats_text = (
-            f" Exact one-sided sign-test p=n/a across {decisive} decisive pair(s)."
+            f" Exact one-sided sign-test p={p_value:.4g} across {decisive} decisive pair(s)."
         )
+    elif isinstance(decisive, int):
+        stats_text = f" Exact one-sided sign-test p=n/a across {decisive} decisive pair(s)."
     else:
         stats_text = ""
     text = (
@@ -501,9 +504,7 @@ def _paired_advantage_gate(summary: dict[str, Any]) -> dict[str, Any]:
     if with_wins > without_wins:
         sign_test = summary.get("paired_sign_test") or {}
         p_value = sign_test.get("one_sided_sign_test_p")
-        p_text = (
-            f"; sign-test p={p_value:.4g}" if isinstance(p_value, (int, float)) else ""
-        )
+        p_text = f"; sign-test p={p_value:.4g}" if isinstance(p_value, (int, float)) else ""
         return {
             "passed": True,
             "status": "supports_skill_advantage",
@@ -520,8 +521,7 @@ def _paired_advantage_gate(summary: dict[str, Any]) -> dict[str, Any]:
         )
     else:
         reason = (
-            f"SKILL.md and README-only are tied at {with_wins}/{matched} "
-            "matched pair win(s)"
+            f"SKILL.md and README-only are tied at {with_wins}/{matched} " "matched pair win(s)"
         )
     return {
         "passed": False,
@@ -574,9 +574,7 @@ def _token_profile_for_record(record: dict[str, Any]) -> dict[str, Any]:
         profile["total_tokens"] += _int_usage(usage.get("total_tokens"))
         completion_details = usage.get("completion_tokens_details") or {}
         if isinstance(completion_details, dict):
-            profile["reasoning_tokens"] += _int_usage(
-                completion_details.get("reasoning_tokens")
-            )
+            profile["reasoning_tokens"] += _int_usage(completion_details.get("reasoning_tokens"))
         execution = repeat.get("execution") or {}
         elapsed = execution.get("elapsed_seconds")
         if isinstance(elapsed, (int, float)) and not isinstance(elapsed, bool):
@@ -796,9 +794,7 @@ def _failed_tier_ids(repeat: dict[str, Any]) -> set[int]:
     return {
         int(tier.get("tier"))
         for tier in repeat.get("score", {}).get("tiers", [])
-        if isinstance(tier, dict)
-        and not tier.get("pass")
-        and isinstance(tier.get("tier"), int)
+        if isinstance(tier, dict) and not tier.get("pass") and isinstance(tier.get("tier"), int)
     }
 
 
@@ -866,9 +862,7 @@ def _nemotron_format_profile(
         counts["repeats"] += 1
         counts["passed"] += 1 if repeat["score"]["passed"] else 0
         strict_cmd = repeat.get("command")
-        candidate, category = _tolerant_command_candidate(
-            str(repeat.get("response") or "")
-        )
+        candidate, category = _tolerant_command_candidate(str(repeat.get("response") or ""))
         counts[category] = counts.get(category, 0) + 1
         if strict_cmd:
             counts["strict_command"] += 1
@@ -932,8 +926,7 @@ def _nemotron_diagnostic_section(diagnostics: dict[str, Any]) -> list[str]:
             "empty": profile.get("empty_response", 0),
         }
         category_text = (
-            "; ".join(f"{name} {count}" for name, count in categories.items() if count)
-            or "none"
+            "; ".join(f"{name} {count}" for name, count in categories.items() if count) or "none"
         )
         lines.append(
             "| "
@@ -1103,9 +1096,7 @@ def _score_row(result: dict[str, Any], *, correction: bool = False) -> str:
             cells.append(_steps_summary_text(result))
         cells.extend(
             [
-                _top_reasons(
-                    [str(r.get("execution", {}).get("exit_code")) for r in repeats]
-                ),
+                _top_reasons([str(r.get("execution", {}).get("exit_code")) for r in repeats]),
                 _top_reasons(t5_reasons),
                 _top_reasons(failed_tiers),
             ]
@@ -1115,9 +1106,7 @@ def _score_row(result: dict[str, Any], *, correction: bool = False) -> str:
     score = result["score"]
     ex = result.get("execution", {})
     t5 = score["tiers"][-1]["reason"]
-    failed = "; ".join(
-        f"T{t['tier']}: {t['reason']}" for t in score["tiers"] if not t["pass"]
-    )
+    failed = "; ".join(f"T{t['tier']}: {t['reason']}" for t in score["tiers"] if not t["pass"])
     if not failed:
         failed = "none"
     steps = result.get("steps_to_pass", 0)
@@ -1172,10 +1161,7 @@ def _attempt_commands(label: str, attempts: list[dict[str, Any]]) -> list[str]:
 
 def _failed_tiers(score: dict[str, Any]) -> str:
     return (
-        "; ".join(
-            f"T{t['tier']}: {t['reason']}" for t in score["tiers"] if not t["pass"]
-        )
-        or "none"
+        "; ".join(f"T{t['tier']}: {t['reason']}" for t in score["tiers"] if not t["pass"]) or "none"
     )
 
 
@@ -1196,9 +1182,7 @@ def _failure_summary(attempt: dict[str, Any]) -> str:
 
 def _attempt_trace(label: str, attempts: list[dict[str, Any]]) -> list[str]:
     lines = [f"### {label}", ""]
-    lines.append(
-        "| Step | Score | Passed | Exit | Failed tiers | Why it did not work |"
-    )
+    lines.append("| Step | Score | Passed | Exit | Failed tiers | Why it did not work |")
     lines.append("|---:|---:|---|---|---|---|")
     for attempt in attempts:
         score = attempt["score"]
@@ -1215,9 +1199,7 @@ def _attempt_trace(label: str, attempts: list[dict[str, Any]]) -> list[str]:
 def _record_attempt_trace(label: str, record: dict[str, Any]) -> list[str]:
     repeats = _record_repeats(record)
     lines = [f"### {label}", ""]
-    lines.append(
-        "| Repeat | Step | Score | Passed | Exit | Failed tiers | Why it did not work |"
-    )
+    lines.append("| Repeat | Step | Score | Passed | Exit | Failed tiers | Why it did not work |")
     lines.append("|---:|---:|---:|---|---|---|---|")
     for repeat in repeats:
         repeat_id = repeat.get("repeat", 1)
@@ -1275,9 +1257,7 @@ def write_codex(skill: str) -> dict[str, Any]:
     for r in records:
         r.setdefault(
             "backend_label",
-            {"gpt55": "GPT-5.5 / Codex", "opus": "Opus 4.7"}.get(
-                r["backend"], r["backend"]
-            ),
+            {"gpt55": "GPT-5.5 / Codex", "opus": "Opus 4.7"}.get(r["backend"], r["backend"]),
         )
     with_records = [r for r in records if r["arm"] == "with"]
     without_records = [r for r in records if r["arm"] == "without"]
@@ -1285,21 +1265,15 @@ def write_codex(skill: str) -> dict[str, Any]:
     without_pass = sum(_record_summary(r)["pass_count"] for r in without_records)
     with_repeats = sum(_record_summary(r)["repeat_count"] for r in with_records)
     without_repeats = sum(_record_summary(r)["repeat_count"] for r in without_records)
-    with_scores = [
-        score for r in with_records for score in _record_summary(r)["scores"]
-    ]
-    without_scores = [
-        score for r in without_records for score in _record_summary(r)["scores"]
-    ]
+    with_scores = [score for r in with_records for score in _record_summary(r)["scores"]]
+    without_scores = [score for r in without_records for score in _record_summary(r)["scores"]]
     paired = _paired_outcome_summary(with_records, without_records)
     gate = _paired_advantage_gate(paired)
     signal = paired["signal"]
 
     input_path = _report_input_path(skill)
     gpt_out = RUN_ROOT / f"{skill}_codex_opus/gpt55/with/repeat_1"
-    user_request = scenario.user_goal.format(
-        input_path=_rel(input_path), out_dir=_rel(gpt_out)
-    )
+    user_request = scenario.user_goal.format(input_path=_rel(input_path), out_dir=_rel(gpt_out))
     prompt_artifact = PROMPT_ROOT / f"eval_nv_model_studies_{skill}_prompts.json"
     full_log, rerun_log = _logs_for_skill(skill)
     path = REPORT_ROOT / f"with-vs-without-{_slug(skill)}-codex-opus.md"
@@ -1537,9 +1511,7 @@ def write_nemotron(skill: str) -> dict[str, Any]:
     diagnostics = _nemotron_diagnostics(scenario, rows)
     input_path = _report_input_path(skill)
     out_path = RUN_ROOT / f"{skill}_nemotron_correction/with/repeat_1"
-    user_request = scenario.user_goal.format(
-        input_path=_rel(input_path), out_dir=_rel(out_path)
-    )
+    user_request = scenario.user_goal.format(input_path=_rel(input_path), out_dir=_rel(out_path))
     prompt_artifact = PROMPT_ROOT / f"eval_nv_model_studies_{skill}_prompts.json"
     full_log, rerun_log = _logs_for_skill(skill)
     path = REPORT_ROOT / f"with-vs-without-{_slug(skill)}-nemotron-correction.md"
@@ -1681,9 +1653,7 @@ def write_nemotron(skill: str) -> dict[str, Any]:
         "nemotron_paired_ties": paired["ties"],
         "nemotron_paired_matched": paired["matched"],
         "nemotron_paired_decisive": paired["paired_sign_test"]["decisive_pairs"],
-        "nemotron_paired_sign_test_p": paired["paired_sign_test"][
-            "one_sided_sign_test_p"
-        ],
+        "nemotron_paired_sign_test_p": paired["paired_sign_test"]["one_sided_sign_test_p"],
         "nemotron_claim_support": gate["passed"],
         "nemotron_claim_support_label": gate["label"],
         "nemotron_claim_support_reason": gate["reason"],
@@ -1730,11 +1700,10 @@ def write_overview(codex: list[dict[str, Any]], nemotron: list[dict[str, Any]]) 
         paired_with_wins, paired_without_wins, paired_ties, paired_matched
     )
     aggregate_p = aggregate_sign["one_sided_sign_test_p"]
-    if (
-        total_codex_with == total_codex_with_repeats
-        and total_nemo_with == total_nemo_with_repeats
-    ):
-        pass_summary = "Every with-skill repeat exits successfully and passes the deterministic grader."
+    if total_codex_with == total_codex_with_repeats and total_nemo_with == total_nemo_with_repeats:
+        pass_summary = (
+            "Every with-skill repeat exits successfully and passes the deterministic grader."
+        )
     elif total_codex_with == total_codex_with_repeats:
         pass_summary = (
             "Every Codex/Opus with-skill repeat exits successfully and passes the "
@@ -1899,8 +1868,7 @@ def write_overview(codex: list[dict[str, Any]], nemotron: list[dict[str, Any]]) 
             "- Split repair into specific classes: format-only repair, "
             "path/output repair, stderr/stdout execution repair, and "
             "artifact-contract repair from verifier output.",
-            "- Evaluate tolerant command extraction separately, especially for "
-            "Nemotron.",
+            "- Evaluate tolerant command extraction separately, especially for " "Nemotron.",
             "- Do not make README-only repair competitive by leaking "
             "skill-specific wrapper details; that would invalidate the arm.",
             "",
@@ -1916,9 +1884,7 @@ def write_overview(codex: list[dict[str, Any]], nemotron: list[dict[str, Any]]) 
     for skill in sorted(SCENARIOS):
         r = by_skill[skill]
         codex_doc = REPORT_ROOT / f"with-vs-without-{_slug(skill)}-codex-opus.md"
-        nemo_doc = (
-            REPORT_ROOT / f"with-vs-without-{_slug(skill)}-nemotron-correction.md"
-        )
+        nemo_doc = REPORT_ROOT / f"with-vs-without-{_slug(skill)}-nemotron-correction.md"
         evidence = (
             f"Codex/Opus with {r['codex_with_pass']}/{r['codex_with_repeats']} pass "
             f"(avg {r['codex_with_avg']}) vs README {r['codex_without_pass']}/{r['codex_without_repeats']} "
@@ -1938,9 +1904,7 @@ def write_overview(codex: list[dict[str, Any]], nemotron: list[dict[str, Any]]) 
             f"sign-test p={_p_value_text(r.get('nemotron_paired_sign_test_p'))}); "
             f"gate {r['nemotron_claim_support_label']}."
         )
-        lines.append(
-            f"| `{skill}` | `{_rel(codex_doc)}`; `{_rel(nemo_doc)}` | {evidence} |"
-        )
+        lines.append(f"| `{skill}` | `{_rel(codex_doc)}`; `{_rel(nemo_doc)}` | {evidence} |")
     lines.extend(
         [
             "",

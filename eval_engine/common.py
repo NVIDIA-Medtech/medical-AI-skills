@@ -1,8 +1,24 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Shared eval_engine helpers.
 
 These are deliberately small and dependency-light so the CLI runners can share
 evidence-pack bookkeeping without coupling to a specific skill.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -20,7 +36,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FENCE = chr(96) * 3
 EXCLUDED_SKILL_FILE_PARTS = ("__pycache__", ".pytest_cache", "bundle", "bundles")
 SECRET_ENV_MARKERS = ("TOKEN", "KEY", "SECRET", "PASSWORD", "PASSWD", "AUTH", "CRED", "PRIVATE")
-_REPLAY_ENV_REF_RE = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*:\?[A-Za-z_][A-Za-z0-9_]* is required for replay\}")
+_REPLAY_ENV_REF_RE = re.compile(
+    r"\$\{[A-Za-z_][A-Za-z0-9_]*:\?[A-Za-z_][A-Za-z0-9_]* is required for replay\}"
+)
 
 # Bumped on every breaking change to the evidence-pack contract. Additive field
 # changes do not require a bump; see spec/versioning_policy.md and
@@ -71,7 +89,9 @@ def _repo_git_sha() -> str | None:
     try:
         proc = subprocess.run(
             ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if proc.returncode != 0:
             return None
@@ -107,8 +127,9 @@ def _runtime_summary() -> dict:
 def _pip_freeze() -> str:
     """Capture pip freeze output for env-lock reproducibility. Best-effort."""
     try:
-        proc = subprocess.run([sys.executable, "-m", "pip", "freeze"],
-                              capture_output=True, text=True, timeout=30)
+        proc = subprocess.run(
+            [sys.executable, "-m", "pip", "freeze"], capture_output=True, text=True, timeout=30
+        )
         return _sanitize_pip_freeze(proc.stdout) if proc.returncode == 0 else ""
     except Exception:
         return ""
@@ -221,7 +242,7 @@ def _quote_replay_token(token: str) -> str:
     pieces: list[str] = []
     pos = 0
     for match in matches:
-        pieces.append(token[pos:match.start()].translate(_DOUBLE_QUOTE_ESCAPE))
+        pieces.append(token[pos : match.start()].translate(_DOUBLE_QUOTE_ESCAPE))
         pieces.append(match.group(0))
         pos = match.end()
     pieces.append(token[pos:].translate(_DOUBLE_QUOTE_ESCAPE))
@@ -260,9 +281,13 @@ def _replay_script(
     preflight_failed: bool = False,
     command: list[str] | None = None,
 ) -> str:
-    heading = "# Auto-generated replay (preflight-failed run). Best-effort.\n" if preflight_failed else (
-        "# Auto-generated replay. Best-effort; may not reproduce across\n"
-        "# pydicom/torch/Python version changes (compare environment.lock).\n"
+    heading = (
+        "# Auto-generated replay (preflight-failed run). Best-effort.\n"
+        if preflight_failed
+        else (
+            "# Auto-generated replay. Best-effort; may not reproduce across\n"
+            "# pydicom/torch/Python version changes (compare environment.lock).\n"
+        )
     )
     env_lines = _env_replay_lines(manifest)
 
@@ -270,7 +295,12 @@ def _replay_script(
         rewritten = [_rewrite_replay_token(tok, is_first=(i == 0)) for i, tok in enumerate(command)]
         cmd_line = " ".join(_quote_replay_token(t) for t in rewritten)
     else:
-        cmd_line = "python3 " + shlex.quote(str(_relative_to_repo(script))) + " " + shlex.quote(str(_relative_to_repo(fixture)))
+        cmd_line = (
+            "python3 "
+            + shlex.quote(str(_relative_to_repo(script)))
+            + " "
+            + shlex.quote(str(_relative_to_repo(fixture)))
+        )
 
     return (
         "#!/usr/bin/env bash\n"
@@ -280,7 +310,7 @@ def _replay_script(
         + 'REPO_ROOT="$SCRIPT_DIR"\n'
         + 'while [ ! -e "$REPO_ROOT/Makefile" ] && [ "$REPO_ROOT" != "/" ]; do\n'
         + '  REPO_ROOT="$(dirname "$REPO_ROOT")"\n'
-        + 'done\n'
+        + "done\n"
         + '[ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root (looked for Makefile)"; exit 1; }\n'
         + 'cd "$REPO_ROOT"\n'
         + ("\n".join(env_lines) + "\n" if env_lines else "")
