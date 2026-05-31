@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-generate-mr`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -55,24 +55,24 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
 | Security | 4 | 100% (+25%) | 100% (+0%) |
-| Correctness | 4 | 100% (+13%) | 85% (+32%) |
-| Discoverability | 4 | 100% (+5%) | 81% (+5%) |
-| Effectiveness | 4 | 100% (+31%) | 69% (+46%) |
-| Efficiency | 4 | 93% (+16%) | 68% (+4%) |
+| Correctness | 4 | 93% (+5%) | 83% (+23%) |
+| Discoverability | 4 | 94% (-1%) | 91% (+15%) |
+| Effectiveness | 4 | 77% (-3%) | 63% (+31%) |
+| Efficiency | 4 | 76% (-4%) | 81% (+17%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 11 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 8 total findings.
 
 Top findings:
 
 - MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:14`)
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-generate-mr/SKILL.md`)
-- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill uses Bash as an allowed tool and instructs agents to run shell commands including pip installs, git clones, en (`SKILL.md:1`)
-- MEDIUM SECURITY/Unknown (SQP-2): The manifest lists HuggingFace and GitHub as network endpoints and the external_assets section describes downloading up  (`skill_manifest.yaml:93`)
-- MEDIUM SECURITY/Unknown (SQP-2): The manifest acknowledges that `modifies_active_python_environment: true` and lists numerous pip packages (torch>=2.1, m (`skill_manifest.yaml:102`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-mr/fixtures`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-mr/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-generate-mr/validators`)
 
 ## Tier 2: Deduplication Summary
 
