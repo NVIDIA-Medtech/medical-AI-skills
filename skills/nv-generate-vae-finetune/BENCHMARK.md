@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-generate-vae-finetune`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,25 +54,25 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+25%) | 100% (+25%) |
-| Correctness | 4 | 91% (+3%) | 81% (+34%) |
-| Discoverability | 4 | 90% (+1%) | 63% (+9%) |
-| Effectiveness | 4 | 74% (-9%) | 55% (+29%) |
-| Efficiency | 4 | 65% (-4%) | 47% (+7%) |
+| Security | 4 | 100% (+50%) | 100% (+0%) |
+| Correctness | 4 | 91% (-3%) | 86% (+34%) |
+| Discoverability | 4 | 89% (+8%) | 78% (+23%) |
+| Effectiveness | 4 | 60% (-31%) | 50% (+24%) |
+| Efficiency | 4 | 67% (+9%) | 63% (+22%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 6 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 8 total findings.
 
 Top findings:
 
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-vae-finetune/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-vae-finetune/skill_manifest.yaml`)
+- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill uses Bash and exercises environment variable access, file reads/writes, and shell execution without declaring  (`SKILL.md:1`)
+- MEDIUM SECURITY/Unknown (SQP-2): The skill contacts external hosts (huggingface.co, github.com, download.pytorch.org) and writes to user home-directory c (`SKILL.md:58`)
 - LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-generate-vae-finetune/validators`)
-- LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-generate-vae-finetune/tests`)
-- LOW SCHEMA/author_format: Author must be of the form 'Name <email@host>' (`skills/nv-generate-vae-finetune/SKILL.md`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-vae-finetune/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-vae-finetune/fixtures`)
 
 ## Tier 2: Deduplication Summary
 
