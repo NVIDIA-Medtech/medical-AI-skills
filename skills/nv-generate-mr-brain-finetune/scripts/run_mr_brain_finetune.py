@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Thin wrapper for NV-Generate-CTMR MR-brain diffusion-UNet finetuning.
 
 The wrapper mirrors the upstream ``train_diff_unet_tutorial.ipynb`` flow without
@@ -20,6 +35,7 @@ the wrapper does not surface them as flags. It does not execute the notebook.
 
 Engineering verification only. Outputs are not clinically meaningful.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,8 +51,7 @@ from typing import Any
 SKILL_NAME = "nv_generate_mr_brain_finetune"
 UPSTREAM_REPO = "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR"
 UPSTREAM_ENTRYPOINT = (
-    "python -m scripts.diff_model_create_training_data; "
-    "python -m scripts.diff_model_train"
+    "python -m scripts.diff_model_create_training_data; " "python -m scripts.diff_model_train"
 )
 VERSION = "rflow-mr-brain"
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -356,7 +371,16 @@ def _build_command_plan(
             )
         )
     if not args.skip_train:
-        train_args = ["-e", env_config, "-c", model_config, "-t", model_def, "-g", str(args.num_gpus)]
+        train_args = [
+            "-e",
+            env_config,
+            "-c",
+            model_config,
+            "-t",
+            model_def,
+            "-g",
+            str(args.num_gpus),
+        ]
         if args.no_amp:
             train_args.append("--no_amp")
         plan.append(_module_command("scripts.diff_model_train", train_args, args.num_gpus))
@@ -401,7 +425,9 @@ def _create_embedding_sidecars(
     return sidecars
 
 
-def _run_command(command: list[str], upstream_root: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+def _run_command(
+    command: list[str], upstream_root: Path, env: dict[str, str]
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         cwd=str(upstream_root),
@@ -544,7 +570,11 @@ def _payload(
     stdout: str = "",
     stderr: str = "",
 ) -> dict[str, Any]:
-    output = _summarize_output(args.output_dir) if exit_code == 0 and not args.preflight else _empty_output(args.output_dir)
+    output = (
+        _summarize_output(args.output_dir)
+        if exit_code == 0 and not args.preflight
+        else _empty_output(args.output_dir)
+    )
     return {
         "skill": SKILL_NAME,
         "model": VERSION,
@@ -590,11 +620,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--upstream-root")
     # Config sources: edit these JSONs (or the upstream defaults) to tune training.
-    parser.add_argument("--env-config", help="Override environment JSON (default: upstream MR-brain env config)")
-    parser.add_argument("--model-config", help="Override model-config JSON holding training/inference hyperparameters")
+    parser.add_argument(
+        "--env-config", help="Override environment JSON (default: upstream MR-brain env config)"
+    )
+    parser.add_argument(
+        "--model-config",
+        help="Override model-config JSON holding training/inference hyperparameters",
+    )
     parser.add_argument("--model-def", help="Override network-definition JSON")
     parser.add_argument("--modality", default="mri_t1", choices=SUPPORTED_MODALITIES)
-    parser.add_argument("--epochs", type=int, default=2, help="Overrides diffusion_unet_train.n_epochs in the model config")
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=2,
+        help="Overrides diffusion_unet_train.n_epochs in the model config",
+    )
     parser.add_argument("--num-gpus", type=int, default=1)
     parser.add_argument("--no-amp", action="store_true")
     parser.add_argument("--top-region-index", type=_parse_region, default=[0, 1, 0, 0])
@@ -614,7 +654,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    dataset = _validate_datalist(args.data_base_dir.resolve(), args.datalist.resolve(), args.modality)
+    dataset = _validate_datalist(
+        args.data_base_dir.resolve(), args.datalist.resolve(), args.modality
+    )
     upstream_root, checked = _resolve_upstream_root(args.upstream_root)
     start = time.time()
     command_plan = _build_command_plan(args, upstream_root or DEFAULT_UPSTREAM)
@@ -642,13 +684,26 @@ def main() -> None:
         staged = _stage_configs(args, upstream_root)
         command_plan = _build_command_plan(args, upstream_root, staged)
     except Exception as exc:
-        payload = _payload(args, dataset, upstream_root, checked, command_plan, 2, time.time() - start, stderr=str(exc))
+        payload = _payload(
+            args,
+            dataset,
+            upstream_root,
+            checked,
+            command_plan,
+            2,
+            time.time() - start,
+            stderr=str(exc),
+        )
         _emit(payload)
         raise SystemExit(2)
 
     if args.preflight:
-        payload = _payload(args, dataset, upstream_root, checked, command_plan, 0, time.time() - start)
-        payload["logs"]["stderr_tail"] = "Preflight staged configs and validated existing upstream script entrypoints."
+        payload = _payload(
+            args, dataset, upstream_root, checked, command_plan, 0, time.time() - start
+        )
+        payload["logs"][
+            "stderr_tail"
+        ] = "Preflight staged configs and validated existing upstream script entrypoints."
         _emit(payload)
         return
 
