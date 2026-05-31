@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """skill_completeness_v1 -- deterministic audit plus optional LLM review.
 
 Grades a target skill directory against the structural and spec-
@@ -60,6 +75,7 @@ Tier 3 (LLM-assisted documentation review) is opt-in with LLM_VERIFIER=1 and
 uses NVIDIA AI Inference Hub. Tier 4 (test quality) remains deferred and
 emits verdict=skipped.
 """
+
 from __future__ import annotations
 
 import ast
@@ -73,10 +89,16 @@ from pathlib import Path
 
 import yaml
 
-
 VERIFIER_VERSION = "0.4.0"
-REQUIRED_MANIFEST_TOP_FIELDS = ("id", "version", "license", "intended_use",
-                                "inputs", "outputs", "runtime")
+REQUIRED_MANIFEST_TOP_FIELDS = (
+    "id",
+    "version",
+    "license",
+    "intended_use",
+    "inputs",
+    "outputs",
+    "runtime",
+)
 REQUIRED_RUNTIME_FIELDS = ("entrypoint",)
 
 # Anthropic Agent Skills best-practices — frontmatter constraints.
@@ -86,9 +108,16 @@ NAME_RESERVED_WORDS = ("anthropic", "claude")
 DESCRIPTION_MAX_LEN = 1024
 
 # Vague names Anthropic explicitly says to avoid.
-VAGUE_NAME_BLOCKLIST = frozenset({
-    "helper", "utils", "tools", "documents", "data", "files",
-})
+VAGUE_NAME_BLOCKLIST = frozenset(
+    {
+        "helper",
+        "utils",
+        "tools",
+        "documents",
+        "data",
+        "files",
+    }
+)
 
 SKILL_MD_BODY_MAX_LINES = 500
 REQUIRED_SKILL_MD_SECTIONS = (
@@ -107,9 +136,16 @@ VAGUE_AVAILABLE_ARGUMENT_PHRASES = (
     "manifest args",
 )
 THIRD_PERSON_RED_FLAGS = (
-    "I can ", "I will ", "I'll ", "I help",
-    "You can ", "You will ", "You'll ",
-    "We can ", "We will ", "We'll ",
+    "I can ",
+    "I will ",
+    "I'll ",
+    "I help",
+    "You can ",
+    "You will ",
+    "You'll ",
+    "We can ",
+    "We will ",
+    "We'll ",
 )
 MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 SKILL_DIR = Path(__file__).resolve().parent.parent
@@ -127,16 +163,62 @@ LLM_VERIFIER_TIMEOUT_SECONDS = 60
 LLM_VERIFIER_MAX_TOKENS = 4096
 
 # Imports that are part of the standard library and need no declaration.
-STDLIB_MODULES = frozenset({
-    "__future__", "abc", "argparse", "ast", "base64", "binascii", "collections",
-    "contextlib", "copy", "csv", "dataclasses", "datetime", "enum",
-    "fnmatch", "functools", "glob", "hashlib", "io", "importlib", "inspect",
-    "itertools", "json", "logging", "math", "os", "pathlib", "platform",
-    "queue", "random", "re", "shlex", "shutil", "signal", "string",
-    "statistics", "struct", "subprocess", "sys", "tempfile", "textwrap",
-    "threading", "time", "traceback", "types", "typing", "urllib", "uuid", "venv",
-    "warnings", "xml", "zipfile", "zlib",
-})
+STDLIB_MODULES = frozenset(
+    {
+        "__future__",
+        "abc",
+        "argparse",
+        "ast",
+        "base64",
+        "binascii",
+        "collections",
+        "contextlib",
+        "copy",
+        "csv",
+        "dataclasses",
+        "datetime",
+        "enum",
+        "fnmatch",
+        "functools",
+        "glob",
+        "hashlib",
+        "io",
+        "importlib",
+        "inspect",
+        "itertools",
+        "json",
+        "logging",
+        "math",
+        "os",
+        "pathlib",
+        "platform",
+        "queue",
+        "random",
+        "re",
+        "shlex",
+        "shutil",
+        "signal",
+        "string",
+        "statistics",
+        "struct",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "textwrap",
+        "threading",
+        "time",
+        "traceback",
+        "types",
+        "typing",
+        "urllib",
+        "uuid",
+        "venv",
+        "warnings",
+        "xml",
+        "zipfile",
+        "zlib",
+    }
+)
 
 # import-name -> pip distribution name (for the few non-trivial mappings).
 IMPORT_TO_PIP = {
@@ -234,7 +316,7 @@ def _parse_frontmatter(skill_md_text: str) -> tuple[bool, str | None, dict | Non
     if end == -1:
         return False, "frontmatter not terminated by a second '---'", None, skill_md_text
     fm = skill_md_text[4:end]
-    body = skill_md_text[end + len("\n---\n"):]
+    body = skill_md_text[end + len("\n---\n") :]
     try:
         data = yaml.safe_load(fm)
     except Exception as e:
@@ -290,11 +372,13 @@ def _available_script_rows(body: str) -> list[dict[str, str]]:
             continue
         match = re.fullmatch(r"`([^`]+)`", cells[0])
         if match:
-            rows.append({
-                "path": match.group(1).strip(),
-                "purpose": cells[1],
-                "arguments": " | ".join(cells[2:]).strip(),
-            })
+            rows.append(
+                {
+                    "path": match.group(1).strip(),
+                    "purpose": cells[1],
+                    "arguments": " | ".join(cells[2:]).strip(),
+                }
+            )
     return rows
 
 
@@ -465,31 +549,39 @@ def _paired_verifier_checks(manifest: dict) -> list[dict]:
 
     for idx, item in enumerate(paired):
         if not isinstance(item, dict):
-            checks.append(_check_fail(
-                "paired_verifier_entry_shape",
-                f"paired_verifiers[{idx}] must be a mapping",
-            ))
+            checks.append(
+                _check_fail(
+                    "paired_verifier_entry_shape",
+                    f"paired_verifiers[{idx}] must be a mapping",
+                )
+            )
             continue
         verifier_id = str(item.get("id") or "")
         status = str(item.get("status") or "")
         if not verifier_id:
-            checks.append(_check_fail(
-                "paired_verifier_id_present",
-                f"paired_verifiers[{idx}] is missing id",
-            ))
+            checks.append(
+                _check_fail(
+                    "paired_verifier_id_present",
+                    f"paired_verifiers[{idx}] is missing id",
+                )
+            )
             continue
         if status not in {"planned", "implemented"}:
-            checks.append(_check_fail(
-                "paired_verifier_status_valid",
-                f"paired_verifiers[{idx}] status must be planned or implemented, got {status!r}",
-            ))
+            checks.append(
+                _check_fail(
+                    "paired_verifier_status_valid",
+                    f"paired_verifiers[{idx}] status must be planned or implemented, got {status!r}",
+                )
+            )
             continue
         if status == "planned":
-            checks.append(_check_fail(
-                "paired_verifier_implemented_exists",
-                f"{verifier_id} is declared planned; implemented verifier is still missing",
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "paired_verifier_implemented_exists",
+                    f"{verifier_id} is declared planned; implemented verifier is still missing",
+                    severity="advisory",
+                )
+            )
             continue
 
         short_name = verifier_id.rsplit(".", 1)[-1].rsplit("/", 1)[-1]
@@ -497,10 +589,12 @@ def _paired_verifier_checks(manifest: dict) -> list[dict]:
         if (candidate / "skill_manifest.yaml").exists():
             checks.append(_check_pass("paired_verifier_implemented_exists"))
         else:
-            checks.append(_check_fail(
-                "paired_verifier_implemented_exists",
-                f"{verifier_id} is marked implemented but {candidate}/skill_manifest.yaml does not exist",
-            ))
+            checks.append(
+                _check_fail(
+                    "paired_verifier_implemented_exists",
+                    f"{verifier_id} is marked implemented but {candidate}/skill_manifest.yaml does not exist",
+                )
+            )
     return checks
 
 
@@ -529,8 +623,7 @@ def _has_reproducibility_anchor(manifest: dict) -> bool:
     runtime = manifest.get("runtime") or {}
     side_effects = runtime.get("side_effects") or {}
     if isinstance(side_effects, dict) and any(
-        _has_version_constraint(str(pkg))
-        for pkg in side_effects.get("pip_packages") or []
+        _has_version_constraint(str(pkg)) for pkg in side_effects.get("pip_packages") or []
     ):
         return True
     dependencies = runtime.get("dependencies") or {}
@@ -758,12 +851,14 @@ def _normalise_llm_checks(payload: dict) -> list[dict]:
         normalised.append(check)
 
     if not normalised and payload.get("verdict") in {"pass", "fail"}:
-        normalised.append({
-            "check": "llm_overall_documentation_review",
-            "pass": payload.get("verdict") == "pass",
-            "severity": "advisory",
-            "msg": str(payload.get("summary") or "LLM returned only an overall verdict"),
-        })
+        normalised.append(
+            {
+                "check": "llm_overall_documentation_review",
+                "pass": payload.get("verdict") == "pass",
+                "severity": "advisory",
+                "msg": str(payload.get("summary") or "LLM returned only an overall verdict"),
+            }
+        )
     return normalised
 
 
@@ -905,50 +1000,80 @@ def grade_tier1(skill_dir: Path) -> list[dict]:
             # blocking — these are upstream spec requirements).
             name = fm.get("name") or ""
             if not name:
-                checks.append(_check_fail("frontmatter_name_present",
-                                          "frontmatter missing required field 'name'"))
+                checks.append(
+                    _check_fail(
+                        "frontmatter_name_present", "frontmatter missing required field 'name'"
+                    )
+                )
             else:
                 checks.append(_check_pass("frontmatter_name_present"))
                 if len(name) <= NAME_MAX_LEN:
                     checks.append(_check_pass("frontmatter_name_length"))
                 else:
-                    checks.append(_check_fail("frontmatter_name_length",
-                                              f"name length {len(name)} exceeds Anthropic limit {NAME_MAX_LEN}"))
+                    checks.append(
+                        _check_fail(
+                            "frontmatter_name_length",
+                            f"name length {len(name)} exceeds Anthropic limit {NAME_MAX_LEN}",
+                        )
+                    )
                 if NAME_REGEX.match(name):
                     checks.append(_check_pass("frontmatter_name_format"))
                 else:
-                    checks.append(_check_fail("frontmatter_name_format",
-                                              f"name {name!r} must match ^[a-z0-9-]+$ (lowercase letters, digits, hyphens only — Anthropic best-practices)"))
+                    checks.append(
+                        _check_fail(
+                            "frontmatter_name_format",
+                            f"name {name!r} must match ^[a-z0-9-]+$ (lowercase letters, digits, hyphens only — Anthropic best-practices)",
+                        )
+                    )
                 lower = name.lower()
                 if any(w in lower for w in NAME_RESERVED_WORDS):
-                    checks.append(_check_fail("frontmatter_name_no_reserved",
-                                              f"name {name!r} contains a reserved word from {list(NAME_RESERVED_WORDS)}"))
+                    checks.append(
+                        _check_fail(
+                            "frontmatter_name_no_reserved",
+                            f"name {name!r} contains a reserved word from {list(NAME_RESERVED_WORDS)}",
+                        )
+                    )
                 else:
                     checks.append(_check_pass("frontmatter_name_no_reserved"))
                 if "<" in name or ">" in name:
-                    checks.append(_check_fail("frontmatter_name_no_xml",
-                                              "name contains XML tag characters"))
+                    checks.append(
+                        _check_fail("frontmatter_name_no_xml", "name contains XML tag characters")
+                    )
                 else:
                     checks.append(_check_pass("frontmatter_name_no_xml"))
 
             description = fm.get("description") or ""
             if not description.strip():
-                checks.append(_check_fail("frontmatter_description_present",
-                                          "frontmatter missing required field 'description'"))
+                checks.append(
+                    _check_fail(
+                        "frontmatter_description_present",
+                        "frontmatter missing required field 'description'",
+                    )
+                )
             else:
                 checks.append(_check_pass("frontmatter_description_present"))
                 if len(description) <= DESCRIPTION_MAX_LEN:
                     checks.append(_check_pass("frontmatter_description_length"))
                 else:
-                    checks.append(_check_fail("frontmatter_description_length",
-                                              f"description length {len(description)} exceeds Anthropic limit {DESCRIPTION_MAX_LEN}"))
+                    checks.append(
+                        _check_fail(
+                            "frontmatter_description_length",
+                            f"description length {len(description)} exceeds Anthropic limit {DESCRIPTION_MAX_LEN}",
+                        )
+                    )
                 if "<" in description or ">" in description:
-                    checks.append(_check_fail("frontmatter_description_no_xml",
-                                              "description contains XML tag characters"))
+                    checks.append(
+                        _check_fail(
+                            "frontmatter_description_no_xml",
+                            "description contains XML tag characters",
+                        )
+                    )
                 else:
                     checks.append(_check_pass("frontmatter_description_no_xml"))
         else:
-            checks.append(_check_fail("skill_md_frontmatter_valid", err or "unknown frontmatter error"))
+            checks.append(
+                _check_fail("skill_md_frontmatter_valid", err or "unknown frontmatter error")
+            )
 
     manifest_path = skill_dir / "skill_manifest.yaml"
     if not manifest_path.exists():
@@ -969,7 +1094,9 @@ def grade_tier1(skill_dir: Path) -> list[dict]:
         if manifest.get(field) is not None:
             checks.append(_check_pass(f"manifest_field:{field}"))
         else:
-            checks.append(_check_fail(f"manifest_field:{field}", f"manifest missing required field '{field}'"))
+            checks.append(
+                _check_fail(f"manifest_field:{field}", f"manifest missing required field '{field}'")
+            )
 
     runtime = manifest.get("runtime") or {}
     if isinstance(runtime, dict):
@@ -984,8 +1111,12 @@ def grade_tier1(skill_dir: Path) -> list[dict]:
             if ep_path.exists():
                 checks.append(_check_pass("entrypoint_file_exists"))
             else:
-                checks.append(_check_fail("entrypoint_file_exists",
-                                          f"runtime.entrypoint refers to {entrypoint!r} which does not exist on disk"))
+                checks.append(
+                    _check_fail(
+                        "entrypoint_file_exists",
+                        f"runtime.entrypoint refers to {entrypoint!r} which does not exist on disk",
+                    )
+                )
     else:
         checks.append(_check_fail("runtime_block_is_mapping", "runtime is not a YAML mapping"))
 
@@ -1000,8 +1131,9 @@ def grade_tier1(skill_dir: Path) -> list[dict]:
         if schema_path.exists():
             checks.append(_check_pass(check_name))
         else:
-            checks.append(_check_fail(check_name,
-                                      f"outputs[{idx}].schema={schema_rel!r} does not exist"))
+            checks.append(
+                _check_fail(check_name, f"outputs[{idx}].schema={schema_rel!r} does not exist")
+            )
 
     return checks
 
@@ -1022,65 +1154,95 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
     if side_effects is not None:
         checks.append(_check_pass("runtime_side_effects_declared"))
     else:
-        checks.append(_check_fail("runtime_side_effects_declared",
-                                  "runtime.side_effects block missing — declare it (CONTRIBUTING.md §Side effects)"))
+        checks.append(
+            _check_fail(
+                "runtime_side_effects_declared",
+                "runtime.side_effects block missing — declare it (CONTRIBUTING.md §Side effects)",
+            )
+        )
 
     validation = manifest.get("validation") or {}
-    has_gate = any(validation.get(k) for k in (
-        "expected_runtime_seconds", "sanity_checks", "expected_cost",
-        "factual_echo", "runtime_integrity", "model_identity",
-        "expected_axcodes",
-    ))
+    has_gate = any(
+        validation.get(k)
+        for k in (
+            "expected_runtime_seconds",
+            "sanity_checks",
+            "expected_cost",
+            "factual_echo",
+            "runtime_integrity",
+            "model_identity",
+            "expected_axcodes",
+        )
+    )
     if has_gate:
         checks.append(_check_pass("at_least_one_validation_gate"))
     else:
-        checks.append(_check_fail("at_least_one_validation_gate",
-                                  "no validation gate declared — at least one of expected_runtime_seconds / sanity_checks / expected_cost / factual_echo / runtime_integrity is required"))
+        checks.append(
+            _check_fail(
+                "at_least_one_validation_gate",
+                "no validation gate declared — at least one of expected_runtime_seconds / sanity_checks / expected_cost / factual_echo / runtime_integrity is required",
+            )
+        )
 
     if _has_reproducibility_anchor(manifest):
         checks.append(_check_pass("reproducibility_anchor_declared"))
     else:
-        checks.append(_check_fail(
-            "reproducibility_anchor_declared",
-            "no reproducibility anchor declared — add upstream_refs with a commit/revision/version, "
-            "versioned runtime dependencies, or runtime.llm model identity",
-        ))
+        checks.append(
+            _check_fail(
+                "reproducibility_anchor_declared",
+                "no reproducibility anchor declared — add upstream_refs with a commit/revision/version, "
+                "versioned runtime dependencies, or runtime.llm model identity",
+            )
+        )
 
     repro_errors = _reproducibility_check_errors(manifest, skill_dir)
     if repro_errors:
-        checks.append(_check_fail(
-            "reproducibility_check_declared",
-            "; ".join(repro_errors),
-        ))
+        checks.append(
+            _check_fail(
+                "reproducibility_check_declared",
+                "; ".join(repro_errors),
+            )
+        )
     else:
         checks.append(_check_pass("reproducibility_check_declared"))
 
     conflicts = _env_pin_exact_pin_conflicts(manifest)
     if conflicts:
-        checks.append(_check_fail(
-            "env_pin_matches_exact_runtime_pins",
-            "; ".join(conflicts),
-        ))
+        checks.append(
+            _check_fail(
+                "env_pin_matches_exact_runtime_pins",
+                "; ".join(conflicts),
+            )
+        )
     else:
         checks.append(_check_pass("env_pin_matches_exact_runtime_pins"))
 
     checks.extend(_paired_verifier_checks(manifest))
 
     fixtures_dir = skill_dir / "fixtures"
-    fixture_items = [p for p in fixtures_dir.iterdir() if not p.name.startswith(".")] if fixtures_dir.is_dir() else []
+    fixture_items = (
+        [p for p in fixtures_dir.iterdir() if not p.name.startswith(".")]
+        if fixtures_dir.is_dir()
+        else []
+    )
     if fixture_items:
         checks.append(_check_pass("at_least_one_fixture"))
     else:
-        checks.append(_check_fail("at_least_one_fixture",
-                                  "no fixtures under fixtures/ — add at least one synthetic or public sample",
-                                  severity="advisory"))
+        checks.append(
+            _check_fail(
+                "at_least_one_fixture",
+                "no fixtures under fixtures/ — add at least one synthetic or public sample",
+                severity="advisory",
+            )
+        )
 
     if isinstance(side_effects, dict):
         declared_pkgs = {_norm_pkg(s) for s in (side_effects.get("pip_packages") or [])}
         actual_imports = _scan_imports(skill_dir / "scripts", skill_dir)
         external_modules = _external_asset_module_names(manifest)
         third_party = {
-            imp for imp in actual_imports
+            imp
+            for imp in actual_imports
             if imp not in STDLIB_MODULES and imp not in external_modules
         }
         actual_pkgs = {IMPORT_TO_PIP.get(imp, imp.lower()) for imp in third_party}
@@ -1088,9 +1250,13 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
         # callers should still declare it. We do not whitelist transitives.
         missing = actual_pkgs - declared_pkgs
         if missing:
-            checks.append(_check_fail("pip_imports_declared_in_side_effects",
-                                      f"imports {sorted(missing)} appear in scripts/ but are not in runtime.side_effects.pip_packages",
-                                      severity="advisory"))
+            checks.append(
+                _check_fail(
+                    "pip_imports_declared_in_side_effects",
+                    f"imports {sorted(missing)} appear in scripts/ but are not in runtime.side_effects.pip_packages",
+                    severity="advisory",
+                )
+            )
         else:
             checks.append(_check_pass("pip_imports_declared_in_side_effects"))
 
@@ -1106,9 +1272,13 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
         if nontrivial > 0:
             checks.append(_check_pass("sanity_checks_not_all_trivial"))
         else:
-            checks.append(_check_fail("sanity_checks_not_all_trivial",
-                                      "every sanity_check uses only 'exists' — consider gt/eq/matches/length_gte for tighter specs",
-                                      severity="advisory"))
+            checks.append(
+                _check_fail(
+                    "sanity_checks_not_all_trivial",
+                    "every sanity_check uses only 'exists' — consider gt/eq/matches/length_gte for tighter specs",
+                    severity="advisory",
+                )
+            )
 
     # ---- Anthropic Agent Skills authoring best-practices (Tier 2 advisory) ----
     skill_md_path = skill_dir / "SKILL.md"
@@ -1121,21 +1291,28 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
         # Vague-name blocklist.
         if name:
             if name.lower() in VAGUE_NAME_BLOCKLIST:
-                checks.append(_check_fail("frontmatter_name_not_vague",
-                                          f"name {name!r} is on Anthropic's vague-name blocklist {sorted(VAGUE_NAME_BLOCKLIST)}",
-                                          severity="advisory"))
+                checks.append(
+                    _check_fail(
+                        "frontmatter_name_not_vague",
+                        f"name {name!r} is on Anthropic's vague-name blocklist {sorted(VAGUE_NAME_BLOCKLIST)}",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("frontmatter_name_not_vague"))
 
         # Description third-person heuristic.
         if description:
             head = description[:60]
-            offending = [phrase for phrase in THIRD_PERSON_RED_FLAGS
-                         if phrase in head]
+            offending = [phrase for phrase in THIRD_PERSON_RED_FLAGS if phrase in head]
             if offending:
-                checks.append(_check_fail("frontmatter_description_third_person",
-                                          f"description appears to use first/second person near the start (matched {offending[0]!r}); Anthropic requires third person",
-                                          severity="advisory"))
+                checks.append(
+                    _check_fail(
+                        "frontmatter_description_third_person",
+                        f"description appears to use first/second person near the start (matched {offending[0]!r}); Anthropic requires third person",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("frontmatter_description_third_person"))
 
@@ -1144,38 +1321,43 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
         if body_lines <= SKILL_MD_BODY_MAX_LINES:
             checks.append(_check_pass("skill_md_body_length"))
         else:
-            checks.append(_check_fail("skill_md_body_length",
-                                      f"SKILL.md body has {body_lines} lines; Anthropic recommends ≤ {SKILL_MD_BODY_MAX_LINES} (split into reference files)",
-                                      severity="advisory"))
+            checks.append(
+                _check_fail(
+                    "skill_md_body_length",
+                    f"SKILL.md body has {body_lines} lines; Anthropic recommends ≤ {SKILL_MD_BODY_MAX_LINES} (split into reference files)",
+                    severity="advisory",
+                )
+            )
 
         # Medical AI Skills agent-usability structure. These checks are advisory so
         # legacy verifiers can still pass deterministic gates, but user-facing
         # skills should keep them clean.
         missing_sections = [
-            section
-            for section in REQUIRED_SKILL_MD_SECTIONS
-            if f"## {section}" not in body
+            section for section in REQUIRED_SKILL_MD_SECTIONS if f"## {section}" not in body
         ]
         if missing_sections:
-            checks.append(_check_fail(
-                "skill_md_agent_usability_sections",
-                "SKILL.md is missing agent-usability sections: "
-                + ", ".join(missing_sections),
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "skill_md_agent_usability_sections",
+                    "SKILL.md is missing agent-usability sections: " + ", ".join(missing_sections),
+                    severity="advisory",
+                )
+            )
         else:
             checks.append(_check_pass("skill_md_agent_usability_sections"))
 
         if AVAILABLE_SCRIPTS_HEADER in body:
             checks.append(_check_pass("skill_md_available_scripts_table"))
         else:
-            checks.append(_check_fail(
-                "skill_md_available_scripts_table",
-                "SKILL.md should include an Available Scripts table with "
-                "`| Script | Purpose | Arguments |` so agents can find the "
-                "runnable surface without trial and error",
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "skill_md_available_scripts_table",
+                    "SKILL.md should include an Available Scripts table with "
+                    "`| Script | Purpose | Arguments |` so agents can find the "
+                    "runnable surface without trial and error",
+                    severity="advisory",
+                )
+            )
 
         entrypoint = runtime.get("entrypoint") if isinstance(runtime, dict) else None
         available_script_rows = _available_script_rows(body)
@@ -1195,19 +1377,23 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
                     details.append(f"missing files: {missing_scripts[:3]}")
                 if escaping_scripts:
                     details.append(f"paths outside skill dir: {escaping_scripts[:3]}")
-                checks.append(_check_fail(
-                    "skill_md_available_scripts_resolve",
-                    "; ".join(details),
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_available_scripts_resolve",
+                        "; ".join(details),
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_available_scripts_resolve"))
         else:
-            checks.append(_check_fail(
-                "skill_md_available_scripts_resolve",
-                "Available Scripts table should list backtick-wrapped committed script paths",
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "skill_md_available_scripts_resolve",
+                    "Available Scripts table should list backtick-wrapped committed script paths",
+                    severity="advisory",
+                )
+            )
 
         vague_argument_rows = _vague_available_script_arguments(available_script_rows)
         if available_script_rows and not vague_argument_rows:
@@ -1224,11 +1410,13 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
                     "Available Scripts table should provide concrete argument sketches "
                     "for each listed script"
                 )
-            checks.append(_check_fail(
-                "skill_md_available_scripts_arguments_specific",
-                msg,
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "skill_md_available_scripts_arguments_specific",
+                    msg,
+                    severity="advisory",
+                )
+            )
 
         if entrypoint:
             entrypoint_text = str(entrypoint)
@@ -1236,54 +1424,68 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
             if entrypoint_text in available_script_paths:
                 checks.append(_check_pass("skill_md_available_scripts_include_entrypoint"))
             else:
-                checks.append(_check_fail(
-                    "skill_md_available_scripts_include_entrypoint",
-                    f"Available Scripts table does not list runtime.entrypoint {entrypoint_text!r}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_available_scripts_include_entrypoint",
+                        f"Available Scripts table does not list runtime.entrypoint {entrypoint_text!r}",
+                        severity="advisory",
+                    )
+                )
             if entrypoint_text in body or entrypoint_name in body:
                 checks.append(_check_pass("skill_md_mentions_runtime_entrypoint"))
             else:
-                checks.append(_check_fail(
-                    "skill_md_mentions_runtime_entrypoint",
-                    f"SKILL.md does not mention runtime.entrypoint {entrypoint_text!r}; "
-                    "agents need the exact wrapper path",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_mentions_runtime_entrypoint",
+                        f"SKILL.md does not mention runtime.entrypoint {entrypoint_text!r}; "
+                        "agents need the exact wrapper path",
+                        severity="advisory",
+                    )
+                )
 
             literal_args = _runtime_literal_args(runtime) if isinstance(runtime, dict) else []
-            entrypoint_row = _entrypoint_available_script_row(available_script_rows, entrypoint_text)
+            entrypoint_row = _entrypoint_available_script_row(
+                available_script_rows, entrypoint_text
+            )
             if literal_args and entrypoint_row is not None:
                 entrypoint_args = entrypoint_row.get("arguments", "")
                 missing_from_row = [arg for arg in literal_args if arg not in entrypoint_args]
                 if missing_from_row:
-                    checks.append(_check_fail(
-                        "skill_md_available_entrypoint_arguments_match_runtime",
-                        "Available Scripts row for runtime.entrypoint omits literal "
-                        f"runtime.args tokens: {missing_from_row[:5]}",
-                        severity="advisory",
-                    ))
+                    checks.append(
+                        _check_fail(
+                            "skill_md_available_entrypoint_arguments_match_runtime",
+                            "Available Scripts row for runtime.entrypoint omits literal "
+                            f"runtime.args tokens: {missing_from_row[:5]}",
+                            severity="advisory",
+                        )
+                    )
                 else:
-                    checks.append(_check_pass("skill_md_available_entrypoint_arguments_match_runtime"))
+                    checks.append(
+                        _check_pass("skill_md_available_entrypoint_arguments_match_runtime")
+                    )
             elif literal_args:
-                checks.append(_check_fail(
-                    "skill_md_available_entrypoint_arguments_match_runtime",
-                    "Available Scripts table does not expose runtime.entrypoint "
-                    "arguments, so agents must infer manifest literal runtime.args",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_available_entrypoint_arguments_match_runtime",
+                        "Available Scripts table does not expose runtime.entrypoint "
+                        "arguments, so agents must infer manifest literal runtime.args",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_available_entrypoint_arguments_match_runtime"))
 
         if "run_script(" in body or re.search(r"\bpython(?:3)?\s+[\w./-]+", body):
             checks.append(_check_pass("skill_md_has_concrete_invocation"))
         else:
-            checks.append(_check_fail(
-                "skill_md_has_concrete_invocation",
-                "SKILL.md should include `run_script(...)` or a concrete "
-                "`python ...` invocation",
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "skill_md_has_concrete_invocation",
+                    "SKILL.md should include `run_script(...)` or a concrete "
+                    "`python ...` invocation",
+                    severity="advisory",
+                )
+            )
 
         if entrypoint:
             entrypoint_text = str(entrypoint)
@@ -1297,54 +1499,64 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
             if run_script_re.search(body) or python_entrypoint_re.search(body):
                 checks.append(_check_pass("skill_md_invocation_uses_entrypoint"))
             else:
-                checks.append(_check_fail(
-                    "skill_md_invocation_uses_entrypoint",
-                    f"SKILL.md has an invocation hint, but not one that clearly calls {entrypoint_text!r}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_invocation_uses_entrypoint",
+                        f"SKILL.md has an invocation hint, but not one that clearly calls {entrypoint_text!r}",
+                        severity="advisory",
+                    )
+                )
 
         if isinstance(runtime, dict):
             literal_args = _runtime_literal_args(runtime)
             missing_args = [arg for arg in literal_args if arg not in body]
             if missing_args:
-                checks.append(_check_fail(
-                    "skill_md_mentions_runtime_literal_args",
-                    f"SKILL.md omits literal runtime.args tokens: {missing_args[:5]}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_mentions_runtime_literal_args",
+                        f"SKILL.md omits literal runtime.args tokens: {missing_args[:5]}",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_mentions_runtime_literal_args"))
 
             env_required = _runtime_env_required(runtime)
             missing_env = [env for env in env_required if env not in body]
             if missing_env:
-                checks.append(_check_fail(
-                    "skill_md_mentions_runtime_env_required",
-                    f"SKILL.md omits runtime.env_required variables: {missing_env[:5]}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_mentions_runtime_env_required",
+                        f"SKILL.md omits runtime.env_required variables: {missing_env[:5]}",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_mentions_runtime_env_required"))
 
             env_optional = _runtime_env_optional(runtime)
             missing_optional_env = [env for env in env_optional if env not in body]
             if missing_optional_env:
-                checks.append(_check_fail(
-                    "skill_md_mentions_runtime_env_optional",
-                    f"SKILL.md omits runtime.env_optional variables: {missing_optional_env[:5]}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_mentions_runtime_env_optional",
+                        f"SKILL.md omits runtime.env_optional variables: {missing_optional_env[:5]}",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_mentions_runtime_env_optional"))
 
             env_conditional = _runtime_env_conditional(runtime)
             missing_conditional_env = [env for env in env_conditional if env not in body]
             if missing_conditional_env:
-                checks.append(_check_fail(
-                    "skill_md_mentions_runtime_env_conditional",
-                    f"SKILL.md omits runtime.env_conditional variables: {missing_conditional_env[:5]}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_mentions_runtime_env_conditional",
+                        f"SKILL.md omits runtime.env_conditional variables: {missing_conditional_env[:5]}",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_mentions_runtime_env_conditional"))
 
@@ -1364,23 +1576,26 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
                     if not any(marker in body for marker in ("GPU", "gpu", "CUDA", "cuda")):
                         missing_side_effects.append(f"requires_gpu:{requires_gpu}")
             if missing_side_effects:
-                checks.append(_check_fail(
-                    "skill_md_mentions_runtime_side_effects",
-                    "SKILL.md omits declared runtime.side_effects details: "
-                    f"{missing_side_effects[:8]}",
-                    severity="advisory",
-                ))
+                checks.append(
+                    _check_fail(
+                        "skill_md_mentions_runtime_side_effects",
+                        "SKILL.md omits declared runtime.side_effects details: "
+                        f"{missing_side_effects[:8]}",
+                        severity="advisory",
+                    )
+                )
             else:
                 checks.append(_check_pass("skill_md_mentions_runtime_side_effects"))
 
         missing_io = _manifest_io_mentions_missing(manifest, body)
         if missing_io:
-            checks.append(_check_fail(
-                "skill_md_mentions_manifest_io",
-                "SKILL.md omits manifest-declared input/output hints: "
-                f"{missing_io[:8]}",
-                severity="advisory",
-            ))
+            checks.append(
+                _check_fail(
+                    "skill_md_mentions_manifest_io",
+                    "SKILL.md omits manifest-declared input/output hints: " f"{missing_io[:8]}",
+                    severity="advisory",
+                )
+            )
         else:
             checks.append(_check_pass("skill_md_mentions_manifest_io"))
 
@@ -1399,24 +1614,24 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
                 return False
             return True
 
-        local_targets = [
-            (label, target)
-            for (label, target) in link_targets
-            if _is_local(target)
-        ]
+        local_targets = [(label, target) for (label, target) in link_targets if _is_local(target)]
 
         # Forward-slash check.
         backslash_targets = [t for (_l, t) in local_targets if "\\" in t]
         if backslash_targets:
-            checks.append(_check_fail("skill_md_paths_forward_slash",
-                                      f"markdown links use Windows-style backslashes: {backslash_targets[:3]}; Anthropic requires forward slashes",
-                                      severity="advisory"))
+            checks.append(
+                _check_fail(
+                    "skill_md_paths_forward_slash",
+                    f"markdown links use Windows-style backslashes: {backslash_targets[:3]}; Anthropic requires forward slashes",
+                    severity="advisory",
+                )
+            )
         else:
             checks.append(_check_pass("skill_md_paths_forward_slash"))
 
         # Reference resolution check.
         broken = []
-        for (_l, t) in local_targets:
+        for _l, t in local_targets:
             target_path = t.split("#", 1)[0]
             if not target_path:
                 continue
@@ -1424,9 +1639,13 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
             if not resolved.exists():
                 broken.append(target_path)
         if broken:
-            checks.append(_check_fail("skill_md_references_resolve",
-                                      f"markdown links to nonexistent paths: {broken[:3]}",
-                                      severity="advisory"))
+            checks.append(
+                _check_fail(
+                    "skill_md_references_resolve",
+                    f"markdown links to nonexistent paths: {broken[:3]}",
+                    severity="advisory",
+                )
+            )
         else:
             checks.append(_check_pass("skill_md_references_resolve"))
 
@@ -1434,7 +1653,7 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
         # themselves contain relative-path links to further files (one level
         # deep per Anthropic).
         nested_chains: list[str] = []
-        for (_l, t) in local_targets:
+        for _l, t in local_targets:
             target_path = t.split("#", 1)[0]
             resolved = (skill_dir / target_path).resolve()
             if not resolved.is_file() or resolved.suffix.lower() not in (".md", ".markdown"):
@@ -1454,9 +1673,13 @@ def grade_tier2(skill_dir: Path) -> list[dict]:
                 nested_chains.append(f"{target_path} -> {inner_path}")
                 break
         if nested_chains:
-            checks.append(_check_fail("skill_md_references_one_level_deep",
-                                      f"reference chain >1 level deep (Anthropic prefers SKILL.md → leaf): {nested_chains[:2]}",
-                                      severity="advisory"))
+            checks.append(
+                _check_fail(
+                    "skill_md_references_one_level_deep",
+                    f"reference chain >1 level deep (Anthropic prefers SKILL.md → leaf): {nested_chains[:2]}",
+                    severity="advisory",
+                )
+            )
         else:
             checks.append(_check_pass("skill_md_references_one_level_deep"))
 
@@ -1593,8 +1816,9 @@ def _curated_trusted_runs(skill_id: str) -> list[str]:
     return summaries
 
 
-def _lifecycle_step(status: str, met: bool, *, evidence: list[str] | None = None,
-                    gaps: list[str] | None = None) -> dict:
+def _lifecycle_step(
+    status: str, met: bool, *, evidence: list[str] | None = None, gaps: list[str] | None = None
+) -> dict:
     return {
         "status": status,
         "met": met,
@@ -1634,9 +1858,13 @@ def derive_capability_lifecycle(skill_dir: Path, tier1_summary: dict, tier2_summ
         if planned_verifiers:
             verified_gaps.append("planned paired verifiers remain: " + ", ".join(planned_verifiers))
         if not implemented_verifiers:
-            verified_gaps.append("no implemented paired_verifiers[] entries resolve to committed verifiers")
+            verified_gaps.append(
+                "no implemented paired_verifiers[] entries resolve to committed verifiers"
+            )
         if not trusted_runs:
-            verified_gaps.append("no curated trusted-run summary found with passing verifier evidence")
+            verified_gaps.append(
+                "no curated trusted-run summary found with passing verifier evidence"
+            )
 
     published_gaps: list[str] = []
     if not is_verifier and not has_evals:
@@ -1664,19 +1892,21 @@ def derive_capability_lifecycle(skill_dir: Path, tier1_summary: dict, tier2_summ
         _lifecycle_step(
             "gated",
             gated_met,
-            evidence=[
-                "tier1_structural has no blocking issues",
-                "tier2_spec_honesty has no blocking issues",
-            ] if gated_met else [],
+            evidence=(
+                [
+                    "tier1_structural has no blocking issues",
+                    "tier2_spec_honesty has no blocking issues",
+                ]
+                if gated_met
+                else []
+            ),
             gaps=gated_gaps,
         ),
         _lifecycle_step(
             "verified",
             verified_met,
             evidence=(
-                curated_passing_packs
-                if is_verifier
-                else implemented_verifiers + trusted_runs
+                curated_passing_packs if is_verifier else implemented_verifiers + trusted_runs
             ),
             gaps=verified_gaps,
         ),
@@ -1724,12 +1954,16 @@ def main() -> None:
     tier2_summary = _summarise("tier2_spec_honesty", tier2)
     tier3_summary = grade_tier3_llm(skill_dir)
 
-    overall_blocking = (len(tier1_summary["blocking_issues"])
-                        + len(tier2_summary["blocking_issues"])
-                        + len(tier3_summary.get("blocking_issues", [])))
-    overall_advisory = (len(tier1_summary["advisory_issues"])
-                        + len(tier2_summary["advisory_issues"])
-                        + len(tier3_summary.get("advisory_issues", [])))
+    overall_blocking = (
+        len(tier1_summary["blocking_issues"])
+        + len(tier2_summary["blocking_issues"])
+        + len(tier3_summary.get("blocking_issues", []))
+    )
+    overall_advisory = (
+        len(tier1_summary["advisory_issues"])
+        + len(tier2_summary["advisory_issues"])
+        + len(tier3_summary.get("advisory_issues", []))
+    )
     overall = "pass" if overall_blocking == 0 else "fail"
 
     result = {

@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. <br>
+Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval. <br>
 
 This skill is for research and development only. <br>
 
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and researchers finetuning the NV-Generate-CTMR MR-brain diffusion UNet on custom NIfTI brain MRI volumes for medical imaging research. <br>
+Developers and ML engineers who need to finetune the NV-Generate-CTMR MR-brain diffusion UNet from user-supplied NIfTI training volumes for medical imaging research and development. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,14 +19,14 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Generate-CTMR Repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [NV-Generate-CTMR (upstream model repository)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Files, Shell commands] <br>
-**Output Format:** [JSON result summary and NIfTI checkpoint files] <br>
+**Output Type(s):** [Shell commands, Files] <br>
+**Output Format:** [JSON result summary to stdout; checkpoint, embedding, and inference image files to output directory] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Writes staged configs, latent embeddings, finetuned checkpoints, optional inference images, and logs under the caller-provided output directory] <br>
+**Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Agents Used: <br>
 - Claude Code (`claude-code`) <br>
@@ -35,7 +35,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 2 attempts per task, 50% pass threshold). Overall verdict: PASS. <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation tasks, 2 attempts per task). Pass threshold: 50%. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -59,14 +59,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+25%) | 100% (+0%) |
-| Correctness | 4 | 94% (+11%) | 85% (+48%) |
-| Discoverability | 4 | 90% (-6%) | 67% (+13%) |
-| Effectiveness | 4 | 77% (+8%) | 55% (+43%) |
-| Efficiency | 4 | 67% (-7%) | 49% (+7%) |
+| Security | 4 | 100% (+50%) | 100% (+0%) |
+| Correctness | 4 | 95% (-1%) | 95% (+57%) |
+| Discoverability | 4 | 89% (+11%) | 71% (+10%) |
+| Effectiveness | 4 | 77% (+10%) | 72% (+62%) |
+| Efficiency | 4 | 65% (+15%) | 54% (+5%) |
 
 ## Skill Version(s): <br>
-44792da (source: git SHA, committed 2026-05-30) <br>
+a0da60d (source: git SHA, committed 2026-05-31) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

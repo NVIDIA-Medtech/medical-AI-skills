@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Unit tests for ct_segmentation_finetune_quality_v1/scripts/grade.py."""
+
 from __future__ import annotations
 
 import json
@@ -72,9 +88,7 @@ def test_smoke_pack_skips_label_coverage(tmp_path: Path) -> None:
     output["output"]["improvement_over_baseline"] = 0.0
     output["output"]["val_dice_per_epoch"] = [0.0, 0.0, 0.0]
     (smoke_pack / "output.json").write_text(json.dumps(output))
-    (smoke_pack / "manifest.json").write_text(
-        (pass_pack / "manifest.json").read_text()
-    )
+    (smoke_pack / "manifest.json").write_text((pass_pack / "manifest.json").read_text())
     (smoke_pack / "validation_summary.json").write_text(
         (pass_pack / "validation_summary.json").read_text()
     )
@@ -92,7 +106,6 @@ def test_smoke_pack_skips_label_coverage(tmp_path: Path) -> None:
 def test_wrong_skill_id_fails() -> None:
     """Verifier must reject packs from other skills."""
     pass_pack = VERIFIER / "fixtures" / "pass_pack"
-    manifest = json.loads((pass_pack / "manifest.json").read_text())
     payload = _run(pass_pack)
     # Sanity-check the original
     assert payload["target"]["skill_id"] == "nv_segment_ct_finetune"
@@ -101,6 +114,7 @@ def test_wrong_skill_id_fails() -> None:
     sys.path.insert(0, str(VERIFIER / "scripts"))
     try:
         import grade  # type: ignore
+
         assert "nv_segment_ct_finetune" in grade.TARGET_SKILL_IDS
         assert "medagent.nv_segment_ct_finetune" in grade.TARGET_SKILL_IDS
     finally:
@@ -110,6 +124,7 @@ def test_wrong_skill_id_fails() -> None:
 def test_output_validates_against_schema() -> None:
     """Verifier output must match its own output_schema.json."""
     import jsonschema
+
     payload = _run(VERIFIER / "fixtures" / "pass_pack")
     schema = json.loads((VERIFIER / "validators" / "output_schema.json").read_text())
     jsonschema.validate(payload, schema)

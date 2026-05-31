@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill to finetune the NVIDIA MAISI VAE/autoencoder on custom CT or MRI NIfTI datasets, validating datalist structure, staging training configs, and running single-GPU VAE training with artifact accounting. <br>
+Developers and medical AI researchers finetuning a variational autoencoder (VAE) for CT/MRI synthetic volume generation using NVIDIA's NV-Generate-CTMR MAISI framework. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -20,13 +20,11 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
 - [NV-Generate-CTMR upstream repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
-- [Skill manifest](skill_manifest.yaml) <br>
-- [Output schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Files, JSON] <br>
-**Output Format:** [PyTorch checkpoint files and structured JSON result summary] <br>
+**Output Type(s):** [Shell commands, Configuration instructions, Files] <br>
+**Output Format:** [JSON configuration files, model checkpoint files, and TensorBoard logs] <br>
 **Output Parameters:** [1D] <br>
 **Other Properties Related to Output:** [None] <br>
 
@@ -37,7 +35,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (2 positive skill-activation tasks, 2 attempts per task, 50% pass threshold). <br>
+Evaluated against 2 evaluation tasks with 2 attempts per task (pass threshold 50%). <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -61,14 +59,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+25%) | 100% (+25%) |
-| Correctness | 4 | 91% (+3%) | 81% (+34%) |
-| Discoverability | 4 | 90% (+1%) | 63% (+9%) |
-| Effectiveness | 4 | 74% (-9%) | 55% (+29%) |
-| Efficiency | 4 | 65% (-4%) | 47% (+7%) |
+| Security | 4 | 100% (+50%) | 100% (+0%) |
+| Correctness | 4 | 91% (-3%) | 86% (+34%) |
+| Discoverability | 4 | 89% (+8%) | 78% (+23%) |
+| Effectiveness | 4 | 60% (-31%) | 50% (+24%) |
+| Efficiency | 4 | 67% (+9%) | 63% (+22%) |
 
 ## Skill Version(s): <br>
-0.1.0 (source: skill_manifest.yaml) <br>
+deb07c5 (source: git SHA, committed 2026-05-31) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill for engineering-time header-only preflight checks on DICOM series directories before conversion or model inference, verifying orientation, consistency, and PHI-tag presence. <br>
+Developers and engineers use this skill to perform a header-only DICOM series scan checking for corruption, orientation, PHI-tag presence, and consistency before running conversion or model inference workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,15 +19,15 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Output Schema (validators/output_schema.json)](validators/output_schema.json) <br>
-- [Skill Manifest (skill_manifest.yaml)](skill_manifest.yaml) <br>
+- [skill_manifest.yaml](skill_manifest.yaml) <br>
+- [Output JSON Schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [JSON] <br>
+**Output Type(s):** [Files] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Structured preflight report with inventory, orientation, PHI flags, findings, and verdict (pass/warn/fail)] <br>
 
 ## Evaluation Agents Used: <br>
 - Claude Code (`claude-code`) <br>
@@ -36,7 +36,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 3 evaluation tasks with 2 attempts per task (6 total runs per agent). Pass threshold: 50%. Overall verdict: PASS. <br>
+Evaluated against 3 evaluation tasks (all positive skill-activation cases) with 2 attempts per task. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -60,11 +60,11 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 6 | 100% (+0%) | 100% (+0%) |
-| Correctness | 6 | 82% (+7%) | 60% (+15%) |
-| Discoverability | 6 | 81% (+10%) | 59% (+6%) |
-| Effectiveness | 6 | 67% (+11%) | 37% (+16%) |
-| Efficiency | 6 | 63% (+14%) | 50% (+7%) |
+| Security | 6 | 100% (+0%) | 100% (+17%) |
+| Correctness | 6 | 77% (+3%) | 71% (+10%) |
+| Discoverability | 6 | 76% (+4%) | 58% (+3%) |
+| Effectiveness | 6 | 59% (+8%) | 56% (+6%) |
+| Efficiency | 6 | 55% (+3%) | 46% (+5%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>

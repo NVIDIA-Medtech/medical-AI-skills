@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for generating synthetic brain MRI volumes with NV-Generate-CTMR rflow-mr-brain. Not for production training data. <br>
+Used for generating synthetic brain MRI volumes with NV-Generate-CTMR rflow-mr-brain. <br>
 
 This skill is for research and development only. <br>
 
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and researchers generating synthetic brain MRI volumes for research, testing, and model development workflows. <br>
+Developers and engineers generating synthetic brain MRI volumes for research, development, and engineering verification using the NV-Generate-CTMR rflow-mr-brain pipeline. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -20,15 +20,15 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
 - [NV-Generate-CTMR MR Brain Image Generation](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#22-mr-brain-image-generation) <br>
-- [NV-Generate-MR-Brain Model Weights (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR-Brain) <br>
+- [NV-Generate-MR-Brain Model Weights](https://huggingface.co/nvidia/NV-Generate-MR-Brain) <br>
 - [FOV and Downloads Reference](references/fov-and-downloads.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, Files, JSON] <br>
-**Output Format:** [Markdown with inline bash code blocks and NIfTI volume output] <br>
+**Output Type(s):** [Files, Analysis] <br>
+**Output Format:** [NIfTI volumes with JSON summary] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Generates synthetic NIfTI brain MRI volumes with a JSON result summary including geometry, spacing, affine, and intensity metadata] <br>
+**Other Properties Related to Output:** [Output volumes are synthetic; not safe as production training data without independent quality review] <br>
 
 ## Evaluation Agents Used: <br>
 - Claude Code (`claude-code`) <br>
@@ -37,7 +37,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks with 2 attempts per task; pass threshold 50%. <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 2 attempts per task, 50% pass threshold). <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -61,14 +61,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 100% (+0%) |
-| Correctness | 4 | 86% (-9%) | 96% (+40%) |
-| Discoverability | 4 | 61% (-35%) | 72% (+9%) |
-| Effectiveness | 4 | 81% (+9%) | 78% (+47%) |
-| Efficiency | 4 | 45% (-33%) | 57% (+3%) |
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 78% (-13%) | 93% (+49%) |
+| Discoverability | 4 | 58% (-36%) | 79% (+16%) |
+| Effectiveness | 4 | 75% (+13%) | 79% (+57%) |
+| Efficiency | 4 | 45% (-31%) | 68% (+16%) |
 
 ## Skill Version(s): <br>
-ac94e25 (source: git SHA, committed 2026-05-30) <br>
+b3fea63 (source: git SHA, committed 2026-05-31) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

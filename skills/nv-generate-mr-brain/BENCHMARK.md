@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-generate-mr-brain`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,24 +54,24 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 100% (+0%) |
-| Correctness | 4 | 86% (-9%) | 96% (+40%) |
-| Discoverability | 4 | 61% (-35%) | 72% (+9%) |
-| Effectiveness | 4 | 81% (+9%) | 78% (+47%) |
-| Efficiency | 4 | 45% (-33%) | 57% (+3%) |
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 78% (-13%) | 93% (+49%) |
+| Discoverability | 4 | 58% (-36%) | 79% (+16%) |
+| Effectiveness | 4 | 75% (+13%) | 79% (+57%) |
+| Efficiency | 4 | 45% (-31%) | 68% (+16%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 9 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 8 total findings.
 
 Top findings:
 
 - MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:11`)
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-generate-mr-brain/SKILL.md`)
-- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill uses Bash as an allowed tool and explicitly instructs execution of shell commands including git clone from an  (`SKILL.md:1`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-mr-brain/fixtures`)
+- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-generate-mr-brain/validators`)
+- LOW SCHEMA/unexpected_file: Unexpected 'requirements.txt' in skill root (`skills/nv-generate-mr-brain/requirements.txt`)
 - LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-mr-brain/skill_manifest.yaml`)
 
 ## Tier 2: Deduplication Summary

@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Wrapper for NV-Generate-CTMR VAE finetuning.
 
 The upstream repository documents VAE training in ``train_vae_tutorial.ipynb``
@@ -9,6 +24,7 @@ against existing upstream helper APIs. It does not execute the notebook.
 
 Engineering verification only. Outputs are not clinically meaningful.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -113,7 +129,9 @@ def _split_entries(raw: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict
     return training, validation
 
 
-def _validate_datalist(data_base_dir: Path, datalist: Path, default_modality: str) -> dict[str, Any]:
+def _validate_datalist(
+    data_base_dir: Path, datalist: Path, default_modality: str
+) -> dict[str, Any]:
     default_class = _normalize_modality(default_modality)
     raw = _load_json(datalist)
     if not isinstance(raw, dict):
@@ -126,7 +144,9 @@ def _validate_datalist(data_base_dir: Path, datalist: Path, default_modality: st
         for i, item in enumerate(entries):
             if not isinstance(item, dict) or "image" not in item:
                 raise ValueError(f"{split_name}[{i}] must contain image")
-            modality = _normalize_modality(str(item.get("class", item.get("modality", default_class))))
+            modality = _normalize_modality(
+                str(item.get("class", item.get("modality", default_class)))
+            )
             image_path = _resolve_data_path(data_base_dir, str(item["image"]))
             if not image_path.is_file():
                 missing.append(str(image_path))
@@ -152,8 +172,12 @@ def _stage_entries(
     staged: list[dict[str, Any]] = []
     for item in entries:
         next_item = dict(item)
-        next_item["image"] = str(_resolve_data_path(data_base_dir, str(next_item["image"])).resolve())
-        next_item["class"] = _normalize_modality(str(next_item.get("class", next_item.get("modality", default_modality))))
+        next_item["image"] = str(
+            _resolve_data_path(data_base_dir, str(next_item["image"])).resolve()
+        )
+        next_item["class"] = _normalize_modality(
+            str(next_item.get("class", next_item.get("modality", default_modality)))
+        )
         next_item.pop("modality", None)
         staged.append(next_item)
     return staged
@@ -290,10 +314,16 @@ def _warmup_rule(epoch: int) -> float:
 
 
 def _loss_weighted_sum(args: argparse.Namespace, losses: dict[str, float]) -> float:
-    return losses["recons_loss"] + args.kl_weight * losses["kl_loss"] + args.perceptual_weight * losses["p_loss"]
+    return (
+        losses["recons_loss"]
+        + args.kl_weight * losses["kl_loss"]
+        + args.perceptual_weight * losses["p_loss"]
+    )
 
 
-def _run_training(args: argparse.Namespace, upstream_root: Path, staged: dict[str, Any]) -> dict[str, Any]:
+def _run_training(
+    args: argparse.Namespace, upstream_root: Path, staged: dict[str, Any]
+) -> dict[str, Any]:
     if args.num_gpus != 1:
         raise ValueError("VAE finetuning runner currently supports exactly one CUDA GPU")
     sys.path.insert(0, str(upstream_root))
@@ -406,9 +436,17 @@ def _run_training(args: argparse.Namespace, upstream_root: Path, staged: dict[st
 
     intensity_loss = MSELoss() if cfg.recon_loss == "l2" else L1Loss(reduction="mean")
     adv_loss = PatchAdversarialLoss(criterion="least_squares")
-    loss_perceptual = PerceptualLoss(spatial_dims=3, network_type="squeeze", is_fake_3d=True, fake_3d_ratio=0.2).eval().to(device)
-    optimizer_g = torch.optim.Adam(params=autoencoder.parameters(), lr=cfg.lr, eps=1e-6 if cfg.amp else 1e-8)
-    optimizer_d = torch.optim.Adam(params=discriminator.parameters(), lr=cfg.lr, eps=1e-6 if cfg.amp else 1e-8)
+    loss_perceptual = (
+        PerceptualLoss(spatial_dims=3, network_type="squeeze", is_fake_3d=True, fake_3d_ratio=0.2)
+        .eval()
+        .to(device)
+    )
+    optimizer_g = torch.optim.Adam(
+        params=autoencoder.parameters(), lr=cfg.lr, eps=1e-6 if cfg.amp else 1e-8
+    )
+    optimizer_d = torch.optim.Adam(
+        params=discriminator.parameters(), lr=cfg.lr, eps=1e-6 if cfg.amp else 1e-8
+    )
     scheduler_g = lr_scheduler.LambdaLR(optimizer_g, lr_lambda=_warmup_rule)
     scheduler_d = lr_scheduler.LambdaLR(optimizer_d, lr_lambda=_warmup_rule)
     scaler_g = GradScaler("cuda", init_scale=2.0**8, growth_factor=1.5) if cfg.amp else None
@@ -513,7 +551,9 @@ def _run_training(args: argparse.Namespace, upstream_root: Path, staged: dict[st
                     reconstruction, z_mu, z_sigma = dynamic_infer(val_inferer, autoencoder, images)
                     reconstruction = reconstruction.to(device)
                     target = images
-                    val_losses["recons_loss"] += float(intensity_loss(reconstruction, target).item())
+                    val_losses["recons_loss"] += float(
+                        intensity_loss(reconstruction, target).item()
+                    )
                     val_losses["kl_loss"] += float(KL_loss(z_mu, z_sigma).item())
                     val_losses["p_loss"] += float(loss_perceptual(reconstruction, target).item())
                     last_z_mu = z_mu
@@ -524,7 +564,9 @@ def _run_training(args: argparse.Namespace, upstream_root: Path, staged: dict[st
             epoch_record["val_losses"] = val_losses
             epoch_record["val_weighted_loss"] = val_loss
             if last_z_mu is not None:
-                writer.add_scalar("val_one_sample_scale_factor", float(1.0 / last_z_mu.flatten().std()), epoch)
+                writer.add_scalar(
+                    "val_one_sample_scale_factor", float(1.0 / last_z_mu.flatten().std()), epoch
+                )
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 best_path = Path(str(trained_g_path)[:-3] + f"_epoch{epoch}.pt")
@@ -608,7 +650,9 @@ def _summarize_output(output_dir: Path) -> dict[str, Any]:
         "autoencoder_checkpoint": str(autoencoder) if str(autoencoder) else None,
         "autoencoder_checkpoint_present": autoencoder.is_file() if str(autoencoder) else False,
         "discriminator_checkpoint": str(discriminator) if str(discriminator) else None,
-        "discriminator_checkpoint_present": discriminator.is_file() if str(discriminator) else False,
+        "discriminator_checkpoint_present": (
+            discriminator.is_file() if str(discriminator) else False
+        ),
         "best_autoencoder_checkpoints": [str(p) for p in best_paths],
         "num_best_autoencoder_checkpoints": len(best_paths),
         "loss_history": summary.get("history", []),
@@ -642,7 +686,11 @@ def _payload(
     stdout: str = "",
     stderr: str = "",
 ) -> dict[str, Any]:
-    output = _summarize_output(args.output_dir) if exit_code == 0 and not args.preflight else _empty_output(args.output_dir)
+    output = (
+        _summarize_output(args.output_dir)
+        if exit_code == 0 and not args.preflight
+        else _empty_output(args.output_dir)
+    )
     return {
         "skill": SKILL_NAME,
         "model": MODEL_NAME,
@@ -689,7 +737,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data-base-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--upstream-root")
-    parser.add_argument("--modality", default="mri", help="Default modality/class for entries missing class/modality: ct or mri")
+    parser.add_argument(
+        "--modality",
+        default="mri",
+        help="Default modality/class for entries missing class/modality: ct or mri",
+    )
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--val-batch-size", type=int, default=1)
@@ -697,7 +749,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cache-rate", type=float, default=0.0)
     parser.add_argument("--patch-size", type=lambda s: _parse_triplet(s, int), default=[64, 64, 64])
     parser.add_argument("--val-patch-size", type=lambda s: _parse_triplet(s, int))
-    parser.add_argument("--val-sliding-window-patch-size", type=lambda s: _parse_triplet(s, int), default=[96, 96, 64])
+    parser.add_argument(
+        "--val-sliding-window-patch-size",
+        type=lambda s: _parse_triplet(s, int),
+        default=[96, 96, 64],
+    )
     parser.add_argument("--autoencoder-num-splits", type=int, default=1)
     parser.add_argument("--num-gpus", type=int, default=1)
     parser.add_argument("--perceptual-weight", type=float, default=0.3)
@@ -705,7 +761,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--adv-weight", type=float, default=0.1)
     parser.add_argument("--recon-loss", choices=("l1", "l2"), default="l1")
     parser.add_argument("--val-interval", type=int, default=1)
-    parser.add_argument("--spacing-type", choices=("original", "fixed", "rand_zoom"), default="original")
+    parser.add_argument(
+        "--spacing-type", choices=("original", "fixed", "rand_zoom"), default="original"
+    )
     parser.add_argument("--spacing", type=lambda s: _parse_triplet(s, float))
     parser.add_argument("--select-channel", type=int, default=0)
     parser.add_argument("--cache-num-workers", type=int, default=0)
@@ -725,7 +783,9 @@ def main() -> None:
     args = build_parser().parse_args()
     args.modality = _normalize_modality(args.modality)
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    dataset = _validate_datalist(args.data_base_dir.resolve(), args.datalist.resolve(), args.modality)
+    dataset = _validate_datalist(
+        args.data_base_dir.resolve(), args.datalist.resolve(), args.modality
+    )
     upstream_root, checked = _resolve_upstream_root(args.upstream_root)
     start = time.time()
 
@@ -750,13 +810,17 @@ def main() -> None:
     try:
         staged = _stage_configs(args, upstream_root)
     except Exception as exc:
-        payload = _payload(args, dataset, upstream_root, checked, 2, time.time() - start, stderr=str(exc))
+        payload = _payload(
+            args, dataset, upstream_root, checked, 2, time.time() - start, stderr=str(exc)
+        )
         _emit(payload)
         raise SystemExit(2)
 
     if args.preflight:
         payload = _payload(args, dataset, upstream_root, checked, 0, time.time() - start)
-        payload["logs"]["stderr_tail"] = "Preflight staged VAE configs and validated datalist paths."
+        payload["logs"][
+            "stderr_tail"
+        ] = "Preflight staged VAE configs and validated datalist paths."
         _emit(payload)
         return
 
@@ -769,7 +833,9 @@ def main() -> None:
     except Exception as exc:
         exit_code = 2
         stderr = f"{type(exc).__name__}: {exc}"
-    payload = _payload(args, dataset, upstream_root, checked, exit_code, time.time() - start, stdout, stderr)
+    payload = _payload(
+        args, dataset, upstream_root, checked, exit_code, time.time() - start, stdout, stderr
+    )
     _emit(payload)
     raise SystemExit(exit_code)
 

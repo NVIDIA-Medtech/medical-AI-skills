@@ -1,10 +1,24 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
 
 import pytest
-
 
 GRADE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "grade.py"
 SPEC = importlib.util.spec_from_file_location("skill_completeness_grade", GRADE_PATH)
@@ -36,9 +50,7 @@ def _write_target_skill(
     (skill_dir / "validators").mkdir()
     (skill_dir / "fixtures").mkdir()
     (skill_dir / entrypoint).write_text(
-        "#!/usr/bin/env python3\n"
-        "import json\n"
-        "print(json.dumps({'status': 'ok'}))\n"
+        "#!/usr/bin/env python3\n" "import json\n" "print(json.dumps({'status': 'ok'}))\n"
     )
     (skill_dir / "validators" / "output_schema.json").write_text(
         '{"type": "object", "required": ["status"], "properties": {"status": {"type": "string"}}}\n'
@@ -49,20 +61,15 @@ def _write_target_skill(
         "name: target-skill\n"
         "description: Runs a target fixture for verifier tests. Engineering verification only.\n"
         "---\n"
-        "# Target Skill\n\n"
-        + skill_md_body
+        "# Target Skill\n\n" + skill_md_body
     )
     env_required_yaml = "\n".join(f"    - {item}" for item in env_required)
     env_required_block = (
-        "  env_required:\n" + env_required_yaml + "\n"
-        if env_required
-        else "  env_required: []\n"
+        "  env_required:\n" + env_required_yaml + "\n" if env_required else "  env_required: []\n"
     )
     env_optional_yaml = "\n".join(f"    - {item}" for item in env_optional)
     env_optional_block = (
-        "  env_optional:\n" + env_optional_yaml + "\n"
-        if env_optional
-        else "  env_optional: []\n"
+        "  env_optional:\n" + env_optional_yaml + "\n" if env_optional else "  env_optional: []\n"
     )
     env_conditional = env_conditional or {}
     if env_conditional:
@@ -84,9 +91,7 @@ def _write_target_skill(
     )
     home_writes_yaml = "\n".join(f"      - path: {item}" for item in home_writes)
     home_writes_block = (
-        "    home_writes:\n" + home_writes_yaml + "\n"
-        if home_writes
-        else "    home_writes: []\n"
+        "    home_writes:\n" + home_writes_yaml + "\n" if home_writes else "    home_writes: []\n"
     )
     network_yaml = "\n".join(f"      - {item}" for item in network_endpoints)
     network_block = (
@@ -112,8 +117,7 @@ def _write_target_skill(
     env_pin_block = ""
     if validation_env_pin:
         env_pin_block = "  env_pin:\n" + "".join(
-            f"    {name}: {constraint!r}\n"
-            for name, constraint in validation_env_pin.items()
+            f"    {name}: {constraint!r}\n" for name, constraint in validation_env_pin.items()
         )
     reproducibility_block = (
         "  reproducibility:\n"
@@ -125,9 +129,7 @@ def _write_target_skill(
     )
     (skill_dir / "skill_manifest.yaml").write_text(
         "id: fixtures.target_skill\n"
-        "version: 0.1.0\n"
-        + upstream_ref_block +
-        "license: Apache-2.0\n"
+        "version: 0.1.0\n" + upstream_ref_block + "license: Apache-2.0\n"
         "intended_use:\n"
         "  summary: Test fixture.\n"
         "inputs:\n"
@@ -146,22 +148,20 @@ def _write_target_skill(
         "    - ${fixture}\n"
         "    - --output-dir\n"
         "    - ${out}\n"
-        + env_required_block +
-        env_optional_block +
-        env_conditional_block +
-        "  side_effects:\n"
-        + pip_packages_block +
-        local_writes_block +
-        home_writes_block +
-        network_block +
-        f"    requires_docker: {str(requires_docker).lower()}\n"
+        + env_required_block
+        + env_optional_block
+        + env_conditional_block
+        + "  side_effects:\n"
+        + pip_packages_block
+        + local_writes_block
+        + home_writes_block
+        + network_block
+        + f"    requires_docker: {str(requires_docker).lower()}\n"
         f"    requires_gpu: {requires_gpu}\n"
         "validation:\n"
         "  sanity_checks:\n"
         "    - path: status\n"
-        "      eq: ok\n"
-        + reproducibility_block
-        + env_pin_block
+        "      eq: ok\n" + reproducibility_block + env_pin_block
     )
     return skill_dir
 
@@ -405,12 +405,8 @@ def test_verifier_lifecycle_uses_curated_passing_evidence_not_paired_verifiers(
     )
     evidence_dir = tmp_path / "examples" / "evidence_packs" / "target_skill_verifier_pass"
     evidence_dir.mkdir(parents=True)
-    (evidence_dir / "manifest.json").write_text(
-        '{"skill_id": "medagent.verifiers.target_skill"}\n'
-    )
-    (evidence_dir / "validation_summary.json").write_text(
-        '{"overall_status": "passed"}\n'
-    )
+    (evidence_dir / "manifest.json").write_text('{"skill_id": "medagent.verifiers.target_skill"}\n')
+    (evidence_dir / "validation_summary.json").write_text('{"overall_status": "passed"}\n')
     monkeypatch.setattr(grade, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(grade, "VERIFIERS_ROOT", verifiers_root)
 
@@ -423,7 +419,9 @@ def test_verifier_lifecycle_uses_curated_passing_evidence_not_paired_verifiers(
     assert lifecycle["status"] == "published"
     requirements = {item["status"]: item for item in lifecycle["requirements"]}
     assert requirements["verified"]["met"] is True
-    assert "examples/evidence_packs/target_skill_verifier_pass" in requirements["verified"]["evidence"]
+    assert (
+        "examples/evidence_packs/target_skill_verifier_pass" in requirements["verified"]["evidence"]
+    )
     assert not any(
         "paired_verifiers" in gap
         for requirement in lifecycle["requirements"]
@@ -545,9 +543,7 @@ def test_external_asset_python_modules_do_not_need_pip_declarations(tmp_path: Pa
 def test_agent_usability_shape_reports_advisory_gaps(tmp_path: Path) -> None:
     skill_dir = _write_target_skill(
         tmp_path,
-        skill_md_body=(
-            "A vague guide that does not tell an agent which wrapper to run.\n"
-        ),
+        skill_md_body=("A vague guide that does not tell an agent which wrapper to run.\n"),
     )
 
     checks = _checks_by_name(grade.grade_tier2(skill_dir))
@@ -757,7 +753,9 @@ def test_skill_md_must_name_runtime_optional_and_conditional_env_vars(tmp_path: 
     assert "DEMO_TOKEN" in checks["skill_md_mentions_runtime_env_conditional"]["msg"]
 
 
-def test_skill_md_passes_when_runtime_optional_and_conditional_env_vars_are_documented(tmp_path: Path) -> None:
+def test_skill_md_passes_when_runtime_optional_and_conditional_env_vars_are_documented(
+    tmp_path: Path,
+) -> None:
     skill_dir = _write_target_skill(
         tmp_path,
         env_optional=("DEMO_CACHE",),
@@ -863,7 +861,9 @@ def test_import_scan_uses_python_ast_not_docstring_lines(tmp_path: Path) -> None
     assert grade._scan_imports(skill_dir / "scripts", skill_dir) == {"json"}
 
 
-def test_import_scan_treats_verifier_shared_package_as_local(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_import_scan_treats_verifier_shared_package_as_local(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     verifier_root = tmp_path / "verifiers"
     verifier_dir = verifier_root / "target_verifier"
     (verifier_root / "_shared").mkdir(parents=True)

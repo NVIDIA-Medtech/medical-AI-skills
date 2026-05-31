@@ -1,10 +1,24 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import argparse
 import importlib.util
 import json
 from pathlib import Path
 
 import pytest
-
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "run_mr_brain_finetune.py"
 spec = importlib.util.spec_from_file_location("run_mr_brain_finetune", SCRIPT)
@@ -134,7 +148,9 @@ def test_custom_model_config_override_is_used(tmp_path: Path) -> None:
     args = _args(tmp_path, datalist)
     upstream = _fake_upstream(tmp_path / "upstream")
     custom = tmp_path / "my_model_config.json"
-    custom.write_text(json.dumps({"diffusion_unet_train": {"lr": 5e-6}, "diffusion_unet_inference": {}}))
+    custom.write_text(
+        json.dumps({"diffusion_unet_train": {"lr": 5e-6}, "diffusion_unet_inference": {}})
+    )
     args.model_config = str(custom)
 
     staged = mod._stage_configs(args, upstream)
