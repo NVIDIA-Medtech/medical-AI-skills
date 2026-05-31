@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers generating synthetic body MRI volumes for research and development workflows using the NV-Generate-CTMR rflow-mr image-only synthesis pipeline. <br>
+Developers and engineers generating synthetic body MRI volumes for research, engineering validation, and data augmentation evaluation using NVIDIA's NV-Generate-CTMR rflow-mr workflow. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -19,26 +19,25 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Generate-CTMR GitHub Repository](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
-- [NV-Generate-CTMR MR Image Generation Guide](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#25-mr-image-generation) <br>
-- [NV-Generate-MR Model Weights (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
-- [FOV and Downloads Reference](references/fov-and-downloads.md) <br>
+- [FOV and Downloads](references/fov-and-downloads.md) <br>
+- [NVIDIA-Medtech/NV-Generate-CTMR (GitHub)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [nvidia/NV-Generate-MR (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Shell commands, JSON] <br>
-**Output Format:** [JSON evidence pack with NIfTI volume paths] <br>
+**Output Type(s):** [Files, JSON] <br>
+**Output Format:** [NIfTI volumes and structured JSON summary] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [Validation gates check shape, spacing, finite/nonconstant voxels, and model inventory] <br>
+**Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Agents Used: <br>
-- Claude Code (`claude-code`) <br>
-- Codex (`codex`) <br>
+- `claude-code` <br>
+- `codex` <br>
 
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 tasks (1 positive skill-activation, 1 negative activation) with 2 attempts per task via NVSkills-Eval. <br>
+Evaluated against 2 evaluation tasks (1 positive, 1 negative) with 2 attempts per task via NVSkills-Eval external profile. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -60,13 +59,13 @@ Underlying evaluation signals used in this run: <br>
 
 
 ## Evaluation Results: <br>
-| Dimension | Num | Claude Code | Codex |
+| Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
 | Security | 4 | 100% (+25%) | 100% (+0%) |
-| Correctness | 4 | 100% (+13%) | 85% (+32%) |
-| Discoverability | 4 | 100% (+5%) | 81% (+5%) |
-| Effectiveness | 4 | 100% (+31%) | 69% (+46%) |
-| Efficiency | 4 | 93% (+16%) | 68% (+4%) |
+| Correctness | 4 | 93% (+5%) | 83% (+23%) |
+| Discoverability | 4 | 94% (-1%) | 91% (+15%) |
+| Effectiveness | 4 | 77% (-3%) | 63% (+31%) |
+| Efficiency | 4 | 76% (-4%) | 81% (+17%) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
