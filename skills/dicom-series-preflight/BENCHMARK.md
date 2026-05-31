@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `dicom-series-preflight`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 3 evaluation tasks
@@ -54,11 +54,11 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 6 | 100% (+0%) | 100% (+0%) |
-| Correctness | 6 | 82% (+7%) | 60% (+15%) |
-| Discoverability | 6 | 81% (+10%) | 59% (+6%) |
-| Effectiveness | 6 | 67% (+11%) | 37% (+16%) |
-| Efficiency | 6 | 63% (+14%) | 50% (+7%) |
+| Security | 6 | 100% (+0%) | 100% (+17%) |
+| Correctness | 6 | 77% (+3%) | 71% (+10%) |
+| Discoverability | 6 | 76% (+4%) | 58% (+3%) |
+| Effectiveness | 6 | 59% (+8%) | 56% (+6%) |
+| Efficiency | 6 | 55% (+3%) | 46% (+5%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
@@ -69,7 +69,7 @@ Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found
 Top findings:
 
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/dicom-series-preflight/SKILL.md`)
-- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill explicitly uses Bash shell capabilities (via `allowed-tools: Bash`) and instructs execution of Python scripts, (`SKILL.md:1`)
+- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill declares `allowed-tools: Bash` and instructs execution of shell commands (e.g., `python scripts/preflight_seri (`SKILL.md:1`)
 - LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/dicom-series-preflight/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/dicom-series-preflight/skill_manifest.yaml`)
 - LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/dicom-series-preflight/validators`)

@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `dicom-series-to-volume`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,25 +54,25 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 100% (+0%) |
-| Correctness | 4 | 100% (+11%) | 88% (+1%) |
-| Discoverability | 4 | 97% (-2%) | 86% (+4%) |
-| Effectiveness | 4 | 92% (+10%) | 74% (+6%) |
-| Efficiency | 4 | 84% (+0%) | 76% (+13%) |
+| Security | 4 | 100% (+25%) | 100% (+0%) |
+| Correctness | 4 | 98% (+6%) | 90% (+6%) |
+| Discoverability | 4 | 94% (-3%) | 82% (+3%) |
+| Effectiveness | 4 | 98% (+17%) | 82% (+4%) |
+| Efficiency | 4 | 81% (-3%) | 72% (+10%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 7 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 6 total findings.
 
 Top findings:
 
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/dicom-series-to-volume/SKILL.md`)
-- MEDIUM SECURITY/Unknown (SDI-1): The skill extracts and outputs DICOM metadata fields including StudyInstanceUID, SeriesInstanceUID, StudyDate, StudyDesc (`scripts/series_to_volume.py:181`)
-- MEDIUM SECURITY/Unknown (SQP-2): DICOM metadata including StudyInstanceUID, SeriesInstanceUID, StudyDate, StudyDescription, SeriesDescription, and BodyPa (`scripts/series_to_volume.py:181`)
-- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/dicom-series-to-volume/validators`)
+- MEDIUM SECURITY/Unknown (SQP-2): The script extracts and prints DICOM metadata fields including StudyInstanceUID, SeriesInstanceUID, StudyDate, StudyDesc (`scripts/series_to_volume.py:199`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/dicom-series-to-volume/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/dicom-series-to-volume/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/dicom-series-to-volume/validators`)
 
 ## Tier 2: Deduplication Summary
 
