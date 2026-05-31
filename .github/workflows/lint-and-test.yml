@@ -65,7 +65,14 @@ jobs:
             "nibabel>=4.0" \
             "pydicom>=2.4,<5" \
             "typer>=0.9" \
-            "pytest>=8.0"
+            "pytest>=8.0" \
+            "pre-commit>=3.5"
+
+      - name: Cache pre-commit hook environments
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Lint repository
         run: make lint
