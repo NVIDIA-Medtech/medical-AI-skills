@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Run NV-Reason-CXR-3B inference on a PNG/JPEG chest X-ray image.
 
 The live path follows the upstream Hugging Face Transformers example.
 The mock path exists for CI and evidence-pack wiring checks; it never calls
 the model and should not be treated as clinical or model output.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -169,8 +185,7 @@ def _setup_report(model_id: str) -> dict:
     missing_required = [
         name
         for name in ("torch", "transformers", "Pillow")
-        if not dependencies[name].get("installed")
-        or not dependencies[name].get("importable", True)
+        if not dependencies[name].get("installed") or not dependencies[name].get("importable", True)
     ]
     if missing_required:
         recommendation = "install_required_dependencies"
@@ -208,7 +223,7 @@ def _png_info(path: Path) -> tuple[int, int]:
         header = f.read(int("24"))
     if len(header) < int("24") or not header.startswith(b"\x89PNG\r\n\x1a\n"):
         raise SkillError(f"unsupported image format for {path}: expected PNG or JPEG")
-    width, height = struct.unpack(">II", header[int("16"):int("24")])
+    width, height = struct.unpack(">II", header[int("16") : int("24")])
     if width <= 0 or height <= 0:
         raise SkillError(f"invalid PNG dimensions for {path}: {width}x{height}")
     return width, height
@@ -312,9 +327,13 @@ def _write_synthetic_png(path: Path, *, width: int = int("96"), height: int = in
                 curve_y = height * float("0.22") + rib * float("7.0") + float("9.0") * (xn**2)
                 if abs(y - curve_y) < float("0.75") and float("0.12") < abs(xn) < float("0.9"):
                     value = max(value, int("132"))
-            if (x - width * float("0.5")) ** 2 + (y - height * float("0.88")) ** 2 < (width * float("0.1")) ** 2:
+            if (x - width * float("0.5")) ** 2 + (y - height * float("0.88")) ** 2 < (
+                width * float("0.1")
+            ) ** 2:
                 value = max(value, int("112"))
-            vignette = int(int("22") * math.sqrt(xn**2 + ((y - height * float("0.5")) / height) ** 2))
+            vignette = int(
+                int("22") * math.sqrt(xn**2 + ((y - height * float("0.5")) / height) ** 2)
+            )
             value = max(0, min(int("255"), value - vignette))
             rows.extend([value, value, value])
 
@@ -513,8 +532,7 @@ def _run_transformers_inference(
         with torch.inference_mode():
             generated_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
         trimmed_ids = [
-            out_ids[len(in_ids) :]
-            for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+            out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
         ]
         generated_tokens = int(trimmed_ids[0].shape[-1]) if trimmed_ids else 0
         generated_text = processor.batch_decode(
@@ -594,7 +612,9 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(_setup_report(args.model_id), indent=2, sort_keys=True))
             return 0
         if args.image_or_fixture is None:
-            print("error: image_or_fixture is required unless --check-setup is used", file=sys.stderr)
+            print(
+                "error: image_or_fixture is required unless --check-setup is used", file=sys.stderr
+            )
             return 2
 
         out_dir = args.out_dir.resolve()

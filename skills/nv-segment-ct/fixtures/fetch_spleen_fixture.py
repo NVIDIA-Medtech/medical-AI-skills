@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Fetch the spleen_03 fixture from the Decathlon MSD09 dataset.
 
 The committed Medical AI Skills tree does not ship `spleen_03.nii.gz` (it is a
@@ -20,11 +35,11 @@ Idempotent: skips the download if the fixture is already present, and
 skips the extraction if Task09_Spleen.tar already lives in
 .workbench_data/datasets/.
 """
+
 from __future__ import annotations
 
 import argparse
 import shutil
-import subprocess
 import sys
 import tarfile
 import urllib.request
@@ -68,7 +83,9 @@ def _download(url: str, dest: Path) -> None:
                     sys.stderr.write(f"[fetch]   {_human(n)}/{_human(total) if total else '?'}\n")
                     last_report = n
     tmp.rename(dest)
-    sys.stderr.write(f"[fetch] saved {_human(dest.stat().st_size)} to {dest.relative_to(REPO_ROOT)}\n")
+    sys.stderr.write(
+        f"[fetch] saved {_human(dest.stat().st_size)} to {dest.relative_to(REPO_ROOT)}\n"
+    )
 
 
 def _extract_case(tar_path: Path, dest_dir: Path, member_name: str) -> Path:
@@ -88,13 +105,16 @@ def _extract_case(tar_path: Path, dest_dir: Path, member_name: str) -> Path:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument(
-        "--keep-tar", action="store_true",
+        "--keep-tar",
+        action="store_true",
         help="Keep the 1.5 GB Task09_Spleen.tar after extraction (default: keep)",
     )
-    args = ap.parse_args(argv)
+    ap.parse_args(argv)
 
     if FIXTURE_DEST.is_file():
-        sys.stderr.write(f"[fetch] fixture already present: {FIXTURE_DEST.relative_to(REPO_ROOT)}\n")
+        sys.stderr.write(
+            f"[fetch] fixture already present: {FIXTURE_DEST.relative_to(REPO_ROOT)}\n"
+        )
         return 0
 
     if not TASK09_TAR.is_file():
@@ -105,7 +125,9 @@ def main(argv: list[str] | None = None) -> int:
     if not (TASK09_EXTRACT / SOURCE_CASE).is_file():
         _extract_case(TASK09_TAR, DATASETS_DIR, SOURCE_CASE)
     else:
-        sys.stderr.write(f"[fetch] case already extracted: {(TASK09_EXTRACT / SOURCE_CASE).relative_to(REPO_ROOT)}\n")
+        sys.stderr.write(
+            f"[fetch] case already extracted: {(TASK09_EXTRACT / SOURCE_CASE).relative_to(REPO_ROOT)}\n"
+        )
 
     src = TASK09_EXTRACT / SOURCE_CASE
     FIXTURE_DEST.parent.mkdir(parents=True, exist_ok=True)

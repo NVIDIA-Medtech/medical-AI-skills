@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """NVIDIA-Medtech NV-Segment-CTMR skill wrapper.
 
 Thin wrapper around the upstream MONAI bundle command documented by
@@ -8,6 +23,7 @@ resulting NIfTI label map as JSON.
 
 Engineering verification only. Output is NOT clinically meaningful.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,7 +37,6 @@ from typing import Any
 import nibabel as nib
 import numpy as np
 import typer
-
 
 app = typer.Typer(add_completion=False)
 
@@ -80,7 +95,7 @@ def _spacing3(img: nib.spatialimages.SpatialImage) -> list[float]:
     zooms = list(img.header.get_zooms())
     while len(zooms) < int("3"):
         zooms.append(1.0)
-    return _round_floats(zooms[:int("3")])
+    return _round_floats(zooms[: int("3")])
 
 
 def _input_summary(img: nib.spatialimages.SpatialImage) -> dict[str, Any]:
@@ -440,7 +455,9 @@ def _resolve_upstream_root(
 @app.command()
 def main(
     nifti_path: Path = typer.Argument(..., exists=True, dir_okay=False),
-    output_dir: Path | None = typer.Option(None, "--output-dir", "-o", help="dir for produced masks"),
+    output_dir: Path | None = typer.Option(
+        None, "--output-dir", "-o", help="dir for produced masks"
+    ),
     modality: str = typer.Option("CT_BODY", "--modality", help="CT_BODY | MRI_BODY | MRI_BRAIN"),
     label_prompts: str | None = typer.Option(
         None,

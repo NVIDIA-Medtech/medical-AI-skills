@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """NVIDIA-Medtech NV-Segment-CT (VISTA3D) skill.
 
 Thin wrapper around the official `HuggingFacePipelineHelper` from
@@ -9,6 +24,7 @@ NIfTI mask to emit a structured summary.
 
 Engineering verification only. Output is NOT clinically meaningful.
 """
+
 import contextlib
 import json
 import os
@@ -33,6 +49,7 @@ def _stdout_to_stderr():
     finally:
         os.dup2(saved, fd)
         os.close(saved)
+
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = SKILL_DIR.parent.parent
@@ -93,7 +110,7 @@ def _input_summary(img: nib.spatialimages.SpatialImage) -> dict:
     return {
         "shape": [int(v) for v in img.shape],
         "ndim": len(img.shape),
-        "spacing": _round_floats(zooms[:int("3")]),
+        "spacing": _round_floats(zooms[: int("3")]),
     }
 
 
@@ -103,8 +120,8 @@ def _geometry_summary(
 ) -> dict:
     input_shape = [int(v) for v in input_img.shape]
     output_shape = [int(v) for v in output_img.shape]
-    input_spacing = _round_floats(input_img.header.get_zooms()[:int("3")])
-    output_spacing = _round_floats(output_img.header.get_zooms()[:int("3")])
+    input_spacing = _round_floats(input_img.header.get_zooms()[: int("3")])
+    output_spacing = _round_floats(output_img.header.get_zooms()[: int("3")])
     affine_max_abs_diff = float(np.max(np.abs(input_img.affine - output_img.affine)))
     return {
         "input_shape": input_shape,
@@ -126,7 +143,7 @@ def _mask_summary(
 ) -> dict:
     mask_img = nib.load(str(mask_path))
     arr = np.asarray(mask_img.get_fdata()).astype(np.int64)
-    spacing = mask_img.header.get_zooms()[:int("3")]
+    spacing = mask_img.header.get_zooms()[: int("3")]
     voxel_volume_ml = float(np.prod(spacing)) / float("1000.0")
     unique, counts = np.unique(arr, return_counts=True)
     class_counts: dict[str, int] = {}
