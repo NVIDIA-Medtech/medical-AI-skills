@@ -23,7 +23,7 @@
 # C++/CMake/metadata hooks from HoloHub are omitted (not applicable here).
 
 # Bot-generated signing artifacts are committed by svc-nvskills-signing; never touch them.
-exclude: '(\.oms\.sig$|(^|/)(skill-card|BENCHMARK)\.md$)'
+exclude: '(\.oms\.sig$|(^|/)(skill-card|BENCHMARK)\.md$|(^|/)skill_completeness_v1/fixtures/)'
 
 repos:
   # General hygiene (skip generated evidence/fixtures and vendored docs)

@@ -4,6 +4,7 @@
 # See AGENTS.md and ARCHITECTURE.md for the shape this is converging on.
 
 PYTHON ?= python3
+PRE_COMMIT ?= pre-commit
 SKILL ?= dicom-metadata-extract
 SKILL_DIR := $(subst _,-,$(SKILL))
 FIXTURE ?= skills/$(SKILL_DIR)/fixtures/sample_ct.dcm
@@ -172,6 +173,7 @@ test:
 
 lint:
 	$(PYTHON) -m eval_engine.lint_repo
+	$(PRE_COMMIT) run --all-files
 
 # Add any missing NVIDIA SPDX copyright headers, then bump the year of existing
 # ones to the current year. Auto-corrects in place; safe to run repeatedly.
