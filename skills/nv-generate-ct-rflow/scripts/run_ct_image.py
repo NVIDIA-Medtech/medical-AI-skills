@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """NV-Generate-CTMR CT image-only wrapper.
 
 Runs the upstream `scripts.diff_model_infer` entry point for CT image-only
 generation. The wrapper stages config overrides under the caller's output
 directory and emits auditable JSON. It does not implement diffusion sampling.
 """
+
 from __future__ import annotations
 
 import json
@@ -219,7 +235,9 @@ def _detect_cuda() -> dict[str, Any]:
 
 def _estimate_cost(rendered_inference: dict[str, Any], version: str) -> dict[str, Any]:
     dim = rendered_inference.get("dim") or [256, 256, 128]
-    steps = int(rendered_inference.get("num_inference_steps") or (1000 if version == "ddpm-ct" else 30))
+    steps = int(
+        rendered_inference.get("num_inference_steps") or (1000 if version == "ddpm-ct" else 30)
+    )
     voxels = int(dim[0]) * int(dim[1]) * int(dim[2])
     ref_voxels = 256 * 256 * 128
     ref_steps = 30
@@ -253,7 +271,9 @@ def _model_inventory(upstream_root: Path, version: str) -> dict[str, Any]:
     return {"all_present": all_present, "files": files}
 
 
-def _build_command(version: str, staged_model_path: Path, staged_env_path: Path, num_gpus: int) -> list[str]:
+def _build_command(
+    version: str, staged_model_path: Path, staged_env_path: Path, num_gpus: int
+) -> list[str]:
     cmd = [
         sys.executable,
         "-m",
@@ -291,7 +311,9 @@ def _scan_outputs(output_dir: Path, run_started: float) -> list[Path]:
     return sorted(paths)
 
 
-def _summarize_image(image_path: Path, requested_dim: list[int], requested_spacing: list[float]) -> dict[str, Any]:
+def _summarize_image(
+    image_path: Path, requested_dim: list[int], requested_spacing: list[float]
+) -> dict[str, Any]:
     record: dict[str, Any] = {"image_path": str(image_path), "image_readable": False}
     try:
         img = nib.load(str(image_path))
@@ -322,12 +344,16 @@ def _aggregate(samples: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "num_samples": n,
         "all_images_readable": bool(n) and all(s.get("image_readable") for s in samples),
-        "all_shapes_match_requested": bool(n) and all(s.get("shape_match_requested") for s in samples),
-        "all_spacing_match_requested": bool(n) and all(s.get("spacing_match_requested") for s in samples),
+        "all_shapes_match_requested": bool(n)
+        and all(s.get("shape_match_requested") for s in samples),
+        "all_spacing_match_requested": bool(n)
+        and all(s.get("spacing_match_requested") for s in samples),
         "all_images_finite": bool(n) and all(s.get("all_finite") for s in samples),
         "all_images_nonconstant": bool(n) and all(s.get("image_nonconstant") for s in samples),
         "all_images_hu_like": bool(n)
-        and all(s.get("image_hu_negative_present") and s.get("image_hu_bone_present") for s in samples),
+        and all(
+            s.get("image_hu_negative_present") and s.get("image_hu_bone_present") for s in samples
+        ),
     }
 
 
@@ -345,7 +371,9 @@ def main(
     if version not in VERSION_CONFIGS:
         raise typer.BadParameter(f"--version must be one of {sorted(VERSION_CONFIGS)}")
 
-    upstream_root, checked_roots = _resolve_upstream_root(os.environ.get("NV_GENERATE_ROOT", "").strip())
+    upstream_root, checked_roots = _resolve_upstream_root(
+        os.environ.get("NV_GENERATE_ROOT", "").strip()
+    )
     if upstream_root is None:
         emit(
             {
@@ -408,8 +436,16 @@ def main(
         )
         raise typer.Exit(0)
 
-    if not yes and (cost["estimated_wall_seconds"] > 300.0 or cost["estimated_peak_vram_gb"] > 30.0):
-        emit({"skill": SKILL_NAME, "error": "cost gate: re-run with --yes to proceed", "estimated_cost": cost})
+    if not yes and (
+        cost["estimated_wall_seconds"] > 300.0 or cost["estimated_peak_vram_gb"] > 30.0
+    ):
+        emit(
+            {
+                "skill": SKILL_NAME,
+                "error": "cost gate: re-run with --yes to proceed",
+                "estimated_cost": cost,
+            }
+        )
         raise typer.Exit(2)
 
     cmd = _build_command(version, staged_model_path, staged_env_path, num_gpus)
@@ -441,7 +477,10 @@ def main(
 
     requested_dim = [int(v) for v in inference["dim"]]
     requested_spacing = [float(v) for v in inference["spacing"]]
-    samples = [_summarize_image(p, requested_dim, requested_spacing) for p in _scan_outputs(output_dir, run_started)]
+    samples = [
+        _summarize_image(p, requested_dim, requested_spacing)
+        for p in _scan_outputs(output_dir, run_started)
+    ]
     aggregate = _aggregate(samples)
     failure_reasons: list[str] = []
     if rc != 0:

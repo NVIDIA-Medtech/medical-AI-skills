@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import importlib.util
 import json
 from pathlib import Path
@@ -44,7 +59,9 @@ def test_load_request_resolves_mask_path(tmp_path: Path) -> None:
 
 
 def test_build_command_uses_official_entrypoint(tmp_path: Path) -> None:
-    cmd = mod._build_command(tmp_path / "mask.nii.gz", tmp_path / "infer.json", tmp_path / "env.json", 7)
+    cmd = mod._build_command(
+        tmp_path / "mask.nii.gz", tmp_path / "infer.json", tmp_path / "env.json", 7
+    )
     assert cmd[1:3] == ["-m", "scripts.infer_image_from_mask"]
     assert "--mask" in cmd
     assert cmd[cmd.index("--random-seed") + 1] == "7"

@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-generate-ct-rflow`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,25 +54,25 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+25%) | 100% (+25%) |
-| Correctness | 4 | 93% (+3%) | 91% (+51%) |
-| Discoverability | 4 | 74% (-3%) | 72% (+19%) |
-| Effectiveness | 4 | 75% (+12%) | 70% (+58%) |
-| Efficiency | 4 | 55% (+2%) | 58% (+16%) |
+| Security | 4 | 100% (+0%) | 100% (+0%) |
+| Correctness | 4 | 88% (+10%) | 76% (+26%) |
+| Discoverability | 4 | 90% (-5%) | 70% (+14%) |
+| Effectiveness | 4 | 64% (+3%) | 55% (+36%) |
+| Efficiency | 4 | 69% (-5%) | 58% (+15%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 37 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 36 total findings.
 
 Top findings:
 
 - MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`fixtures/ct_image_only_default.json:4`)
 - MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`fixtures/ct_mask_lung_tumor.json:6`)
-- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`scripts/run_rflow_ct.py:69`)
-- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`scripts/run_rflow_ct.py:70`)
-- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`scripts/run_ct_mask.py:44`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:16`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:17`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`references/fov-and-downloads.md:18`)
 
 ## Tier 2: Deduplication Summary
 
@@ -81,8 +81,8 @@ Tier 2 validation reported findings. NVSkills-Eval ran 2 checks and found 1 tota
 Top findings:
 
 - HIGH DUPLICATE/duplicate: Duplicate content found across scripts/run_ct_image.py and scripts/run_rflow_ct.py:
-  "_load_config_override()" in scripts/run_ct_image.py (lines 102-120)
-  vs "_load_config_override()" in scripts/run_rflow_ct.py (lines 97-116) (`scripts/run_ct_image.py:102`)
+  "_load_config_override()" in scripts/run_ct_image.py (lines 118-136)
+  vs "_load_config_override()" in scripts/run_rflow_ct.py (lines 112-131) (`scripts/run_ct_image.py:118`)
 
 ## Publication Recommendation
 

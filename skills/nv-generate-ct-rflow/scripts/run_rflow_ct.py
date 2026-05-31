@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """NVIDIA-Medtech NV-Generate-CTMR (rflow-ct) skill.
 
 Thin wrapper around the upstream `scripts.inference` entry point from
@@ -10,6 +25,7 @@ structured summary.
 
 Engineering verification only. Output is NOT clinically meaningful.
 """
+
 from __future__ import annotations
 
 import json
@@ -30,19 +46,18 @@ if str(_SKILLS_DIR) not in sys.path:
     sys.path.insert(0, str(_SKILLS_DIR))
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
-from wrapper_utils import (  # noqa: E402
-    emit,
-    file_sha256_safe,
-    git_commit,
-    tail,
-)
 from _anatomy import (  # noqa: E402
-    SUPPORTED_BODY_REGIONS,
     load_label_dict,
     region_for_class,
     validate_anatomy_list,
     validate_body_region,
     validate_controllable_anatomy_size,
+)
+from wrapper_utils import (  # noqa: E402
+    emit,
+    file_sha256_safe,
+    git_commit,
+    tail,
 )
 
 SKILL_DIR = _SCRIPT_DIR.parent
@@ -134,7 +149,9 @@ def _validate_override_bounds(rendered: dict[str, Any]) -> list[str]:
             errors.append(f"output_size must be a 3-tuple, got {output_size!r}")
         else:
             if output_size[0] != output_size[1]:
-                errors.append(f"output_size[0] and output_size[1] must match for CT, got {output_size!r}")
+                errors.append(
+                    f"output_size[0] and output_size[1] must match for CT, got {output_size!r}"
+                )
             for i, v in enumerate(output_size):
                 if not isinstance(v, int):
                     errors.append(f"output_size[{i}] must be int, got {v!r}")
@@ -311,9 +328,7 @@ def _estimate_cost(rendered: dict[str, Any], version: str) -> dict[str, Any]:
 
     voxels = int(out_size[0]) * int(out_size[1]) * int(out_size[2])
     seconds_per_sample = (
-        _WALLTIME_REF_SECONDS
-        * (voxels / _WALLTIME_REF_VOXELS)
-        * (n_steps / _WALLTIME_REF_STEPS)
+        _WALLTIME_REF_SECONDS * (voxels / _WALLTIME_REF_VOXELS) * (n_steps / _WALLTIME_REF_STEPS)
     )
     # ddpm-ct uses ~1000 steps with a heavier per-step cost; default
     # callers pass num_inference_steps=1000, so the linear model already
@@ -354,6 +369,7 @@ def _detect_cuda() -> dict[str, Any]:
     info: dict[str, Any] = {"available": False, "device_name": None, "total_memory_gb": None}
     try:
         import torch  # noqa: PLC0415
+
         info["torch_version"] = torch.__version__
         info["available"] = bool(torch.cuda.is_available())
         if info["available"]:
@@ -389,7 +405,9 @@ def _preflight(
         label_dict = {}
 
     # 3. controllable_anatomy_size
-    errors.extend(validate_controllable_anatomy_size(rendered_infer.get("controllable_anatomy_size")))
+    errors.extend(
+        validate_controllable_anatomy_size(rendered_infer.get("controllable_anatomy_size"))
+    )
 
     # 4. numeric bounds
     errors.extend(_validate_override_bounds(rendered_infer))
@@ -397,7 +415,9 @@ def _preflight(
     # 5. dataset presence (paired generation needs the mask candidates)
     if not (rendered_infer.get("controllable_anatomy_size") or []):
         masks_dir = upstream_root / "datasets" / "all_masks_flexible_size_and_spacing_4000"
-        masks_json = upstream_root / "datasets" / "candidate_masks_flexible_size_and_spacing_4000.json"
+        masks_json = (
+            upstream_root / "datasets" / "candidate_masks_flexible_size_and_spacing_4000.json"
+        )
         if not masks_dir.is_dir() or not masks_json.is_file():
             errors.append(
                 "mask-candidate dataset missing under "
@@ -473,9 +493,9 @@ def _paired_label_path(image_path: Path) -> Path:
     if stem == "image":
         return image_path.with_name(f"label{suffix}")
     return Path(
-        str(image_path).replace("_image.nii.gz", "_label.nii.gz").replace(
-            "_image.nii", "_label.nii"
-        )
+        str(image_path)
+        .replace("_image.nii.gz", "_label.nii.gz")
+        .replace("_image.nii", "_label.nii")
     )
 
 
@@ -483,7 +503,9 @@ def _scan_outputs(output_dir: Path) -> list[Path]:
     """Find image/label pair image files produced by supported upstream names."""
     if not output_dir.is_dir():
         return []
-    candidates = list(output_dir.rglob("sample_*_image.nii*")) + list(output_dir.rglob("image*.nii*"))
+    candidates = list(output_dir.rglob("sample_*_image.nii*")) + list(
+        output_dir.rglob("image*.nii*")
+    )
     image_paths = [path for path in candidates if _paired_label_path(path).exists()]
     return sorted(dict.fromkeys(image_paths))
 
@@ -512,7 +534,7 @@ def _summarize_pair(image_path: Path) -> dict[str, Any]:
         arr = np.asarray(img.get_fdata(), dtype=np.float32)
         record["image_readable"] = True
         record["image_shape"] = [int(v) for v in arr.shape]
-        record["image_spacing"] = _round(img.header.get_zooms()[:int("3")])
+        record["image_spacing"] = _round(img.header.get_zooms()[: int("3")])
         finite = arr[np.isfinite(arr)]
         if finite.size:
             record["image_hu_min"] = _round(float(finite.min()), int("3"))
@@ -533,13 +555,17 @@ def _summarize_pair(image_path: Path) -> dict[str, Any]:
         marr = np.asarray(mask.get_fdata()).astype(np.int64)
         record["label_readable"] = True
         record["label_shape"] = [int(v) for v in marr.shape]
-        record["label_spacing"] = _round(mask.header.get_zooms()[:int("3")])
+        record["label_spacing"] = _round(mask.header.get_zooms()[: int("3")])
         unique, counts = np.unique(marr, return_counts=True)
         label_ids = [int(v) for v in unique.tolist() if int(v) != 0]
         record["label_ids_present"] = sorted(label_ids)
         record["label_id_count"] = len(label_ids)
-        record["label_foreground_voxels"] = int(sum(int(c) for v, c in zip(unique, counts) if int(v) != 0))
-        record["label_background_voxels"] = int(sum(int(c) for v, c in zip(unique, counts) if int(v) == 0))
+        record["label_foreground_voxels"] = int(
+            sum(int(c) for v, c in zip(unique, counts) if int(v) != 0)
+        )
+        record["label_background_voxels"] = int(
+            sum(int(c) for v, c in zip(unique, counts) if int(v) == 0)
+        )
         if record["image_readable"]:
             record["shape_match"] = record["image_shape"] == record["label_shape"]
             record["spacing_match"] = record["image_spacing"] == record["label_spacing"]
@@ -600,16 +626,16 @@ def _aggregate(
 ) -> dict[str, Any]:
     """Aggregate per-sample records into top-level output summary."""
     n = len(samples)
-    all_readable = bool(n) and all(s.get("image_readable") and s.get("label_readable") for s in samples)
+    all_readable = bool(n) and all(
+        s.get("image_readable") and s.get("label_readable") for s in samples
+    )
     all_geometry = bool(n) and all(
-        s.get("shape_match") and s.get("spacing_match") and s.get("affine_match")
-        for s in samples
+        s.get("shape_match") and s.get("spacing_match") and s.get("affine_match") for s in samples
     )
     any_foreground = any(s.get("label_foreground_voxels", 0) > 0 for s in samples)
     all_nonconstant = bool(n) and all(s.get("image_nonconstant") for s in samples)
     all_hu_like = bool(n) and all(
-        s.get("image_hu_negative_present") and s.get("image_hu_bone_present")
-        for s in samples
+        s.get("image_hu_negative_present") and s.get("image_hu_bone_present") for s in samples
     )
     union_label_ids: set[int] = set()
     for s in samples:
@@ -666,17 +692,21 @@ def main(
     version: str = typer.Option("rflow-ct", "--version", help="rflow-ct or ddpm-ct"),
     timeout_seconds: float = typer.Option(float("3600.0"), "--timeout-seconds"),
     preflight_only: bool = typer.Option(
-        False, "--preflight-only",
+        False,
+        "--preflight-only",
         help="Run all preflight checks (config validation, dataset presence, "
         "CUDA, VRAM/walltime estimate) and exit without launching inference.",
     ),
     yes: bool = typer.Option(
-        False, "--yes", "-y",
+        False,
+        "--yes",
+        "-y",
         help="Skip the cost-preview confirmation gate (runs estimated to "
         "exceed 5 min wall-time or 30 GB VRAM normally require explicit confirmation).",
     ),
     no_summary_card: bool = typer.Option(
-        False, "--no-summary-card",
+        False,
+        "--no-summary-card",
         help="Skip rendering summary.html (mid-slice triptych + label overlay) after the run.",
     ),
 ) -> None:
@@ -686,16 +716,26 @@ def main(
 
     upstream_root_env = os.environ.get("NV_GENERATE_ROOT", "").strip()
     if not upstream_root_env:
-        emit({"skill": "nv_generate_ct_rflow", "error": "NV_GENERATE_ROOT is unset",
-              "detail": "Clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR and "
-              "export NV_GENERATE_ROOT to its path."})
+        emit(
+            {
+                "skill": "nv_generate_ct_rflow",
+                "error": "NV_GENERATE_ROOT is unset",
+                "detail": "Clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR and "
+                "export NV_GENERATE_ROOT to its path.",
+            }
+        )
         raise typer.Exit(2)
     upstream_root = Path(upstream_root_env).expanduser().resolve()
     network = NETWORK_FOR_VERSION[version]
     network_config = UPSTREAM_NETWORK_CONFIG_FMT.format(network=network)
     if not (upstream_root / network_config).is_file():
-        emit({"skill": "nv_generate_ct_rflow", "error": "NV_GENERATE_ROOT layout invalid",
-              "detail": f"{upstream_root}/{network_config} not found"})
+        emit(
+            {
+                "skill": "nv_generate_ct_rflow",
+                "error": "NV_GENERATE_ROOT layout invalid",
+                "detail": f"{upstream_root}/{network_config} not found",
+            }
+        )
         raise typer.Exit(2)
 
     if output_dir is None:
@@ -736,56 +776,81 @@ def main(
     if errors:
         for e in errors:
             print(f"[nv_generate_ct_rflow] error: {e}", file=sys.stderr)
-        emit({"skill": "nv_generate_ct_rflow",
-              "error": "preflight validation failed",
-              "preflight_errors": errors,
-              "preflight_warnings": warnings,
-              "estimated_cost": cost,
-              "cuda": cuda})
+        emit(
+            {
+                "skill": "nv_generate_ct_rflow",
+                "error": "preflight validation failed",
+                "preflight_errors": errors,
+                "preflight_warnings": warnings,
+                "estimated_cost": cost,
+                "cuda": cuda,
+            }
+        )
         raise typer.Exit(2)
 
     if preflight_only:
-        emit({"skill": "nv_generate_ct_rflow",
-              "preflight": "ok",
-              "preflight_warnings": warnings,
-              "estimated_cost": cost,
-              "cuda": cuda,
-              "rendered_infer_config": rendered_infer})
+        emit(
+            {
+                "skill": "nv_generate_ct_rflow",
+                "preflight": "ok",
+                "preflight_warnings": warnings,
+                "estimated_cost": cost,
+                "cuda": cuda,
+                "rendered_infer_config": rendered_infer,
+            }
+        )
         raise typer.Exit(0)
 
     # Cost gate: require --yes if the run is going to be slow or VRAM-hungry.
-    HEAVY_WALL = float("300.0")       # 5 minutes
-    HEAVY_VRAM = float("30.0")        # GB
-    if not yes and (cost["estimated_wall_seconds"] > HEAVY_WALL
-                    or cost["estimated_peak_vram_gb"] > HEAVY_VRAM):
+    HEAVY_WALL = float("300.0")  # 5 minutes
+    HEAVY_VRAM = float("30.0")  # GB
+    if not yes and (
+        cost["estimated_wall_seconds"] > HEAVY_WALL or cost["estimated_peak_vram_gb"] > HEAVY_VRAM
+    ):
         print(
             f"[nv_generate_ct_rflow] estimated run exceeds the default cost gate "
             f"(>{HEAVY_WALL:.0f}s or >{HEAVY_VRAM:.0f} GB VRAM). "
             f"Re-run with --yes to proceed, or shrink output_size / num_inference_steps / num_output_samples.",
             file=sys.stderr,
         )
-        emit({"skill": "nv_generate_ct_rflow",
-              "error": "cost gate: run would be expensive; re-run with --yes to proceed",
-              "estimated_cost": cost,
-              "cuda": cuda})
+        emit(
+            {
+                "skill": "nv_generate_ct_rflow",
+                "error": "cost gate: run would be expensive; re-run with --yes to proceed",
+                "estimated_cost": cost,
+                "cuda": cuda,
+            }
+        )
         raise typer.Exit(2)
 
     model_inventory = _model_inventory(upstream_root, version)
     if not model_inventory["all_present"]:
-        emit({"skill": "nv_generate_ct_rflow", "error": "missing model weights",
-              "detail": "Run `python -m scripts.download_model_data --version "
-              f"{version} --root_dir ./` from $NV_GENERATE_ROOT first "
-              "(without --model_only; paired generation needs the mask candidates).",
-              "model_inventory": model_inventory})
+        emit(
+            {
+                "skill": "nv_generate_ct_rflow",
+                "error": "missing model weights",
+                "detail": "Run `python -m scripts.download_model_data --version "
+                f"{version} --root_dir ./` from $NV_GENERATE_ROOT first "
+                "(without --model_only; paired generation needs the mask candidates).",
+                "model_inventory": model_inventory,
+            }
+        )
         raise typer.Exit(2)
 
     cmd: list[str] = [
-        sys.executable, "-m", "scripts.inference",
-        "-t", network_config,
-        "-i", str(staged_infer_path),
-        "-e", str(staged_env_path),
-        "--random-seed", str(seed),
-        "--version", version,
+        sys.executable,
+        "-m",
+        "scripts.inference",
+        "-t",
+        network_config,
+        "-i",
+        str(staged_infer_path),
+        "-e",
+        str(staged_env_path),
+        "--random-seed",
+        str(seed),
+        "--version",
+        version,
     ]
     run_env = os.environ.copy()
     # Upstream README sets these; preserve user overrides.
@@ -887,6 +952,7 @@ def main(
     if not no_summary_card:
         try:
             from _summary_card import render_card  # noqa: PLC0415
+
             card_path = render_card(output_dir, payload)
             if card_path is not None:
                 payload["output"]["summary_html"] = str(card_path)

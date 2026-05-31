@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Render a `summary.html` visual sample card for an nv_generate_ct_rflow run.
 
 Emits, alongside the image/label NIfTI pairs:
@@ -9,10 +24,9 @@ The card is opt-out (the caller can skip via `--no-summary-card`). It
 imports matplotlib lazily so the wrapper does not pay the import cost
 when card rendering is skipped.
 """
+
 from __future__ import annotations
 
-import base64
-import io
 from pathlib import Path
 from typing import Any
 
@@ -25,9 +39,9 @@ def render_card(
     None on failure (rendering must never block the run)."""
     try:
         import matplotlib  # noqa: PLC0415
+
         matplotlib.use("Agg", force=True)
         import matplotlib.pyplot as plt  # noqa: PLC0415
-        from matplotlib.colors import ListedColormap  # noqa: PLC0415
         import nibabel as nib  # noqa: PLC0415
         import numpy as np  # noqa: PLC0415
     except Exception as e:
@@ -55,21 +69,25 @@ def render_card(
             if lbl_path is not None and lbl_path.is_file():
                 mask_arr = np.asarray(nib.load(str(lbl_path)).get_fdata()).astype(np.int64)
         except Exception as e:
-            cards.append({
-                "title": f"sample {i}",
-                "png_rel": None,
-                "error": f"could not read NIfTI: {e}",
-                "summary": s,
-            })
+            cards.append(
+                {
+                    "title": f"sample {i}",
+                    "png_rel": None,
+                    "error": f"could not read NIfTI: {e}",
+                    "summary": s,
+                }
+            )
             continue
 
         png_path = card_dir / f"sample_{i}_slices.png"
         _render_triptych(img_arr, mask_arr, label_palette, png_path, plt)
-        cards.append({
-            "title": f"sample {i}",
-            "png_rel": str(png_path.relative_to(output_dir)),
-            "summary": s,
-        })
+        cards.append(
+            {
+                "title": f"sample {i}",
+                "png_rel": str(png_path.relative_to(output_dir)),
+                "summary": s,
+            }
+        )
 
     html_path = output_dir / "summary.html"
     html_path.write_text(_render_html(payload, cards))
@@ -89,15 +107,34 @@ def _render_triptych(img_arr, mask_arr, palette, png_path: Path, plt) -> None:
 
     fig, axes = plt.subplots(1, int("3"), figsize=(int("12"), int("4")), dpi=int("100"))
     planes = [
-        ("axial (Z mid)", img_arr[:, :, mid[2]].T, mask_arr[:, :, mid[2]].T if mask_arr is not None else None),
-        ("coronal (Y mid)", img_arr[:, mid[1], :].T, mask_arr[:, mid[1], :].T if mask_arr is not None else None),
-        ("sagittal (X mid)", img_arr[mid[0], :, :].T, mask_arr[mid[0], :, :].T if mask_arr is not None else None),
+        (
+            "axial (Z mid)",
+            img_arr[:, :, mid[2]].T,
+            mask_arr[:, :, mid[2]].T if mask_arr is not None else None,
+        ),
+        (
+            "coronal (Y mid)",
+            img_arr[:, mid[1], :].T,
+            mask_arr[:, mid[1], :].T if mask_arr is not None else None,
+        ),
+        (
+            "sagittal (X mid)",
+            img_arr[mid[0], :, :].T,
+            mask_arr[mid[0], :, :].T if mask_arr is not None else None,
+        ),
     ]
     for ax, (title, img_slice, mask_slice) in zip(axes, planes):
         ax.imshow(np.flipud(img_slice), cmap="gray", vmin=vmin, vmax=vmax, origin="upper")
         if mask_slice is not None:
             overlay = np.where(mask_slice > 0, mask_slice, np.nan)
-            ax.imshow(np.flipud(overlay), cmap=palette, alpha=float("0.45"), vmin=1, vmax=int("132"), origin="upper")
+            ax.imshow(
+                np.flipud(overlay),
+                cmap=palette,
+                alpha=float("0.45"),
+                vmin=1,
+                vmax=int("132"),
+                origin="upper",
+            )
         ax.set_title(title, fontsize=int("10"))
         ax.axis("off")
     plt.tight_layout()
@@ -121,7 +158,7 @@ def _categorical_palette():
     # Pad to 132+ entries
     while len(palette) < int("140"):
         palette.extend(palette[: int("140") - len(palette)])
-    return ListedColormap(palette[:int("140")])
+    return ListedColormap(palette[: int("140")])
 
 
 def _render_html(payload: dict[str, Any], cards: list[dict[str, Any]]) -> str:
@@ -152,8 +189,7 @@ def _render_html(payload: dict[str, Any], cards: list[dict[str, Any]]) -> str:
     ]
 
     summary_table = "\n".join(
-        f'    <tr><td class="k">{k}</td><td class="v">{_esc(str(v))}</td></tr>'
-        for k, v in rows
+        f'    <tr><td class="k">{k}</td><td class="v">{_esc(str(v))}</td></tr>' for k, v in rows
     )
 
     card_blocks = []
@@ -218,10 +254,7 @@ def _render_html(payload: dict[str, Any], cards: list[dict[str, Any]]) -> str:
 
 
 def _esc(s: str) -> str:
-    return (
-        s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-         .replace('"', "&quot;")
-    )
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _fmt(v: Any) -> str:
@@ -245,6 +278,5 @@ def _emit_card_fallback(output_dir: Path, payload: dict[str, Any], reason: str) 
 
 if __name__ == "__main__":
     raise SystemExit(
-        "_summary_card is imported by run_rflow_ct.py; run that wrapper "
-        "entrypoint instead."
+        "_summary_card is imported by run_rflow_ct.py; run that wrapper " "entrypoint instead."
     )
