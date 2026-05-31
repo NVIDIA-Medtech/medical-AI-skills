@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """NV-Generate-CTMR image-from-mask wrapper.
 
 Runs upstream `python -m scripts.infer_image_from_mask` after validating that
 the input mask is an integer MAISI-style NIfTI label map with body envelope
 evidence. The wrapper stages configs under the caller's output directory.
 """
+
 from __future__ import annotations
 
 import json
@@ -56,7 +72,9 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def _valid_upstream_root(path: Path) -> bool:
-    return (path / NETWORK_CONFIG).is_file() and (path / "scripts/infer_image_from_mask.py").is_file()
+    return (path / NETWORK_CONFIG).is_file() and (
+        path / "scripts/infer_image_from_mask.py"
+    ).is_file()
 
 
 def _candidate_upstream_roots(env_value: str) -> list[Path]:
@@ -99,9 +117,13 @@ def _load_request(request_arg: str) -> tuple[dict[str, Any], Path | None]:
     request = json.loads(request_path.read_text())
     if "mask_path" not in request:
         raise typer.BadParameter("request JSON must contain mask_path")
-    unknown = sorted(k for k in request if not k.startswith("_") and k not in ("mask_path", *OVERRIDE_KEYS))
+    unknown = sorted(
+        k for k in request if not k.startswith("_") and k not in ("mask_path", *OVERRIDE_KEYS)
+    )
     if unknown:
-        raise typer.BadParameter(f"request contains unknown key(s): {unknown}. Allowed: mask_path plus {OVERRIDE_KEYS}")
+        raise typer.BadParameter(
+            f"request contains unknown key(s): {unknown}. Allowed: mask_path plus {OVERRIDE_KEYS}"
+        )
     return {k: v for k, v in request.items() if not k.startswith("_")}, request_path
 
 
@@ -163,9 +185,13 @@ def _validate_mask_summary(summary: dict[str, Any], allow_missing_body_label: bo
     if not summary.get("integer_like"):
         errors.append("mask voxels must be integer-like label ids")
     if not summary.get("all_labels_in_maisi_vocab"):
-        errors.append(f"mask has labels outside MAISI vocabulary: {summary.get('unknown_label_ids')}")
+        errors.append(
+            f"mask has labels outside MAISI vocabulary: {summary.get('unknown_label_ids')}"
+        )
     if not summary.get("body_label_200_present") and not allow_missing_body_label:
-        errors.append("mask is missing label 200 body envelope; add it before CT image-from-mask inference")
+        errors.append(
+            "mask is missing label 200 body envelope; add it before CT image-from-mask inference"
+        )
     if summary.get("label_id_count", 0) < 1:
         errors.append("mask has no foreground labels")
     return errors
@@ -227,7 +253,9 @@ def _detect_cuda() -> dict[str, Any]:
     return info
 
 
-def _build_command(mask_path: Path, staged_infer_path: Path, staged_env_path: Path, seed: int) -> list[str]:
+def _build_command(
+    mask_path: Path, staged_infer_path: Path, staged_env_path: Path, seed: int
+) -> list[str]:
     return [
         sys.executable,
         "-m",
@@ -289,13 +317,17 @@ def _aggregate(samples: list[dict[str, Any]]) -> dict[str, Any]:
         "all_images_finite": bool(n) and all(s.get("all_finite") for s in samples),
         "all_images_nonconstant": bool(n) and all(s.get("image_nonconstant") for s in samples),
         "all_images_hu_like": bool(n)
-        and all(s.get("image_hu_negative_present") and s.get("image_hu_bone_present") for s in samples),
+        and all(
+            s.get("image_hu_negative_present") and s.get("image_hu_bone_present") for s in samples
+        ),
     }
 
 
 @app.command()
 def main(
-    request_json: str = typer.Argument(..., help="JSON containing mask_path and optional inference overrides."),
+    request_json: str = typer.Argument(
+        ..., help="JSON containing mask_path and optional inference overrides."
+    ),
     output_dir: Path | None = typer.Option(None, "--output-dir", "-o"),
     seed: int = typer.Option(0, "--random-seed", "-s"),
     timeout_seconds: float = typer.Option(3600.0, "--timeout-seconds"),
@@ -303,9 +335,17 @@ def main(
     allow_missing_body_label: bool = typer.Option(False, "--allow-missing-body-label"),
     yes: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
-    upstream_root, checked_roots = _resolve_upstream_root(os.environ.get("NV_GENERATE_ROOT", "").strip())
+    upstream_root, checked_roots = _resolve_upstream_root(
+        os.environ.get("NV_GENERATE_ROOT", "").strip()
+    )
     if upstream_root is None:
-        emit({"skill": SKILL_NAME, "error": "NV_GENERATE_ROOT layout invalid", "checked_roots": checked_roots})
+        emit(
+            {
+                "skill": SKILL_NAME,
+                "error": "NV_GENERATE_ROOT layout invalid",
+                "checked_roots": checked_roots,
+            }
+        )
         raise typer.Exit(2)
     output_dir = (output_dir or upstream_root / "output").expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -358,7 +398,12 @@ def main(
         raise typer.Exit(0)
 
     if not yes and int(rendered_infer.get("num_inference_steps", 30)) > 60:
-        emit({"skill": SKILL_NAME, "error": "cost gate: high step count; re-run with --yes to proceed"})
+        emit(
+            {
+                "skill": SKILL_NAME,
+                "error": "cost gate: high step count; re-run with --yes to proceed",
+            }
+        )
         raise typer.Exit(2)
 
     cmd = _build_command(mask_path, infer_path, env_path, seed)

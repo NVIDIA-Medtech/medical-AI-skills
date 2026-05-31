@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """NV-Generate-CTMR standalone CT mask-generation wrapper.
 
 Generates raw MAISI-space CT masks from controllable anatomy-size conditions
@@ -6,6 +21,7 @@ using upstream mask diffusion. This wrapper is intentionally narrow: it is for
 diagnosing and producing masks before image generation, not for paired CT image
 synthesis.
 """
+
 from __future__ import annotations
 
 import json
@@ -116,7 +132,9 @@ def _load_request(request_arg: str) -> tuple[dict[str, Any], str | None]:
     request = {k: v for k, v in raw.items() if not k.startswith("_")}
     unknown = sorted(k for k in request if k not in OVERRIDE_KEYS)
     if unknown:
-        raise typer.BadParameter(f"mask request contains unknown key(s): {unknown}. Allowed: {OVERRIDE_KEYS}")
+        raise typer.BadParameter(
+            f"mask request contains unknown key(s): {unknown}. Allowed: {OVERRIDE_KEYS}"
+        )
     return request, str(request_path)
 
 
@@ -134,7 +152,13 @@ def _validate_request(request: dict[str, Any], label_dict: dict[str, int]) -> li
         errors.append("controllable_anatomy_size supports at most 10 entries")
     else:
         names: list[str] = []
-        tumor_names = {"lung tumor", "pancreatic tumor", "hepatic tumor", "colon cancer primaries", "bone lesion"}
+        tumor_names = {
+            "lung tumor",
+            "pancreatic tumor",
+            "hepatic tumor",
+            "colon cancer primaries",
+            "bone lesion",
+        }
         tumors_seen = 0
         for item in controllable:
             if not (isinstance(item, (list, tuple)) and len(item) == 2):
@@ -149,7 +173,9 @@ def _validate_request(request: dict[str, Any], label_dict: dict[str, int]) -> li
             if name in tumor_names:
                 tumors_seen += 1
             if not isinstance(size, (int, float)) or not (-1 <= float(size) <= 1):
-                errors.append(f"controllable size for {name!r} must be in [0, 1] or -1, got {size!r}")
+                errors.append(
+                    f"controllable size for {name!r} must be in [0, 1] or -1, got {size!r}"
+                )
         if len(names) != len(set(names)):
             errors.append("controllable_anatomy_size must not repeat anatomy names")
         if tumors_seen > 1:
@@ -164,11 +190,15 @@ def _validate_request(request: dict[str, Any], label_dict: dict[str, int]) -> li
         )
     steps = request.get("mask_generation_num_inference_steps", 1000)
     if steps != 1000:
-        errors.append("mask_generation_num_inference_steps should be 1000 for the DDPM mask generator")
+        errors.append(
+            "mask_generation_num_inference_steps should be 1000 for the DDPM mask generator"
+        )
     return errors
 
 
-def _expected_label_mapping(request: dict[str, Any], label_dict: dict[str, int]) -> list[dict[str, Any]]:
+def _expected_label_mapping(
+    request: dict[str, Any], label_dict: dict[str, int]
+) -> list[dict[str, Any]]:
     mapping: list[dict[str, Any]] = []
     for item in request.get("controllable_anatomy_size") or []:
         if isinstance(item, (list, tuple)) and item:
@@ -189,7 +219,9 @@ def _anatomy_size_condition(request: dict[str, Any], conditions_path: Path) -> l
     best_diff = float("inf")
     for candidate in candidates:
         condition = [float(v) for v in candidate["organ_size"]]
-        diff = sum(abs(condition[i] - value) for i, value in enumerate(provided) if value is not None)
+        diff = sum(
+            abs(condition[i] - value) for i, value in enumerate(provided) if value is not None
+        )
         if diff < best_diff:
             best_diff = diff
             best_condition = condition
@@ -274,7 +306,9 @@ def _aggregate(samples: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _prepare_args(upstream_root: Path, request: dict[str, Any], output_dir: Path) -> SimpleNamespace:
+def _prepare_args(
+    upstream_root: Path, request: dict[str, Any], output_dir: Path
+) -> SimpleNamespace:
     env = _load_json(upstream_root / ENV_CONFIG)
     network = _load_json(upstream_root / NETWORK_CONFIG)
     infer = _load_json(upstream_root / INFER_CONFIG)
@@ -298,7 +332,9 @@ def _prepare_args(upstream_root: Path, request: dict[str, Any], output_dir: Path
     return args
 
 
-def _run_mask_generation(upstream_root: Path, request: dict[str, Any], output_dir: Path, seed: int) -> list[Path]:
+def _run_mask_generation(
+    upstream_root: Path, request: dict[str, Any], output_dir: Path, seed: int
+) -> list[Path]:
     import torch  # noqa: PLC0415
     from monai.utils import set_determinism  # noqa: PLC0415
 
@@ -308,7 +344,9 @@ def _run_mask_generation(upstream_root: Path, request: dict[str, Any], output_di
 
     set_determinism(seed=seed)
     args = _prepare_args(upstream_root, request, output_dir)
-    condition = _anatomy_size_condition(request, upstream_root / args.all_anatomy_size_conditions_json)
+    condition = _anatomy_size_condition(
+        request, upstream_root / args.all_anatomy_size_conditions_json
+    )
     device = torch.device("cuda")
 
     mask_ae = define_instance(args, "mask_generation_autoencoder").to(device)
@@ -336,7 +374,9 @@ def _run_mask_generation(upstream_root: Path, request: dict[str, Any], output_di
                 args.mask_generation_latent_shape,
                 label_dict_remap_json=args.label_dict_remap_json,
                 num_inference_steps=int(request.get("mask_generation_num_inference_steps", 1000)),
-                autoencoder_sliding_window_infer_size=request.get("autoencoder_sliding_window_infer_size", [96, 96, 96]),
+                autoencoder_sliding_window_infer_size=request.get(
+                    "autoencoder_sliding_window_infer_size", [96, 96, 96]
+                ),
                 autoencoder_sliding_window_infer_overlap=float(
                     request.get("autoencoder_sliding_window_infer_overlap", 0.6667)
                 ),
@@ -357,9 +397,17 @@ def main(
     preflight_only: bool = typer.Option(False, "--preflight-only"),
     yes: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
-    upstream_root, checked_roots = _resolve_upstream_root(os.environ.get("NV_GENERATE_ROOT", "").strip())
+    upstream_root, checked_roots = _resolve_upstream_root(
+        os.environ.get("NV_GENERATE_ROOT", "").strip()
+    )
     if upstream_root is None:
-        emit({"skill": SKILL_NAME, "error": "NV_GENERATE_ROOT layout invalid", "checked_roots": checked_roots})
+        emit(
+            {
+                "skill": SKILL_NAME,
+                "error": "NV_GENERATE_ROOT layout invalid",
+                "checked_roots": checked_roots,
+            }
+        )
         raise typer.Exit(2)
     output_dir = (output_dir or upstream_root / "output").expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -375,7 +423,9 @@ def main(
         )
     condition_path = upstream_root / "datasets/all_anatomy_size_conditions.json"
     if not condition_path.is_file():
-        errors.append("missing datasets/all_anatomy_size_conditions.json; run the full CT download without --model_only")
+        errors.append(
+            "missing datasets/all_anatomy_size_conditions.json; run the full CT download without --model_only"
+        )
     cuda = _detect_cuda()
     if not cuda["available"]:
         errors.append("CUDA not available. CT mask generation needs an NVIDIA GPU.")
@@ -416,7 +466,12 @@ def main(
         raise typer.Exit(0)
 
     if not yes:
-        emit({"skill": SKILL_NAME, "error": "cost gate: mask generation is GPU-heavy; re-run with --yes"})
+        emit(
+            {
+                "skill": SKILL_NAME,
+                "error": "cost gate: mask generation is GPU-heavy; re-run with --yes",
+            }
+        )
         raise typer.Exit(2)
 
     t0 = time.monotonic()

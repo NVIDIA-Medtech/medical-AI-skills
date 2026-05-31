@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Anatomy / region taxonomy for the nv_generate_ct_rflow skill.
 
 Mirrors what `scripts/sample.py` in NVIDIA-Medtech/NV-Generate-CTMR
@@ -6,6 +21,7 @@ enforces at inference time, surfaced here so the wrapper can validate
 user input *before* loading the diffusion model (which takes ~30s on a
 warm GPU). All sources cited inline; nothing here is reverse-engineered.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,25 +29,36 @@ import os
 from pathlib import Path
 from typing import Any
 
-
 # Authoritative source: $NV_GENERATE_ROOT/scripts/sample.py:
 #     available_body_region = ["head", "chest", "thorax", "abdomen", "pelvis", "lower"]
 SUPPORTED_BODY_REGIONS: tuple[str, ...] = (
-    "head", "chest", "thorax", "abdomen", "pelvis", "lower",
+    "head",
+    "chest",
+    "thorax",
+    "abdomen",
+    "pelvis",
+    "lower",
 )
 
 # Authoritative source: $NV_GENERATE_ROOT/scripts/sample.py
 #     available_controllable_organ = ["liver", "gallbladder", "stomach", "pancreas", "colon"]
 CONTROLLABLE_ORGANS: tuple[str, ...] = (
-    "liver", "gallbladder", "stomach", "pancreas", "colon",
+    "liver",
+    "gallbladder",
+    "stomach",
+    "pancreas",
+    "colon",
 )
 
 # Authoritative source: $NV_GENERATE_ROOT/scripts/sample.py
 #     available_controllable_tumor = ["hepatic tumor", "bone lesion", "lung tumor",
 #                                     "colon cancer primaries", "pancreatic tumor"]
 CONTROLLABLE_TUMORS: tuple[str, ...] = (
-    "hepatic tumor", "bone lesion", "lung tumor",
-    "colon cancer primaries", "pancreatic tumor",
+    "hepatic tumor",
+    "bone lesion",
+    "lung tumor",
+    "colon cancer primaries",
+    "pancreatic tumor",
 )
 
 # Region groupings used only for display in list_anatomies.py. The model
@@ -41,57 +68,140 @@ CONTROLLABLE_TUMORS: tuple[str, ...] = (
 # their bulk lives.
 _REGION_GROUPS: dict[str, tuple[str, ...]] = {
     "head": (
-        "brain", "skull", "spinal cord", "thyroid gland", "trachea",
-        "vertebrae C1", "vertebrae C2", "vertebrae C3", "vertebrae C4",
-        "vertebrae C5", "vertebrae C6", "vertebrae C7",
+        "brain",
+        "skull",
+        "spinal cord",
+        "thyroid gland",
+        "trachea",
+        "vertebrae C1",
+        "vertebrae C2",
+        "vertebrae C3",
+        "vertebrae C4",
+        "vertebrae C5",
+        "vertebrae C6",
+        "vertebrae C7",
     ),
     "chest": (
-        "left lung upper lobe", "left lung lower lobe",
-        "right lung upper lobe", "right lung middle lobe", "right lung lower lobe",
-        "lung tumor", "heart", "left atrial appendage", "pulmonary vein",
-        "esophagus", "airway", "sternum", "costal cartilages",
-        "left clavicula", "right clavicula", "left scapula", "right scapula",
-        "left humerus", "right humerus",
-        "left rib 1", "left rib 2", "left rib 3", "left rib 4", "left rib 5",
-        "left rib 6", "left rib 7", "left rib 8", "left rib 9", "left rib 10",
-        "left rib 11", "left rib 12",
-        "right rib 1", "right rib 2", "right rib 3", "right rib 4", "right rib 5",
-        "right rib 6", "right rib 7", "right rib 8", "right rib 9", "right rib 10",
-        "right rib 11", "right rib 12",
-        "vertebrae T1", "vertebrae T2", "vertebrae T3", "vertebrae T4", "vertebrae T5",
-        "vertebrae T6", "vertebrae T7", "vertebrae T8", "vertebrae T9", "vertebrae T10",
-        "vertebrae T11", "vertebrae T12",
-        "aorta", "inferior vena cava", "superior vena cava",
-        "brachiocephalic trunk", "left brachiocephalic vein", "right brachiocephalic vein",
-        "left common carotid artery", "right common carotid artery",
-        "left subclavian artery", "right subclavian artery",
+        "left lung upper lobe",
+        "left lung lower lobe",
+        "right lung upper lobe",
+        "right lung middle lobe",
+        "right lung lower lobe",
+        "lung tumor",
+        "heart",
+        "left atrial appendage",
+        "pulmonary vein",
+        "esophagus",
+        "airway",
+        "sternum",
+        "costal cartilages",
+        "left clavicula",
+        "right clavicula",
+        "left scapula",
+        "right scapula",
+        "left humerus",
+        "right humerus",
+        "left rib 1",
+        "left rib 2",
+        "left rib 3",
+        "left rib 4",
+        "left rib 5",
+        "left rib 6",
+        "left rib 7",
+        "left rib 8",
+        "left rib 9",
+        "left rib 10",
+        "left rib 11",
+        "left rib 12",
+        "right rib 1",
+        "right rib 2",
+        "right rib 3",
+        "right rib 4",
+        "right rib 5",
+        "right rib 6",
+        "right rib 7",
+        "right rib 8",
+        "right rib 9",
+        "right rib 10",
+        "right rib 11",
+        "right rib 12",
+        "vertebrae T1",
+        "vertebrae T2",
+        "vertebrae T3",
+        "vertebrae T4",
+        "vertebrae T5",
+        "vertebrae T6",
+        "vertebrae T7",
+        "vertebrae T8",
+        "vertebrae T9",
+        "vertebrae T10",
+        "vertebrae T11",
+        "vertebrae T12",
+        "aorta",
+        "inferior vena cava",
+        "superior vena cava",
+        "brachiocephalic trunk",
+        "left brachiocephalic vein",
+        "right brachiocephalic vein",
+        "left common carotid artery",
+        "right common carotid artery",
+        "left subclavian artery",
+        "right subclavian artery",
     ),
     "abdomen": (
-        "liver", "spleen", "pancreas", "right kidney", "left kidney",
-        "right adrenal gland", "left adrenal gland", "gallbladder",
-        "stomach", "duodenum", "small bowel", "colon",
-        "hepatic vessel", "hepatic tumor", "pancreatic tumor",
-        "colon cancer primaries", "portal vein and splenic vein",
-        "right kidney cyst", "left kidney cyst", "bone lesion",
-        "vertebrae L1", "vertebrae L2", "vertebrae L3", "vertebrae L4", "vertebrae L5",
+        "liver",
+        "spleen",
+        "pancreas",
+        "right kidney",
+        "left kidney",
+        "right adrenal gland",
+        "left adrenal gland",
+        "gallbladder",
+        "stomach",
+        "duodenum",
+        "small bowel",
+        "colon",
+        "hepatic vessel",
+        "hepatic tumor",
+        "pancreatic tumor",
+        "colon cancer primaries",
+        "portal vein and splenic vein",
+        "right kidney cyst",
+        "left kidney cyst",
+        "bone lesion",
+        "vertebrae L1",
+        "vertebrae L2",
+        "vertebrae L3",
+        "vertebrae L4",
+        "vertebrae L5",
     ),
     "pelvis": (
-        "bladder", "prostate", "sacrum", "vertebrae S1",
-        "left hip", "right hip",
-        "left iliac artery", "right iliac artery",
-        "left iliac vena", "right iliac vena",
-        "left iliopsoas", "right iliopsoas",
-        "left autochthon", "right autochthon",
+        "bladder",
+        "prostate",
+        "sacrum",
+        "vertebrae S1",
+        "left hip",
+        "right hip",
+        "left iliac artery",
+        "right iliac artery",
+        "left iliac vena",
+        "right iliac vena",
+        "left iliopsoas",
+        "right iliopsoas",
+        "left autochthon",
+        "right autochthon",
     ),
     "lower": (
-        "left femur", "right femur",
-        "left gluteus maximus", "right gluteus maximus",
-        "left gluteus medius", "right gluteus medius",
-        "left gluteus minimus", "right gluteus minimus",
+        "left femur",
+        "right femur",
+        "left gluteus maximus",
+        "right gluteus maximus",
+        "left gluteus medius",
+        "right gluteus medius",
+        "left gluteus minimus",
+        "right gluteus minimus",
     ),
-    "general": (
-        "body",
-    ),
+    "general": ("body",),
 }
 
 
@@ -190,7 +300,7 @@ def validate_controllable_anatomy_size(
     if controllable_anatomy_size is None or controllable_anatomy_size == []:
         return errors
     if not isinstance(controllable_anatomy_size, list):
-        return [f"controllable_anatomy_size must be a list of [name, size] pairs"]
+        return ["controllable_anatomy_size must be a list of [name, size] pairs"]
     if len(controllable_anatomy_size) > int("10"):
         errors.append(
             f"controllable_anatomy_size length must be <= 10, got {len(controllable_anatomy_size)}"
@@ -221,13 +331,9 @@ def validate_controllable_anatomy_size(
                 f"controllable_anatomy_size[{i}] size must be in [0, 1] or -1, got {size}"
             )
     if len(tumors_seen) > 1:
-        errors.append(
-            f"controllable_anatomy_size may include at most one tumor; got {tumors_seen}"
-        )
+        errors.append(f"controllable_anatomy_size may include at most one tumor; got {tumors_seen}")
     if len(names_seen) != len(set(names_seen)):
-        errors.append(
-            f"controllable_anatomy_size must not repeat anatomy names; got {names_seen}"
-        )
+        errors.append(f"controllable_anatomy_size must not repeat anatomy names; got {names_seen}")
     return errors
 
 

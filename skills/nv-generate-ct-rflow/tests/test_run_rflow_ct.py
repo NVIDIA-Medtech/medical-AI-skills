@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Unit tests for skills/nv-generate-ct-rflow/scripts/run_rflow_ct.py.
 
 These do NOT exercise the upstream NV-Generate-CTMR subprocess (that needs a
@@ -5,6 +20,7 @@ GPU + ~5GB of weights). They cover the wrapper's deterministic surface:
 config override loading, pair scanning + summarization, and aggregate
 verdicts.
 """
+
 import importlib.util
 import json
 from pathlib import Path
@@ -20,9 +36,13 @@ assert spec.loader is not None
 spec.loader.exec_module(mod)
 
 
-def _save_pair(out_dir: Path, stem: str, image: np.ndarray, mask: np.ndarray, affine: np.ndarray) -> None:
+def _save_pair(
+    out_dir: Path, stem: str, image: np.ndarray, mask: np.ndarray, affine: np.ndarray
+) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
-    nib.save(nib.Nifti1Image(image.astype(np.float32), affine), str(out_dir / f"{stem}_image.nii.gz"))
+    nib.save(
+        nib.Nifti1Image(image.astype(np.float32), affine), str(out_dir / f"{stem}_image.nii.gz")
+    )
     nib.save(nib.Nifti1Image(mask.astype(np.int16), affine), str(out_dir / f"{stem}_label.nii.gz"))
 
 
@@ -42,6 +62,7 @@ def test_load_config_override_strips_comment_keys(tmp_path):
 
 def test_load_config_override_rejects_unknown_key(tmp_path):
     import typer
+
     p = tmp_path / "bad.json"
     p.write_text(json.dumps({"num_output_samples": 1, "nonsense": 7}))
     with pytest.raises(typer.BadParameter):
@@ -205,7 +226,8 @@ def test_summarize_pair_handles_missing_label(tmp_path):
 def test_aggregate_pass(tmp_path):
     affine = np.eye(4)
     img = np.array([-900.0, 300.0] * 32).reshape(4, 4, 4)
-    mask = np.zeros((4, 4, 4), dtype=np.int16); mask[0, 0, 0] = 1
+    mask = np.zeros((4, 4, 4), dtype=np.int16)
+    mask[0, 0, 0] = 1
     _save_pair(tmp_path, "sample_a", img, mask, affine)
     _save_pair(tmp_path, "sample_b", img, mask, affine)
     samples = [mod._summarize_pair(p) for p in mod._scan_outputs(tmp_path)]
@@ -276,7 +298,9 @@ def test_aggregate_reports_missing_expected_output_label(tmp_path):
 
 
 def test_curated_lung_tumor_fixture_uses_robust_size() -> None:
-    fixture = Path(__file__).resolve().parents[1] / "fixtures" / "chest_lung_tumor_controllable.json"
+    fixture = (
+        Path(__file__).resolve().parents[1] / "fixtures" / "chest_lung_tumor_controllable.json"
+    )
     request = json.loads(fixture.read_text())
 
     assert request["controllable_anatomy_size"] == [["lung tumor", 0.5]]
