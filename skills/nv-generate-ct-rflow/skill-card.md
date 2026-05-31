@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and researchers use this skill to generate synthetic CT volumes and paired segmentation masks for medical imaging research, synthetic data augmentation, and pipeline testing. <br>
+Developers and researchers generating synthetic CT volumes and paired segmentation masks for medical imaging research, data augmentation experiments, and development workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -26,10 +26,10 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Files, Shell commands] <br>
-**Output Format:** [NIfTI volumes, JSON result metadata, and HTML summary card] <br>
+**Output Type(s):** [Shell commands, Files, JSON] <br>
+**Output Format:** [Markdown with inline bash code blocks] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Generates NIfTI volumes (.nii.gz), JSON evidence records, and HTML summary cards under the caller's --output-dir] <br>
 
 ## Evaluation Agents Used: <br>
 - claude-code <br>
@@ -38,7 +38,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-2 evaluation tasks where the skill was expected to activate, with 2 attempts per task. <br>
+2 evaluation tasks (positive skill-activation cases), 2 attempts per task, 50% pass threshold. NVSkills-Eval profile: external. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -62,14 +62,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+25%) | 100% (+25%) |
-| Correctness | 4 | 93% (+3%) | 91% (+51%) |
-| Discoverability | 4 | 74% (-3%) | 72% (+19%) |
-| Effectiveness | 4 | 75% (+12%) | 70% (+58%) |
-| Efficiency | 4 | 55% (+2%) | 58% (+16%) |
+| Security | 4 | 100% (+0%) | 100% (+0%) |
+| Correctness | 4 | 88% (+10%) | 76% (+26%) |
+| Discoverability | 4 | 90% (-5%) | 70% (+14%) |
+| Effectiveness | 4 | 64% (+3%) | 55% (+36%) |
+| Efficiency | 4 | 69% (-5%) | 58% (+15%) |
 
 ## Skill Version(s): <br>
-ac94e25 (source: git SHA, committed 2026-05-30) <br>
+cfc12a5 (source: git SHA, committed 2026-05-31) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
