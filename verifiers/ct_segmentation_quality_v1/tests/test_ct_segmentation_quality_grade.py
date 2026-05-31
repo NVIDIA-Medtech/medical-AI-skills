@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import subprocess
 import sys
@@ -79,6 +94,7 @@ def test_canonical_manifest_skill_id_passes(tmp_path: Path) -> None:
             (pack / child.name).write_bytes(child.read_bytes())
         elif child.is_dir():
             import shutil
+
             shutil.copytree(child, pack / child.name)
 
     manifest_path = pack / "manifest.json"
@@ -178,6 +194,7 @@ def test_label_set_subset_fails_when_extras_present(tmp_path: Path) -> None:
             (pack / child.name).write_bytes(child.read_bytes())
         elif child.is_dir():
             import shutil
+
             shutil.copytree(child, pack / child.name)
     # Mutate: request only spleen (3), but record present = [1,3,5,14,7,29,32]
     # (i.e. liver, right/left kidney + portal vein + colon + stomach as

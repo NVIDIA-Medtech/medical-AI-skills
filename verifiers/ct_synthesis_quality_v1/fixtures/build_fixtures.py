@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Generate synthetic nv_generate_ct_rflow evidence packs for verifier tests.
 
 Writes three pack variants under fixtures/:
@@ -10,6 +25,7 @@ Writes three pack variants under fixtures/:
 Run via `python verifiers/ct_synthesis_quality_v1/fixtures/build_fixtures.py`
 or via the verifier's conftest (auto-regenerates if a pack is missing).
 """
+
 from __future__ import annotations
 
 import json
@@ -66,8 +82,12 @@ def _output_payload(samples: list[dict], output_label_mapping: list[dict]) -> di
             "union_label_ids_present": union_label_ids,
             "output_label_mapping": output_label_mapping,
             "expected_output_label_ids": expected_output_ids,
-            "missing_expected_output_label_ids": sorted(set(expected_output_ids) - set(union_label_ids)),
-            "all_effective_anatomy_labels_present": set(expected_output_ids).issubset(union_label_ids),
+            "missing_expected_output_label_ids": sorted(
+                set(expected_output_ids) - set(union_label_ids)
+            ),
+            "all_effective_anatomy_labels_present": set(expected_output_ids).issubset(
+                union_label_ids
+            ),
         },
         "invocation": {
             "upstream_root": "/<home>/nv-generate-ctmr",
@@ -85,7 +105,9 @@ def _output_payload(samples: list[dict], output_label_mapping: list[dict]) -> di
     }
 
 
-def _write_pack(name: str, image: np.ndarray, mask: np.ndarray, output_label_mapping: list[dict]) -> None:
+def _write_pack(
+    name: str, image: np.ndarray, mask: np.ndarray, output_label_mapping: list[dict]
+) -> None:
     pack = FIXTURE_DIR / name
     stem = "sample_20260519_120000_000000"
     img_path, lbl_path = _save_pair(pack, stem, image, mask)
@@ -113,19 +135,29 @@ def _write_pack(name: str, image: np.ndarray, mask: np.ndarray, output_label_map
     (pack / "output.json").write_text(
         json.dumps(_output_payload([sample], output_label_mapping), indent=2) + "\n"
     )
-    (pack / "manifest.json").write_text(json.dumps({
-        "pack_format_version": "1.0.0",
-        "pack_kind": "skill_run",
-        "run_id": f"{name}_run",
-        "skill_id": "nv_generate_ct_rflow",
-        "skill_version": "0.1.0",
-        "skill_dir": "skills/nv-generate-ct-rflow",
-    }, indent=2))
-    (pack / "validation_summary.json").write_text(json.dumps({
-        "overall_status": "passed",
-        "preflight_status": "passed",
-        "sanity_status": "passed",
-    }, indent=2))
+    (pack / "manifest.json").write_text(
+        json.dumps(
+            {
+                "pack_format_version": "1.0.0",
+                "pack_kind": "skill_run",
+                "run_id": f"{name}_run",
+                "skill_id": "nv_generate_ct_rflow",
+                "skill_version": "0.1.0",
+                "skill_dir": "skills/nv-generate-ct-rflow",
+            },
+            indent=2,
+        )
+    )
+    (pack / "validation_summary.json").write_text(
+        json.dumps(
+            {
+                "overall_status": "passed",
+                "preflight_status": "passed",
+                "sanity_status": "passed",
+            },
+            indent=2,
+        )
+    )
 
 
 def main() -> None:

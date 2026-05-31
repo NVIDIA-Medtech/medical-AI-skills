@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify nv_segment_ct_finetune evidence packs for engineering-floor quality.
 
 Five tiers, each emitting a sub-verdict:
@@ -22,6 +37,7 @@ Five tiers, each emitting a sub-verdict:
 Does NOT re-run training, NOT re-load the bundle network, NOT touch GPU. A v2
 that re-runs the upstream evaluate config against a held-out split is planned.
 """
+
 from __future__ import annotations
 
 import math
@@ -131,9 +147,7 @@ def _training_trajectory(
     if epochs_recorded == 0:
         failed.append("val_dice_per_epoch is empty")
     if epochs_declared is not None and epochs_recorded < int(epochs_declared):
-        failed.append(
-            f"epochs_recorded={epochs_recorded} < epochs_declared={epochs_declared}"
-        )
+        failed.append(f"epochs_recorded={epochs_recorded} < epochs_declared={epochs_declared}")
     if not train_loss_finite:
         failed.append("train_loss_finite=false")
     if oom:
@@ -152,14 +166,8 @@ def _training_trajectory(
     elif not smoke:
         # Real run: improvement_over_baseline must be non-negative when both
         # endpoints are recorded.
-        if (
-            baseline_val_dice is not None
-            and improvement is not None
-            and float(improvement) < 0
-        ):
-            failed.append(
-                f"improvement_over_baseline={improvement:.4f} < 0 (regressed)"
-            )
+        if baseline_val_dice is not None and improvement is not None and float(improvement) < 0:
+            failed.append(f"improvement_over_baseline={improvement:.4f} < 0 (regressed)")
         if regressed is True:
             failed.append("output.regressed=true")
 

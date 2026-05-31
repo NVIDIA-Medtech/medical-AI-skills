@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify NV-Generate-MR image-only evidence packs."""
+
 from __future__ import annotations
 
 import hashlib
@@ -65,7 +81,9 @@ def _positive_spacing(value: Any) -> bool:
 
 
 def _spacing_close(left: list[float], right: list[float], *, tol: float = 1e-4) -> bool:
-    return len(left) == len(right) and all(abs(float(a) - float(b)) <= tol for a, b in zip(left, right))
+    return len(left) == len(right) and all(
+        abs(float(a) - float(b)) <= tol for a, b in zip(left, right)
+    )
 
 
 def _resolve_image_path(pack_dir: Path, raw: Any) -> Path | None:
@@ -84,7 +102,12 @@ def _sha256_path(path: Path | None) -> str | None:
     return h.hexdigest()
 
 
-def _recompute_image(pack_dir: Path, sample: dict[str, Any], requested_shape: list[int], requested_spacing: list[float]) -> dict[str, Any]:
+def _recompute_image(
+    pack_dir: Path,
+    sample: dict[str, Any],
+    requested_shape: list[int],
+    requested_spacing: list[float],
+) -> dict[str, Any]:
     path = _resolve_image_path(pack_dir, sample.get("image_path"))
     record: dict[str, Any] = {
         "declared_path": sample.get("image_path"),
@@ -125,9 +148,7 @@ def _recompute_image(pack_dir: Path, sample: dict[str, Any], requested_shape: li
 
 def _scope_disclosed(output_payload: dict[str, Any]) -> bool:
     text = str(output_payload.get("intended_use_disclaimer") or "").lower()
-    return "engineering" in text and (
-        "not clinically meaningful" in text or "not clinical" in text
-    )
+    return "engineering" in text and ("not clinically meaningful" in text or "not clinical" in text)
 
 
 def grade(pack_dir: Path) -> dict[str, Any]:
@@ -154,11 +175,19 @@ def grade(pack_dir: Path) -> dict[str, Any]:
     ]
 
     all_readable = bool(image_records) and all(item.get("readable") for item in image_records)
-    all_shape = bool(image_records) and all(item.get("shape_match_requested") for item in image_records)
-    all_spacing = bool(image_records) and all(item.get("spacing_match_requested") for item in image_records)
+    all_shape = bool(image_records) and all(
+        item.get("shape_match_requested") for item in image_records
+    )
+    all_spacing = bool(image_records) and all(
+        item.get("spacing_match_requested") for item in image_records
+    )
     all_finite = bool(image_records) and all(item.get("all_finite") for item in image_records)
-    all_nonconstant = bool(image_records) and all(item.get("image_nonconstant") for item in image_records)
-    all_nonnegative = bool(image_records) and all(item.get("image_nonnegative") for item in image_records)
+    all_nonconstant = bool(image_records) and all(
+        item.get("image_nonconstant") for item in image_records
+    )
+    all_nonnegative = bool(image_records) and all(
+        item.get("image_nonnegative") for item in image_records
+    )
     expected_version = OUTPUT_SKILL_TO_VERSION.get(output_skill)
 
     checks = [

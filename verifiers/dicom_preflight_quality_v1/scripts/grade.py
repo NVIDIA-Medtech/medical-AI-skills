@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify dicom_series_preflight evidence packs (pass / warn / fail)."""
+
 from __future__ import annotations
 
 import sys
@@ -33,48 +49,62 @@ def grade(pack_dir: Path) -> dict[str, Any]:
     findings = output.get("findings") or []
     skill_verdict = (output.get("preflight") or {}).get("verdict", "fail")
 
-    checks.append(make_check(
-        "skill_pack_readable",
-        output.get("skill") == "dicom_series_preflight",
-        "output.json present and skill id matches",
-    ))
-    checks.append(make_check(
-        "source_skill_passed",
-        val_sum.get("overall_status") == "passed",
-        f"source pack overall={val_sum.get('overall_status')!r}",
-    ))
+    checks.append(
+        make_check(
+            "skill_pack_readable",
+            output.get("skill") == "dicom_series_preflight",
+            "output.json present and skill id matches",
+        )
+    )
+    checks.append(
+        make_check(
+            "source_skill_passed",
+            val_sum.get("overall_status") == "passed",
+            f"source pack overall={val_sum.get('overall_status')!r}",
+        )
+    )
 
     fail_findings = [f for f in findings if f.get("level") == "fail"]
     warn_findings = [f for f in findings if f.get("level") == "warn"]
 
-    checks.append(make_check(
-        "no_fail_findings",
-        len(fail_findings) == 0,
-        f"fail findings: {[f.get('code') for f in fail_findings]}",
-    ))
-    checks.append(make_check(
-        "orientation_ok",
-        (output.get("orientation") or {}).get("axcodes_match") is True,
-        f"axcodes={(output.get('orientation') or {}).get('axcodes')}",
-    ))
-    checks.append(make_check(
-        "single_series",
-        (output.get("series") or {}).get("single_series") is True,
-        f"n_series={(output.get('series') or {}).get('n_series')}",
-    ))
-    checks.append(make_check(
-        "no_corrupt_instances",
-        (output.get("inventory") or {}).get("n_corrupt", 1) == 0,
-        f"n_corrupt={(output.get('inventory') or {}).get('n_corrupt')}",
-    ))
+    checks.append(
+        make_check(
+            "no_fail_findings",
+            len(fail_findings) == 0,
+            f"fail findings: {[f.get('code') for f in fail_findings]}",
+        )
+    )
+    checks.append(
+        make_check(
+            "orientation_ok",
+            (output.get("orientation") or {}).get("axcodes_match") is True,
+            f"axcodes={(output.get('orientation') or {}).get('axcodes')}",
+        )
+    )
+    checks.append(
+        make_check(
+            "single_series",
+            (output.get("series") or {}).get("single_series") is True,
+            f"n_series={(output.get('series') or {}).get('n_series')}",
+        )
+    )
+    checks.append(
+        make_check(
+            "no_corrupt_instances",
+            (output.get("inventory") or {}).get("n_corrupt", 1) == 0,
+            f"n_corrupt={(output.get('inventory') or {}).get('n_corrupt')}",
+        )
+    )
 
     if (output.get("phi") or {}).get("phi_present"):
-        checks.append(make_check(
-            "phi_disclosed",
-            True,
-            "PHI tags present — engineering warn only",
-            level="warn",
-        ))
+        checks.append(
+            make_check(
+                "phi_disclosed",
+                True,
+                "PHI tags present — engineering warn only",
+                level="warn",
+            )
+        )
 
     hard_fail = any(c["status"] == "fail" for c in checks)
     has_warn = any(c["status"] == "warn" for c in checks) or bool(warn_findings)

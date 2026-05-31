@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Generate synthetic nv_segment_ct_finetune evidence packs for verifier tests.
 
 Writes three pack variants under fixtures/:
@@ -13,6 +28,7 @@ present at build time. The fallback (random bytes) is what CI sees; the
 verifier's tier handles `checkpoint_loadable=None` (no torch in env) as
 acceptable.
 """
+
 from __future__ import annotations
 
 import json
@@ -35,6 +51,7 @@ def _write_ckpt(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
         import torch
+
         # 800x800 float32 ≈ 2.56 MB raw; pickle overhead trivial. Single
         # tensor, no funny structure, so torch.load reconstructs cleanly.
         state = {"layer0.weight": torch.zeros(800, 800), "layer0.bias": torch.zeros(800)}
@@ -78,8 +95,11 @@ def _base_output() -> dict:
             "smoke": False,
         },
         "environment": {
-            "gpu_count": 1, "gpu_total_mb": 48000, "gpu_free_mb": 47000,
-            "host_ram_mb": 64000, "cuda_available": True,
+            "gpu_count": 1,
+            "gpu_total_mb": 48000,
+            "gpu_free_mb": 47000,
+            "host_ram_mb": 64000,
+            "cuda_available": True,
         },
         "plan": {
             "patch_size": [96, 96, 96],
@@ -127,19 +147,29 @@ def _write_pack(name: str, mutator) -> None:
     output = _base_output()
     mutator(output)
     (pack / "output.json").write_text(json.dumps(output, indent=2))
-    (pack / "manifest.json").write_text(json.dumps({
-        "pack_format_version": "1.0.0",
-        "pack_kind": "skill_run",
-        "run_id": f"{name}_run",
-        "skill_id": "nv_segment_ct_finetune",
-        "skill_version": "0.3.0",
-        "skill_dir": "skills/nv-segment-ct-finetune",
-    }, indent=2))
-    (pack / "validation_summary.json").write_text(json.dumps({
-        "overall_status": "passed",
-        "preflight_status": "passed",
-        "sanity_status": "passed",
-    }, indent=2))
+    (pack / "manifest.json").write_text(
+        json.dumps(
+            {
+                "pack_format_version": "1.0.0",
+                "pack_kind": "skill_run",
+                "run_id": f"{name}_run",
+                "skill_id": "nv_segment_ct_finetune",
+                "skill_version": "0.3.0",
+                "skill_dir": "skills/nv-segment-ct-finetune",
+            },
+            indent=2,
+        )
+    )
+    (pack / "validation_summary.json").write_text(
+        json.dumps(
+            {
+                "overall_status": "passed",
+                "preflight_status": "passed",
+                "sanity_status": "passed",
+            },
+            indent=2,
+        )
+    )
     _write_ckpt(pack / "checkpoint.pt")
 
 

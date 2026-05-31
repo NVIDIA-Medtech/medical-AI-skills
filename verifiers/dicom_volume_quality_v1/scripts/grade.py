@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Verify dicom_series_to_volume evidence packs."""
+
 from __future__ import annotations
 
 import sys
@@ -12,12 +28,21 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-from verifiers._shared.verifier_kit import load_pack_json, make_check, resolve_pack_artifact, run_grader  # noqa: E402
+from verifiers._shared.verifier_kit import (  # noqa: E402
+    load_pack_json,
+    make_check,
+    resolve_pack_artifact,
+    run_grader,
+)
 
 VERIFIER_ID = "medagent.verifiers.dicom_volume_quality_v1"
 VERIFIER_VERSION = "0.1.0"
 TARGET_SKILL_IDS = {"dicom_series_to_volume", "medagent.dicom_series_to_volume"}
-DISCLAIMER_TERMS = ("Engineering verification only", "Not a vetted clinical", "does not auto-reorient")
+DISCLAIMER_TERMS = (
+    "Engineering verification only",
+    "Not a vetted clinical",
+    "does not auto-reorient",
+)
 TOLERANCE = 1e-3
 
 
@@ -40,7 +65,9 @@ def _same_numbers(reported: Any, actual: Any, *, atol: float = TOLERANCE) -> boo
     actual_arr = _as_float_array(actual)
     if reported_arr is None or actual_arr is None:
         return False
-    return reported_arr.shape == actual_arr.shape and bool(np.allclose(reported_arr, actual_arr, atol=atol))
+    return reported_arr.shape == actual_arr.shape and bool(
+        np.allclose(reported_arr, actual_arr, atol=atol)
+    )
 
 
 def _load_nifti(path: Path) -> tuple[nib.Nifti1Image | None, np.ndarray | None, str | None]:
@@ -61,7 +88,11 @@ def grade(pack_dir: Path) -> dict[str, Any]:
 
     output_info = output.get("output") or {}
     declared_path = output_info.get("path")
-    artifact_path = resolve_pack_artifact(pack_dir, declared_path, REPO_ROOT) if declared_path else pack_dir / ""
+    artifact_path = (
+        resolve_pack_artifact(pack_dir, declared_path, REPO_ROOT)
+        if declared_path
+        else pack_dir / ""
+    )
     artifact_exists = bool(declared_path) and artifact_path.exists()
 
     img = None
@@ -71,12 +102,16 @@ def grade(pack_dir: Path) -> dict[str, Any]:
         img, data, load_error = _load_nifti(artifact_path)
 
     actual_shape = list(img.shape) if img is not None else []
-    actual_spacing = [float(v) for v in img.header.get_zooms()[: len(actual_shape)]] if img is not None else []
+    actual_spacing = (
+        [float(v) for v in img.header.get_zooms()[: len(actual_shape)]] if img is not None else []
+    )
     actual_axcodes = list(nib.aff2axcodes(img.affine)) if img is not None else []
     actual_affine = img.affine.tolist() if img is not None else []
     voxel_min = float(np.nanmin(data)) if data is not None and data.size else None
     voxel_max = float(np.nanmax(data)) if data is not None and data.size else None
-    actual_hu_range = [voxel_min, voxel_max] if voxel_min is not None and voxel_max is not None else []
+    actual_hu_range = (
+        [voxel_min, voxel_max] if voxel_min is not None and voxel_max is not None else []
+    )
     n_slices_reported = output.get("n_slices")
     shape_reported = output_info.get("shape")
     disclaimer = str(output.get("intended_use_disclaimer") or "")
