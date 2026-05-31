@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """DICOM series preflight — header-only scan of a directory.
 
 Scans readable DICOM instances (stop_before_pixels), inventories series,
 checks orientation/spacing/consistency, and flags a standard-tag PHI subset.
 Engineering verification only; not de-identification or clinical QA.
 """
+
 from __future__ import annotations
 
 import json
@@ -121,13 +137,13 @@ def _iop_list(ds: pydicom.Dataset) -> list[float] | None:
 def _axcodes_from_iop(iop: list[float]) -> list[str] | None:
     if len(iop) != int("6"):
         return None
-    row_dir = np.array(iop[:int("3")], dtype=float)
-    col_dir = np.array(iop[int("3"):], dtype=float)
+    row_dir = np.array(iop[: int("3")], dtype=float)
+    col_dir = np.array(iop[int("3") :], dtype=float)
     slice_dir = np.cross(row_dir, col_dir)
     affine_lps = np.eye(int("4"))
-    affine_lps[:int("3"), 0] = row_dir
-    affine_lps[:int("3"), 1] = col_dir
-    affine_lps[:int("3"), 2] = slice_dir
+    affine_lps[: int("3"), 0] = row_dir
+    affine_lps[: int("3"), 1] = col_dir
+    affine_lps[: int("3"), 2] = slice_dir
     lps_to_ras = np.diag([float("-1.0"), float("-1.0"), float("1.0"), float("1.0")])
     affine_ras = lps_to_ras @ affine_lps
     return list(nib.aff2axcodes(affine_ras))
@@ -205,71 +221,93 @@ def preflight(dicom_dir: Path) -> dict[str, Any]:
 
     findings: list[dict[str, str]] = []
     if not paths:
-        findings.append({
-            "level": "fail",
-            "code": "no_dicom_files",
-            "message": "No DICOM files found under input directory",
-        })
+        findings.append(
+            {
+                "level": "fail",
+                "code": "no_dicom_files",
+                "message": "No DICOM files found under input directory",
+            }
+        )
     if corrupt:
-        findings.append({
-            "level": "fail",
-            "code": "corrupt_instances",
-            "message": f"{len(corrupt)} instance(s) could not be read",
-        })
+        findings.append(
+            {
+                "level": "fail",
+                "code": "corrupt_instances",
+                "message": f"{len(corrupt)} instance(s) could not be read",
+            }
+        )
     if len(series_uids) > 1:
-        findings.append({
-            "level": "fail",
-            "code": "multiple_series",
-            "message": f"Found {len(series_uids)} distinct SeriesInstanceUID values",
-        })
+        findings.append(
+            {
+                "level": "fail",
+                "code": "multiple_series",
+                "message": f"Found {len(series_uids)} distinct SeriesInstanceUID values",
+            }
+        )
     if len(iops) > 1:
-        findings.append({
-            "level": "fail",
-            "code": "inconsistent_orientation",
-            "message": "ImageOrientationPatient varies across instances",
-        })
+        findings.append(
+            {
+                "level": "fail",
+                "code": "inconsistent_orientation",
+                "message": "ImageOrientationPatient varies across instances",
+            }
+        )
     if orientation_ok is False:
-        findings.append({
-            "level": "fail",
-            "code": "unexpected_orientation",
-            "message": f"Derived axcodes {axcodes} != canonical {CANONICAL_CT_AXCODES}",
-        })
+        findings.append(
+            {
+                "level": "fail",
+                "code": "unexpected_orientation",
+                "message": f"Derived axcodes {axcodes} != canonical {CANONICAL_CT_AXCODES}",
+            }
+        )
     if len(spacings) > 1:
-        findings.append({
-            "level": "warn",
-            "code": "inconsistent_spacing",
-            "message": "PixelSpacing varies across instances",
-        })
+        findings.append(
+            {
+                "level": "warn",
+                "code": "inconsistent_spacing",
+                "message": "PixelSpacing varies across instances",
+            }
+        )
     if len(shapes) > 1:
-        findings.append({
-            "level": "warn",
-            "code": "inconsistent_shape",
-            "message": "Rows/Columns vary across instances",
-        })
+        findings.append(
+            {
+                "level": "warn",
+                "code": "inconsistent_shape",
+                "message": "Rows/Columns vary across instances",
+            }
+        )
     if phi_tags_union:
-        findings.append({
-            "level": "warn",
-            "code": "phi_tags_present",
-            "message": f"Standard PHI tags populated: {sorted(phi_tags_union)}",
-        })
+        findings.append(
+            {
+                "level": "warn",
+                "code": "phi_tags_present",
+                "message": f"Standard PHI tags populated: {sorted(phi_tags_union)}",
+            }
+        )
     if compressed_count:
-        findings.append({
-            "level": "warn",
-            "code": "compressed_transfer_syntax",
-            "message": f"{compressed_count} instance(s) use compressed transfer syntax",
-        })
+        findings.append(
+            {
+                "level": "warn",
+                "code": "compressed_transfer_syntax",
+                "message": f"{compressed_count} instance(s) use compressed transfer syntax",
+            }
+        )
     if multi_frame_count:
-        findings.append({
-            "level": "warn",
-            "code": "multi_frame_instances",
-            "message": f"{multi_frame_count} multi-frame instance(s); not fully supported downstream",
-        })
+        findings.append(
+            {
+                "level": "warn",
+                "code": "multi_frame_instances",
+                "message": f"{multi_frame_count} multi-frame instance(s); not fully supported downstream",
+            }
+        )
     if missing_iop:
-        findings.append({
-            "level": "warn",
-            "code": "missing_orientation_tags",
-            "message": f"{missing_iop} instance(s) lack ImageOrientationPatient",
-        })
+        findings.append(
+            {
+                "level": "warn",
+                "code": "missing_orientation_tags",
+                "message": f"{missing_iop} instance(s) lack ImageOrientationPatient",
+            }
+        )
 
     fail_levels = {f["level"] for f in findings if f["level"] == "fail"}
     warn_levels = {f["level"] for f in findings if f["level"] == "warn"}
@@ -304,7 +342,7 @@ def preflight(dicom_dir: Path) -> dict[str, Any]:
             "n_files_seen": len(paths),
             "n_readable": len(readable),
             "n_corrupt": len(corrupt),
-            "corrupt_samples": corrupt[:int("5")],
+            "corrupt_samples": corrupt[: int("5")],
         },
         "series": {
             "n_series": len(series_uids),

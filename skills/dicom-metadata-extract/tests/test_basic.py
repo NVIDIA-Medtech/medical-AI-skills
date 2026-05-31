@@ -1,11 +1,27 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Basic tests for dicom_metadata_extract skill."""
+
 import json
 import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 import jsonschema
+import pytest
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SCRIPT = SKILL_DIR / "scripts" / "extract_metadata.py"
@@ -47,7 +63,17 @@ def test_phi_flag_true_for_synthetic_phi(fixture_path: Path) -> None:
 
 def test_required_schema_fields(fixture_path: Path) -> None:
     payload = _run(str(fixture_path))
-    for k in ("path", "transfer_syntax", "modality", "study", "series", "image", "phi_present", "phi_tags_found", "phi_scope_disclaimer"):
+    for k in (
+        "path",
+        "transfer_syntax",
+        "modality",
+        "study",
+        "series",
+        "image",
+        "phi_present",
+        "phi_tags_found",
+        "phi_scope_disclaimer",
+    ):
         assert k in payload, f"missing key: {k}"
 
 
