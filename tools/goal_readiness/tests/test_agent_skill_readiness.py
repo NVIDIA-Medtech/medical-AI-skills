@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 from pathlib import Path
 
@@ -29,7 +44,7 @@ def _packet(status: str = "ready_for_external_approval") -> dict:
             "summary": {
                 "pending_initial_calls": 12 if status != "already_proven" else 0,
                 "max_possible_repair_calls": 60 if status != "already_proven" else 0,
-            }
+            },
         },
     }
 
@@ -47,7 +62,9 @@ def _skill_summary(status: str = "pass", *, advisories: int = 0) -> dict:
     }
 
 
-def _write_lifecycle_output(root: Path, target: str, *, blocked_status: str, gaps: list[str]) -> None:
+def _write_lifecycle_output(
+    root: Path, target: str, *, blocked_status: str, gaps: list[str]
+) -> None:
     out = root / target
     out.mkdir(parents=True)
     (out / "output.json").write_text(
@@ -163,13 +180,17 @@ def test_build_report_defaults_to_current_direct_study_repeats(tmp_path: Path, m
     assert captured["repeats"] == readiness.studies.DIRECT_REPEATS
 
 
-def test_build_report_marks_complete_after_skill_and_study_proof(tmp_path: Path, monkeypatch) -> None:
+def test_build_report_marks_complete_after_skill_and_study_proof(
+    tmp_path: Path, monkeypatch
+) -> None:
     summary_path = tmp_path / "_summary.json"
     summary_path.write_text(
         '{"audit_status":"pass","real_runs":3,"real_passed":3,'
         '"real_failed":0,"real_advisory_issues":0}\n'
     )
-    monkeypatch.setattr(readiness.approval, "build_packet", lambda **kwargs: _packet("already_proven"))
+    monkeypatch.setattr(
+        readiness.approval, "build_packet", lambda **kwargs: _packet("already_proven")
+    )
 
     report = readiness.build_report(skill_audit_summary_path=summary_path)
 

@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Docker/container provenance capture for container-backed skills."""
+
 from __future__ import annotations
 
 import json
@@ -43,18 +59,20 @@ def capture_docker_image_inspect(image_ref: str) -> dict[str, Any]:
         out.update({"status": "failed", "reason": "unexpected inspect shape"})
         return out
     config = row.get("Config") or {}
-    out.update({
-        "status": "ok",
-        "id": row.get("Id"),
-        "repo_tags": row.get("RepoTags") or [],
-        "created": row.get("Created"),
-        "architecture": row.get("Architecture"),
-        "os": row.get("Os"),
-        "labels": config.get("Labels") or {},
-        "env": config.get("Env") or [],
-        "entrypoint": config.get("Entrypoint"),
-        "cmd": config.get("Cmd"),
-    })
+    out.update(
+        {
+            "status": "ok",
+            "id": row.get("Id"),
+            "repo_tags": row.get("RepoTags") or [],
+            "created": row.get("Created"),
+            "architecture": row.get("Architecture"),
+            "os": row.get("Os"),
+            "labels": config.get("Labels") or {},
+            "env": config.get("Env") or [],
+            "entrypoint": config.get("Entrypoint"),
+            "cmd": config.get("Cmd"),
+        }
+    )
     return out
 
 
@@ -79,18 +97,22 @@ def capture_container_pip_freeze(image_ref: str, *, timeout_s: float = 60.0) -> 
         timeout_s=timeout_s,
     )
     if rc != 0:
-        out.update({
-            "status": "failed",
-            "exit_code": rc,
-            "stderr_tail": stderr[-4000:] if stderr else "",
-        })
+        out.update(
+            {
+                "status": "failed",
+                "exit_code": rc,
+                "stderr_tail": stderr[-4000:] if stderr else "",
+            }
+        )
         return out
     lines = [ln for ln in stdout.splitlines() if ln.strip()]
-    out.update({
-        "status": "ok",
-        "pip_freeze_lines": len(lines),
-        "pip_freeze_text": stdout,
-    })
+    out.update(
+        {
+            "status": "ok",
+            "pip_freeze_lines": len(lines),
+            "pip_freeze_text": stdout,
+        }
+    )
     return out
 
 
@@ -177,7 +199,6 @@ def merge_container_into_provenance(
         )
 
     container["note"] = (
-        "Container image inspect and optional in-container pip freeze "
-        "(HoloHub docker workflow)."
+        "Container image inspect and optional in-container pip freeze " "(HoloHub docker workflow)."
     )
     return provenance

@@ -1,11 +1,27 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """No-network status for agent-skill usability and with-vs-without proof."""
+
 from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -13,7 +29,6 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from tools.with_vs_without import approval_packet_nv_model_studies as approval  # noqa: E402
 from tools.with_vs_without import run_nv_model_studies as studies  # noqa: E402
-
 
 DEFAULT_REPEATS = studies.DIRECT_REPEATS
 MAX_LIFECYCLE_BLOCKERS = 5
@@ -111,9 +126,7 @@ def _skill_audit_block(
     gated_count = lifecycle_counts.get("gated", 0)
     audit_root = summary_path.parent if summary_path is not None else None
     blocked_rows = [
-        row
-        for row in sorted(real_rows, key=_row_sort_key)
-        if row.get("lifecycle") != "published"
+        row for row in sorted(real_rows, key=_row_sort_key) if row.get("lifecycle") != "published"
     ]
     lifecycle_blockers = [
         _lifecycle_blocker(row, audit_root=audit_root)
@@ -132,9 +145,11 @@ def _skill_audit_block(
         "review_focus": (
             f"{gated_count} gated targets still need trusted-run/publication evidence"
             if gated_count
-            else "all real targets are published"
-            if real_rows and lifecycle_counts.get("published") == len(real_rows)
-            else "inspect lifecycle counts for next publication work"
+            else (
+                "all real targets are published"
+                if real_rows and lifecycle_counts.get("published") == len(real_rows)
+                else "inspect lifecycle counts for next publication work"
+            )
         ),
         "unexpected_failures": summary.get("unexpected_failures", []),
         "advisory_failures": summary.get("advisory_failures", []),
@@ -187,18 +202,30 @@ def build_report(
             "max_possible_repair_calls": transfer_summary["max_possible_repair_calls"],
             "approval_flag": packet["approval_flag"],
             "payload_fingerprint": packet["data_transfer"].get("payload_fingerprint"),
-            "direct_remediation_groups_covered": approval_coverage.get("planned_direct_group_count"),
-            "pending_direct_remediation_groups": approval_coverage.get("pending_direct_group_count"),
-            "duplicate_direct_remediation_groups": approval_coverage.get("duplicate_direct_group_count"),
-            "invalid_direct_remediation_commands": approval_coverage.get("invalid_direct_command_count"),
-            "prompt_payload_policy_issues": packet["data_transfer"].get("prompt_policy_issue_count"),
+            "direct_remediation_groups_covered": approval_coverage.get(
+                "planned_direct_group_count"
+            ),
+            "pending_direct_remediation_groups": approval_coverage.get(
+                "pending_direct_group_count"
+            ),
+            "duplicate_direct_remediation_groups": approval_coverage.get(
+                "duplicate_direct_group_count"
+            ),
+            "invalid_direct_remediation_commands": approval_coverage.get(
+                "invalid_direct_command_count"
+            ),
+            "prompt_payload_policy_issues": packet["data_transfer"].get(
+                "prompt_policy_issue_count"
+            ),
         },
         "next_gate": (
             "approved external reruns, then make prove-agent-skills"
             if status == "ready_for_external_approval"
-            else "none"
-            if status == "complete"
-            else "make verify-skills && make approval-packet-with-vs-without"
+            else (
+                "none"
+                if status == "complete"
+                else "make verify-skills && make approval-packet-with-vs-without"
+            )
         ),
     }
 
@@ -209,9 +236,7 @@ def format_markdown(report: dict[str, Any]) -> str:
     lifecycle_counts = skill.get("lifecycle_counts") or {}
     lifecycle_order = ("published", "verified", "gated", "runnable", "draft", "unknown")
     lifecycle_summary = ", ".join(
-        f"{name}={lifecycle_counts[name]}"
-        for name in lifecycle_order
-        if name in lifecycle_counts
+        f"{name}={lifecycle_counts[name]}" for name in lifecycle_order if name in lifecycle_counts
     )
     published_targets = ", ".join(skill.get("published_targets") or [])
     lifecycle_blockers = skill.get("lifecycle_blockers") or []
@@ -226,12 +251,14 @@ def format_markdown(report: dict[str, Any]) -> str:
         "",
         f"Audit status: `{skill['status']}`",
         (
-            f"Real specs: {skill['real_passed']}/{skill['real_runs']} pass; "
-            f"{skill['real_failed']} fail; "
-            f"{skill['real_advisory_issues']} advisory issues"
-        )
-        if skill["status"] != "missing"
-        else f"Reason: {skill['reason']}",
+            (
+                f"Real specs: {skill['real_passed']}/{skill['real_runs']} pass; "
+                f"{skill['real_failed']} fail; "
+                f"{skill['real_advisory_issues']} advisory issues"
+            )
+            if skill["status"] != "missing"
+            else f"Reason: {skill['reason']}"
+        ),
         (
             f"Lifecycle counts: `{lifecycle_summary or 'not available'}`"
             if skill["status"] != "missing"
@@ -252,14 +279,8 @@ def format_markdown(report: dict[str, Any]) -> str:
         "",
         f"Experiment status: `{study['status']}`",
         f"Preflight: `{study['preflight_status']}`",
-        (
-            f"Prompt artifacts complete: {study['prompt_artifacts_complete']}/"
-            f"{study['skills']}"
-        ),
-        (
-            f"Study artifacts complete: {study['study_artifacts_complete']}/"
-            f"{study['skills']}"
-        ),
+        (f"Prompt artifacts complete: {study['prompt_artifacts_complete']}/" f"{study['skills']}"),
+        (f"Study artifacts complete: {study['study_artifacts_complete']}/" f"{study['skills']}"),
         (
             f"Outcomes supporting SKILL.md advantage: "
             f"{study['outcomes_support_skill_advantage']}/{study['skills']}"
@@ -267,31 +288,36 @@ def format_markdown(report: dict[str, Any]) -> str:
         f"Pending initial external LLM calls: {study['pending_initial_external_calls']}",
         f"Maximum possible repair calls: {study['max_possible_repair_calls']}",
         (
-            "Direct remediation coverage: "
-            f"{study['direct_remediation_groups_covered']}/"
-            f"{study['pending_direct_remediation_groups']} "
-            "pending skill/mode groups"
-        )
-        if study.get("direct_remediation_groups_covered") is not None
-        else "Direct remediation coverage: `not available`",
+            (
+                "Direct remediation coverage: "
+                f"{study['direct_remediation_groups_covered']}/"
+                f"{study['pending_direct_remediation_groups']} "
+                "pending skill/mode groups"
+            )
+            if study.get("direct_remediation_groups_covered") is not None
+            else "Direct remediation coverage: `not available`"
+        ),
         (
-            "Direct remediation duplicate groups: "
-            f"{study['duplicate_direct_remediation_groups']}"
-        )
-        if study.get("duplicate_direct_remediation_groups") is not None
-        else "Direct remediation duplicate groups: `not available`",
+            (
+                "Direct remediation duplicate groups: "
+                f"{study['duplicate_direct_remediation_groups']}"
+            )
+            if study.get("duplicate_direct_remediation_groups") is not None
+            else "Direct remediation duplicate groups: `not available`"
+        ),
         (
-            "Direct remediation invalid commands: "
-            f"{study['invalid_direct_remediation_commands']}"
-        )
-        if study.get("invalid_direct_remediation_commands") is not None
-        else "Direct remediation invalid commands: `not available`",
+            (
+                "Direct remediation invalid commands: "
+                f"{study['invalid_direct_remediation_commands']}"
+            )
+            if study.get("invalid_direct_remediation_commands") is not None
+            else "Direct remediation invalid commands: `not available`"
+        ),
         (
-            "Prompt payload policy issues: "
-            f"{study['prompt_payload_policy_issues']}"
-        )
-        if study.get("prompt_payload_policy_issues") is not None
-        else "Prompt payload policy issues: `not available`",
+            ("Prompt payload policy issues: " f"{study['prompt_payload_policy_issues']}")
+            if study.get("prompt_payload_policy_issues") is not None
+            else "Prompt payload policy issues: `not available`"
+        ),
         (
             f"Reviewed payload fingerprint: `{study['payload_fingerprint']}`"
             if study.get("payload_fingerprint")
@@ -310,9 +336,7 @@ def format_markdown(report: dict[str, Any]) -> str:
         )
         for blocker in lifecycle_blockers:
             gaps = "; ".join(blocker.get("gaps") or ["no gap detail recorded"])
-            lines.append(
-                f"- `{blocker['target']}` -> `{blocker['blocked_status']}`: {gaps}"
-            )
+            lines.append(f"- `{blocker['target']}` -> `{blocker['blocked_status']}`: {gaps}")
     if report["status"] == "ready_for_external_approval":
         lines.extend(
             [
@@ -332,7 +356,9 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=REPO_ROOT / "runs" / "skill_audit" / "_summary.json",
     )
-    parser.add_argument("--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all")
+    parser.add_argument(
+        "--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all"
+    )
     parser.add_argument("--repeats", type=int, default=DEFAULT_REPEATS)
     parser.add_argument("--prompt-root", type=Path, default=None)
     parser.add_argument("--study-root", type=Path, default=None)

@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import os
 import re
@@ -7,7 +22,6 @@ from pathlib import Path
 import pytest
 
 from tools.with_vs_without import run_nv_model_studies as studies
-
 
 LEAK_RE = re.compile(
     r"configs/|run_[a-z0-9_]+\.py|monai\.bundle|scripts\.|model-name|"
@@ -32,7 +46,10 @@ def test_path_prompts_are_a2_style_and_do_not_embed_docs() -> None:
 
             skill_dir = studies._skill_doc_dir(scenario)
             if arm == "with":
-                assert f"The only workflow document available to you is {scenario.with_doc[0]}" in prompt
+                assert (
+                    f"The only workflow document available to you is {scenario.with_doc[0]}"
+                    in prompt
+                )
                 assert f"Do not inspect any other files under {skill_dir}/" in prompt
             else:
                 assert f"Do not read or use any files under {skill_dir}/" in prompt
@@ -68,7 +85,10 @@ def test_direct_minimal_prompt_embeds_full_selected_document() -> None:
 def test_message_text_prefers_content_before_reasoning_fallback() -> None:
     assert studies._message_text({"content": "visible", "reasoning_content": "hidden"}) == "visible"
     assert studies._message_text({"content": "", "reasoning_content": "fallback"}) == "fallback"
-    assert studies._message_text({"content": [{"text": "part one"}, {"text": "part two"}]}) == "part one\npart two"
+    assert (
+        studies._message_text({"content": [{"text": "part one"}, {"text": "part two"}]})
+        == "part one\npart two"
+    )
 
 
 def test_chat_payload_uses_provider_defaults(monkeypatch) -> None:
@@ -319,11 +339,19 @@ def test_direct_cli_write_prompt_artifacts_uses_path_style(
     )
 
     assert calls == [
-        (["nv_reason_cxr"], "path", tmp_path, studies.DIRECT_MAX_CORRECTION_STEPS, studies.DIRECT_REPEATS)
+        (
+            ["nv_reason_cxr"],
+            "path",
+            tmp_path,
+            studies.DIRECT_MAX_CORRECTION_STEPS,
+            studies.DIRECT_REPEATS,
+        )
     ]
 
 
-def test_direct_cli_runs_local_preflight_before_external_modes(tmp_path, monkeypatch, capsys) -> None:
+def test_direct_cli_runs_local_preflight_before_external_modes(
+    tmp_path, monkeypatch, capsys
+) -> None:
     monkeypatch.setattr(studies, "_stage_input", lambda scenario: tmp_path / scenario.skill)
     monkeypatch.setattr(studies, "run_nemotron", lambda *args, **kwargs: None)
 
@@ -497,7 +525,9 @@ def test_nv_model_prompt_artifacts_are_generated_per_repeat() -> None:
 
 def test_nv_model_path_prompts_use_neutral_staged_input_names() -> None:
     for skill, scenario in studies.SCENARIOS.items():
-        records = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+        records = studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+        )
         source_name = Path(scenario.fixture).name
         for record in records:
             staged = record["staged_user_input"]

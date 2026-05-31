@@ -1,13 +1,29 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Compose a no-network approval packet for pending NV direct-study reruns."""
+
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import json
-from pathlib import Path
 import shlex
 import sys
+from collections import Counter
+from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +33,6 @@ from tools.with_vs_without import audit_nv_model_studies as audit  # noqa: E402
 from tools.with_vs_without import manifest_nv_model_data_transfer as transfer  # noqa: E402
 from tools.with_vs_without import preflight_nv_model_studies as preflight  # noqa: E402
 from tools.with_vs_without import run_nv_model_studies as studies  # noqa: E402
-
 
 MODE_COMMANDS = {
     "all": {"prompts", "codex-opus", "nemotron"},
@@ -34,10 +49,7 @@ TRANSFER_MODE_TO_COMMAND_MODE = {
 
 def _issue_code_counts(issues: list[dict[str, str]], *, limit: int = 5) -> list[dict[str, Any]]:
     counts = Counter(issue.get("code", "unknown") for issue in issues)
-    return [
-        {"code": code, "count": count}
-        for code, count in counts.most_common(limit)
-    ]
+    return [{"code": code, "count": count} for code, count in counts.most_common(limit)]
 
 
 def _selected_remediation(commands: list[dict[str, str]], mode: str) -> list[dict[str, str]]:
@@ -100,10 +112,7 @@ def _format_prompt_policy_issues(issues: list[dict[str, Any]], *, limit: int = 5
 
 
 def _direct_key_records(keys: set[tuple[str, str]]) -> list[dict[str, str]]:
-    return [
-        {"skill": skill, "mode": mode}
-        for skill, mode in sorted(keys)
-    ]
+    return [{"skill": skill, "mode": mode} for skill, mode in sorted(keys)]
 
 
 def _command_values(argv: list[str], option: str) -> list[str]:
@@ -161,7 +170,9 @@ def _direct_command_protocol_errors(
                 details.append(f"repeated option: {option}")
             values = _command_values(argv, option)
             if not values:
-                details.append(f"missing value for {option}" if option in argv else f"missing {option}")
+                details.append(
+                    f"missing value for {option}" if option in argv else f"missing {option}"
+                )
             elif option != "--skills" and len(values) != 1:
                 details.append(f"{option} must have exactly one value")
         for flag in flag_options:
@@ -278,11 +289,7 @@ def build_packet(
             }
         )
     prompt_policy_issues = transfer_manifest.get("prompt_policy_issues", [])
-    preflight_errors = [
-        item
-        for item in preflight_report["checks"]
-        if item["status"] == "error"
-    ]
+    preflight_errors = [item for item in preflight_report["checks"] if item["status"] == "error"]
     approval_errors = []
     if prompt_policy_issues:
         approval_errors.append(
@@ -386,13 +393,12 @@ def build_packet(
             "pending_direct_group_count": len(pending_direct_keys),
             "planned_direct_group_count": len(planned_direct_keys),
             "planned_direct_command_count": sum(
-                1
-                for command in selected_commands
-                if command.get("mode") in DIRECT_COMMAND_MODES
+                1 for command in selected_commands if command.get("mode") in DIRECT_COMMAND_MODES
             ),
             "missing_direct_group_count": len(missing_direct_keys),
             "duplicate_direct_group_count": len(duplicate_direct_keys),
-            "invalid_direct_command_count": len(correction_budget_errors) + len(direct_command_protocol_errors),
+            "invalid_direct_command_count": len(correction_budget_errors)
+            + len(direct_command_protocol_errors),
         },
         "data_transfer": {
             "prompt_style": transfer_manifest["prompt_style"],
@@ -647,9 +653,13 @@ def _format_markdown(packet: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skills", nargs="*", default=None, choices=sorted(studies.SCENARIOS))
-    parser.add_argument("--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all")
+    parser.add_argument(
+        "--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all"
+    )
     parser.add_argument("--repeats", type=int, default=studies.DIRECT_REPEATS)
-    parser.add_argument("--max-correction-steps", type=int, default=transfer.DEFAULT_MAX_CORRECTION_STEPS)
+    parser.add_argument(
+        "--max-correction-steps", type=int, default=transfer.DEFAULT_MAX_CORRECTION_STEPS
+    )
     parser.add_argument("--prompt-root", type=Path, default=studies.PROMPT_ARTIFACT_ROOT)
     parser.add_argument("--study-root", type=Path, default=studies.STUDY_ROOT)
     parser.add_argument("--format", choices=["json", "markdown"], default="markdown")

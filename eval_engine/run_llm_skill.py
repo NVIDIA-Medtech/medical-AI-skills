@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """LLM-mediated skill runner.
 
 This runner simulates the deployment shape where a user-owned LLM backend
@@ -6,6 +21,7 @@ reads `skills/<name>/SKILL.md` and decides to call a local skill tool. The
 tool execution is still delegated to `eval_engine/run.py`, so single-skill gates
 remain the source of truth for schema/sanity/runtime/cost validation.
 """
+
 from __future__ import annotations
 
 import json
@@ -57,34 +73,38 @@ NVIDIA_API_KEY_ENV = "NV_INFER_TOKEN"
 
 
 def _tool_schema() -> list[dict]:
-    return [{
-        "type": "function",
-        "function": {
-            "name": "run_skill",
-            "description": (
-                "Run exactly one local Medical AI Skills skill on the "
-                "provided fixture and write an evidence pack."
-            ),
-            "parameters": {
-                "type": "object",
-                "additionalProperties": False,
-                "properties": {
-                    "skill_dir": {
-                        "type": "string",
-                        "description": "Path to the approved skill directory.",
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": "run_skill",
+                "description": (
+                    "Run exactly one local Medical AI Skills skill on the "
+                    "provided fixture and write an evidence pack."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "skill_dir": {
+                            "type": "string",
+                            "description": "Path to the approved skill directory.",
+                        },
+                        "fixture": {
+                            "type": "string",
+                            "description": "Path to the approved input fixture.",
+                        },
                     },
-                    "fixture": {
-                        "type": "string",
-                        "description": "Path to the approved input fixture.",
-                    },
+                    "required": ["skill_dir", "fixture"],
                 },
-                "required": ["skill_dir", "fixture"],
             },
-        },
-    }]
+        }
+    ]
 
 
-def _build_messages(skill_dir: Path, fixture: Path, skill_md: str, manifest_text: str) -> list[dict]:
+def _build_messages(
+    skill_dir: Path, fixture: Path, skill_md: str, manifest_text: str
+) -> list[dict]:
     return [
         {
             "role": "system",
@@ -117,25 +137,31 @@ def _mock_response(skill_dir: Path, fixture: Path, model: str) -> dict:
         "id": "mock-llm-" + uuid4().hex[:12],
         "object": "chat.completion",
         "model": model,
-        "choices": [{
-            "index": 0,
-            "finish_reason": "tool_calls",
-            "message": {
-                "role": "assistant",
-                "content": None,
-                "tool_calls": [{
-                    "id": "call_mock_run_skill",
-                    "type": "function",
-                    "function": {
-                        "name": "run_skill",
-                        "arguments": json.dumps({
-                            "skill_dir": _public_path(skill_dir),
-                            "fixture": _public_path(fixture),
-                        }),
-                    },
-                }],
-            },
-        }],
+        "choices": [
+            {
+                "index": 0,
+                "finish_reason": "tool_calls",
+                "message": {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": "call_mock_run_skill",
+                            "type": "function",
+                            "function": {
+                                "name": "run_skill",
+                                "arguments": json.dumps(
+                                    {
+                                        "skill_dir": _public_path(skill_dir),
+                                        "fixture": _public_path(fixture),
+                                    }
+                                ),
+                            },
+                        }
+                    ],
+                },
+            }
+        ],
         "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
     }
 
@@ -266,8 +292,6 @@ def _read_json(path: Path) -> dict | None:
         return None
 
 
-
-
 @app.command()
 def main(
     skill_dir: Path = typer.Argument(..., exists=True, file_okay=False),
@@ -323,9 +347,13 @@ def main(
         resolved_api_key_env = api_key_env or ""
 
     if not resolved_model:
-        raise typer.BadParameter("--model is required for openai-compatible unless LLM_MODEL is set")
+        raise typer.BadParameter(
+            "--model is required for openai-compatible unless LLM_MODEL is set"
+        )
     if backend != "mock" and not resolved_base_url:
-        raise typer.BadParameter("--base-url is required for openai-compatible unless LLM_BASE_URL is set")
+        raise typer.BadParameter(
+            "--base-url is required for openai-compatible unless LLM_BASE_URL is set"
+        )
 
     pack_command = [
         sys.executable,
@@ -361,14 +389,16 @@ def main(
     tool_call = None
     validation_errors: list[str] = []
 
-    trace_records = [{
-        "ts": llm_started_at,
-        "kind": "llm_call_start",
-        "backend": backend,
-        "model": resolved_model,
-        "base_url": resolved_base_url,
-        "skill_markdown": _public_path(skill_md_path),
-    }]
+    trace_records = [
+        {
+            "ts": llm_started_at,
+            "kind": "llm_call_start",
+            "backend": backend,
+            "model": resolved_model,
+            "base_url": resolved_base_url,
+            "skill_markdown": _public_path(skill_md_path),
+        }
+    ]
 
     try:
         if backend == "mock":
@@ -395,16 +425,18 @@ def main(
     llm_elapsed = time.perf_counter() - t0
     llm_finished_at = _now_iso()
     usage = (raw_response or {}).get("usage") or {}
-    trace_records.append({
-        "ts": llm_finished_at,
-        "kind": "llm_call_end",
-        "backend": backend,
-        "model": resolved_model,
-        "elapsed_s": llm_elapsed,
-        "tool_call_present": tool_call is not None,
-        "usage": usage,
-        "error": error,
-    })
+    trace_records.append(
+        {
+            "ts": llm_finished_at,
+            "kind": "llm_call_end",
+            "backend": backend,
+            "model": resolved_model,
+            "elapsed_s": llm_elapsed,
+            "tool_call_present": tool_call is not None,
+            "usage": usage,
+            "error": error,
+        }
+    )
 
     skill_out = out / SKILL_RUN_SUBDIR
     proc = None
@@ -419,26 +451,30 @@ def main(
             str(skill_out),
         ]
         tool_started_at = _now_iso()
-        trace_records.append({
-            "ts": tool_started_at,
-            "kind": "tool_call_start",
-            "tool": "run_skill",
-            "command": _public_command(cmd),
-            "cwd": _public_path(REPO_ROOT),
-            "args": tool_call.get("arguments"),
-        })
+        trace_records.append(
+            {
+                "ts": tool_started_at,
+                "kind": "tool_call_start",
+                "tool": "run_skill",
+                "command": _public_command(cmd),
+                "cwd": _public_path(REPO_ROOT),
+                "args": tool_call.get("arguments"),
+            }
+        )
         tool_t0 = time.perf_counter()
         proc = subprocess.run(cmd, capture_output=True, text=True)
         tool_elapsed = time.perf_counter() - tool_t0
-        trace_records.append({
-            "ts": _now_iso(),
-            "kind": "tool_call_end",
-            "tool": "run_skill",
-            "exit_code": proc.returncode,
-            "elapsed_s": tool_elapsed,
-            "stdout_bytes": len(proc.stdout),
-            "stderr_bytes": len(proc.stderr),
-        })
+        trace_records.append(
+            {
+                "ts": _now_iso(),
+                "kind": "tool_call_end",
+                "tool": "run_skill",
+                "exit_code": proc.returncode,
+                "elapsed_s": tool_elapsed,
+                "stdout_bytes": len(proc.stdout),
+                "stderr_bytes": len(proc.stderr),
+            }
+        )
 
     write_trace_jsonl(out / "agent_run_trace.jsonl", trace_records)
 
@@ -470,7 +506,9 @@ def main(
     (out / "environment.lock").write_text(pip_freeze_text)
     env_fingerprint = _env_lock_fingerprint(pip_freeze_text)
 
-    skill_validation = _read_json(skill_out / "validation_summary.json") if skill_out.exists() else None
+    skill_validation = (
+        _read_json(skill_out / "validation_summary.json") if skill_out.exists() else None
+    )
     skill_output = _read_json(skill_out / "output.json") if skill_out.exists() else None
     skill_overall = (skill_validation or {}).get("overall_status")
 
@@ -509,77 +547,92 @@ def main(
     }
     _write_json(out / "validation_summary.json", validation_summary)
 
-    _write_json(out / "cost_profile.json", {
-        "measured": {
-            "llm_wall_seconds": llm_elapsed,
-            "llm_tokens_input": usage.get("prompt_tokens", 0),
-            "llm_tokens_output": usage.get("completion_tokens", 0),
-            "llm_tokens_total": usage.get("total_tokens", 0),
+    _write_json(
+        out / "cost_profile.json",
+        {
+            "measured": {
+                "llm_wall_seconds": llm_elapsed,
+                "llm_tokens_input": usage.get("prompt_tokens", 0),
+                "llm_tokens_output": usage.get("completion_tokens", 0),
+                "llm_tokens_total": usage.get("total_tokens", 0),
+            },
+            "self_reported": usage,
+            "evaluation": {"status": "skipped", "results": []},
         },
-        "self_reported": usage,
-        "evaluation": {"status": "skipped", "results": []},
-    })
+    )
 
-    _write_json(out / "runtime_profile.json", {
-        "started_at": llm_started_at,
-        "finished_at": _now_iso(),
-        "elapsed_seconds": llm_elapsed,
-        "exit_code": validation_summary["exit_code"],
-        "environment": _runtime_summary(),
-    })
+    _write_json(
+        out / "runtime_profile.json",
+        {
+            "started_at": llm_started_at,
+            "finished_at": _now_iso(),
+            "elapsed_seconds": llm_elapsed,
+            "exit_code": validation_summary["exit_code"],
+            "environment": _runtime_summary(),
+        },
+    )
 
-    _write_json(out / "integrity_check.json", {
-        "status": "delegated",
-        "findings": [],
-        "n_findings": 0,
-        "nested_path": "skill_run/integrity_check.json" if skill_out.exists() else None,
-    })
+    _write_json(
+        out / "integrity_check.json",
+        {
+            "status": "delegated",
+            "findings": [],
+            "n_findings": 0,
+            "nested_path": "skill_run/integrity_check.json" if skill_out.exists() else None,
+        },
+    )
 
     runtime_env = _runtime_summary()
-    _write_json(out / "manifest.json", {
-        "pack_format_version": PACK_FORMAT_VERSION,
-        "pack_kind": PACK_KIND_LLM_SKILL_RUN,
-        "run_id": run_id,
-        "runner": "eval_engine/run_llm_skill.py",
-        "skill_id": manifest.get("id"),
-        "skill_version": manifest.get("version"),
-        "skill_dir": _public_path(skill_dir),
-        "repo_git_sha": _repo_git_sha(),
-        "fixture": {
-            "path": _public_path(fixture),
-            "sha256": _sha256_path(fixture),
-            "is_dir": fixture.is_dir(),
+    _write_json(
+        out / "manifest.json",
+        {
+            "pack_format_version": PACK_FORMAT_VERSION,
+            "pack_kind": PACK_KIND_LLM_SKILL_RUN,
+            "run_id": run_id,
+            "runner": "eval_engine/run_llm_skill.py",
+            "skill_id": manifest.get("id"),
+            "skill_version": manifest.get("version"),
+            "skill_dir": _public_path(skill_dir),
+            "repo_git_sha": _repo_git_sha(),
+            "fixture": {
+                "path": _public_path(fixture),
+                "sha256": _sha256_path(fixture),
+                "is_dir": fixture.is_dir(),
+            },
+            "llm": {
+                "backend": backend,
+                "model": resolved_model,
+                "base_url": resolved_base_url,
+                "api_key_env": resolved_api_key_env or None,
+                "skill_markdown_path": _public_path(skill_md_path),
+                "skill_markdown_sha256": _sha256_path(skill_md_path),
+            },
+            "environment": {
+                "fingerprint": env_fingerprint,
+                "pip_freeze_lines": pip_freeze_text.count("\n"),
+                "pip_freeze_path": "environment.lock",
+                "python_version": runtime_env["python_version"],
+                "platform": runtime_env["platform"],
+            },
+            "nested_skill_pack": SKILL_RUN_SUBDIR if skill_out.exists() else None,
+            "command": _public_command(pack_command),
+            "eval_engine_script": _public_path(Path(__file__).resolve()),
         },
-        "llm": {
-            "backend": backend,
-            "model": resolved_model,
-            "base_url": resolved_base_url,
-            "api_key_env": resolved_api_key_env or None,
-            "skill_markdown_path": _public_path(skill_md_path),
-            "skill_markdown_sha256": _sha256_path(skill_md_path),
-        },
-        "environment": {
-            "fingerprint": env_fingerprint,
-            "pip_freeze_lines": pip_freeze_text.count("\n"),
-            "pip_freeze_path": "environment.lock",
-            "python_version": runtime_env["python_version"],
-            "platform": runtime_env["platform"],
-        },
-        "nested_skill_pack": SKILL_RUN_SUBDIR if skill_out.exists() else None,
-        "command": _public_command(pack_command),
-        "eval_engine_script": _public_path(Path(__file__).resolve()),
-    })
+    )
 
-    _write_json(out / "output.json", {
-        "llm": {
-            "backend": backend,
-            "model": resolved_model,
-            "tool_call": tool_call,
-            "usage": usage,
+    _write_json(
+        out / "output.json",
+        {
+            "llm": {
+                "backend": backend,
+                "model": resolved_model,
+                "tool_call": tool_call,
+                "usage": usage,
+            },
+            "skill_pack": SKILL_RUN_SUBDIR if skill_out.exists() else None,
+            "skill_output": skill_output,
         },
-        "skill_pack": SKILL_RUN_SUBDIR if skill_out.exists() else None,
-        "skill_output": skill_output,
-    })
+    )
 
     replay_cmd = [
         "python3",
@@ -606,10 +659,9 @@ def main(
         'REPO_ROOT="$SCRIPT_DIR"\n'
         'while [ ! -e "$REPO_ROOT/Makefile" ] && [ "$REPO_ROOT" != "/" ]; do\n'
         '  REPO_ROOT="$(dirname "$REPO_ROOT")"\n'
-        'done\n'
+        "done\n"
         '[ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root"; exit 1; }\n'
-        'cd "$REPO_ROOT"\n'
-        + " ".join(replay_cmd) + "\n"
+        'cd "$REPO_ROOT"\n' + " ".join(replay_cmd) + "\n"
     )
     replay_path = out / "replay.sh"
     replay_path.write_text(replay)

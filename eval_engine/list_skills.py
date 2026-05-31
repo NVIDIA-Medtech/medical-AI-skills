@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Generate a SKILL_INDEX of every skill and verifier.
 
 Publishable skills are the primary catalog. Verifiers and repository utilities
@@ -32,9 +47,7 @@ PACK_ROOTS = (
 DISCOVERY_SKILL_DIRS = frozenset()
 
 # Onboarding / flagship skills listed first in SKILL_INDEX (stable order).
-FEATURED_PUBLISHABLE_IDS = (
-    "medagent.dicom_series_preflight",
-)
+FEATURED_PUBLISHABLE_IDS = ("medagent.dicom_series_preflight",)
 
 app = typer.Typer(add_completion=False)
 
@@ -115,8 +128,7 @@ def _rel(target: Path, base_dir: Path) -> str:
 def _pack_links(packs: set[Path], base_dir: Path) -> str:
     return (
         ", ".join(
-            f"[`{p.name}`]({_rel(p, base_dir)}/)"
-            for p in sorted(packs, key=lambda x: x.name)
+            f"[`{p.name}`]({_rel(p, base_dir)}/)" for p in sorted(packs, key=lambda x: x.name)
         )
         or "—"
     )
@@ -151,9 +163,7 @@ def _verifier_coverage(manifest: dict) -> str:
     return ", ".join(parts) or "—"
 
 
-def _publishable_row(
-    manifest_path: Path, manifest: dict, packs: set[Path], base_dir: Path
-) -> str:
+def _publishable_row(manifest_path: Path, manifest: dict, packs: set[Path], base_dir: Path) -> str:
     skill_id = manifest.get("id") or manifest_path.parent.name
     rel_path = _rel(manifest_path.parent, base_dir)
     task = _task_summary(manifest)
@@ -169,9 +179,7 @@ def _publishable_row(
     )
 
 
-def _verifier_row(
-    manifest_path: Path, manifest: dict, packs: set[Path], base_dir: Path
-) -> str:
+def _verifier_row(manifest_path: Path, manifest: dict, packs: set[Path], base_dir: Path) -> str:
     skill_id = manifest.get("id") or manifest_path.parent.name
     rel_path = _rel(manifest_path.parent, base_dir)
     audits = _task_summary(manifest, max_len=100)
@@ -185,17 +193,14 @@ def _verifier_row(
     )
 
 
-def _discovery_row(
-    manifest_path: Path, manifest: dict, packs: set[Path], base_dir: Path
-) -> str:
+def _discovery_row(manifest_path: Path, manifest: dict, packs: set[Path], base_dir: Path) -> str:
     skill_id = manifest.get("id") or manifest_path.parent.name
     rel_path = _rel(manifest_path.parent, base_dir)
     purpose = _task_summary(manifest, max_len=100)
     caller = "agent or maintainer ranking local specs"
     pack_links = _pack_links(packs, base_dir)
     return (
-        f"| `{skill_id}` | {purpose} | [`{rel_path}/`]({rel_path}/) | {caller} | "
-        f"{pack_links} |"
+        f"| `{skill_id}` | {purpose} | [`{rel_path}/`]({rel_path}/) | {caller} | " f"{pack_links} |"
     )
 
 

@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Render a read-only Markdown contract summary for one skill or verifier."""
+
 from __future__ import annotations
 
 import argparse
@@ -10,7 +26,6 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MAX_LIST_ITEMS = 12
@@ -122,12 +137,14 @@ def _input_rows(manifest: dict[str, Any]) -> list[list[Any]]:
     rows: list[list[Any]] = []
     for item in manifest.get("inputs") or []:
         if isinstance(item, dict):
-            rows.append([
-                item.get("name"),
-                item.get("type"),
-                item.get("formats") or "-",
-                item.get("max_size_bytes") or "-",
-            ])
+            rows.append(
+                [
+                    item.get("name"),
+                    item.get("type"),
+                    item.get("formats") or "-",
+                    item.get("max_size_bytes") or "-",
+                ]
+            )
     return rows
 
 
@@ -135,12 +152,14 @@ def _output_rows(skill_dir: Path, manifest: dict[str, Any]) -> list[list[Any]]:
     rows: list[list[Any]] = []
     for item in manifest.get("outputs") or []:
         if isinstance(item, dict):
-            rows.append([
-                item.get("name"),
-                item.get("type"),
-                item.get("schema") or "-",
-                _schema_summary(skill_dir, item),
-            ])
+            rows.append(
+                [
+                    item.get("name"),
+                    item.get("type"),
+                    item.get("schema") or "-",
+                    _schema_summary(skill_dir, item),
+                ]
+            )
     return rows
 
 
@@ -204,12 +223,14 @@ def _paired_verifier_rows(manifest: dict[str, Any]) -> list[list[Any]]:
     rows: list[list[Any]] = []
     for item in manifest.get("paired_verifiers") or []:
         if isinstance(item, dict):
-            rows.append([
-                item.get("id"),
-                item.get("status"),
-                item.get("consumes") or "-",
-                item.get("purpose") or "-",
-            ])
+            rows.append(
+                [
+                    item.get("id"),
+                    item.get("status"),
+                    item.get("consumes") or "-",
+                    item.get("purpose") or "-",
+                ]
+            )
     return rows
 
 
@@ -221,19 +242,23 @@ def _evidence_anchor_rows(skill_id: str) -> list[list[Any]]:
         for manifest_path in sorted(root.rglob("manifest.json")):
             manifest = _load_json(manifest_path)
             if manifest.get("skill_id") == skill_id:
-                rows.append([
-                    _display_path(manifest_path.parent),
-                    manifest.get("pack_kind") or "legacy",
-                    manifest.get("run_id") or "-",
-                ])
+                rows.append(
+                    [
+                        _display_path(manifest_path.parent),
+                        manifest.get("pack_kind") or "legacy",
+                        manifest.get("run_id") or "-",
+                    ]
+                )
         for trust_path in sorted(root.rglob("trust_summary.json")):
             trust = _load_json(trust_path)
             if trust.get("skill_id") == skill_id:
-                rows.append([
-                    _display_path(trust_path.parent),
-                    "trusted_run",
-                    trust.get("overall") or "-",
-                ])
+                rows.append(
+                    [
+                        _display_path(trust_path.parent),
+                        "trusted_run",
+                        trust.get("overall") or "-",
+                    ]
+                )
     return rows
 
 
@@ -252,20 +277,34 @@ def render_contract_summary(skill_dir: Path) -> str:
         "",
         "## Identity",
     ]
-    lines.extend(_table(["Field", "Value"], [
-        ["path", _display_path(skill_dir)],
-        ["manifest_id", manifest.get("id")],
-        ["version", manifest.get("version")],
-        ["frontmatter_name", frontmatter.get("name")],
-        ["description", frontmatter.get("description")],
-        ["license", manifest.get("license") or frontmatter.get("license")],
-        ["intended_use", (manifest.get("intended_use") or {}).get("summary") if isinstance(manifest.get("intended_use"), dict) else manifest.get("intended_use")],
-    ]))
+    lines.extend(
+        _table(
+            ["Field", "Value"],
+            [
+                ["path", _display_path(skill_dir)],
+                ["manifest_id", manifest.get("id")],
+                ["version", manifest.get("version")],
+                ["frontmatter_name", frontmatter.get("name")],
+                ["description", frontmatter.get("description")],
+                ["license", manifest.get("license") or frontmatter.get("license")],
+                [
+                    "intended_use",
+                    (
+                        (manifest.get("intended_use") or {}).get("summary")
+                        if isinstance(manifest.get("intended_use"), dict)
+                        else manifest.get("intended_use")
+                    ),
+                ],
+            ],
+        )
+    )
 
     lines.extend(["", "## Inputs"])
     lines.extend(_table(["Name", "Type", "Formats", "Max Size"], _input_rows(manifest)))
     lines.extend(["", "## Outputs"])
-    lines.extend(_table(["Name", "Type", "Schema", "Required Fields"], _output_rows(skill_dir, manifest)))
+    lines.extend(
+        _table(["Name", "Type", "Schema", "Required Fields"], _output_rows(skill_dir, manifest))
+    )
     lines.extend(["", "## Invocation"])
     lines.extend(_table(["Field", "Value"], _runtime_rows(manifest)))
     lines.extend(["", "## Gates And Reproducibility"])
@@ -273,7 +312,9 @@ def render_contract_summary(skill_dir: Path) -> str:
     lines.extend(["", "## Side Effects"])
     lines.extend(_table(["Field", "Declaration"], _side_effect_rows(manifest)))
     lines.extend(["", "## Paired Verifiers"])
-    lines.extend(_table(["Verifier", "Status", "Consumes", "Purpose"], _paired_verifier_rows(manifest)))
+    lines.extend(
+        _table(["Verifier", "Status", "Consumes", "Purpose"], _paired_verifier_rows(manifest))
+    )
     lines.extend(["", "## Evidence Anchors"])
     lines.extend(_table(["Path", "Kind", "Run/Verdict"], _evidence_anchor_rows(skill_id)))
     lines.extend(["", "## Limitations"])
@@ -281,13 +322,15 @@ def render_contract_summary(skill_dir: Path) -> str:
         lines.extend(f"- {_scalar(item)}" for item in limitations[:MAX_LIST_ITEMS])
     else:
         lines.append("_None declared._")
-    lines.extend([
-        "",
-        "## Reviewer Next Steps",
-        "- Run the direct script from `SKILL.md` for user data.",
-        "- Run `make run-skill` or `make run-trusted` when evidence is needed.",
-        "- Render a review packet for any pack before opening individual JSON files.",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Reviewer Next Steps",
+            "- Run the direct script from `SKILL.md` for user data.",
+            "- Run `make run-skill` or `make run-trusted` when evidence is needed.",
+            "- Render a review packet for any pack before opening individual JSON files.",
+        ]
+    )
     return "\n".join(lines).rstrip() + "\n"
 
 

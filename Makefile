@@ -41,7 +41,7 @@ NV_BASE_REQUIRE_SKILLSPECTOR ?= 1
 
 WORKFLOW_CT_SEG ?= examples/workflows/ct_dicom_to_segmentation_evidence.yaml
 WORKFLOW_CT_SEG_OUT ?= runs/ct_dicom_seg_evidence
-.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without invariants-with-vs-without check-invariants-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study nv-base-check nv-base-validate validate-skills-internal list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix
+.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without invariants-with-vs-without check-invariants-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study nv-base-check nv-base-validate validate-skills-internal list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix copyright copyright-check
 
 help:
 	@echo "Targets:"
@@ -58,6 +58,7 @@ help:
 	@echo "  make validate-pack PACK=<dir>"
 	@echo "  make review-packet PACK=<dir>"
 	@echo "  make lint"
+	@echo "  make copyright"
 	@echo "  make test"
 	@echo "  make verify"
 	@echo ""
@@ -171,6 +172,19 @@ test:
 
 lint:
 	$(PYTHON) -m eval_engine.lint_repo
+
+# Add any missing NVIDIA SPDX copyright headers, then bump the year of existing
+# ones to the current year. Auto-corrects in place; safe to run repeatedly.
+copyright:
+	$(PYTHON) .github/workflows/scripts/add_copyright_headers.py . \
+	  --exclude-config .github/workflows/scripts/copyright_excludes.txt
+	$(PYTHON) .github/workflows/scripts/check_copyright.py . \
+	  --exclude-config .github/workflows/scripts/copyright_excludes.txt --update-current-year
+
+# Read-only header check (what CI runs). Fails if any header is missing/stale.
+copyright-check:
+	$(PYTHON) .github/workflows/scripts/check_copyright.py . \
+	  --exclude-config .github/workflows/scripts/copyright_excludes.txt --ignore-year-mismatch
 
 run-skill:
 	$(PYTHON) eval_engine/run.py skills/$(SKILL_DIR) --fixture $(FIXTURE) --out $(OUT)

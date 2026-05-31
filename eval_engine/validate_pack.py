@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Validate an evidence pack directory against spec/evidence_pack.schema.json.
 
 Reads the pack-level descriptor, walks each declared file, validates JSON files
@@ -10,6 +25,7 @@ Usage:
 
 Exits 0 on pass, 2 on contract violation.
 """
+
 from __future__ import annotations
 
 import json
@@ -76,9 +92,7 @@ def _validate_jsonl(
         except jsonschema.ValidationError as e:
             errors.append(f"{path.name} line {i}: {e.message} at {list(e.absolute_path)}")
             continue
-        warnings.append(
-            f"{path.name} line {i}: accepted legacy trace aliases under --allow-legacy"
-        )
+        warnings.append(f"{path.name} line {i}: accepted legacy trace aliases under --allow-legacy")
     return errors, warnings
 
 
@@ -135,7 +149,9 @@ def _validate_file(
     return "ok", [], []
 
 
-def _check_pack_version(pack_dir: Path, descriptor: dict, allow_legacy: bool) -> tuple[list[str], list[str]]:
+def _check_pack_version(
+    pack_dir: Path, descriptor: dict, allow_legacy: bool
+) -> tuple[list[str], list[str]]:
     """Return (errors, warnings)."""
     manifest_path = pack_dir / "manifest.json"
     if not manifest_path.exists():
@@ -175,7 +191,9 @@ def _validate_single_pack(
     all_errors.extend(errs)
     all_warnings.extend(warns)
 
-    heading = f"validate-pack: {pack_dir}" if label is None else f"validate-pack {label}: {pack_dir}"
+    heading = (
+        f"validate-pack: {pack_dir}" if label is None else f"validate-pack {label}: {pack_dir}"
+    )
     lines: list[str] = [heading]
     for name, decl in descriptor["files"].items():
         status, errs, warns = _validate_file(

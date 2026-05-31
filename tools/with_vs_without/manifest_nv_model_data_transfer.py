@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Describe pending NV direct-study external LLM data transfer without API calls."""
+
 from __future__ import annotations
 
 import argparse
-from collections import defaultdict
 import hashlib
 import json
-from pathlib import Path
 import re
 import sys
+from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -142,7 +158,9 @@ def _pending_transfer_summary(entries: list[dict[str, Any]]) -> dict[str, Any]:
         "user_prompt_bytes": total_user_bytes,
         "total_initial_bytes": total_system_bytes + total_user_bytes,
         "embedded_document_bytes": total_doc_bytes,
-        "by_endpoint_model": sorted(by_endpoint.values(), key=lambda row: (row["endpoint"], row["model"])),
+        "by_endpoint_model": sorted(
+            by_endpoint.values(), key=lambda row: (row["endpoint"], row["model"])
+        ),
         "by_skill": sorted(by_skill.values(), key=lambda row: row["skill"]),
     }
 
@@ -226,7 +244,9 @@ def transfer_payload_fingerprint(entries: list[dict[str, Any]]) -> str:
                 "prompt_style": entry["prompt_style"],
                 "repeat": entry["repeat"],
                 "skill": entry["skill"],
-                "source_fixture_used_only_for_staging": entry["source_fixture_used_only_for_staging"],
+                "source_fixture_used_only_for_staging": entry[
+                    "source_fixture_used_only_for_staging"
+                ],
                 "staged_user_input": entry["staged_user_input"],
                 "system_prompt_bytes": entry["system_prompt_bytes"],
                 "system_prompt_sha256": entry["system_prompt_sha256"],
@@ -270,7 +290,9 @@ def build_manifest(
                 docs = scenario.with_doc if arm == "with" else scenario.without_doc
                 doc_records = _document_records(docs)
                 for repeat in range(1, repeats + 1):
-                    repeat_path = studies._repeat_artifact_path(study, run_mode, backend, arm, repeat)
+                    repeat_path = studies._repeat_artifact_path(
+                        study, run_mode, backend, arm, repeat
+                    )
                     existing = None
                     if resume_missing:
                         existing = studies._load_existing_repeat(
@@ -318,7 +340,9 @@ def build_manifest(
                         "user_prompt_sha256": _sha256_text(user_prompt),
                         "user_prompt_bytes": len(user_prompt.encode()),
                         "documentation": doc_records,
-                        "staged_user_input": str(studies._staged_input_path(scenario).relative_to(REPO_ROOT)),
+                        "staged_user_input": str(
+                            studies._staged_input_path(scenario).relative_to(REPO_ROOT)
+                        ),
                         "source_fixture_used_only_for_staging": scenario.fixture,
                         "expected_output_dir": str(out_dir.relative_to(REPO_ROOT)),
                         "repeat_artifact": _rel(repeat_path),
@@ -564,8 +588,7 @@ def _format_markdown(manifest: dict[str, Any]) -> str:
         else:
             prompt_size = f"{prompt_sizes[0]}-{prompt_sizes[-1]}"
         docs = ", ".join(
-            f"{doc['path']} ({doc['byte_count']} bytes)"
-            for doc in rows[0]["documentation"]
+            f"{doc['path']} ({doc['byte_count']} bytes)" for doc in rows[0]["documentation"]
         )
         repeat_text = f"{repeats[0]}-{repeats[-1]} ({len(repeats)})" if repeats else "0"
         lines.append(
@@ -590,7 +613,9 @@ def _format_markdown(manifest: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skills", nargs="*", default=None, choices=sorted(studies.SCENARIOS))
-    parser.add_argument("--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all")
+    parser.add_argument(
+        "--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all"
+    )
     parser.add_argument("--repeats", type=int, default=studies.DIRECT_REPEATS)
     parser.add_argument("--max-correction-steps", type=int, default=DEFAULT_MAX_CORRECTION_STEPS)
     parser.add_argument("--study-root", type=Path, default=studies.STUDY_ROOT)

@@ -1,0 +1,22 @@
+# Files markdownlint should skip (gitignore syntax).
+
+# Private working notes (gitignored)
+discussions/
+
+# Vendored / downloaded / generated
+skills/*/bundle/
+skills/*/bundles/
+.workbench_data/
+runs/
+node_modules/
+.venv/
+
+# Vendored upstream documentation (not authored here)
+tools/*/upstream_docs/
+
+# Generated index
+SKILL_INDEX.md
+
+# Bot-generated NVSkills signing artifacts (committed by svc-nvskills-signing)
+**/skill-card.md
+**/BENCHMARK.md

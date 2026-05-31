@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Tests for eval_engine.skill_runtime.render_runtime_args."""
+
 import json
 import os
 import subprocess
@@ -54,7 +70,11 @@ def test_explicit_default_args(tmp_path):
 def test_out_token(tmp_path):
     skill_dir, script, fixture, out = _ctx(tmp_path)
     cmd = render_runtime_args(
-        manifest={"runtime": {"args": ["${python}", "${script}", "${fixture}", "--output", "${out}/result.nii.gz"]}},
+        manifest={
+            "runtime": {
+                "args": ["${python}", "${script}", "${fixture}", "--output", "${out}/result.nii.gz"]
+            }
+        },
         script=script,
         fixture=fixture,
         out=out,
@@ -140,25 +160,30 @@ def test_env_token_not_written_to_pack_metadata_or_replay(tmp_path):
     skill = tmp_path / "toy_secret_skill"
     (skill / "scripts").mkdir(parents=True)
     (skill / "SKILL.md").write_text("# Toy\n")
-    (skill / "skill_manifest.yaml").write_text("\n".join([
-        "id: test.toy_secret_args",
-        "version: 0.1.0",
-        "inputs:",
-        "  - name: fixture",
-        "    type: file_path",
-        "outputs:",
-        "  - name: result_json",
-        "    type: json",
-        "runtime:",
-        "  language: python",
-        "  entrypoint: scripts/run.py",
-        "  args:",
-        "    - \"${python}\"",
-        "    - \"${script}\"",
-        "    - \"${fixture}\"",
-        "    - \"--token\"",
-        "    - \"${env.FAKE_TOKEN}\"",
-    ]) + "\n")
+    (skill / "skill_manifest.yaml").write_text(
+        "\n".join(
+            [
+                "id: test.toy_secret_args",
+                "version: 0.1.0",
+                "inputs:",
+                "  - name: fixture",
+                "    type: file_path",
+                "outputs:",
+                "  - name: result_json",
+                "    type: json",
+                "runtime:",
+                "  language: python",
+                "  entrypoint: scripts/run.py",
+                "  args:",
+                '    - "${python}"',
+                '    - "${script}"',
+                '    - "${fixture}"',
+                '    - "--token"',
+                '    - "${env.FAKE_TOKEN}"',
+            ]
+        )
+        + "\n"
+    )
     (skill / "scripts" / "run.py").write_text(
         "import argparse, json\n"
         "p = argparse.ArgumentParser()\n"
@@ -172,8 +197,15 @@ def test_env_token_not_written_to_pack_metadata_or_replay(tmp_path):
     env = os.environ.copy()
     env["FAKE_TOKEN"] = "sk-secret-value"
     proc = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "eval_engine" / "run.py"), str(skill),
-         "--fixture", str(fixture), "--out", str(out)],
+        [
+            sys.executable,
+            str(REPO_ROOT / "eval_engine" / "run.py"),
+            str(skill),
+            "--fixture",
+            str(fixture),
+            "--out",
+            str(out),
+        ],
         cwd=REPO_ROOT,
         env=env,
         capture_output=True,

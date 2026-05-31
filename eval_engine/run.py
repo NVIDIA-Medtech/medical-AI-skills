@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Minimal eval_engine runner for medagent skills.
 
 Reads skill_manifest.yaml in the skill_dir to discover entrypoint, invokes
@@ -7,6 +22,7 @@ the skill's output_schema.json, writes evidence pack.
 
 Friction-discovery scaffolding. Not production.
 """
+
 from __future__ import annotations
 
 import json
@@ -100,7 +116,9 @@ def _evaluate_factual_echo_gate(
     return _evaluate_factual_echo(fixture_payload, output_payload, decl)
 
 
-def _runtime_envelope_status(manifest: dict, output_payload: dict | None, elapsed: float) -> tuple[str, str | None]:
+def _runtime_envelope_status(
+    manifest: dict, output_payload: dict | None, elapsed: float
+) -> tuple[str, str | None]:
     rt_env = manifest.get("validation", {}).get("expected_runtime_seconds", {})
     rt_min = rt_env.get("min")
     rt_max = rt_env.get("max")
@@ -113,9 +131,15 @@ def _runtime_envelope_status(manifest: dict, output_payload: dict | None, elapse
             rt_value = skill_reported
             rt_source = f"skill_reported({rt_path})"
     if rt_min is not None and rt_value < rt_min:
-        return "anomaly_too_fast", f"{rt_source}={rt_value:.3f}s < expected min {rt_min}s -- possible silent failure"
+        return (
+            "anomaly_too_fast",
+            f"{rt_source}={rt_value:.3f}s < expected min {rt_min}s -- possible silent failure",
+        )
     if rt_max is not None and rt_value > rt_max:
-        return "anomaly_too_slow", f"{rt_source}={rt_value:.3f}s > expected max {rt_max}s -- possible regression"
+        return (
+            "anomaly_too_slow",
+            f"{rt_source}={rt_value:.3f}s > expected max {rt_max}s -- possible regression",
+        )
     if rt_min is not None or rt_max is not None:
         return "within_envelope", None
     return "skipped", None
@@ -231,8 +255,16 @@ def main(
         typer.echo("  schema: skipped")
         typer.echo("  sanity: skipped")
         typer.echo("  runtime: skipped")
-        typer.echo("  integrity: " + integrity["status"] + " (" + str(integrity["n_findings"]) + " findings)")
-        typer.echo("  overall: " + ("skipped (env_unavailable)" if is_env_skip else "preflight_failed"))
+        typer.echo(
+            "  integrity: "
+            + integrity["status"]
+            + " ("
+            + str(integrity["n_findings"])
+            + " findings)"
+        )
+        typer.echo(
+            "  overall: " + ("skipped (env_unavailable)" if is_env_skip else "preflight_failed")
+        )
         typer.echo("  exit code: " + str(proc_returncode))
         if not is_env_skip:
             help_msg = (_first_input(manifest).get("fixture_help") or "").strip()
@@ -290,8 +322,14 @@ def main(
             "cwd": _public_path(Path.cwd()),
             "args": [_public_path(fixture)],
         },
-        {"ts": finished_at, "kind": "tool_call_end", "exit_code": proc.returncode,
-         "elapsed_s": elapsed, "stdout_bytes": len(proc.stdout), "stderr_bytes": len(proc.stderr)},
+        {
+            "ts": finished_at,
+            "kind": "tool_call_end",
+            "exit_code": proc.returncode,
+            "elapsed_s": elapsed,
+            "stdout_bytes": len(proc.stdout),
+            "stderr_bytes": len(proc.stderr),
+        },
     ]
 
     output_payload = None
@@ -313,7 +351,9 @@ def main(
     )
     mi_status, mi_results = _evaluate_model_identity(manifest, output_payload or {})
     ri_decl = manifest.get("validation", {}).get("runtime_integrity")
-    ri_status, ri_findings = _evaluate_runtime_integrity(output_payload or {}, ri_decl or {}, skill_dir)
+    ri_status, ri_findings = _evaluate_runtime_integrity(
+        output_payload or {}, ri_decl or {}, skill_dir
+    )
     runtime_status, runtime_reason = _runtime_envelope_status(manifest, output_payload, elapsed)
 
     integrity = _integrity_scan(skill_dir)
@@ -401,9 +441,14 @@ def main(
     typer.echo("  env_pin: " + env_pin_status)
     typer.echo("  factual_echo: " + fe_status)
     typer.echo("  model_identity: " + mi_status)
-    typer.echo("  runtime_integrity: " + ri_status + (
-        " (" + str(len(ri_findings)) + " findings)" if ri_findings else ""))
-    typer.echo("  integrity: " + integrity["status"] + " (" + str(integrity["n_findings"]) + " findings)")
+    typer.echo(
+        "  runtime_integrity: "
+        + ri_status
+        + (" (" + str(len(ri_findings)) + " findings)" if ri_findings else "")
+    )
+    typer.echo(
+        "  integrity: " + integrity["status"] + " (" + str(integrity["n_findings"]) + " findings)"
+    )
     typer.echo("  overall: " + overall)
     typer.echo("  exit code: " + str(proc.returncode))
     if overall != "passed":

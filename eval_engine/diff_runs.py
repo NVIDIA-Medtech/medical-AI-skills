@@ -1,9 +1,25 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Diff two evidence packs to surface drift between runs.
 
 Compares: environment fingerprint, validation gate statuses, output payload
 key fields, runtime profiles. Writes a `drift_report.md` to a chosen out dir.
 """
+
 import json
 import re
 from pathlib import Path
@@ -24,13 +40,13 @@ def _load(pack: Path, name: str):
 
 # Paths that vary across runs without semantic meaning (timing jitter, run-id, etc.)
 IGNORE_PATTERNS = [
-    re.compile(r"runtime\."),               # all runtime timings
+    re.compile(r"runtime\."),  # all runtime timings
     re.compile(r".*\.elapsed_seconds"),
     re.compile(r"run_id"),
     re.compile(r"started_at"),
     re.compile(r"finished_at"),
     re.compile(r"sha256"),
-    re.compile(r"(^|\.)path$"),              # filesystem paths (/<home>/...)
+    re.compile(r"(^|\.)path$"),  # filesystem paths (/<home>/...)
     # DICOM SEG outputs carry a fresh SOPInstanceUID per invocation and
     # the file body embeds ContentDate/ContentTime, so the per-file
     # entries and total_bytes jitter run-to-run without telling us
@@ -64,7 +80,9 @@ def main(
     pack_a: Path = typer.Argument(..., exists=True, file_okay=False),
     pack_b: Path = typer.Argument(..., exists=True, file_okay=False),
     out: Path = typer.Option(None, "--out", help="output drift_report.md path"),
-    ignore_env: bool = typer.Option(False, "--ignore-env", help="Do not fail when only the environment fingerprint changed."),
+    ignore_env: bool = typer.Option(
+        False, "--ignore-env", help="Do not fail when only the environment fingerprint changed."
+    ),
 ) -> None:
     """Diff two evidence packs and emit drift_report.md."""
     if out is None:
@@ -77,8 +95,12 @@ def main(
     val_b = _load(pack_b, "validation_summary.json") or {}
     out_a = _load(pack_a, "output.json") or {}
     out_b = _load(pack_b, "output.json") or {}
-    env_a = (pack_a / "environment.lock").read_text() if (pack_a / "environment.lock").exists() else ""
-    env_b = (pack_b / "environment.lock").read_text() if (pack_b / "environment.lock").exists() else ""
+    env_a = (
+        (pack_a / "environment.lock").read_text() if (pack_a / "environment.lock").exists() else ""
+    )
+    env_b = (
+        (pack_b / "environment.lock").read_text() if (pack_b / "environment.lock").exists() else ""
+    )
 
     fp_a = man_a.get("environment", {}).get("fingerprint", "")
     fp_b = man_b.get("environment", {}).get("fingerprint", "")
@@ -92,7 +114,14 @@ def main(
 
     # Status gate diffs
     gate_diffs = []
-    for k in ("preflight_status", "schema_status", "sanity_status", "runtime_status", "integrity_status", "overall_status"):
+    for k in (
+        "preflight_status",
+        "schema_status",
+        "sanity_status",
+        "runtime_status",
+        "integrity_status",
+        "overall_status",
+    ):
         if val_a.get(k) != val_b.get(k):
             gate_diffs.append((k, val_a.get(k), val_b.get(k)))
 
@@ -152,7 +181,9 @@ def main(
     out.write_text("\n".join(lines))
     typer.echo(f"drift report: {out}")
     typer.echo(f"  drift detected: {drift_detected}")
-    typer.echo(f"  env_drift: {env_drift}, gate_diffs: {len(gate_diffs)}, payload_diffs: {len(payload_diffs)}")
+    typer.echo(
+        f"  env_drift: {env_drift}, gate_diffs: {len(gate_diffs)}, payload_diffs: {len(payload_diffs)}"
+    )
     if drift_detected:
         raise typer.Exit(1)
 

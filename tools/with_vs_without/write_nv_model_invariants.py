@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Write stable NV with-vs-without invariant snapshots.
 
 Raw study records are intentionally local and ignored. This snapshot is the
@@ -21,9 +36,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from tools.with_vs_without import audit_nv_model_studies as audit  # noqa: E402
-from tools.with_vs_without import (
-    manifest_nv_model_data_transfer as transfer,
-)  # noqa: E402
+from tools.with_vs_without import manifest_nv_model_data_transfer as transfer  # noqa: E402
 from tools.with_vs_without import run_nv_model_studies as studies  # noqa: E402
 
 SNAPSHOT_PATH = REPO_ROOT / "tools/with_vs_without/data/nv_model_study_invariants.json"
@@ -148,8 +161,7 @@ def _summary_from_record(record: dict[str, Any]) -> dict[str, Any]:
     scores = [
         row["score"]
         for row in outcomes
-        if isinstance(row.get("score"), (int, float))
-        and not isinstance(row["score"], bool)
+        if isinstance(row.get("score"), (int, float)) and not isinstance(row["score"], bool)
     ]
     return {
         "backend": str(record.get("backend", "")),
@@ -163,9 +175,7 @@ def _summary_from_record(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _aggregate_summaries(
-    skill: str, mode: str, study_root: Path
-) -> list[dict[str, Any]]:
+def _aggregate_summaries(skill: str, mode: str, study_root: Path) -> list[dict[str, Any]]:
     study_dir = audit._study_dir_for_mode(study_root, skill, mode)
     rows: list[dict[str, Any]] = []
     for backend, arm, filename in audit._study_checks_for_mode(mode):
@@ -203,9 +213,7 @@ def _snapshot_documents(transfer_manifest: dict[str, Any]) -> list[dict[str, Any
     return [by_path[path] for path in sorted(by_path)]
 
 
-def _prompt_artifact_records(
-    skills: list[str], prompt_root: Path
-) -> list[dict[str, Any]]:
+def _prompt_artifact_records(skills: list[str], prompt_root: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for skill in skills:
         path = prompt_root / f"eval_nv_model_studies_{skill}_prompts.json"
@@ -297,16 +305,13 @@ def build_snapshot(
     documents = _snapshot_documents(transfer_manifest)
     prompt_artifacts = _prompt_artifact_records(selected, prompt_root)
     source_fixtures = [
-        _tracked_path_fingerprint(studies.SCENARIOS[skill].fixture)
-        for skill in selected
+        _tracked_path_fingerprint(studies.SCENARIOS[skill].fixture) for skill in selected
     ]
     staged_inputs = [
         {
             "skill": skill,
             "staged_user_input": str(
-                studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(
-                    REPO_ROOT
-                )
+                studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(REPO_ROOT)
             ),
             "source_fixture": studies.SCENARIOS[skill].fixture,
         }

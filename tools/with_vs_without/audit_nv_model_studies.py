@@ -1,13 +1,29 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Audit NV with-vs-without study artifacts for protocol completeness."""
+
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import json
 import math
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -16,23 +32,23 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from tools.with_vs_without.run_nv_model_studies import (  # noqa: E402
     BACKENDS,
-    DIRECT_REPEATS,
     DIRECT_MAX_CORRECTION_STEPS,
+    DIRECT_REPEATS,
     DIRECT_SYSTEM_PROMPT,
     EXTERNAL_LLM_DATA_TRANSFER_FLAG,
-    PROMPT_ARTIFACT_ROOT,
     PROMPT_ARTIFACT_ANSWER,
+    PROMPT_ARTIFACT_ROOT,
     SCENARIOS,
-    _documentation_records,
+    STUDY_ROOT,
     _backend_protocol,
     _comparison_markdown,
+    _documentation_records,
     _extract_command,
     _feedback,
     _prompt,
     _repair_feedback_forbidden_markers,
-    _safe_to_execute,
-    STUDY_ROOT,
     _repeat_out_dir,
+    _safe_to_execute,
     _skill_doc_dir,
     _staged_input_path,
 )
@@ -151,7 +167,9 @@ def _audit_scenario_document_contract(skill: str, path: Path) -> list[dict[str, 
 
 def _expected_prompt_out_dir(skill: str, mode: str, backend: str, arm: str, repeat: int) -> str:
     run_mode = "codex_opus" if mode == "codex-opus" else "nemotron_correction"
-    return str(_repeat_out_dir(skill, run_mode, BACKENDS[backend], arm, repeat).relative_to(REPO_ROOT))
+    return str(
+        _repeat_out_dir(skill, run_mode, BACKENDS[backend], arm, repeat).relative_to(REPO_ROOT)
+    )
 
 
 def _expected_documentation_arm(skill: str, arm: str) -> list[str]:
@@ -208,7 +226,9 @@ def _audit_path_prompt_question_documentation(
     return issues
 
 
-def _normalize_pair_question(skill: str, mode: str, backend: str, arm: str, repeat: int, question: str) -> str:
+def _normalize_pair_question(
+    skill: str, mode: str, backend: str, arm: str, repeat: int, question: str
+) -> str:
     """Remove the intentional arm-specific prompt differences before comparing pairs."""
     scenario = SCENARIOS[skill]
     doc_path = (scenario.with_doc if arm == "with" else scenario.without_doc)[0]
@@ -221,7 +241,9 @@ def _normalize_pair_question(skill: str, mode: str, backend: str, arm: str, repe
     )
 
 
-def _normalize_direct_minimal_prompt(skill: str, mode: str, backend: str, arm: str, repeat: int) -> str:
+def _normalize_direct_minimal_prompt(
+    skill: str, mode: str, backend: str, arm: str, repeat: int
+) -> str:
     """Normalize intentional arm differences from the direct embedded-doc prompt."""
     scenario = SCENARIOS[skill]
     out_dir = _repeat_out_dir(
@@ -379,7 +401,10 @@ def _audit_prompt_pair(
                 )
             )
 
-    for arm, index, row in (("with", with_index, with_row), ("without", without_index, without_row)):
+    for arm, index, row in (
+        ("with", with_index, with_row),
+        ("without", without_index, without_row),
+    ):
         expected_docs = _expected_documentation_arm(skill, arm)
         if row.get("documentation_arm") != expected_docs:
             issues.append(
@@ -428,8 +453,12 @@ def _audit_prompt_pair(
     with_question = with_row.get("question")
     without_question = without_row.get("question")
     if isinstance(with_question, str) and isinstance(without_question, str):
-        normalized_with = _normalize_pair_question(skill, mode, backend, "with", repeat, with_question)
-        normalized_without = _normalize_pair_question(skill, mode, backend, "without", repeat, without_question)
+        normalized_with = _normalize_pair_question(
+            skill, mode, backend, "with", repeat, with_question
+        )
+        normalized_without = _normalize_pair_question(
+            skill, mode, backend, "without", repeat, without_question
+        )
         if normalized_with != normalized_without:
             issues.append(
                 _issue(
@@ -485,18 +514,46 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
                 expected_out_dir = None
         else:
             expected_out_dir = None
-            issues.append(_issue("invalid_record_key", row_path, "mode/backend/arm/repeat are missing or invalid"))
+            issues.append(
+                _issue(
+                    "invalid_record_key", row_path, "mode/backend/arm/repeat are missing or invalid"
+                )
+            )
 
         if row.get("skill") != skill:
             issues.append(_issue("wrong_skill", row_path, f"expected skill={skill!r}"))
         if row.get("prompt_style") != "path":
-            issues.append(_issue("wrong_prompt_style", row_path, "fair tool-agent prompts must use prompt_style='path'"))
+            issues.append(
+                _issue(
+                    "wrong_prompt_style",
+                    row_path,
+                    "fair tool-agent prompts must use prompt_style='path'",
+                )
+            )
         if row.get("system") != DIRECT_SYSTEM_PROMPT:
-            issues.append(_issue("wrong_system_prompt", row_path, "system prompt must match the fixed direct-study system prompt"))
+            issues.append(
+                _issue(
+                    "wrong_system_prompt",
+                    row_path,
+                    "system prompt must match the fixed direct-study system prompt",
+                )
+            )
         if row.get("answer") != PROMPT_ARTIFACT_ANSWER:
-            issues.append(_issue("wrong_answer_template", row_path, "answer must be the fixed generic response-shape template"))
+            issues.append(
+                _issue(
+                    "wrong_answer_template",
+                    row_path,
+                    "answer must be the fixed generic response-shape template",
+                )
+            )
         if row.get("prompt_source") != PATH_PROMPT_SOURCE:
-            issues.append(_issue("wrong_prompt_source", row_path, f"expected prompt_source={PATH_PROMPT_SOURCE!r}"))
+            issues.append(
+                _issue(
+                    "wrong_prompt_source",
+                    row_path,
+                    f"expected prompt_source={PATH_PROMPT_SOURCE!r}",
+                )
+            )
         if row.get("runner") != RUNNER_SOURCE:
             issues.append(_issue("wrong_runner", row_path, f"expected runner={RUNNER_SOURCE!r}"))
         if row.get("correction_budget_steps") != DIRECT_MAX_CORRECTION_STEPS:
@@ -511,9 +568,21 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
         if isinstance(backend, str) and backend in BACKENDS:
             expected_backend = BACKENDS[backend]
             if row.get("backend_label") != expected_backend.label:
-                issues.append(_issue("wrong_backend_label", row_path, f"expected backend_label={expected_backend.label!r}"))
+                issues.append(
+                    _issue(
+                        "wrong_backend_label",
+                        row_path,
+                        f"expected backend_label={expected_backend.label!r}",
+                    )
+                )
             if row.get("backend_model") != expected_backend.model:
-                issues.append(_issue("wrong_backend_model", row_path, f"expected backend_model={expected_backend.model!r}"))
+                issues.append(
+                    _issue(
+                        "wrong_backend_model",
+                        row_path,
+                        f"expected backend_model={expected_backend.model!r}",
+                    )
+                )
             if row.get("backend_protocol") != _backend_protocol(expected_backend):
                 issues.append(
                     _issue(
@@ -523,7 +592,9 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
                     )
                 )
         if row.get("repeat_count") != repeats:
-            issues.append(_issue("wrong_repeat_count", row_path, f"expected repeat_count={repeats}"))
+            issues.append(
+                _issue("wrong_repeat_count", row_path, f"expected repeat_count={repeats}")
+            )
         if expected_out_dir is not None and row.get("expected_output_dir") != expected_out_dir:
             issues.append(
                 _issue(
@@ -544,9 +615,21 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
         out_dir = row.get("expected_output_dir")
         question = row.get("question")
         if not isinstance(out_dir, str) or "/repeat_" not in out_dir:
-            issues.append(_issue("missing_repeat_output_dir", row_path, "expected_output_dir must include /repeat_N"))
+            issues.append(
+                _issue(
+                    "missing_repeat_output_dir",
+                    row_path,
+                    "expected_output_dir must include /repeat_N",
+                )
+            )
         if not isinstance(question, str) or not isinstance(out_dir, str) or out_dir not in question:
-            issues.append(_issue("question_missing_output_dir", row_path, "question must include expected_output_dir"))
+            issues.append(
+                _issue(
+                    "question_missing_output_dir",
+                    row_path,
+                    "question must include expected_output_dir",
+                )
+            )
         if isinstance(question, str) and expected_out_dir is not None:
             if expected_staged_input not in question:
                 issues.append(
@@ -556,7 +639,9 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
                         "question must include the neutral staged input path",
                     )
                 )
-            expected_question = _prompt(SCENARIOS[skill], str(key[2]), REPO_ROOT / expected_out_dir, "path")
+            expected_question = _prompt(
+                SCENARIOS[skill], str(key[2]), REPO_ROOT / expected_out_dir, "path"
+            )
             if question != expected_question:
                 issues.append(
                     _issue(
@@ -586,11 +671,27 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
         source_name = Path(SCENARIOS[skill].fixture).name
         staged_input = row.get("staged_user_input")
         if isinstance(question, str) and source_name in question:
-            issues.append(_issue("fixture_name_leaked", row_path, "question must use the neutral staged input path"))
+            issues.append(
+                _issue(
+                    "fixture_name_leaked",
+                    row_path,
+                    "question must use the neutral staged input path",
+                )
+            )
         if isinstance(staged_input, str) and source_name in staged_input:
-            issues.append(_issue("fixture_name_leaked", row_path, "staged_user_input must use a neutral filename"))
+            issues.append(
+                _issue(
+                    "fixture_name_leaked", row_path, "staged_user_input must use a neutral filename"
+                )
+            )
         if row.get("source_fixture_used_only_for_staging") != SCENARIOS[skill].fixture:
-            issues.append(_issue("wrong_source_fixture", row_path, "source fixture metadata does not match scenario"))
+            issues.append(
+                _issue(
+                    "wrong_source_fixture",
+                    row_path,
+                    "source fixture metadata does not match scenario",
+                )
+            )
         repair_prompt = row.get("repair_prompt")
         expected_repair_fragment = (
             "Repair prompts are disabled"
@@ -608,10 +709,16 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
 
     expected_count = len(expected_keys)
     if len(rows) != expected_count:
-        issues.append(_issue("wrong_record_count", path, f"expected {expected_count} records, found {len(rows)}"))
+        issues.append(
+            _issue(
+                "wrong_record_count", path, f"expected {expected_count} records, found {len(rows)}"
+            )
+        )
     duplicate_ids = sorted({item for item in ids if ids.count(item) > 1})
     if duplicate_ids:
-        issues.append(_issue("duplicate_ids", path, f"duplicate ids: {', '.join(duplicate_ids[:5])}"))
+        issues.append(
+            _issue("duplicate_ids", path, f"duplicate ids: {', '.join(duplicate_ids[:5])}")
+        )
     if duplicate_keys:
         sample = ", ".join(str(item) for item in sorted(set(duplicate_keys))[:5])
         issues.append(_issue("duplicate_prompt_keys", path, f"duplicate prompt keys: {sample}"))
@@ -682,7 +789,9 @@ def audit_prompt_artifact(skill: str, *, prompt_root: Path, repeats: int) -> dic
 
 def _repeat_output_dir(skill: str, mode: str, backend: str, arm: str, repeat: int) -> str:
     run_mode = "codex_opus" if mode == "codex-opus" else "nemotron_correction"
-    return str(_repeat_out_dir(skill, run_mode, BACKENDS[backend], arm, repeat).relative_to(REPO_ROOT))
+    return str(
+        _repeat_out_dir(skill, run_mode, BACKENDS[backend], arm, repeat).relative_to(REPO_ROOT)
+    )
 
 
 def _scores_match(left: Any, right: Any) -> bool:
@@ -698,7 +807,9 @@ def _record_repeats(record: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
-def _records_by_backend_repeat(records: list[dict[str, Any]]) -> dict[tuple[str, int], dict[str, Any]]:
+def _records_by_backend_repeat(
+    records: list[dict[str, Any]],
+) -> dict[tuple[str, int], dict[str, Any]]:
     indexed: dict[tuple[str, int], dict[str, Any]] = {}
     for record in records:
         backend = str(record.get("backend") or "")
@@ -723,7 +834,9 @@ def _paired_sign_test(with_wins: int, without_wins: int, ties: int, matched: int
     """Descriptive exact paired sign-test summary for the with-skill advantage."""
     decisive = with_wins + without_wins
     if decisive:
-        p_value = sum(math.comb(decisive, k) for k in range(with_wins, decisive + 1)) / (2**decisive)
+        p_value = sum(math.comb(decisive, k) for k in range(with_wins, decisive + 1)) / (
+            2**decisive
+        )
         win_rate = with_wins / decisive
     else:
         p_value = None
@@ -846,8 +959,7 @@ def _paired_advantage_gate(summary: dict[str, Any]) -> dict[str, Any]:
         )
     else:
         reason = (
-            f"SKILL.md and README-only are tied at {with_wins}/{matched} "
-            "matched pair win(s)"
+            f"SKILL.md and README-only are tied at {with_wins}/{matched} " "matched pair win(s)"
         )
     return {
         "supports_skill_advantage": False,
@@ -892,7 +1004,9 @@ def _summary_from_repeats(repeat_rows: list[dict[str, Any]]) -> dict[str, Any] |
         "steps_to_pass": {
             "resolved_count": len(resolved_steps),
             "unresolved_count": len(step_values) - len(resolved_steps),
-            "mean_resolved": (sum(resolved_steps) / len(resolved_steps)) if resolved_steps else None,
+            "mean_resolved": (
+                (sum(resolved_steps) / len(resolved_steps)) if resolved_steps else None
+            ),
             "min_resolved": min(resolved_steps) if resolved_steps else None,
             "max_resolved": max(resolved_steps) if resolved_steps else None,
             "values": step_values,
@@ -908,7 +1022,9 @@ def _values_equal(left: Any, right: Any) -> bool:
     return left == right
 
 
-def _validate_aggregate_summary(summary: dict[str, Any], expected: dict[str, Any], path: Path) -> list[dict[str, str]]:
+def _validate_aggregate_summary(
+    summary: dict[str, Any], expected: dict[str, Any], path: Path
+) -> list[dict[str, str]]:
     issues: list[dict[str, str]] = []
     for key in ("pass_count", "fail_count", "mean_score", "scores"):
         if not _values_equal(summary.get(key), expected.get(key)):
@@ -922,7 +1038,9 @@ def _validate_aggregate_summary(summary: dict[str, Any], expected: dict[str, Any
     steps = summary.get("steps_to_pass")
     expected_steps = expected["steps_to_pass"]
     if not isinstance(steps, dict):
-        issues.append(_issue("wrong_summary_steps_to_pass", path, "summary.steps_to_pass must be an object"))
+        issues.append(
+            _issue("wrong_summary_steps_to_pass", path, "summary.steps_to_pass must be an object")
+        )
         return issues
     for key in ("resolved_count", "unresolved_count", "values"):
         if not _values_equal(steps.get(key), expected_steps.get(key)):
@@ -960,12 +1078,20 @@ def _validate_repair_protocol(
     if not isinstance(attempts, list):
         return issues
     if not attempts:
-        issues.append(_issue("empty_attempts", path, "repeat artifact must include at least one attempt"))
+        issues.append(
+            _issue("empty_attempts", path, "repeat artifact must include at least one attempt")
+        )
         return issues
 
     max_steps = record.get("max_correction_steps")
     if not isinstance(max_steps, int) or max_steps < 0:
-        issues.append(_issue("missing_max_correction_steps", path, "max_correction_steps must be a non-negative integer"))
+        issues.append(
+            _issue(
+                "missing_max_correction_steps",
+                path,
+                "max_correction_steps must be a non-negative integer",
+            )
+        )
     elif len(attempts) > max_steps + 1:
         issues.append(
             _issue(
@@ -976,20 +1102,34 @@ def _validate_repair_protocol(
         )
 
     expected_steps = list(range(len(attempts)))
-    actual_steps = [attempt.get("step") if isinstance(attempt, dict) else None for attempt in attempts]
+    actual_steps = [
+        attempt.get("step") if isinstance(attempt, dict) else None for attempt in attempts
+    ]
     if actual_steps != expected_steps:
-        issues.append(_issue("wrong_attempt_steps", path, f"expected attempt step sequence {expected_steps}, got {actual_steps}"))
+        issues.append(
+            _issue(
+                "wrong_attempt_steps",
+                path,
+                f"expected attempt step sequence {expected_steps}, got {actual_steps}",
+            )
+        )
 
     for index, attempt in enumerate(attempts):
         attempt_path = Path(f"{path}#attempts[{index}]")
         if not isinstance(attempt, dict):
-            issues.append(_issue("invalid_attempt_shape", attempt_path, "attempt must be an object"))
+            issues.append(
+                _issue("invalid_attempt_shape", attempt_path, "attempt must be an object")
+            )
             continue
         if attempt.get("backend") != backend:
-            issues.append(_issue("wrong_attempt_backend", attempt_path, f"expected backend={backend!r}"))
+            issues.append(
+                _issue("wrong_attempt_backend", attempt_path, f"expected backend={backend!r}")
+            )
         expected_model = BACKENDS[backend].model
         if attempt.get("model") != expected_model:
-            issues.append(_issue("wrong_attempt_model", attempt_path, f"expected model={expected_model!r}"))
+            issues.append(
+                _issue("wrong_attempt_model", attempt_path, f"expected model={expected_model!r}")
+            )
         if attempt.get("backend_protocol") != _backend_protocol(BACKENDS[backend]):
             issues.append(
                 _issue(
@@ -1001,10 +1141,18 @@ def _validate_repair_protocol(
         if attempt.get("arm") != arm:
             issues.append(_issue("wrong_attempt_arm", attempt_path, f"expected arm={arm!r}"))
         if "command" not in attempt:
-            issues.append(_issue("missing_attempt_command", attempt_path, "attempt.command is missing"))
+            issues.append(
+                _issue("missing_attempt_command", attempt_path, "attempt.command is missing")
+            )
         response = attempt.get("response")
         if not isinstance(response, str):
-            issues.append(_issue("missing_attempt_response", attempt_path, "attempt.response must preserve the backend response text"))
+            issues.append(
+                _issue(
+                    "missing_attempt_response",
+                    attempt_path,
+                    "attempt.response must preserve the backend response text",
+                )
+            )
         elif attempt.get("command") != _extract_command(response):
             issues.append(
                 _issue(
@@ -1014,12 +1162,20 @@ def _validate_repair_protocol(
                 )
             )
         if not isinstance(attempt.get("usage"), dict):
-            issues.append(_issue("missing_attempt_usage", attempt_path, "attempt.usage must preserve backend usage metadata"))
+            issues.append(
+                _issue(
+                    "missing_attempt_usage",
+                    attempt_path,
+                    "attempt.usage must preserve backend usage metadata",
+                )
+            )
         if not isinstance(attempt.get("score"), dict):
             issues.append(_issue("missing_attempt_score", attempt_path, "attempt.score is missing"))
         execution = attempt.get("execution")
         if not isinstance(execution, dict):
-            issues.append(_issue("missing_attempt_execution", attempt_path, "attempt.execution is missing"))
+            issues.append(
+                _issue("missing_attempt_execution", attempt_path, "attempt.execution is missing")
+            )
         else:
             expected_out_dir = _repeat_out_dir(
                 skill,
@@ -1028,7 +1184,9 @@ def _validate_repair_protocol(
                 arm,
                 repeat,
             )
-            safe, reason = _safe_to_execute(SCENARIOS[skill], arm, attempt.get("command"), expected_out_dir)
+            safe, reason = _safe_to_execute(
+                SCENARIOS[skill], arm, attempt.get("command"), expected_out_dir
+            )
             if not safe:
                 if execution.get("executed") is not False or execution.get("reason") != reason:
                     issues.append(
@@ -1048,7 +1206,13 @@ def _validate_repair_protocol(
                 )
         messages = attempt.get("messages")
         if not isinstance(messages, list):
-            issues.append(_issue("missing_attempt_messages", attempt_path, "attempt.messages must preserve the prompt history"))
+            issues.append(
+                _issue(
+                    "missing_attempt_messages",
+                    attempt_path,
+                    "attempt.messages must preserve the prompt history",
+                )
+            )
             continue
         expected_message_count = 2 + 2 * index
         if len(messages) != expected_message_count:
@@ -1071,7 +1235,13 @@ def _validate_repair_protocol(
             )
         if index == 0:
             if roles[:2] != ["system", "user"]:
-                issues.append(_issue("wrong_initial_message_roles", attempt_path, "initial attempt must start with system,user messages"))
+                issues.append(
+                    _issue(
+                        "wrong_initial_message_roles",
+                        attempt_path,
+                        "initial attempt must start with system,user messages",
+                    )
+                )
             else:
                 system_msg = messages[0]
                 user_msg = messages[1]
@@ -1082,7 +1252,9 @@ def _validate_repair_protocol(
                     arm,
                     repeat,
                 )
-                expected_user = _prompt(SCENARIOS[skill], arm, expected_out_dir, DIRECT_PROMPT_STYLE)
+                expected_user = _prompt(
+                    SCENARIOS[skill], arm, expected_out_dir, DIRECT_PROMPT_STYLE
+                )
                 if system_msg.get("content") != DIRECT_SYSTEM_PROMPT:
                     issues.append(
                         _issue(
@@ -1102,7 +1274,9 @@ def _validate_repair_protocol(
         else:
             previous_attempt = attempts[index - 1] if index - 1 < len(attempts) else None
             assistant_msg = messages[-2] if len(messages) >= 2 else None
-            previous_response = previous_attempt.get("response") if isinstance(previous_attempt, dict) else None
+            previous_response = (
+                previous_attempt.get("response") if isinstance(previous_attempt, dict) else None
+            )
             if not isinstance(previous_response, str):
                 issues.append(
                     _issue(
@@ -1111,7 +1285,10 @@ def _validate_repair_protocol(
                         "previous attempt must preserve the backend response used as the next assistant message",
                     )
                 )
-            elif not isinstance(assistant_msg, dict) or assistant_msg.get("content") != previous_response:
+            elif (
+                not isinstance(assistant_msg, dict)
+                or assistant_msg.get("content") != previous_response
+            ):
                 issues.append(
                     _issue(
                         "attempt_response_history_mismatch",
@@ -1121,11 +1298,23 @@ def _validate_repair_protocol(
                 )
             last_msg = messages[-1] if messages else None
             if not isinstance(last_msg, dict) or last_msg.get("role") != "user":
-                issues.append(_issue("missing_repair_user_prompt", attempt_path, "repair attempt must end with a user feedback prompt"))
+                issues.append(
+                    _issue(
+                        "missing_repair_user_prompt",
+                        attempt_path,
+                        "repair attempt must end with a user feedback prompt",
+                    )
+                )
             else:
                 content = str(last_msg.get("content") or "")
-                previous_score = previous_attempt.get("score") if isinstance(previous_attempt, dict) else None
-                previous_execution = previous_attempt.get("execution") if isinstance(previous_attempt, dict) else None
+                previous_score = (
+                    previous_attempt.get("score") if isinstance(previous_attempt, dict) else None
+                )
+                previous_execution = (
+                    previous_attempt.get("execution")
+                    if isinstance(previous_attempt, dict)
+                    else None
+                )
                 if isinstance(previous_score, dict) and isinstance(previous_execution, dict):
                     try:
                         expected_feedback = _feedback(
@@ -1195,11 +1384,29 @@ def _validate_repair_protocol(
     final_attempt = attempts[-1]
     if isinstance(final_attempt, dict):
         if not _scores_match(record.get("score"), final_attempt.get("score")):
-            issues.append(_issue("final_score_mismatch", path, "top-level score must match the final attempt score"))
+            issues.append(
+                _issue(
+                    "final_score_mismatch",
+                    path,
+                    "top-level score must match the final attempt score",
+                )
+            )
         if record.get("command") != final_attempt.get("command"):
-            issues.append(_issue("final_command_mismatch", path, "top-level command must match the final attempt command"))
+            issues.append(
+                _issue(
+                    "final_command_mismatch",
+                    path,
+                    "top-level command must match the final attempt command",
+                )
+            )
         if record.get("execution") != final_attempt.get("execution"):
-            issues.append(_issue("final_execution_mismatch", path, "top-level execution must match the final attempt execution"))
+            issues.append(
+                _issue(
+                    "final_execution_mismatch",
+                    path,
+                    "top-level execution must match the final attempt execution",
+                )
+            )
 
     pass_steps = [
         attempt.get("step")
@@ -1211,9 +1418,17 @@ def _validate_repair_protocol(
     steps_to_pass = record.get("steps_to_pass")
     if pass_steps:
         if steps_to_pass != min(pass_steps):
-            issues.append(_issue("wrong_steps_to_pass", path, f"expected steps_to_pass={min(pass_steps)}"))
+            issues.append(
+                _issue("wrong_steps_to_pass", path, f"expected steps_to_pass={min(pass_steps)}")
+            )
     elif not _is_unresolved(steps_to_pass):
-        issues.append(_issue("wrong_steps_to_pass", path, "unresolved repeat must record infinite or 'unresolved' steps_to_pass"))
+        issues.append(
+            _issue(
+                "wrong_steps_to_pass",
+                path,
+                "unresolved repeat must record infinite or 'unresolved' steps_to_pass",
+            )
+        )
     return issues
 
 
@@ -1234,7 +1449,11 @@ def _validate_repeat_record(
         issues.append(_issue("wrong_backend", path, f"expected backend={backend!r}"))
     expected_backend = BACKENDS[backend]
     if record.get("backend_label") != expected_backend.label:
-        issues.append(_issue("wrong_backend_label", path, f"expected backend_label={expected_backend.label!r}"))
+        issues.append(
+            _issue(
+                "wrong_backend_label", path, f"expected backend_label={expected_backend.label!r}"
+            )
+        )
     if record.get("model") != expected_backend.model:
         issues.append(_issue("wrong_model", path, f"expected model={expected_backend.model!r}"))
     if record.get("backend_protocol") != _backend_protocol(expected_backend):
@@ -1253,14 +1472,28 @@ def _validate_repeat_record(
     if record.get("output_dir") != expected_out_dir:
         issues.append(_issue("wrong_output_dir", path, f"expected output_dir={expected_out_dir!r}"))
     if record.get("prompt_style") != DIRECT_PROMPT_STYLE:
-        issues.append(_issue("wrong_direct_prompt_style", path, f"expected prompt_style={DIRECT_PROMPT_STYLE!r}"))
+        issues.append(
+            _issue(
+                "wrong_direct_prompt_style", path, f"expected prompt_style={DIRECT_PROMPT_STYLE!r}"
+            )
+        )
     if record.get("max_correction_steps") != DIRECT_MAX_CORRECTION_STEPS:
-        issues.append(_issue("wrong_max_correction_steps", path, f"expected max_correction_steps={DIRECT_MAX_CORRECTION_STEPS}"))
+        issues.append(
+            _issue(
+                "wrong_max_correction_steps",
+                path,
+                f"expected max_correction_steps={DIRECT_MAX_CORRECTION_STEPS}",
+            )
+        )
     expected_input = str(_staged_input_path(SCENARIOS[skill]).relative_to(REPO_ROOT))
     if record.get("staged_user_input") != expected_input:
-        issues.append(_issue("wrong_staged_input", path, f"expected staged_user_input={expected_input!r}"))
+        issues.append(
+            _issue("wrong_staged_input", path, f"expected staged_user_input={expected_input!r}")
+        )
     if not isinstance(record.get("attempts"), list):
-        issues.append(_issue("missing_attempts", path, "repeat artifact must include attempts list"))
+        issues.append(
+            _issue("missing_attempts", path, "repeat artifact must include attempts list")
+        )
     else:
         issues.extend(
             _validate_repair_protocol(
@@ -1315,11 +1548,15 @@ def _validate_aggregate_record(
 
     clean_env = record.get("clean_environment")
     if not isinstance(clean_env, dict):
-        issues.append(_issue("missing_clean_environment", path, "clean_environment object is missing"))
+        issues.append(
+            _issue("missing_clean_environment", path, "clean_environment object is missing")
+        )
     else:
         for key in CLEAN_ENV_FLAGS:
             if clean_env.get(key) is not True:
-                issues.append(_issue("wrong_clean_environment", path, f"clean_environment.{key} must be true"))
+                issues.append(
+                    _issue("wrong_clean_environment", path, f"clean_environment.{key} must be true")
+                )
 
     summary = record.get("summary")
     if not isinstance(summary, dict):
@@ -1327,7 +1564,11 @@ def _validate_aggregate_record(
     else:
         scores = summary.get("scores")
         if not isinstance(scores, list) or len(scores) != repeats:
-            issues.append(_issue("wrong_summary_scores", path, f"summary.scores must contain {repeats} scores"))
+            issues.append(
+                _issue(
+                    "wrong_summary_scores", path, f"summary.scores must contain {repeats} scores"
+                )
+            )
         for key in ("pass_count", "fail_count", "mean_score", "steps_to_pass"):
             if key not in summary:
                 issues.append(_issue("missing_summary_key", path, f"summary.{key} is missing"))
@@ -1459,7 +1700,9 @@ def audit_study_artifacts(skill: str, *, study_root: Path, repeats: int) -> dict
 
         if comparison.exists() and len(aggregate_rows) == len(checks):
             try:
-                expected_comparison = _comparison_markdown(_comparison_title(skill, mode), aggregate_rows)
+                expected_comparison = _comparison_markdown(
+                    _comparison_title(skill, mode), aggregate_rows
+                )
             except Exception as exc:  # noqa: BLE001
                 mode_issues.append(
                     _issue(
@@ -1489,16 +1732,18 @@ def audit_study_artifacts(skill: str, *, study_root: Path, repeats: int) -> dict
             }
         )
 
-    return {"status": "complete" if not issues else "incomplete", "modes": mode_records, "issues": issues}
+    return {
+        "status": "complete" if not issues else "incomplete",
+        "modes": mode_records,
+        "issues": issues,
+    }
 
 
 def audit_outcome_support(skill: str, *, study_root: Path, repeats: int) -> dict[str, Any]:
     """Report whether complete artifacts support the SKILL.md advantage claim."""
     study_audit = audit_study_artifacts(skill, study_root=study_root, repeats=repeats)
     study_mode_status = {
-        mode.get("mode"): mode
-        for mode in study_audit.get("modes", [])
-        if isinstance(mode, dict)
+        mode.get("mode"): mode for mode in study_audit.get("modes", []) if isinstance(mode, dict)
     }
     modes: list[dict[str, Any]] = []
     for mode in ("codex-opus", "nemotron-correction"):
@@ -1588,9 +1833,15 @@ def audit_all(
         for skill in selected
     ]
     complete_skills = sum(1 for item in skill_records if item["status"] == "complete")
-    complete_prompts = sum(1 for item in skill_records if item["prompt_artifact"]["status"] == "complete")
-    complete_studies = sum(1 for item in skill_records if item["study_artifacts"]["status"] == "complete")
-    outcome_support = sum(1 for item in skill_records if item["outcome"]["status"] == "supports_skill_advantage")
+    complete_prompts = sum(
+        1 for item in skill_records if item["prompt_artifact"]["status"] == "complete"
+    )
+    complete_studies = sum(
+        1 for item in skill_records if item["study_artifacts"]["status"] == "complete"
+    )
+    outcome_support = sum(
+        1 for item in skill_records if item["outcome"]["status"] == "supports_skill_advantage"
+    )
     outcome_complete = sum(1 for item in skill_records if item["outcome"]["status"] != "incomplete")
     status = "complete" if complete_skills == len(skill_records) else "incomplete"
     issue_count = sum(
@@ -1615,7 +1866,9 @@ def audit_all(
     }
 
 
-def _remediation_commands(skill_records: list[dict[str, Any]], repeats: int) -> list[dict[str, str]]:
+def _remediation_commands(
+    skill_records: list[dict[str, Any]], repeats: int
+) -> list[dict[str, str]]:
     commands: list[dict[str, str]] = []
     for skill in skill_records:
         if skill["prompt_artifact"]["status"] != "complete":
@@ -1676,7 +1929,9 @@ def _format_markdown(report: dict[str, Any]) -> str:
                 p_value = stats.get("one_sided_sign_test_p")
                 decisive = stats.get("decisive_pairs")
                 if isinstance(p_value, (int, float)) and isinstance(decisive, int):
-                    sign_tests.append(f"{mode['mode']} sign-test p={p_value:.4g}, decisive={decisive}")
+                    sign_tests.append(
+                        f"{mode['mode']} sign-test p={p_value:.4g}, decisive={decisive}"
+                    )
                 elif isinstance(decisive, int):
                     sign_tests.append(f"{mode['mode']} sign-test p=n/a, decisive={decisive}")
             if sign_tests:
@@ -1764,7 +2019,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repeats", type=int, default=DIRECT_REPEATS)
     parser.add_argument("--prompt-root", type=Path, default=PROMPT_ARTIFACT_ROOT)
     parser.add_argument("--study-root", type=Path, default=STUDY_ROOT)
-    parser.add_argument("--strict", action="store_true", help="exit nonzero when any artifact is missing or invalid")
+    parser.add_argument(
+        "--strict", action="store_true", help="exit nonzero when any artifact is missing or invalid"
+    )
     parser.add_argument(
         "--require-skill-advantage",
         action="store_true",

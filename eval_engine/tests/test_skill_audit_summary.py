@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from eval_engine import skill_audit_summary
 
 
@@ -77,7 +92,9 @@ def test_summary_fails_when_negative_fixture_passes() -> None:
 
     assert summary["audit_status"] == "fail"
     assert summary["unexpected_failures"] == []
-    assert summary["calibration_failures"][0]["target"] == skill_audit_summary.EXPECTED_NEGATIVE_TARGET
+    assert (
+        summary["calibration_failures"][0]["target"] == skill_audit_summary.EXPECTED_NEGATIVE_TARGET
+    )
 
 
 def test_formatted_summary_labels_calibration_failure_as_expected() -> None:
@@ -96,8 +113,7 @@ def test_formatted_summary_labels_calibration_failure_as_expected() -> None:
 
 def test_single_output_summary_passes_when_no_advisories(tmp_path) -> None:
     path = tmp_path / "output.json"
-    path.write_text(
-        """
+    path.write_text("""
 {
   "target_skill": "/repo/skills/dicom-metadata-extract",
   "tier1_structural": {"checks_passed": 20, "checks_total": 20},
@@ -106,8 +122,7 @@ def test_single_output_summary_passes_when_no_advisories(tmp_path) -> None:
   "blocking_issues_count": 0,
   "advisory_issues_count": 0
 }
-""".strip()
-    )
+""".strip())
 
     summary = skill_audit_summary.summarize_single_output(path)
 
@@ -118,8 +133,7 @@ def test_single_output_summary_passes_when_no_advisories(tmp_path) -> None:
 
 def test_single_output_summary_fails_on_advisories(tmp_path) -> None:
     path = tmp_path / "output.json"
-    path.write_text(
-        """
+    path.write_text("""
 {
   "target_skill": "/repo/skills/vague-skill",
   "tier1_structural": {"checks_passed": 20, "checks_total": 20},
@@ -128,8 +142,7 @@ def test_single_output_summary_fails_on_advisories(tmp_path) -> None:
   "blocking_issues_count": 0,
   "advisory_issues_count": 1
 }
-""".strip()
-    )
+""".strip())
 
     summary = skill_audit_summary.summarize_single_output(path)
 

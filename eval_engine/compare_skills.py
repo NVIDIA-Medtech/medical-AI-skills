@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Compare two skill evidence packs by declared shape.
 
 This is a sibling to `eval_engine/diff_runs.py`. `diff_runs.py` compares
@@ -16,6 +31,7 @@ Run:
 or:
     make compare-skills A=<pack_a> B=<pack_b>
 """
+
 from __future__ import annotations
 
 import json
@@ -164,8 +180,10 @@ def _build_report(pack_a: Path, pack_b: Path) -> str:
     for c in GATE_CATEGORIES:
         a_st = _emoji(gates_a[c])
         b_st = _emoji(gates_b[c])
-        both = "yes" if (c in declared_a and c in declared_b) else (
-            "A only" if c in declared_a else "B only" if c in declared_b else "neither"
+        both = (
+            "yes"
+            if (c in declared_a and c in declared_b)
+            else ("A only" if c in declared_a else "B only" if c in declared_b else "neither")
         )
         lines.append(f"| {c} | {a_st} | {b_st} | {both} |")
 
@@ -178,13 +196,9 @@ def _build_report(pack_a: Path, pack_b: Path) -> str:
     ]
     if only_a or only_b:
         if only_a:
-            lines.append(
-                f"- A declares gate categories B does not: {sorted(only_a)}"
-            )
+            lines.append(f"- A declares gate categories B does not: {sorted(only_a)}")
         if only_b:
-            lines.append(
-                f"- B declares gate categories A does not: {sorted(only_b)}"
-            )
+            lines.append(f"- B declares gate categories A does not: {sorted(only_b)}")
     else:
         lines.append("- Both skills declare the same gate categories.")
 
@@ -196,13 +210,9 @@ def _build_report(pack_a: Path, pack_b: Path) -> str:
         f"- B: {len(sanity_b)} declared sanity-check paths",
     ]
     if sanity_a:
-        lines.append(
-            "- A paths: " + ", ".join(f"`{p}`" for p in sorted(sanity_a))
-        )
+        lines.append("- A paths: " + ", ".join(f"`{p}`" for p in sorted(sanity_a)))
     if sanity_b:
-        lines.append(
-            "- B paths: " + ", ".join(f"`{p}`" for p in sorted(sanity_b))
-        )
+        lines.append("- B paths: " + ", ".join(f"`{p}`" for p in sorted(sanity_b)))
 
     lines += [
         "",

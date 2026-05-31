@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Host-level provenance capture.
 
 Measures what the manifest *promised* vs. what the host actually shows:
@@ -10,6 +25,7 @@ Measures what the manifest *promised* vs. what the host actually shows:
 Best-effort: missing nvidia-smi or unresolvable paths produce ``status:
 skipped`` entries, never exceptions.
 """
+
 from __future__ import annotations
 
 import json
@@ -53,17 +69,19 @@ def capture_gpu_snapshot() -> dict:
                 for line in proc.stdout.strip().splitlines():
                     parts = [p.strip() for p in line.split(",")]
                     if len(parts) >= 9:
-                        gpus.append({
-                            "index": _int_or(parts[0]),
-                            "name": parts[1],
-                            "uuid": parts[2],
-                            "driver_version": parts[3],
-                            "compute_cap": parts[4],
-                            "memory_total_mb": _float_or(parts[5]),
-                            "memory_free_mb": _float_or(parts[6]),
-                            "memory_used_mb": _float_or(parts[7]),
-                            "mig_mode_current": parts[8],
-                        })
+                        gpus.append(
+                            {
+                                "index": _int_or(parts[0]),
+                                "name": parts[1],
+                                "uuid": parts[2],
+                                "driver_version": parts[3],
+                                "compute_cap": parts[4],
+                                "memory_total_mb": _float_or(parts[5]),
+                                "memory_free_mb": _float_or(parts[6]),
+                                "memory_used_mb": _float_or(parts[7]),
+                                "mig_mode_current": parts[8],
+                            }
+                        )
                 info["gpus"] = gpus
                 info["available"] = bool(gpus)
         except (subprocess.SubprocessError, OSError) as e:
@@ -116,7 +134,11 @@ def _resolve_declared_path(
     if str(p).startswith("~"):
         p = p.expanduser()
     elif not p.is_absolute():
-        if (skill_dir / spec).exists() or spec.startswith(skill_dir.name + "/") or (REPO_ROOT / spec).exists():
+        if (
+            (skill_dir / spec).exists()
+            or spec.startswith(skill_dir.name + "/")
+            or (REPO_ROOT / spec).exists()
+        ):
             p = REPO_ROOT / spec
         else:
             p = skill_dir / spec
@@ -169,7 +191,7 @@ def _path_snapshot(p: Path) -> dict:
 
 
 def _iter_declared(manifest: dict) -> list[tuple[str, str]]:
-    side_effects = ((manifest.get("runtime") or {}).get("side_effects") or {})
+    side_effects = (manifest.get("runtime") or {}).get("side_effects") or {}
     out: list[tuple[str, str]] = []
     for kind in ("local_writes", "home_writes"):
         for entry in side_effects.get(kind) or []:
@@ -190,20 +212,24 @@ def capture_side_effects_snapshot(
     for kind, spec in _iter_declared(manifest):
         resolved, reason = _resolve_declared_path(spec, skill_dir, out=out)
         if resolved is None:
-            records.append({
-                "kind": kind,
-                "declared": spec,
-                "status": "skipped",
-                "reason": reason,
-            })
+            records.append(
+                {
+                    "kind": kind,
+                    "declared": spec,
+                    "status": "skipped",
+                    "reason": reason,
+                }
+            )
             continue
         snap = _path_snapshot(resolved)
-        records.append({
-            "kind": kind,
-            "declared": spec,
-            "resolved": _public_path(resolved),
-            **snap,
-        })
+        records.append(
+            {
+                "kind": kind,
+                "declared": spec,
+                "resolved": _public_path(resolved),
+                **snap,
+            }
+        )
     return records
 
 
@@ -218,21 +244,31 @@ def diff_side_effects(before: list[dict], after: list[dict]) -> list[dict]:
         if a is None:
             continue
         change = _classify(b, a)
-        findings.append({
-            "kind": b["kind"],
-            "declared": b["declared"],
-            "resolved": b.get("resolved"),
-            "before_exists": b.get("exists", False),
-            "after_exists": a.get("exists", False),
-            "change": change,
-            **({
-                "size_delta_bytes": (a.get("size_bytes") or 0) - (b.get("size_bytes") or 0),
-            } if a.get("is_file") else {}),
-            **({
-                "entries_delta": (a.get("n_entries") or 0) - (b.get("n_entries") or 0),
-                "bytes_delta": (a.get("total_bytes") or 0) - (b.get("total_bytes") or 0),
-            } if a.get("is_dir") else {}),
-        })
+        findings.append(
+            {
+                "kind": b["kind"],
+                "declared": b["declared"],
+                "resolved": b.get("resolved"),
+                "before_exists": b.get("exists", False),
+                "after_exists": a.get("exists", False),
+                "change": change,
+                **(
+                    {
+                        "size_delta_bytes": (a.get("size_bytes") or 0) - (b.get("size_bytes") or 0),
+                    }
+                    if a.get("is_file")
+                    else {}
+                ),
+                **(
+                    {
+                        "entries_delta": (a.get("n_entries") or 0) - (b.get("n_entries") or 0),
+                        "bytes_delta": (a.get("total_bytes") or 0) - (b.get("total_bytes") or 0),
+                    }
+                    if a.get("is_dir")
+                    else {}
+                ),
+            }
+        )
     return findings
 
 
@@ -244,17 +280,15 @@ def _classify(before: dict, after: dict) -> str:
     if not before.get("exists") and not after.get("exists"):
         return "absent"
     if after.get("is_file"):
-        if (
-            after.get("size_bytes") != before.get("size_bytes")
-            or after.get("mtime") != before.get("mtime")
+        if after.get("size_bytes") != before.get("size_bytes") or after.get("mtime") != before.get(
+            "mtime"
         ):
             return "modified"
         return "unchanged"
     if after.get("is_dir"):
-        if (
-            after.get("n_entries") != before.get("n_entries")
-            or after.get("total_bytes") != before.get("total_bytes")
-        ):
+        if after.get("n_entries") != before.get("n_entries") or after.get(
+            "total_bytes"
+        ) != before.get("total_bytes"):
             return "grew"
         return "unchanged"
     return "unchanged"
@@ -347,13 +381,17 @@ def write_provenance(
     side_effects_before: list[dict],
     run_out: Path | None = None,
 ) -> dict:
-    gpu = capture_gpu_snapshot() if _wants_gpu(manifest) else {
-        "available": False,
-        "have_nvidia_smi": shutil.which("nvidia-smi") is not None,
-        "have_nvcc": shutil.which("nvcc") is not None,
-        "gpus": [],
-        "note": "GPU probe skipped: manifest does not declare requires_gpu.",
-    }
+    gpu = (
+        capture_gpu_snapshot()
+        if _wants_gpu(manifest)
+        else {
+            "available": False,
+            "have_nvidia_smi": shutil.which("nvidia-smi") is not None,
+            "have_nvcc": shutil.which("nvcc") is not None,
+            "gpus": [],
+            "note": "GPU probe skipped: manifest does not declare requires_gpu.",
+        }
+    )
     side_effects_after = capture_side_effects_snapshot(
         manifest,
         skill_dir,

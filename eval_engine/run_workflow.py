@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Workflow runner — orchestrates multi-skill pipelines through the eval_engine.
 
 Reads a workflow YAML spec, executes each step via run.py or run_trusted (when
 ``trusted: true``), resolves output references between steps, and writes a
 workflow-level summary including trust linkage for trusted steps.
 """
+
 from __future__ import annotations
 
 import json
@@ -14,7 +30,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
 import typer
@@ -131,9 +146,7 @@ def _run_step(
     proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT, env=env)
     pack_dir = _step_pack_dir(step_out, trusted=trusted)
     step_val = _read_json_or_empty(pack_dir / "validation_summary.json") or {}
-    trust_summary = (
-        _read_json_or_empty(step_out / "trust_summary.json") if trusted else None
-    )
+    trust_summary = _read_json_or_empty(step_out / "trust_summary.json") if trusted else None
     return proc, step_val, trust_summary
 
 
@@ -240,18 +253,26 @@ def _render_workflow_record(
         lines.extend(["", "## Trust", ""])
         for r in trusted_steps:
             lines.append(
-                "- step `" + r["id"] + "`: skill **" + str(r.get("overall_status", "-"))
-                + "**, trust **" + str(r.get("trust_overall", "-")) + "**"
+                "- step `"
+                + r["id"]
+                + "`: skill **"
+                + str(r.get("overall_status", "-"))
+                + "**, trust **"
+                + str(r.get("trust_overall", "-"))
+                + "**"
             )
             for v in r.get("verifiers") or []:
                 lines.append(
-                    "  - verifier `" + str(v.get("id", "?")) + "`: "
-                    + str(v.get("overall", "-")) + " (`" + str(v.get("pack", "")) + "`)"
+                    "  - verifier `"
+                    + str(v.get("id", "?"))
+                    + "`: "
+                    + str(v.get("overall", "-"))
+                    + " (`"
+                    + str(v.get("pack", ""))
+                    + "`)"
                 )
             for g in r.get("trust_gaps") or []:
-                lines.append(
-                    "  - gap `" + str(g.get("id", "?")) + "`: " + str(g.get("reason", ""))
-                )
+                lines.append("  - gap `" + str(g.get("id", "?")) + "`: " + str(g.get("reason", "")))
 
     lines.extend(["", "## Per-step evidence packs", ""])
     for r in step_results:
@@ -284,7 +305,7 @@ def _render_workflow_record(
                 + str(primary.get("sample_count", "?"))
             )
         for step_id, entry in (stream_block.get("steps") or {}).items():
-            holoscan = (entry.get("holoscan_flow") or {})
+            holoscan = entry.get("holoscan_flow") or {}
             latency = holoscan.get("latency") or {}
             lines.append(
                 f"- step `{step_id}`: "
@@ -344,13 +365,15 @@ def main(
                 "step " + step_id + ": cannot resolve fixture " + repr(raw_fixture),
                 err=True,
             )
-            step_results.append({
-                "id": step_id,
-                "skill": step["skill"],
-                "mode": "trusted" if trusted else "skill",
-                "overall_status": "fixture_unresolved",
-                "fixture_raw": str(raw_fixture),
-            })
+            step_results.append(
+                {
+                    "id": step_id,
+                    "skill": step["skill"],
+                    "mode": "trusted" if trusted else "skill",
+                    "overall_status": "fixture_unresolved",
+                    "fixture_raw": str(raw_fixture),
+                }
+            )
             halted = True
             break
 
@@ -392,7 +415,10 @@ def main(
 
         if step_failed:
             msg = (
-                "step " + step_id + ": FAILED (overall=" + record["overall_status"]
+                "step "
+                + step_id
+                + ": FAILED (overall="
+                + record["overall_status"]
                 + (", trust=" + str(trust_overall) if trusted else "")
                 + "); halting"
             )

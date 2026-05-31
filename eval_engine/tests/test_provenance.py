@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Tests for eval_engine.provenance."""
+
 import json
 import os
 import subprocess
@@ -78,9 +94,7 @@ def test_unset_declared_env_var_path_is_untracked(tmp_path, monkeypatch):
 
 def test_side_effect_snapshot_uses_public_repo_path():
     out = REPO_ROOT / "runs" / "prov-test"
-    manifest = {
-        "runtime": {"side_effects": {"local_writes": [{"path": "${out}/volume.nii.gz"}]}}
-    }
+    manifest = {"runtime": {"side_effects": {"local_writes": [{"path": "${out}/volume.nii.gz"}]}}}
     records = capture_side_effects_snapshot(manifest, skill_dir=REPO_ROOT, out=out)
     assert records[0]["resolved"] == "runs/prov-test/volume.nii.gz"
 
@@ -101,9 +115,7 @@ def test_path_snapshot_file(tmp_path):
 
 def test_diff_detects_creation(tmp_path):
     target = tmp_path / "new_file.txt"
-    manifest = {
-        "runtime": {"side_effects": {"local_writes": [{"path": str(target)}]}}
-    }
+    manifest = {"runtime": {"side_effects": {"local_writes": [{"path": str(target)}]}}}
     before = capture_side_effects_snapshot(manifest, skill_dir=tmp_path)
     assert before[0]["exists"] is False
 
@@ -119,9 +131,7 @@ def test_diff_detects_creation(tmp_path):
 def test_diff_marks_unchanged(tmp_path):
     target = tmp_path / "static.txt"
     target.write_text("constant")
-    manifest = {
-        "runtime": {"side_effects": {"local_writes": [{"path": str(target)}]}}
-    }
+    manifest = {"runtime": {"side_effects": {"local_writes": [{"path": str(target)}]}}}
     before = capture_side_effects_snapshot(manifest, skill_dir=tmp_path)
     after = capture_side_effects_snapshot(manifest, skill_dir=tmp_path)
     findings = diff_side_effects(before, after)
@@ -130,7 +140,9 @@ def test_diff_marks_unchanged(tmp_path):
 
 def test_templated_path_marked_untracked(tmp_path):
     manifest = {
-        "runtime": {"side_effects": {"local_writes": [{"path": "<input-parent>/<input-name>.nii.gz"}]}}
+        "runtime": {
+            "side_effects": {"local_writes": [{"path": "<input-parent>/<input-name>.nii.gz"}]}
+        }
     }
     before = capture_side_effects_snapshot(manifest, skill_dir=tmp_path)
     after = capture_side_effects_snapshot(manifest, skill_dir=tmp_path)
@@ -144,25 +156,39 @@ def test_full_run_writes_provenance(tmp_path):
     skill = tmp_path / "toy_skill"
     (skill / "scripts").mkdir(parents=True)
     (skill / "SKILL.md").write_text("# Toy\n")
-    (skill / "skill_manifest.yaml").write_text("\n".join([
-        "id: test.toy_prov",
-        "version: 0.1.0",
-        "inputs:",
-        "  - name: fixture",
-        "    type: file_path",
-        "outputs:",
-        "  - name: result_json",
-        "    type: json",
-        "runtime:",
-        "  language: python",
-        "  entrypoint: scripts/run.py",
-    ]) + "\n")
-    (skill / "scripts" / "run.py").write_text("import json\nprint(json.dumps({'output': {'ok': True}}))\n")
+    (skill / "skill_manifest.yaml").write_text(
+        "\n".join(
+            [
+                "id: test.toy_prov",
+                "version: 0.1.0",
+                "inputs:",
+                "  - name: fixture",
+                "    type: file_path",
+                "outputs:",
+                "  - name: result_json",
+                "    type: json",
+                "runtime:",
+                "  language: python",
+                "  entrypoint: scripts/run.py",
+            ]
+        )
+        + "\n"
+    )
+    (skill / "scripts" / "run.py").write_text(
+        "import json\nprint(json.dumps({'output': {'ok': True}}))\n"
+    )
 
     out = tmp_path / "pack"
     proc = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "eval_engine" / "run.py"), str(skill),
-         "--fixture", str(fixture), "--out", str(out)],
+        [
+            sys.executable,
+            str(REPO_ROOT / "eval_engine" / "run.py"),
+            str(skill),
+            "--fixture",
+            str(fixture),
+            "--out",
+            str(out),
+        ],
         cwd=REPO_ROOT,
         env=os.environ.copy(),
         capture_output=True,

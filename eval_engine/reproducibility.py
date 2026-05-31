@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Repeat-run reproducibility audit for skill and verifier specs.
 
 The completeness verifier checks that a spec declares provenance anchors.
@@ -8,6 +23,7 @@ run twice through ``eval_engine/run.py`` on the declared fixture. The two
 packs must agree on gate statuses, semantic output payload, and hashes of
 emitted artifact paths.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -64,8 +80,7 @@ DEFAULT_IGNORE_PATTERNS = (
     r"(^|\.)system_fingerprint$",
 )
 ARTIFACT_PATH_KEY_RE = re.compile(
-    r"(^|_)(path|file|ckpt|checkpoint)$|"
-    r"(_path|_file|_ckpt|_checkpoint)$"
+    r"(^|_)(path|file|ckpt|checkpoint)$|" r"(_path|_file|_ckpt|_checkpoint)$"
 )
 ARTIFACT_SKIP_PREFIXES = ("runtime.", "logs.")
 
@@ -304,7 +319,7 @@ def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
     label = _target_label(spec_dir)
     manifest_path = spec_dir / "skill_manifest.yaml"
     manifest = load_manifest(manifest_path)
-    repro = ((manifest.get("validation") or {}).get("reproducibility") or {})
+    repro = (manifest.get("validation") or {}).get("reproducibility") or {}
     row: dict[str, Any] = {
         "target": label,
         "target_path": _public_rel(spec_dir),
@@ -334,7 +349,9 @@ def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
     if builder_decl:
         builder = _resolve_fixture_builder(spec_dir, builder_decl)
         if builder is None:
-            row["issues"].append("validation.reproducibility.fixture_builder must be relative and stay under the spec dir")
+            row["issues"].append(
+                "validation.reproducibility.fixture_builder must be relative and stay under the spec dir"
+            )
             return row
         row["fixture_builder"] = _public_rel(builder)
         if not builder.is_file():
@@ -375,10 +392,7 @@ def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
             for item in preflight_runs
         ]
         patterns = _compile_patterns(repro.get("ignore_paths") or [])
-        scrubbed_preflight = [
-            _scrub_payload(item, patterns=patterns)
-            for item in preflight_runs
-        ]
+        scrubbed_preflight = [_scrub_payload(item, patterns=patterns) for item in preflight_runs]
         preflight_diffs: list[dict[str, Any]] = []
         for idx, item in enumerate(scrubbed_preflight[1:], start=2):
             for diff in _dotted_diffs(scrubbed_preflight[0], item):
@@ -394,9 +408,7 @@ def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
         row["artifact_hashes_checked"] = 0
         return row
 
-    expected_status = str(
-        repro.get("expected_status") or DEFAULT_EXPECTED_STATUS[mode]
-    )
+    expected_status = str(repro.get("expected_status") or DEFAULT_EXPECTED_STATUS[mode])
 
     target_out = out_root / label
     packs: list[Path] = []
@@ -459,8 +471,7 @@ def audit_one(spec_dir: Path, out_root: Path) -> dict[str, Any]:
         row["issues"].append(f"output payload drift: {len(payload_diffs)} field(s)")
 
     artifact_sets = [
-        _collect_artifacts(payload, pack_dir=pack)
-        for payload, pack in zip(outputs, packs)
+        _collect_artifacts(payload, pack_dir=pack) for payload, pack in zip(outputs, packs)
     ]
     artifact_diffs: list[dict[str, Any]] = []
     first_artifacts = artifact_sets[0]
@@ -501,10 +512,7 @@ def format_summary(summary: dict[str, Any]) -> str:
     lines = [
         "",
         "=== reproducibility audit summary ===",
-        (
-            f"  {summary['targets']} targets: "
-            f"{summary['passed']} pass, {summary['failed']} fail"
-        ),
+        (f"  {summary['targets']} targets: " f"{summary['passed']} pass, {summary['failed']} fail"),
         f"  audit status: {summary['audit_status']}",
         "",
         f"  {'target':<48s} {'status':<6s} {'mode':<9s} artifacts  issues",

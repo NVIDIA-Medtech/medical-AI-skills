@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Preflight NV with-vs-without direct-study reruns without API calls."""
+
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import json
 import os
-from pathlib import Path
 import shutil
 import sys
+from collections import Counter
+from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -38,7 +54,9 @@ def _check(status: str, scope: str, name: str, detail: str) -> dict[str, str]:
     return {"status": status, "scope": scope, "check": name, "detail": detail}
 
 
-def _env_name_present(names: tuple[str, ...], *, environ: dict[str, str] | None = None, bashrc: Path | None = None) -> str | None:
+def _env_name_present(
+    names: tuple[str, ...], *, environ: dict[str, str] | None = None, bashrc: Path | None = None
+) -> str | None:
     env = environ if environ is not None else os.environ
     for name in names:
         if env.get(name, "").strip():
@@ -109,9 +127,7 @@ def _check_scenario_doc_contract(skill: str, scenario: studies.Scenario) -> list
     checks: list[dict[str, str]] = []
     user_goal = scenario.user_goal
     missing_placeholders = [
-        placeholder
-        for placeholder in ("{input_path}", "{out_dir}")
-        if placeholder not in user_goal
+        placeholder for placeholder in ("{input_path}", "{out_dir}") if placeholder not in user_goal
     ]
     if missing_placeholders:
         checks.append(
@@ -178,7 +194,9 @@ def preflight(
     if python_bin.exists():
         checks.append(_check("pass", "host", "python", _rel(python_bin)))
     else:
-        checks.append(_check("error", "host", "python", f"missing Python executable: {_rel(python_bin)}"))
+        checks.append(
+            _check("error", "host", "python", f"missing Python executable: {_rel(python_bin)}")
+        )
     bash = shutil.which("bash")
     checks.append(
         _check("pass", "host", "bash", bash or "bash")
@@ -285,9 +303,7 @@ def _format_markdown(report: dict[str, Any]) -> str:
         "|---|---|---|---|",
     ]
     for item in report["checks"]:
-        lines.append(
-            f"| {item['status']} | {item['scope']} | {item['check']} | {item['detail']} |"
-        )
+        lines.append(f"| {item['status']} | {item['scope']} | {item['check']} | {item['detail']} |")
     if report["status"] != "pass":
         lines.extend(
             [
@@ -302,7 +318,9 @@ def _format_markdown(report: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skills", nargs="*", default=None, choices=sorted(studies.SCENARIOS))
-    parser.add_argument("--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all")
+    parser.add_argument(
+        "--mode", choices=["codex-opus", "nemotron", "all", "prompts"], default="all"
+    )
     parser.add_argument("--repeats", type=int, default=studies.DIRECT_REPEATS)
     parser.add_argument("--prompt-root", type=Path, default=studies.PROMPT_ARTIFACT_ROOT)
     parser.add_argument("--format", choices=["json", "markdown"], default="markdown")

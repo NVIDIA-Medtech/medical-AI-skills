@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Capture wall / CPU / RSS / GPU cost around a subprocess.
 
 The cost gate is the eval_engine's domain-neutral verifier: a skill that
@@ -19,6 +34,7 @@ host. The profile dict records `have_psutil` and `have_nvidia_smi` so
 downstream readers can tell which fields are populated and which are
 zero because the tool was unavailable.
 """
+
 from __future__ import annotations
 
 import os
@@ -87,7 +103,7 @@ class CostCapture:
             rparen = stat.rfind(")")
             if rparen == -1:
                 continue
-            fields = stat[rparen + 1:].split()
+            fields = stat[rparen + 1 :].split()
             if len(fields) < 2:
                 continue
             try:
@@ -117,10 +133,13 @@ class CostCapture:
         if self._have_nvidia_smi:
             try:
                 out = subprocess.check_output(
-                    ["nvidia-smi",
-                     "--query-gpu=index,memory.used",
-                     "--format=csv,noheader,nounits"],
-                    text=True, timeout=2.0,
+                    [
+                        "nvidia-smi",
+                        "--query-gpu=index,memory.used",
+                        "--format=csv,noheader,nounits",
+                    ],
+                    text=True,
+                    timeout=2.0,
                 )
                 for line in out.strip().splitlines():
                     parts = [p.strip() for p in line.split(",")]
@@ -197,12 +216,14 @@ class CostCapture:
                     if gpu_idx not in mem_by_gpu:
                         continue
                     baseline = self._gpu_mem_baseline_mb.get(gpu_idx, 0.0)
-                    self._gpu_samples.append({
-                        "ts": ts,
-                        "gpu": gpu_idx,
-                        "util_pct": float(gpu["util_pct"]),
-                        "mem_mb": baseline + mem_by_gpu[gpu_idx],
-                    })
+                    self._gpu_samples.append(
+                        {
+                            "ts": ts,
+                            "gpu": gpu_idx,
+                            "util_pct": float(gpu["util_pct"]),
+                            "mem_mb": baseline + mem_by_gpu[gpu_idx],
+                        }
+                    )
             except Exception:
                 pass
             time.sleep(self._gpu_poll_ms / 1000.0)
@@ -293,15 +314,17 @@ def evaluate_cost_envelope(
             actual = self_reported[key]
             source = "self_reported"
         else:
-            results.append({
-                "key": key,
-                "actual": None,
-                "min": lo,
-                "max": hi,
-                "ok": False,
-                "reason": "not measured and not self-reported",
-                "source": "missing",
-            })
+            results.append(
+                {
+                    "key": key,
+                    "actual": None,
+                    "min": lo,
+                    "max": hi,
+                    "ok": False,
+                    "reason": "not measured and not self-reported",
+                    "source": "missing",
+                }
+            )
             any_failed = True
             continue
 
@@ -316,15 +339,17 @@ def evaluate_cost_envelope(
             reason_parts.append(f"{actual} > max {hi}")
         if not ok:
             any_failed = True
-        results.append({
-            "key": key,
-            "actual": actual,
-            "min": lo,
-            "max": hi,
-            "ok": ok,
-            "reason": "; ".join(reason_parts) if reason_parts else None,
-            "source": source,
-        })
+        results.append(
+            {
+                "key": key,
+                "actual": actual,
+                "min": lo,
+                "max": hi,
+                "ok": ok,
+                "reason": "; ".join(reason_parts) if reason_parts else None,
+                "source": source,
+            }
+        )
 
     if not any_evaluated:
         status = "skipped"

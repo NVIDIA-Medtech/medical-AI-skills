@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -26,7 +41,9 @@ def _repeat_record(skill: str, mode: str, backend: str, arm: str, repeat: int) -
     score = {"passed": True, "score": 5, "tiers": []}
     run_mode = "codex_opus" if mode == "codex-opus" else "nemotron_correction"
     out_dir = studies._repeat_out_dir(skill, run_mode, studies.BACKENDS[backend], arm, repeat)
-    staged_input = studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(studies.REPO_ROOT)
+    staged_input = studies._staged_input_path(studies.SCENARIOS[skill]).relative_to(
+        studies.REPO_ROOT
+    )
     command = (
         f"python {_safe_marker_for_arm(skill, arm)} {staged_input} "
         f"--output-dir {out_dir.relative_to(studies.REPO_ROOT)}"
@@ -39,7 +56,10 @@ def _repeat_record(skill: str, mode: str, backend: str, arm: str, repeat: int) -
         "step": 0,
         "messages": [
             {"role": "system", "content": studies.DIRECT_SYSTEM_PROMPT},
-            {"role": "user", "content": studies._prompt(studies.SCENARIOS[skill], arm, out_dir, "minimal")},
+            {
+                "role": "user",
+                "content": studies._prompt(studies.SCENARIOS[skill], arm, out_dir, "minimal"),
+            },
         ],
         "response": f"```bash\n{command}\n```",
         "command": command,
@@ -73,7 +93,9 @@ def _aggregate_record(
     arm: str,
     repeats: int,
 ) -> dict[str, object]:
-    repeat_rows = [_repeat_record(skill, mode, backend, arm, repeat) for repeat in range(1, repeats + 1)]
+    repeat_rows = [
+        _repeat_record(skill, mode, backend, arm, repeat) for repeat in range(1, repeats + 1)
+    ]
     return {
         "backend": backend,
         "backend_label": studies.BACKENDS[backend].label,
@@ -135,7 +157,9 @@ def _write_complete_study(study_root: Path, skill: str, repeats: int) -> None:
 
 
 def _refresh_comparison(study_root: Path, skill: str, mode: str) -> None:
-    study_dir = study_root / f"{skill}_{'codex_opus' if mode == 'codex-opus' else 'nemotron_correction'}"
+    study_dir = (
+        study_root / f"{skill}_{'codex_opus' if mode == 'codex-opus' else 'nemotron_correction'}"
+    )
     if mode == "codex-opus":
         rows = [
             json.loads((study_dir / f"{backend}_{arm}.json").read_text())
@@ -160,7 +184,9 @@ def _set_arm_score(
     score_value: int,
     repeats: int,
 ) -> None:
-    study_dir = study_root / f"{skill}_{'codex_opus' if mode == 'codex-opus' else 'nemotron_correction'}"
+    study_dir = (
+        study_root / f"{skill}_{'codex_opus' if mode == 'codex-opus' else 'nemotron_correction'}"
+    )
     aggregate_name = f"{backend}_{arm}.json" if mode == "codex-opus" else f"{arm}.json"
     aggregate_path = study_dir / aggregate_name
     aggregate = json.loads(aggregate_path.read_text())
@@ -207,11 +233,15 @@ def test_audit_all_accepts_complete_synthetic_artifacts(tmp_path: Path) -> None:
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats),
+        studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats
+        ),
     )
     _write_complete_study(study_root, skill, repeats)
 
-    report = audit.audit_all(skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats)
+    report = audit.audit_all(
+        skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats
+    )
 
     assert report["status"] == "complete"
     assert report["summary"]["complete_skills"] == 1
@@ -233,7 +263,9 @@ def test_audit_all_reports_skill_advantage_outcome_when_with_arm_wins(tmp_path: 
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats),
+        studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats
+        ),
     )
     _write_complete_study(study_root, skill, repeats)
     for backend in ("gpt55", "opus"):
@@ -258,7 +290,9 @@ def test_audit_all_reports_skill_advantage_outcome_when_with_arm_wins(tmp_path: 
         repeats=repeats,
     )
 
-    report = audit.audit_all(skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats)
+    report = audit.audit_all(
+        skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats
+    )
 
     assert report["status"] == "complete"
     assert report["summary"]["issue_count"] == 0
@@ -282,7 +316,9 @@ def test_outcome_support_requires_valid_study_artifacts(tmp_path: Path) -> None:
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats),
+        studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats
+        ),
     )
     _write_complete_study(study_root, skill, repeats)
     for backend in ("gpt55", "opus"):
@@ -311,7 +347,9 @@ def test_outcome_support_requires_valid_study_artifacts(tmp_path: Path) -> None:
     aggregate["summary"]["pass_count"] = 0
     _write_json(aggregate_path, aggregate)
 
-    report = audit.audit_all(skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats)
+    report = audit.audit_all(
+        skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats
+    )
 
     assert report["status"] == "incomplete"
     assert report["summary"]["study_artifacts_complete"] == 0
@@ -328,10 +366,14 @@ def test_audit_all_reports_missing_study_artifacts(tmp_path: Path) -> None:
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats),
+        studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats
+        ),
     )
 
-    report = audit.audit_all(skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats)
+    report = audit.audit_all(
+        skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats
+    )
 
     assert report["status"] == "incomplete"
     assert report["summary"]["prompt_artifacts_complete"] == 1
@@ -340,7 +382,9 @@ def test_audit_all_reports_missing_study_artifacts(tmp_path: Path) -> None:
     assert report["summary"]["issue_count"] > 0
     assert [item["mode"] for item in report["remediation"]] == ["codex-opus", "nemotron"]
     assert all("--resume-missing" in item["command"] for item in report["remediation"])
-    assert all(studies.EXTERNAL_LLM_DATA_TRANSFER_FLAG in item["command"] for item in report["remediation"])
+    assert all(
+        studies.EXTERNAL_LLM_DATA_TRANSFER_FLAG in item["command"] for item in report["remediation"]
+    )
 
     text = audit._format_markdown(report)
     assert "## Issue Summary" in text
@@ -357,10 +401,14 @@ def test_markdown_format_includes_outcome_support(tmp_path: Path) -> None:
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats),
+        studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats
+        ),
     )
     _write_complete_study(study_root, skill, repeats)
-    report = audit.audit_all(skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats)
+    report = audit.audit_all(
+        skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats
+    )
 
     text = audit._format_markdown(report)
 
@@ -370,7 +418,9 @@ def test_markdown_format_includes_outcome_support(tmp_path: Path) -> None:
     assert "Outcome-support gates: 0/1" in text
 
 
-def test_require_skill_advantage_exits_nonzero_when_outcome_does_not_support(monkeypatch, capsys) -> None:
+def test_require_skill_advantage_exits_nonzero_when_outcome_does_not_support(
+    monkeypatch, capsys
+) -> None:
     monkeypatch.setattr(
         audit,
         "audit_all",
@@ -410,7 +460,9 @@ def test_prompt_audit_rejects_embedded_doc_prompts(tmp_path: Path) -> None:
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1),
+        studies._prompt_artifact_records(
+            skill, "minimal", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+        ),
     )
 
     result = audit.audit_prompt_artifact(skill, prompt_root=prompt_root, repeats=1)
@@ -423,7 +475,9 @@ def test_prompt_audit_rejects_wrong_protocol_metadata(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     rows[0]["system"] = "Use any command that seems plausible."
     rows[0]["answer"] = "A correct answer should call scripts/run_vista3d.py."
     rows[0]["prompt_source"] = "tools/with_vs_without/old_runner.py::_path_prompt"
@@ -452,7 +506,9 @@ def test_prompt_audit_rejects_shared_extra_path_prompt_hint(tmp_path: Path) -> N
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     for row in rows:
         if row["mode"] == "codex-opus" and row["backend"] == "gpt55" and row["repeat"] == 1:
             row["question"] += " Prefer whichever command is easiest for the model."
@@ -470,7 +526,9 @@ def test_prompt_audit_rejects_fixture_basename_leaks(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     rows[0]["staged_user_input"] = "runs/with_vs_without_nv/_inputs/nv_segment_ct/spleen_03.nii.gz"
     rows[0]["question"] = rows[0]["question"].replace("input.nii.gz", "spleen_03.nii.gz")
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
@@ -486,7 +544,9 @@ def test_prompt_audit_rejects_operational_marker_leaks(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     rows[0]["question"] += " Helpful hint: call scripts/run_vista3d.py directly."
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
@@ -500,21 +560,27 @@ def test_prompt_audit_requires_repair_redaction_policy(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     rows[0]["repair_prompt"] = "After each failed execution, send stdout and stderr tails."
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
     result = audit.audit_prompt_artifact(skill, prompt_root=prompt_root, repeats=1)
 
     assert result["status"] == "incomplete"
-    assert any(issue["code"] == "repair_prompt_missing_redaction_policy" for issue in result["issues"])
+    assert any(
+        issue["code"] == "repair_prompt_missing_redaction_policy" for issue in result["issues"]
+    )
 
 
 def test_prompt_audit_requires_documentation_metadata(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     rows[0].pop("documentation")
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
@@ -528,7 +594,9 @@ def test_prompt_audit_rejects_stale_documentation_metadata(tmp_path: Path) -> No
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     rows[0]["documentation"][0]["sha256"] = "0" * 64
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
@@ -542,7 +610,9 @@ def test_prompt_audit_rejects_missing_documentation_path_in_question(tmp_path: P
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     with_row = next(
         row
         for row in rows
@@ -562,7 +632,9 @@ def test_prompt_audit_rejects_missing_document_read_instruction(tmp_path: Path) 
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     with_row = next(
         row
         for row in rows
@@ -574,15 +646,21 @@ def test_prompt_audit_rejects_missing_document_read_instruction(tmp_path: Path) 
     result = audit.audit_prompt_artifact(skill, prompt_root=prompt_root, repeats=1)
 
     assert result["status"] == "incomplete"
-    assert any(issue["code"] == "question_missing_document_read_instruction" for issue in result["issues"])
+    assert any(
+        issue["code"] == "question_missing_document_read_instruction" for issue in result["issues"]
+    )
 
 
 def test_prompt_audit_rejects_missing_document_boundary(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
-    without_row = next(row for row in rows if row["mode"] == "nemotron-correction" and row["arm"] == "without")
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
+    without_row = next(
+        row for row in rows if row["mode"] == "nemotron-correction" and row["arm"] == "without"
+    )
     boundary = audit._expected_documentation_boundary(skill, "without")
     without_row["question"] = without_row["question"].replace(boundary, "")
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
@@ -611,7 +689,9 @@ def test_prompt_audit_rejects_missing_selected_document(tmp_path: Path, monkeypa
         tier3=(),
     )
     monkeypatch.setitem(studies.SCENARIOS, skill, scenario)
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
     result = audit.audit_prompt_artifact(skill, prompt_root=prompt_root, repeats=1)
@@ -644,7 +724,9 @@ def test_prompt_audit_rejects_invalid_scenario_document_contract(
     )
     monkeypatch.setitem(studies.SCENARIOS, skill, scenario)
     monkeypatch.setitem(audit.SCENARIOS, skill, scenario)
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
     result = audit.audit_prompt_artifact(skill, prompt_root=prompt_root, repeats=1)
@@ -668,7 +750,9 @@ def test_prompt_audit_rejects_user_goal_without_staged_input(
     )
     monkeypatch.setitem(studies.SCENARIOS, skill, scenario)
     monkeypatch.setitem(audit.SCENARIOS, skill, scenario)
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
     result = audit.audit_prompt_artifact(skill, prompt_root=prompt_root, repeats=1)
@@ -684,8 +768,14 @@ def test_prompt_audit_rejects_asymmetric_pair_text(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
-    without = next(row for row in rows if row["mode"] == "codex-opus" and row["backend"] == "gpt55" and row["arm"] == "without")
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
+    without = next(
+        row
+        for row in rows
+        if row["mode"] == "codex-opus" and row["backend"] == "gpt55" and row["arm"] == "without"
+    )
     without["question"] += " Prefer the upstream workflow even if another command looks shorter."
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
@@ -695,11 +785,15 @@ def test_prompt_audit_rejects_asymmetric_pair_text(tmp_path: Path) -> None:
     assert any(issue["code"] == "prompt_pair_question_mismatch" for issue in result["issues"])
 
 
-def test_prompt_audit_rejects_asymmetric_direct_minimal_template(tmp_path: Path, monkeypatch) -> None:
+def test_prompt_audit_rejects_asymmetric_direct_minimal_template(
+    tmp_path: Path, monkeypatch
+) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
     original_prompt = audit._prompt
 
@@ -723,11 +817,15 @@ def test_prompt_audit_rejects_asymmetric_direct_minimal_template(tmp_path: Path,
     assert any(issue["code"] == "direct_minimal_prompt_pair_mismatch" for issue in result["issues"])
 
 
-def test_prompt_audit_rejects_direct_minimal_prefix_marker_leak(tmp_path: Path, monkeypatch) -> None:
+def test_prompt_audit_rejects_direct_minimal_prefix_marker_leak(
+    tmp_path: Path, monkeypatch
+) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
     original_prompt = audit._prompt
 
@@ -752,8 +850,12 @@ def test_prompt_audit_rejects_wrong_documentation_arm(tmp_path: Path) -> None:
     skill = "nv_segment_ct"
     prompt_root = tmp_path / "prompts"
     prompt_root.mkdir()
-    rows = studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1)
-    without = next(row for row in rows if row["mode"] == "nemotron-correction" and row["arm"] == "without")
+    rows = studies._prompt_artifact_records(
+        skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=1
+    )
+    without = next(
+        row for row in rows if row["mode"] == "nemotron-correction" and row["arm"] == "without"
+    )
     without["documentation_arm"] = list(studies.SCENARIOS[skill].with_doc)
     _write_json(prompt_root / f"eval_nv_model_studies_{skill}_prompts.json", rows)
 
@@ -771,9 +873,13 @@ def test_commands_format_lists_resume_commands(tmp_path: Path) -> None:
     prompt_root.mkdir()
     _write_json(
         prompt_root / f"eval_nv_model_studies_{skill}_prompts.json",
-        studies._prompt_artifact_records(skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats),
+        studies._prompt_artifact_records(
+            skill, "path", max_steps=studies.DIRECT_MAX_CORRECTION_STEPS, repeats=repeats
+        ),
     )
-    report = audit.audit_all(skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats)
+    report = audit.audit_all(
+        skills=[skill], prompt_root=prompt_root, study_root=study_root, repeats=repeats
+    )
 
     text = audit._format_commands(report)
 
@@ -827,7 +933,11 @@ def test_study_audit_rejects_wrong_repair_message_roles(tmp_path: Path) -> None:
     aggregate_path = study_root / f"{skill}_codex_opus" / "gpt55_with.json"
     repeat = json.loads(repeat_path.read_text())
     aggregate = json.loads(aggregate_path.read_text())
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
     passed_score = {"passed": True, "score": 5, "tiers": []}
     repair_prompt = (
         "The previous command did not pass verification. "
@@ -878,7 +988,11 @@ def test_study_audit_rejects_response_history_mismatch(tmp_path: Path) -> None:
     aggregate_path = study_root / f"{skill}_codex_opus" / "gpt55_with.json"
     repeat = json.loads(repeat_path.read_text())
     aggregate = json.loads(aggregate_path.read_text())
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
     passed_score = {"passed": True, "score": 5, "tiers": []}
     first_response = "```bash\npython bad.py\n```"
     repair_prompt = (
@@ -922,7 +1036,9 @@ def test_study_audit_rejects_response_history_mismatch(tmp_path: Path) -> None:
     assert any(issue["code"] == "attempt_response_history_mismatch" for issue in result["issues"])
 
 
-def test_study_audit_rejects_repair_prompt_that_does_not_match_previous_attempt(tmp_path: Path) -> None:
+def test_study_audit_rejects_repair_prompt_that_does_not_match_previous_attempt(
+    tmp_path: Path,
+) -> None:
     skill = "nv_segment_ct"
     repeats = 1
     study_root = tmp_path / "studies"
@@ -931,8 +1047,17 @@ def test_study_audit_rejects_repair_prompt_that_does_not_match_previous_attempt(
     aggregate_path = study_root / f"{skill}_codex_opus" / "gpt55_with.json"
     repeat = json.loads(repeat_path.read_text())
     aggregate = json.loads(aggregate_path.read_text())
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
-    failed_execution = {"exit_code": 1, "stderr_tail": "exit 1", "stdout_tail": "", "generated_files": []}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
+    failed_execution = {
+        "exit_code": 1,
+        "stderr_tail": "exit 1",
+        "stdout_tail": "",
+        "generated_files": [],
+    }
     passed_score = {"passed": True, "score": 5, "tiers": []}
     first_response = "```bash\npython bad.py\n```"
     repair_prompt = (
@@ -983,7 +1108,11 @@ def test_study_audit_rejects_leaky_readme_arm_repair_prompt(tmp_path: Path) -> N
     aggregate_path = study_root / f"{skill}_codex_opus" / "gpt55_without.json"
     repeat = json.loads(repeat_path.read_text())
     aggregate = json.loads(aggregate_path.read_text())
-    failed_score = {"passed": False, "score": 1, "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}]}
+    failed_score = {
+        "passed": False,
+        "score": 1,
+        "tiers": [{"tier": 5, "pass": False, "reason": "exit 1"}],
+    }
     local_path = "/" + "home/wenqil/private"
     repair_prompt = (
         "The previous command did not pass verification. "
@@ -1163,7 +1292,9 @@ def test_study_audit_rejects_edited_initial_prompt(tmp_path: Path) -> None:
     repeat_path = study_root / f"{skill}_codex_opus" / "repeats" / "gpt55_with_repeat_1.json"
     repeat = json.loads(repeat_path.read_text())
     repeat["attempts"][0]["messages"][0]["content"] = "Different system prompt."
-    repeat["attempts"][0]["messages"][1]["content"] += "\nExtra hint: call the skill wrapper directly."
+    repeat["attempts"][0]["messages"][1][
+        "content"
+    ] += "\nExtra hint: call the skill wrapper directly."
     _write_json(repeat_path, repeat)
 
     result = audit.audit_study_artifacts(skill, study_root=study_root, repeats=repeats)
@@ -1220,8 +1351,7 @@ def test_study_audit_rejects_command_not_extracted_from_stored_response(tmp_path
     aggregate = json.loads(aggregate_path.read_text())
     command = repeat["attempts"][0]["command"]
     repeat["attempts"][0]["response"] = (
-        f"```bash\n{command}\n```\n"
-        "```bash\npython different.py\n```"
+        f"```bash\n{command}\n```\n" "```bash\npython different.py\n```"
     )
     aggregate["repeats"][0] = repeat
     _write_json(repeat_path, repeat)
