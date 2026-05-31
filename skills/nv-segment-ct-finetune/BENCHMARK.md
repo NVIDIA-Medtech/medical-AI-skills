@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-segment-ct-finetune`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,11 +54,11 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 75% (+0%) | 100% (+0%) |
-| Correctness | 4 | 84% (+10%) | 89% (+19%) |
-| Discoverability | 4 | 92% (+0%) | 57% (-4%) |
-| Effectiveness | 4 | 68% (+11%) | 82% (+29%) |
-| Efficiency | 4 | 79% (+3%) | 42% (-6%) |
+| Security | 4 | 75% (+38%) | 100% (+0%) |
+| Correctness | 4 | 81% (-10%) | 79% (+15%) |
+| Discoverability | 4 | 91% (+5%) | 58% (+5%) |
+| Effectiveness | 4 | 68% (-17%) | 71% (+27%) |
+| Efficiency | 4 | 80% (+14%) | 42% (-0%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
@@ -68,7 +68,7 @@ Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found
 
 Top findings:
 
-- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`scripts/run_finetune.py:887`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`scripts/run_finetune.py:880`)
 - LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct-finetune/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct-finetune/skill_manifest.yaml`)
 - LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct-finetune/validators`)
@@ -86,7 +86,7 @@ Top findings:
 - HIGH DUPLICATE/duplicate: Duplicate content found across SKILL.md and scripts/run_finetune.py:
   "## Purpose" in SKILL.md (lines 3-9)
   vs "(module docstring)" in scripts/run_finetune.py (lines 1-20)
-  vs "main()" in scripts/run_finetune.py (lines 1292-1865) (`SKILL.md:3`)
+  vs "main()" in scripts/run_finetune.py (lines 1273-1824) (`SKILL.md:3`)
 
 ## Publication Recommendation
 

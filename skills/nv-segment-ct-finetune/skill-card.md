@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill to fine-tune the NV-Segment-CT VISTA3D model on CT segmentation datasets for research, development, and engineering verification workflows. <br>
+Developers and ML engineers use this skill to fine-tune NV-Segment-CT VISTA3D segmentation models on custom CT NIfTI datasets for research and development purposes. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -24,7 +24,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Skill Output: <br>
 **Output Type(s):** [Shell commands, Files] <br>
-**Output Format:** [JSON (output.json with metrics and checkpoint paths)] <br>
+**Output Format:** [JSON (output.json) and model checkpoint files] <br>
 **Output Parameters:** [1D] <br>
 **Other Properties Related to Output:** [None] <br>
 
@@ -35,7 +35,7 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (2 positive skill-activation cases, 2 attempts per task, 50% pass threshold). <br>
+Evaluated against 2 positive skill-activation tasks with 2 attempts per task under the NVSkills-Eval external profile. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -59,14 +59,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 75% (+0%) | 100% (+0%) |
-| Correctness | 4 | 84% (+10%) | 89% (+19%) |
-| Discoverability | 4 | 92% (+0%) | 57% (-4%) |
-| Effectiveness | 4 | 68% (+11%) | 82% (+29%) |
-| Efficiency | 4 | 79% (+3%) | 42% (-6%) |
+| Security | 4 | 75% (+38%) | 100% (+0%) |
+| Correctness | 4 | 81% (-10%) | 79% (+15%) |
+| Discoverability | 4 | 91% (+5%) | 58% (+5%) |
+| Effectiveness | 4 | 68% (-17%) | 71% (+27%) |
+| Efficiency | 4 | 80% (+14%) | 42% (-0%) |
 
 ## Skill Version(s): <br>
-07e62c6 (source: git SHA, committed 2026-05-30) <br>
+06d4cb4 (source: git SHA, committed 2026-05-31) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>

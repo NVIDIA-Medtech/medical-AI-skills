@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """nv_segment_ct_finetune - auto-configuring VISTA3D continual finetune.
 
 Three presets:
@@ -22,20 +37,21 @@ Engineering verification only. Output is NOT clinically meaningful.
 
 from __future__ import annotations
 
-import json
 import inspect
+import json
 import os
 import random
 import re
-import shutil
 import shlex
+import shutil
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
 import venv
-from importlib.metadata import PackageNotFoundError, version as package_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as package_version
 from pathlib import Path
 from typing import Optional
 
@@ -127,8 +143,7 @@ def require_compatible_runtime() -> None:
     major_minor = _monai_major_minor(monai_version)
     if major_minor not in SUPPORTED_MONAI_MAJOR_MINOR:
         raise typer.BadParameter(
-            f"monai==1.4.0 is required for this bundle; found monai "
-            f"{monai_version}."
+            f"monai==1.4.0 is required for this bundle; found monai " f"{monai_version}."
         )
 
 
@@ -192,15 +207,12 @@ def require_bundle_files() -> None:
     if not missing:
         if bundle_notes:
             sys.stderr.write(
-                "[nv_segment_ct_finetune] prepared bundle files: "
-                + "; ".join(bundle_notes)
-                + "\n"
+                "[nv_segment_ct_finetune] prepared bundle files: " + "; ".join(bundle_notes) + "\n"
             )
         return
 
     rel_missing = [
-        str(p.relative_to(SKILL_DIR)) if p.is_relative_to(SKILL_DIR) else str(p)
-        for p in missing
+        str(p.relative_to(SKILL_DIR)) if p.is_relative_to(SKILL_DIR) else str(p) for p in missing
     ]
     raise typer.BadParameter(
         "bundle setup is incomplete; missing: "
@@ -323,9 +335,7 @@ def _fixture_preset(fixture: Path) -> str | None:
     return None
 
 
-def _resolve_sanity_dataset(
-    fixture: Optional[Path], dataset_dir: Optional[Path]
-) -> Path:
+def _resolve_sanity_dataset(fixture: Optional[Path], dataset_dir: Optional[Path]) -> Path:
     if dataset_dir is not None:
         return dataset_dir.resolve()
     if fixture is not None and fixture.is_dir():
@@ -349,9 +359,7 @@ def prepare_bundle_files() -> list[str]:
         if _unlink_broken_symlink(BUNDLE_DIR / rel):
             notes.append(f"removed dangling {rel}")
 
-    sibling_label_dict = (
-        SKILL_DIR.parent / "nv-segment-ct" / "bundle" / "label_dict.json"
-    )
+    sibling_label_dict = SKILL_DIR.parent / "nv-segment-ct" / "bundle" / "label_dict.json"
     if _copy_if_missing_or_broken(sibling_label_dict, LABEL_DICT):
         notes.append("copied label_dict.json from nv-segment-ct cache")
     if _download_label_dict(LABEL_DICT):
@@ -391,9 +399,7 @@ def prepare_bundle_files() -> list[str]:
             "evaluate.json",
         ):
             if _copy_upstream_config(config_name, overwrite_if_different=True):
-                notes.append(
-                    f"restored configs/{config_name} from local upstream cache"
-                )
+                notes.append(f"restored configs/{config_name} from local upstream cache")
 
     if _copy_if_missing_or_broken(
         BUNDLE_DIR / "metadata.json",
@@ -467,9 +473,9 @@ def detect_env() -> dict:
         n, gpu_name, total_mb, free_mb = 0, "cpu", 0, 0
     try:
         with open("/proc/meminfo") as f:
-            ram_mb = int(
-                next(line for line in f if line.startswith("MemTotal")).split()[1]
-            ) // int("1024")
+            ram_mb = int(next(line for line in f if line.startswith("MemTotal")).split()[1]) // int(
+                "1024"
+            )
     except (OSError, StopIteration):
         ram_mb = 0
     packages: dict[str, str | None] = {}
@@ -546,9 +552,7 @@ def _resolve_dataset_path(dataset_dir: Path, raw: str) -> Path:
     return path if path.is_absolute() else dataset_dir / path
 
 
-def _audit_volume(
-    img_path: Path, lab_path: Path, user_idx: int, anatomy: Optional[str]
-) -> dict:
+def _audit_volume(img_path: Path, lab_path: Path, user_idx: int, anatomy: Optional[str]) -> dict:
     """Read one image+label pair fully and compute domain-side facts:
     orientation, HU range, spacing, foreground volume in mL, connected-
     component count, plus anatomy-specific bounds checks when known.
@@ -587,9 +591,7 @@ def _audit_volume(
             out["anatomy_volume_in_range"] = lo <= fg_ml <= hi
             out["anatomy_volume_expected_ml"] = [lo, hi]
         if key in ANATOMY_EXPECTED_COMPONENTS:
-            out["anatomy_components_match"] = (
-                n_components == ANATOMY_EXPECTED_COMPONENTS[key]
-            )
+            out["anatomy_components_match"] = n_components == ANATOMY_EXPECTED_COMPONENTS[key]
             out["anatomy_components_expected"] = ANATOMY_EXPECTED_COMPONENTS[key]
     return out
 
@@ -656,9 +658,7 @@ def inspect_and_build_datalist(
     seen_labels: set[int] = set()
     for p in pairs[: min(int("5"), len(pairs))]:
         img_p, lab_p = dataset_dir / p["image"], dataset_dir / p["label"]
-        seen_labels.update(
-            int(v) for v in np.unique(np.asarray(nib.load(str(lab_p)).dataobj))
-        )
+        seen_labels.update(int(v) for v in np.unique(np.asarray(nib.load(str(lab_p)).dataobj)))
         sampled.append(_audit_volume(img_p, lab_p, user_label_idx, anatomy))
     orient_codes = sorted({s["orientation_code"] for s in sampled})
 
@@ -771,17 +771,13 @@ def audit_existing_datalist(
             continue
         drift = float(np.max(np.abs(np.asarray(img.affine) - np.asarray(lab.affine))))
         if drift > float("1e-3"):
-            bad.append(
-                {"index": idx, "image": img_raw, "reason": f"affine drift {drift:.4g}"}
-            )
+            bad.append({"index": idx, "image": img_raw, "reason": f"affine drift {drift:.4g}"})
             continue
         max_drift = max(max_drift, drift)
         shapes.add(tuple(img.shape))
         spacings.append(tuple(float(z) for z in img.header.get_zooms()[: int("3")]))
         if len(sampled) < int("5"):
-            seen_labels.update(
-                int(v) for v in np.unique(np.asarray(nib.load(str(lab_p)).dataobj))
-            )
+            seen_labels.update(int(v) for v in np.unique(np.asarray(nib.load(str(lab_p)).dataobj)))
             sampled.append(_audit_volume(img_p, lab_p, user_label_idx, anatomy))
 
     orient_codes = sorted({s["orientation_code"] for s in sampled})
@@ -876,16 +872,12 @@ def ensure_smoke_dataset(
             continue
         shift = np.array([idx % 2, (idx // 2) % 2, idx % 3], dtype=float) * float("2")
         dist = np.sqrt(
-            (
-                (grid - (center[:, None, None, None] + shift[:, None, None, None])) ** 2
-            ).sum(axis=0)
+            ((grid - (center[:, None, None, None] + shift[:, None, None, None])) ** 2).sum(axis=0)
         )
         label_arr = (dist <= radius).astype(np.uint8)
         image_arr = np.full(shape, -900.0, dtype=np.float32)
         image_arr[label_arr > 0] = 80.0 + float(idx)
-        image_arr += (
-            np.random.default_rng(idx).normal(0.0, 5.0, size=shape).astype(np.float32)
-        )
+        image_arr += np.random.default_rng(idx).normal(0.0, 5.0, size=shape).astype(np.float32)
 
         image_path = work_dir / image
         label_path = work_dir / label
@@ -1066,9 +1058,7 @@ def run_monai_bundle(
         if force_single_gpu and "CUDA_VISIBLE_DEVICES" not in env:
             env["CUDA_VISIBLE_DEVICES"] = "0"
         with open(log_path, "w") as f:
-            rc = subprocess.call(
-                cmd, cwd=BUNDLE_DIR, stdout=f, stderr=subprocess.STDOUT, env=env
-            )
+            rc = subprocess.call(cmd, cwd=BUNDLE_DIR, stdout=f, stderr=subprocess.STDOUT, env=env)
     finally:
         if smi is not None:
             smi.terminate()
@@ -1095,9 +1085,7 @@ def parse_log(log_path: Path) -> dict:
         "train_loss_first": losses[0] if losses else None,
         "train_loss_last": losses[-1] if losses else None,
         "train_loss_finite": (
-            all(loss == loss and abs(loss) != float("inf") for loss in losses)
-            if losses
-            else False
+            all(loss == loss and abs(loss) != float("inf") for loss in losses) if losses else False
         ),
         "val_dice_per_epoch": dices,
         "baseline_val_dice": dices[0] if dices else None,
@@ -1175,10 +1163,7 @@ def compare_checkpoint_weights(reference: Path, candidate: Path) -> dict:
             if not (torch.is_tensor(ref_value) and torch.is_tensor(cand_value)):
                 continue
             tensor_count += 1
-            if (
-                ref_value.shape != cand_value.shape
-                or ref_value.dtype != cand_value.dtype
-            ):
+            if ref_value.shape != cand_value.shape or ref_value.dtype != cand_value.dtype:
                 shape_or_dtype_mismatches += 1
                 if len(examples) < 5:
                     examples.append(
@@ -1211,10 +1196,7 @@ def compare_checkpoint_weights(reference: Path, candidate: Path) -> dict:
         missing = sorted(ref_keys - cand_keys)
         extra = sorted(cand_keys - ref_keys)
         weights_identical = (
-            not missing
-            and not extra
-            and shape_or_dtype_mismatches == 0
-            and differing_tensors == 0
+            not missing and not extra and shape_or_dtype_mismatches == 0 and differing_tensors == 0
         )
         out.update(
             {
@@ -1267,8 +1249,7 @@ def sanity_reference_checks(
             and training_start >= thresholds["training_start_val_dice_min"]
         ),
         "training_best_val_dice_ok": (
-            training_best is not None
-            and training_best >= thresholds["training_best_val_dice_min"]
+            training_best is not None and training_best >= thresholds["training_best_val_dice_min"]
         ),
         "training_improvement_ok": (
             training_improvement is not None
@@ -1440,9 +1421,7 @@ def main(
         learning_rate = float("5e-5")
 
     env = detect_env()
-    mapping, mapping_src = resolve_mapping(
-        target_anatomy, user_label_idx, label_mapping
-    )
+    mapping, mapping_src = resolve_mapping(target_anatomy, user_label_idx, label_mapping)
     timings["env_detect"] = time.perf_counter() - t_phase
     t_phase = time.perf_counter()
 
@@ -1479,18 +1458,12 @@ def main(
 
     n_train = len(json.loads(datalist.read_text()).get("training", []))
     dataset_audit.setdefault("n_pairs", n_train)
-    plan_patch = (
-        json.loads(patch_size) if patch_size else pick_patch(env["gpu_free_mb"])
-    )
+    plan_patch = json.loads(patch_size) if patch_size else pick_patch(env["gpu_free_mb"])
     plan_cache = (
-        cache_rate
-        if cache_rate is not None
-        else pick_cache_rate(n_train, env["host_ram_mb"])
+        cache_rate if cache_rate is not None else pick_cache_rate(n_train, env["host_ram_mb"])
     )
     plan_epochs = (
-        epochs
-        if epochs is not None
-        else (2 if smoke else int("5") if sanity else int("50"))
+        epochs if epochs is not None else (2 if smoke else int("5") if sanity else int("50"))
     )
     formal_eval = bool(not smoke and not skip_formal_eval)
     force_single_gpu = bool(smoke or sanity)
@@ -1518,11 +1491,7 @@ def main(
             f"epochs={plan_epochs}",
             f"learning_rate={learning_rate}",
             f"nproc_per_node={nproc}",
-            (
-                "automatic class-prompt training"
-                if auto_seg
-                else "bundle prompt-mix training"
-            ),
+            ("automatic class-prompt training" if auto_seg else "bundle prompt-mix training"),
             (
                 "single-gpu DFW Task06 recipe"
                 if sanity
@@ -1690,9 +1659,7 @@ def main(
         "finetune": rc,
         "eval_finetuned": formal_post_rc,
     }
-    overall_rc = max(
-        (v for v in phase_return_codes.values() if v is not None), default=0
-    )
+    overall_rc = max((v for v in phase_return_codes.values() if v is not None), default=0)
     if sanity and formal_eval:
         sanity_checks = sanity_reference_checks(
             formal_pretrained=formal_pretrained,
@@ -1708,9 +1675,7 @@ def main(
     else:
         sanity_checks = None
         sanity_ok = (
-            bool(
-                baseline is not None and baseline >= float("0.5") and regressed is False
-            )
+            bool(baseline is not None and baseline >= float("0.5") and regressed is False)
             if sanity
             else None
         )
@@ -1738,20 +1703,14 @@ def main(
             "command": " ".join(shlex.quote(c) for c in cmd),
             "commands": {
                 "eval_pretrained": (
-                    " ".join(shlex.quote(c) for c in formal_pre_cmd)
-                    if formal_pre_cmd
-                    else None
+                    " ".join(shlex.quote(c) for c in formal_pre_cmd) if formal_pre_cmd else None
                 ),
                 "finetune": " ".join(shlex.quote(c) for c in cmd),
                 "eval_finetuned": (
-                    " ".join(shlex.quote(c) for c in formal_post_cmd)
-                    if formal_post_cmd
-                    else None
+                    " ".join(shlex.quote(c) for c in formal_post_cmd) if formal_post_cmd else None
                 ),
             },
-            "command_prefix": (
-                " ".join(cmd[: cmd.index("run") + 1]) if "run" in cmd else cmd[0]
-            ),
+            "command_prefix": (" ".join(cmd[: cmd.index("run") + 1]) if "run" in cmd else cmd[0]),
             "config_stack": train_stack,
             "eval_config_stack": eval_stack if formal_eval else None,
             "phase_return_codes": phase_return_codes,
