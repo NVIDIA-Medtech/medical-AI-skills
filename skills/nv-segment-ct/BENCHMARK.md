@@ -7,7 +7,7 @@ This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the s
 ## Evaluation Summary
 
 - Skill: `nv-segment-ct`
-- Evaluation date: 2026-05-30
+- Evaluation date: 2026-05-31
 - NVSkills-Eval profile: `external`
 - Environment: `local`
 - Dataset: 2 evaluation tasks
@@ -54,24 +54,24 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 75% (-25%) | 100% (+0%) |
-| Correctness | 4 | 89% (-6%) | 91% (+4%) |
-| Discoverability | 4 | 93% (+5%) | 79% (+4%) |
-| Effectiveness | 4 | 72% (-12%) | 81% (+3%) |
-| Efficiency | 4 | 84% (+10%) | 70% (+9%) |
+| Security | 4 | 100% (+0%) | 75% (-25%) |
+| Correctness | 4 | 93% (-5%) | 73% (-22%) |
+| Discoverability | 4 | 98% (+18%) | 69% (-15%) |
+| Effectiveness | 4 | 71% (-28%) | 65% (-19%) |
+| Efficiency | 4 | 93% (+30%) | 65% (-6%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
 ## Tier 1: Static Validation Summary
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 8 total findings.
+Tier 1 validation passed with observations. NVSkills-Eval ran 9 checks and found 10 total findings.
 
 Top findings:
 
-- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`fixtures/generate_preflight_fixture.py:37`)
+- MEDIUM PII/gps_coordinates: GPS coordinates (location information) (`fixtures/generate_preflight_fixture.py:52`)
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-segment-ct/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct/skill_manifest.yaml`)
+- MEDIUM SECURITY/Unknown (LP3): MCP Least Privilege: The skill performs file reads, file writes, and network operations (downloading ~832 MB model bundle from HuggingFace an (`SKILL.md:1`)
+- MEDIUM SECURITY/Unknown (SQP-2): The use of `tf.extract(member, path=dest_dir)` without path traversal protection means a maliciously crafted tar archive (`fixtures/fetch_spleen_fixture.py:93`)
 - LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct/validators`)
 
 ## Tier 2: Deduplication Summary
