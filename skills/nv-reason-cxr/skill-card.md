@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests. Not for diagnosis or clinical reporting. <br>
+Used for command-shape or live NV-Reason-CXR chest X-ray reasoning smoke tests through local inference or the public Hugging Face Space API. Not for diagnosis or clinical reporting. <br>
 
 This skill is for research and development only. <br>
 
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill to run NV-Reason-CXR chest X-ray reasoning inference and command-shape smoke tests for engineering validation and research purposes. <br>
+Developers and engineers use this skill to run NV-Reason-CXR chest X-ray reasoning inference through local Transformers or the public Hugging Face Space API, plus command-shape smoke tests for engineering validation and research purposes. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
