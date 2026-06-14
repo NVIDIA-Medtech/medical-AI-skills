@@ -36,7 +36,7 @@ metadata:
 
 ## Prerequisites
 - Local backend requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.
-- API backend requirements: public network access to the Hugging Face Space; no local PyTorch, Transformers, CUDA, model cache, or Hugging Face token.
+- API backend requirements: public network access to the [Hugging Face Space](https://huggingface.co/spaces/nvidia/nv-reason-cxr); no local PyTorch, Transformers, CUDA, model cache, or Hugging Face token.
 - Side effects: emits result JSON on stdout; may write generated fixture artifacts under the caller's `--out-dir`; may cache model assets under `~/.cache/huggingface/` for local inference; and may contact `https://huggingface.co`, `https://github.com`, or `https://*.hf.space` outside `--mock` mode.
 - Run commands from the repository root unless an existing section below says otherwise.
 
