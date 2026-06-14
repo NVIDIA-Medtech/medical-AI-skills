@@ -590,14 +590,19 @@ def _hf_space_image_payload(base_url: str, image_path: Path, *, timeout: int) ->
     mime = mimetypes.guess_type(image_path.name)[0] or "application/octet-stream"
     filename = image_path.name.replace('"', "%22")
     body = (
-        f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="files"; filename="{filename}"\r\n'
-        f"Content-Type: {mime}\r\n\r\n"
-    ).encode() + image_path.read_bytes() + f"\r\n--{boundary}--\r\n".encode()
+        (
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="files"; filename="{filename}"\r\n'
+            f"Content-Type: {mime}\r\n\r\n"
+        ).encode()
+        + image_path.read_bytes()
+        + f"\r\n--{boundary}--\r\n".encode()
+    )
     headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
     uploaded = json.loads(
-        _http_fetch(f"{base_url}/gradio_api/upload", data=body, headers=headers, timeout=timeout)
-        .decode("utf-8", "replace")
+        _http_fetch(
+            f"{base_url}/gradio_api/upload", data=body, headers=headers, timeout=timeout
+        ).decode("utf-8", "replace")
     )
 
     item = uploaded[0] if isinstance(uploaded, list) and uploaded else uploaded
@@ -636,9 +641,7 @@ def _stream_hf_space_response(response: Any) -> str:
             continue
 
         data = "\n".join(
-            line.split(":", 1)[1].lstrip()
-            for line in event_lines
-            if line.startswith("data:")
+            line.split(":", 1)[1].lstrip() for line in event_lines if line.startswith("data:")
         )
         event_lines = []
         if not data:
