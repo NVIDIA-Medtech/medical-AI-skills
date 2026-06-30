@@ -1,0 +1,20 @@
+{
+  "skill": "report-pathology-classification",
+  "model": "synthetic-fixture",
+  "n_reports": 5,
+  "pathologies": {
+    "n_labels": 10,
+    "source": "data/pathologies.json"
+  },
+  "labels": {
+    "n_reports_labeled": 4,
+    "n_present_total": 6,
+    "label_coverage_rate": 0.8
+  },
+  "validation": {
+    "method": "rule_based",
+    "n_json_parse_failures": 2,
+    "json_parse_success_rate": 0.6,
+    "n_invalid_labels": 1
+  }
+}

@@ -200,6 +200,42 @@ and
 record CUDA image-only MR runs plus `mr_synthesis_quality_v1` verifier packs
 with the same no-generated-volumes policy.
 
+## Example workflow 3 — `nv-curate` report curation pipeline (raw data → AI-ready → train/analyze)
+
+End-to-end curation of medical report data, orchestrated by the
+[`nv-curate`](skills/nv-curate/) skill over four independently-gated stage skills
+(`report-anonymization` → `report-translation` → `report-structuring` →
+`report-pathology-classification`), joined by `study_uid` into an AI-ready
+dataset. Each stage runs in `--mode mock` (deterministic, GPU-free, CI-gated) or
+`--mode live` (upstream vLLM). The three end-user prompts map to three actions:
+
+```text
+prompt 1  "inventory raw data + what processing it needs"         -> nv-curate --action plan
+prompt 2  "extract, de-identify, translate, structure, save it"   -> nv-curate --action curate
+prompt 3  "retrieve + transform + fine-tune the MR-brain model"   -> nv-curate --action finetune
+```
+
+```bash
+# Plan: inventory a raw-data dir and emit a datasources.json
+python skills/nv-curate/scripts/nv_curate.py /data/mrbrain/raw_data \
+  --action plan --out runs/nv_curate_plan
+
+# Curate (mock): de-identify -> translate -> structure -> label -> AI-ready datalist
+python skills/nv-curate/scripts/nv_curate.py skills/nv-curate/fixtures/datasources.json \
+  --action curate --out runs/nv_curate_demo
+
+# Evidence pack via the harness
+python -m eval_engine.run skills/nv-curate \
+  --fixture skills/nv-curate/fixtures/datasources.json --out runs/nv_curate_pack
+```
+
+The curated dataset (`curated_records.json` + a MONAI `datalist.json`) feeds either
+**analysis** (the 37-pathology labels) or **training**: when image volumes are joined
+by `study_uid`, nv-curate hands the datalist to
+[`nv-generate-mr-brain-finetune`](skills/nv-generate-mr-brain-finetune/); the report
+track supplies labels, cohort selection, and conditioning metadata. Config contract:
+[`skills/nv-curate/schemas/datasources.schema.json`](skills/nv-curate/schemas/datasources.schema.json).
+
 ## Trust and evidence
 
 A skill can exit successfully and still produce an artefact you cannot trust
@@ -244,6 +280,11 @@ make verify
 | [`skills/nv-generate-mr-brain-finetune`](skills/nv-generate-mr-brain-finetune/) | NV-Generate-CTMR rflow-mr-brain diffusion-UNet finetuning from a user datalist |
 | [`skills/nv-generate-vae-finetune`](skills/nv-generate-vae-finetune/) | NV-Generate-CTMR MAISI VAE finetuning from CT/MRI datalists |
 | [`skills/nv-reason-cxr`](skills/nv-reason-cxr/) | NV-Reason-CXR-3B inference on a user-provided chest X-ray PNG/JPEG |
+| [`skills/nv-curate`](skills/nv-curate/) | report-curation orchestrator: plan → de-identify → translate → structure → label → AI-ready datalist, with finetune/analysis hand-off (MR-RATE reports pipeline) |
+| [`skills/report-anonymization`](skills/report-anonymization/) | de-identify Turkish radiology reports with `[entity_N]` tokens (MR-RATE step 01) |
+| [`skills/report-translation`](skills/report-translation/) | Turkish→English report translation + QC and token preservation (MR-RATE steps 02+03) |
+| [`skills/report-structuring`](skills/report-structuring/) | structure English reports into clinical_information/technique/findings/impression + QC (MR-RATE steps 04+05) |
+| [`skills/report-pathology-classification`](skills/report-pathology-classification/) | binary SNOMED-grounded pathology labeling of findings (MR-RATE step 06) |
 | [`verifiers/skill_completeness_v1`](verifiers/skill_completeness_v1/) | structural and manifest-spec verifier |
 | [`verifiers/dicom_metadata_quality_v1`](verifiers/dicom_metadata_quality_v1/) | paired verifier for DICOM metadata evidence packs and PHI-scope disclosure |
 | [`verifiers/dicom_preflight_quality_v1`](verifiers/dicom_preflight_quality_v1/) | paired verifier for DICOM preflight evidence packs |
@@ -253,6 +294,10 @@ make verify
 | [`verifiers/ct_synthesis_quality_v1`](verifiers/ct_synthesis_quality_v1/) | paired verifier for nv_generate_ct_rflow image/mask pair geometry, HU plausibility, label-set sanity |
 | [`verifiers/mr_synthesis_quality_v1`](verifiers/mr_synthesis_quality_v1/) | paired verifier for nv_generate_mr and nv_generate_mr_brain image artifact geometry and numeric sanity |
 | [`verifiers/nv_reason_cxr_quality_v1`](verifiers/nv_reason_cxr_quality_v1/) | paired verifier for nv_reason_cxr image/hash binding, runtime identity, and forbidden-phrase guardrails |
+| [`verifiers/report_anonymization_quality_v1`](verifiers/report_anonymization_quality_v1/) | paired verifier for report-anonymization PHI-leak, token format, and mapping consistency |
+| [`verifiers/report_translation_quality_v1`](verifiers/report_translation_quality_v1/) | paired verifier for report-translation QC pass rate, residual non-English, and token preservation |
+| [`verifiers/report_structuring_quality_v1`](verifiers/report_structuring_quality_v1/) | paired verifier for report-structuring parse rate, structure-QC pass rate, and formatting rules |
+| [`verifiers/report_pathology_quality_v1`](verifiers/report_pathology_quality_v1/) | paired verifier for report-pathology-classification label coverage, JSON-parse rate, and taxonomy validity |
 
 ## Repository map
 

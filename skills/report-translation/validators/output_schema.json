@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReportTranslationOutput",
+  "type": "object",
+  "required": ["skill", "model", "n_reports", "qc", "language", "token_preservation"],
+  "additionalProperties": true,
+  "properties": {
+    "skill": {"type": "string"},
+    "model": {"type": "string"},
+    "n_reports": {"type": "integer", "minimum": 0},
+    "qc": {
+      "type": "object",
+      "required": ["method", "n_evaluated", "n_pass", "n_fail", "n_unknown", "pass_rate"],
+      "properties": {
+        "method": {"type": "string"},
+        "n_evaluated": {"type": "integer", "minimum": 0},
+        "n_pass": {"type": "integer", "minimum": 0},
+        "n_fail": {"type": "integer", "minimum": 0},
+        "n_unknown": {"type": "integer", "minimum": 0},
+        "pass_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    },
+    "language": {
+      "type": "object",
+      "required": ["method", "n_evaluated", "n_non_english", "non_english_rate"],
+      "properties": {
+        "method": {"type": "string"},
+        "n_evaluated": {"type": "integer", "minimum": 0},
+        "n_non_english": {"type": "integer", "minimum": 0},
+        "non_english_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    },
+    "token_preservation": {
+      "type": "object",
+      "required": ["n_reports_with_tokens", "n_reports_token_dropped", "preservation_rate"],
+      "properties": {
+        "n_reports_with_tokens": {"type": "integer", "minimum": 0},
+        "n_reports_token_dropped": {"type": "integer", "minimum": 0},
+        "preservation_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    },
+    "runtime": {"type": "object"},
+    "artifacts": {"type": "object"}
+  }
+}

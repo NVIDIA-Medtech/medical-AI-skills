@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReportAnonymizationOutput",
+  "type": "object",
+  "required": ["skill", "model", "n_reports", "phi_leak", "token_format", "token_consistency"],
+  "additionalProperties": true,
+  "properties": {
+    "skill": {"type": "string"},
+    "model": {"type": "string"},
+    "n_reports": {"type": "integer", "minimum": 0},
+    "phi_leak": {
+      "type": "object",
+      "required": ["method", "n_evaluated", "n_leaked", "leak_rate"],
+      "properties": {
+        "method": {"type": "string"},
+        "n_evaluated": {"type": "integer", "minimum": 0},
+        "n_leaked": {"type": "integer", "minimum": 0},
+        "leak_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    },
+    "token_format": {
+      "type": "object",
+      "required": ["n_reports_with_tokens", "n_malformed_tokens", "malformed_examples"],
+      "properties": {
+        "n_reports_with_tokens": {"type": "integer", "minimum": 0},
+        "n_malformed_tokens": {"type": "integer", "minimum": 0},
+        "malformed_examples": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "token_consistency": {
+      "type": "object",
+      "required": ["n_reports", "n_inconsistent", "mapping_extraction_rate"],
+      "properties": {
+        "n_reports": {"type": "integer", "minimum": 0},
+        "n_inconsistent": {"type": "integer", "minimum": 0},
+        "mapping_extraction_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    },
+    "runtime": {"type": "object"},
+    "artifacts": {"type": "object"}
+  }
+}

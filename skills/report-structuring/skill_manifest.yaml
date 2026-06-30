@@ -1,0 +1,127 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+id: medagent.report_structuring
+version: 0.1.0
+upstream_refs:
+  - kind: source_tree
+    name: mr_rate_preprocessing.reports_preprocessing.04_structuring
+    revision: monorepo-local
+    notes: >
+      Upstream vLLM structurer (structure_reports_parallel.py, step 04) and
+      LLM-judge QC (05_structure_qc/qc_llm_verify.py, step 05) wrapped in live
+      mode; paths resolved via --mr-rate-root or $MR_RATE_REPORTS_ROOT.
+  - kind: pypi_package
+    name: vllm
+    version_constraint: ">=0.6"
+    notes: Required only for --mode live; the default mock mode is stdlib-only.
+  - kind: hosted_model
+    name: nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
+    revision: main
+    notes: Default LLM for --mode live; not used by --mode mock.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Parse English radiology reports into 4 structured sections
+    (clinical_information, technique, findings, impression), normalize findings
+    to flowing sentences and impression to em-dash bullets, and QC the result
+    (MR-RATE reports stages 04 + 05).
+  scope: development
+  not_for:
+    - clinical deployment
+    - autonomous diagnosis
+    - patient-facing use
+    - regulatory reporting
+inputs:
+  - name: reports_csv
+    type: file_path
+    formats: [csv]
+    max_size_bytes: 1073741824
+    description: >
+      CSV with UID and report columns of English radiology reports, each carrying
+      the canonical section headers (Clinical Information / Technique / Findings /
+      Impression).
+outputs:
+  - name: structuring_summary
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_report_structuring.py
+  args:
+    - "${python}"
+    - "${script}"
+    - "${fixture}"
+    - "--out"
+    - "${out}"
+  env_optional: [MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes:
+      - {path: "<out>/structured.csv", approx_mb_max: 200, optional: false}
+      - {path: "<out>/structure_out", approx_mb_max: 500, optional: true}
+      - {path: "<out>/qc_out", approx_mb_max: 200, optional: true}
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    gpu_fallback: mock
+    env_optional: [MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+paired_verifiers:
+  - id: medagent.verifiers.report_structuring_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+    purpose: >
+      Second-pass audit of parse success, section completeness, structuring QC
+      pass-rate, and section-format compliance over the structuring evidence pack.
+limitations:
+  - The default mock mode is a deterministic header-split structurer over reports
+    that already carry the four canonical headers; it is for CI and verification,
+    not a general report parser or clinical structurer.
+  - Live mode requires a CUDA GPU, vLLM, and the configured vLLM model; it wraps the upstream
+    SLURM scripts in single-rank mode (steps 04 structuring + 05 LLM-judge QC).
+  - The format check is a deterministic surface check (bullets in findings,
+    leaked headers in bodies); it does not verify clinical content fidelity, which
+    is the job of the LLM-judge QC pass and the paired verifier.
+phi_scope_disclaimer: >
+  This skill restructures report text; it does NOT de-identify. Inputs must
+  already be anonymized (MR-RATE stage 01) and translated. The mock mode is a
+  synthetic-fixture structurer and is not a clinical tool. Review output before
+  sharing data.
+validation:
+  expected_runtime_seconds:
+    max: 120.0
+    inference_path: runtime.elapsed_seconds
+  sanity_checks:
+    - {path: skill, eq: report-structuring}
+    - {path: n_reports, gt: 0}
+    - {path: parse.parse_success_rate, gte: 1.0}
+    - {path: sections.completeness_rate, gte: 1.0}
+    - {path: qc.pass_rate, gte: 0.9}
+    - {path: format.n_format_violations, eq: 0}
+  expected_cost:
+    wall_seconds: {max: 120}
+    gpu_seconds: {max: 0}
+    gpu_memory_mb_peak: {max: 0}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/sample_reports_english.csv
+    fixture_builder: fixtures/generate_sample.py
+    runs: 2
+    ignore_paths:
+      - "runtime\\.elapsed_seconds"
+      - "artifacts\\..*"
