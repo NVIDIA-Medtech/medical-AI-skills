@@ -14,7 +14,7 @@
 # limitations under the License.
 
 id: medagent.nv_segment_ct_finetune
-version: 0.4.1
+version: 0.4.3
 upstream_refs:
   - kind: huggingface_repo
     name: nvidia/NV-Segment-CT
@@ -24,7 +24,7 @@ upstream_refs:
     name: NVIDIA-Medtech/NV-Segment-CTMR
     repo_url: https://github.com/NVIDIA-Medtech/NV-Segment-CTMR
     git_commit: f9f5f51b589e5dc9c23c453cf5138398e4084056
-    notes: Recommended compatibility source for missing staged training configs; an explicit local checkout is accepted.
+    notes: Recommended compatibility source for staged training configs and the verified trainer.py; an explicit local checkout is accepted when its trainer matches the recorded implementation.
 license: Apache-2.0
 intended_use:
   summary: >
@@ -100,6 +100,23 @@ inputs:
     description: Skip the pre/post original-spacing evaluate.json passes.
     optional: true
     default: false
+  - name: mlflow_mode
+    type: string
+    description: MLflow mode; off, local post-run summary, or Databricks live tracking.
+    optional: true
+    default: off
+  - name: mlflow_tracking_uri
+    type: string
+    description: Optional explicit MLflow tracking URI.
+    optional: true
+  - name: mlflow_experiment_name
+    type: string
+    description: MLflow experiment name; required when mlflow_mode is databricks.
+    optional_when: mlflow_mode != databricks
+  - name: mlflow_run_name
+    type: string
+    description: Optional MLflow run name.
+    optional: true
 outputs:
   - name: finetuned_ckpt
     type: file_path
@@ -153,11 +170,14 @@ runtime:
       - {path: "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json", approx_mb_max: 1}
       - {path: "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json", approx_mb_max: 1}
       - {path: "<caller-provided --output-dir>", approx_mb_max: 20000}
+      - {path: "<caller-provided --output-dir>/mlflow_tracking_settings.json", approx_mb_max: 1, optional: true}
+      - {path: "<caller-provided --output-dir>/mlruns", approx_mb_max: 100, optional: true}
     home_writes:
       - {path: "~/.cache/huggingface/", approx_mb_max: 1500}
     network_endpoints:
       - https://huggingface.co
       - https://raw.githubusercontent.com
+      - "https://<caller-provided-databricks-workspace>"
     requires_docker: false
     requires_gpu: cuda
     gpu_fallback: cpu
@@ -176,6 +196,9 @@ runtime:
     env_optional:
       - NPROC_PER_NODE   # overrides auto-detected GPU count (>=2 selects multi-GPU)
       - CUDA_VISIBLE_DEVICES
+      - DATABRICKS_HOST
+      - DATABRICKS_TOKEN
+      - MLFLOW_TRACKING_URI
   external_assets:
     - kind: huggingface_repo
       repo_id: nvidia/NV-Segment-CT
@@ -242,6 +265,10 @@ limitations:
   - Smoke mode is an executable oracle for "pipeline plumbs end to end",
     not a quality bar - it cannot prove the full-dataset finetune will
     converge.
+  - Local MLflow mode is post-run only. Databricks mode uses MONAI-native
+    live tracking on rank zero and spawn-based DataLoader workers.
+  - MLflow logging failures are recorded in output.mlflow and do not change
+    the finetune return code.
 validation:
   expected_runtime_seconds:
     # smoke_only on H100 ~= 5s; CPU fallback ~= 120s. Real finetune is

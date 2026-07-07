@@ -1,0 +1,8 @@
+{
+  "pack_format_version": "1.0.0",
+  "pack_kind": "skill_run",
+  "run_id": "fixture-run",
+  "skill_id": "medagent.fixture",
+  "skill_version": "0.1.0",
+  "repo_git_sha": "fixture"
+}

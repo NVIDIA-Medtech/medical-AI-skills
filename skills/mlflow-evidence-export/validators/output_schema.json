@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLflowEvidenceExportOutput",
+  "type": "object",
+  "required": [
+    "skill",
+    "status",
+    "mode",
+    "source",
+    "tags",
+    "metrics",
+    "mlflow",
+    "intended_use_disclaimer"
+  ],
+  "properties": {
+    "skill": {"const": "mlflow_evidence_export"},
+    "status": {"enum": ["dry_run", "logged", "failed"]},
+    "mode": {"enum": ["dry-run", "local", "databricks"]},
+    "source": {
+      "type": "object",
+      "required": ["pack_path", "pack_kind", "skill_id", "skill_version"],
+      "properties": {
+        "pack_path": {"type": "string"},
+        "pack_kind": {"type": "string"},
+        "skill_id": {"type": ["string", "null"]},
+        "skill_version": {"type": ["string", "number", "null"]}
+      }
+    },
+    "tags": {"type": "object", "additionalProperties": {"type": "string"}},
+    "metrics": {"type": "object", "additionalProperties": {"type": "number"}},
+    "mlflow": {
+      "type": "object",
+      "required": ["available", "tracking_uri", "experiment_name", "run_id", "error"],
+      "properties": {
+        "available": {"type": "boolean"},
+        "tracking_uri": {"type": ["string", "null"]},
+        "experiment_name": {"type": ["string", "null"]},
+        "run_id": {"type": ["string", "null"]},
+        "error": {"type": ["string", "null"]}
+      }
+    },
+    "intended_use_disclaimer": {"type": "string"}
+  }
+}

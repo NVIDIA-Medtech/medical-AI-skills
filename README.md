@@ -235,6 +235,7 @@ make verify
 | [`skills/dicom-series-preflight`](skills/dicom-series-preflight/) | GPU-free DICOM folder preflight for corruption, orientation, PHI-tag presence, and series consistency |
 | [`skills/dicom-metadata-extract`](skills/dicom-metadata-extract/) | pydicom metadata extraction and limited PHI-tag flagging |
 | [`skills/dicom-series-to-volume`](skills/dicom-series-to-volume/) | single-series CT DICOM to HU-scaled NIfTI |
+| [`skills/mlflow-evidence-export`](skills/mlflow-evidence-export/) | privacy-limited export of Medical AI Skills evidence summaries to MLflow |
 | [`skills/nv-segment-ct`](skills/nv-segment-ct/) | NVIDIA-Medtech NV-Segment-CT / VISTA3D wrapper |
 | [`skills/nv-segment-ctmr`](skills/nv-segment-ctmr/) | NVIDIA-Medtech NV-Segment-CTMR CT/MRI segmentation wrapper |
 | [`skills/nv-segment-ct-finetune`](skills/nv-segment-ct-finetune/) | Auto-configuring VISTA3D continual-learning finetune via `monai.bundle run` |

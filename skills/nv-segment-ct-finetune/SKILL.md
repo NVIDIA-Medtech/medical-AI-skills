@@ -18,7 +18,7 @@ metadata:
 
 - Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels. Not for clinical validation.
 - Wraps the upstream MONAI bundle entrypoint; do not replace it with handwritten training or inference code.
-- Manifest inputs are `dataset_dir`, `datalist`, `target_anatomy`, `label_mapping`, `smoke`, `sanity`, `auto_seg`, and `skip_formal_eval`.
+- Manifest inputs include the dataset and preset controls, `skip_formal_eval`, plus optional `mlflow_mode`, `mlflow_tracking_uri`, `mlflow_experiment_name`, and `mlflow_run_name` tracking controls.
 - Manifest outputs are `finetuned_ckpt` and schema-checked `result_json`.
 
 ## Instructions
@@ -34,13 +34,13 @@ metadata:
 
 | Script | Purpose | Arguments |
 |---|---|---|
-| `scripts/run_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`; stages configs, runs MONAI, and writes `output.json`. | `[FIXTURE_OR_DATASET] --output-dir OUT_DIR [--smoke] [--sanity] [--auto-seg] [--dataset-dir DIR] [--datalist JSON] [--target-anatomy TEXT] [--label-mapping JSON] [--patch-size JSON]` |
+| `scripts/run_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`; stages configs, runs MONAI, and writes `output.json`. | `[FIXTURE_OR_DATASET] --output-dir OUT_DIR [--smoke] [--sanity] [--dataset-dir DIR] [--datalist JSON] [--target-anatomy TEXT] [--mlflow-mode off\|local\|databricks]` |
 
 ## Prerequisites
 
 - Python 3.10+ with CUDA-capable Torch for GPU runs.
 - Runtime packages from `skill_manifest.yaml`, especially `monai==1.4.0`, `numpy<2`, `nibabel`, `scipy`, `typer`, `PyYAML`, `fire`, `pytorch-ignite`, `einops`, and `huggingface_hub`.
-- Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs.
+- Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs. Databricks MLflow mode may use `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, or `MLFLOW_TRACKING_URI` from the caller's environment and may contact `https://<caller-provided-databricks-workspace>`.
 - Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://raw.githubusercontent.com`.
 
 Fresh environment setup:
@@ -95,6 +95,24 @@ python skills/nv-segment-ct-finetune/scripts/run_finetune.py \
 ```
 
 Use `--label-mapping '[[1, 23]]'` when local label values are custom or the anatomy name is ambiguous.
+
+Optional live MLflow tracking:
+
+```bash
+python skills/nv-segment-ct-finetune/scripts/run_finetune.py \
+  /path/to/Task06_Lung \
+  --sanity \
+  --output-dir runs/nvseg_mlflow_demo \
+  --mlflow-mode databricks \
+  --mlflow-tracking-uri "$MLFLOW_TRACKING_URI" \
+  --mlflow-experiment-name nvseg-task06-demo
+```
+
+Databricks mode passes a tracking-only settings file to MONAI's documented
+`--tracking` option. It streams raw training loss and validation Dice, then
+appends the sanitized wrapper summary to the same run. The tracking patch does
+not change patch size, transforms, optimizer values, or other training config.
+Local mode remains a post-run summary.
 
 ## Examples
 
@@ -151,6 +169,7 @@ Decision rule: prefer formal original-spacing pre/post scores when present; reje
 - The auto-derived plan is heuristic; caller-provided `--patch-size`, `--cache-rate`, `--epochs`, and `--learning-rate` win.
 - The Task06 sanity recipe intentionally forces single-GPU execution to match the DFW reference. Multi-GPU mode for other datasets requires host `torchrun` support.
 - The paired verifier is CPU-only and audits the evidence pack; it does not re-run GPU segmentation.
+- MLflow support is optional. Databricks mode streams on rank zero and uses spawn-based DataLoader workers; local mode logs only after training. Setup failures are recorded under `output.json["mlflow"]` without changing the finetune result.
 - Not for clinical deployment, clinical interpretation, autonomous diagnosis, or regulatory submission.
 
 ## Troubleshooting
@@ -163,6 +182,7 @@ Decision rule: prefer formal original-spacing pre/post scores when present; reje
 | Missing formal Dice fields | Formal eval failed or was skipped. | Inspect `eval_pretrained.log`, `eval_finetuned.log`, and `metrics.csv`. |
 | GPU out of memory | Patch/cache settings too large. | Reduce `--patch-size`, lower `--cache-rate`, or reduce workers. |
 | No validation cases | Datalist lacks `fold: 0`. | Provide at least one validation entry. |
+| MLflow status is `failed` | MLflow is absent, credentials are invalid, or the experiment is inaccessible. | Inspect `output.json["mlflow"]["error"]`; the finetune result remains authoritative. |
 
 ## Verification
 
