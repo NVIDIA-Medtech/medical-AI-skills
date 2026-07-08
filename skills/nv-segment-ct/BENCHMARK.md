@@ -54,11 +54,11 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 2 | 100% (+0%) | 100% (+0%) |
-| Correctness | 2 | 97% (+59%) | 92% (+42%) |
-| Discoverability | 2 | 91% (+22%) | 88% (+24%) |
-| Effectiveness | 2 | 82% (+72%) | 81% (+51%) |
-| Efficiency | 2 | 79% (+12%) | 72% (+12%) |
+| Security | 2 | 100% (+50%) | 100% (+0%) |
+| Correctness | 2 | 100% (+32%) | 95% (+36%) |
+| Discoverability | 2 | 98% (+35%) | 89% (+21%) |
+| Effectiveness | 2 | 78% (+26%) | 80% (+37%) |
+| Efficiency | 2 | 90% (+33%) | 83% (+14%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
@@ -69,9 +69,9 @@ Tier 1 validation passed with observations. NVSkills-Eval ran 1 checks and found
 Top findings:
 
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-segment-ct/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct/skill_manifest.yaml`)
 - LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct/validators`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-segment-ct/tests`)
 
 ## Tier 2: Deduplication Summary
