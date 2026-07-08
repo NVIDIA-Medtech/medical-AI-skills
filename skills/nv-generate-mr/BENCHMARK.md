@@ -55,10 +55,10 @@ Task composition is derived from the evaluation dataset when possible. Entries w
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
 | Security | 2 | 100% (+0%) | 100% (+0%) |
-| Correctness | 2 | 60% (+22%) | 83% (+48%) |
-| Discoverability | 2 | 100% (+25%) | 98% (+25%) |
-| Effectiveness | 2 | 15% (+3%) | 54% (+42%) |
-| Efficiency | 2 | 94% (+17%) | 92% (+19%) |
+| Correctness | 2 | 60% (+22%) | 85% (+19%) |
+| Discoverability | 2 | 100% (+25%) | 90% (+17%) |
+| Effectiveness | 2 | 18% (+6%) | 57% (+17%) |
+| Efficiency | 2 | 94% (+22%) | 86% (+14%) |
 
 Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
@@ -69,9 +69,9 @@ Tier 1 validation passed with observations. NVSkills-Eval ran 1 checks and found
 Top findings:
 
 - MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-generate-mr/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-mr/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-mr/skill_manifest.yaml`)
 - LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-generate-mr/validators`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-mr/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-mr/fixtures`)
 - LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-generate-mr/tests`)
 
 ## Tier 2: Deduplication Summary
