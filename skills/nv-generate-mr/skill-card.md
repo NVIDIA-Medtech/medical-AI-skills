@@ -7,12 +7,18 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache 2.0 <br>
+Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers generating synthetic body MRI volumes for research, engineering validation, and data augmentation evaluation using NVIDIA's NV-Generate-CTMR rflow-mr workflow. <br>
+Developers and researchers use this skill to generate synthetic body MRI volumes for engineering verification, testing, and research workflows using NVIDIA's NV-Generate-CTMR rflow-mr model. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
+
+## Requirements / Dependencies: <br>
+**Requires API Key or External Credential:** [Not Specified] <br>
+**Credential Type(s):** [None identified] <br>
+
+Do not include secrets in prompts/logs/output; use least-privilege credentials; rotate keys as appropriate. <br>
 
 ## Known Risks and Mitigations: <br>
 Risk: Review before execution as proposals could introduce incorrect or misleading guidance into skills. <br>
@@ -20,24 +26,24 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
 - [FOV and Downloads](references/fov-and-downloads.md) <br>
-- [NVIDIA-Medtech/NV-Generate-CTMR (GitHub)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
+- [NVIDIA-Medtech/NV-Generate-CTMR (GitHub)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR/tree/61c4ec709b84cad468852243c48e250bec732074) <br>
 - [nvidia/NV-Generate-MR (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [Files, JSON] <br>
-**Output Format:** [NIfTI volumes and structured JSON summary] <br>
+**Output Type(s):** [Files, Shell commands] <br>
+**Output Format:** [JSON result summary and NIfTI volumes] <br>
 **Output Parameters:** [1D] <br>
 **Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Agents Used: <br>
-- `claude-code` <br>
-- `codex` <br>
+- claude-code <br>
+- codex <br>
 
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (1 positive, 1 negative) with 2 attempts per task via NVSkills-Eval external profile. <br>
+Evaluated against 2 evaluation tasks (1 positive activation, 1 negative activation) using NVSkills-Eval external profile in astra-sandbox environment. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -61,14 +67,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+25%) | 100% (+0%) |
-| Correctness | 4 | 93% (+5%) | 83% (+23%) |
-| Discoverability | 4 | 94% (-1%) | 91% (+15%) |
-| Effectiveness | 4 | 77% (-3%) | 63% (+31%) |
-| Efficiency | 4 | 76% (-4%) | 81% (+17%) |
+| Security | 2 | 100% (+0%) | 100% (+0%) |
+| Correctness | 2 | 60% (+22%) | 83% (+48%) |
+| Discoverability | 2 | 100% (+25%) | 98% (+25%) |
+| Effectiveness | 2 | 15% (+3%) | 54% (+42%) |
+| Efficiency | 2 | 94% (+17%) | 92% (+19%) |
 
 ## Skill Version(s): <br>
-0.1.0 (source: skill_manifest.yaml) <br>
+a7b871e (source: git SHA, committed 2026-07-08) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
