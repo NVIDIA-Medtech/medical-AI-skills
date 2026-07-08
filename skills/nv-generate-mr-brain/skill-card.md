@@ -25,9 +25,9 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [FOV and Downloads](references/fov-and-downloads.md) <br>
-- [NV-Generate-CTMR MR Brain Image Generation](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR#22-mr-brain-image-generation) <br>
-- [NV-Generate-MR-Brain Model (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR-Brain) <br>
+- [NV-Generate-CTMR MR Brain Image Generation](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR/tree/61c4ec709b84cad468852243c48e250bec732074) <br>
+- [NV-Generate-MR-Brain Model Weights](https://huggingface.co/nvidia/NV-Generate-MR-Brain) <br>
+- [FOV and Downloads Reference](references/fov-and-downloads.md) <br>
 
 
 ## Skill Output: <br>

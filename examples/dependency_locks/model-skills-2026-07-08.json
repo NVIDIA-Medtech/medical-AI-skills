@@ -1,0 +1,232 @@
+{
+  "format": "model_skill_dependency_evidence_lock",
+  "format_version": 1,
+  "recorded_at": "2026-07-08",
+  "repository_base_commit": "a7b871ed977cfa0861f39525c53f56e8110dfd96",
+  "purpose": "Record exact dependency resolutions that completed the catalog workflows; this file is evidence, not a pip requirements file or runtime install input.",
+  "source_inputs": {
+    "nv_generate_ctmr": {
+      "git_commit": "61c4ec709b84cad468852243c48e250bec732074",
+      "requirements_sha256": "852264a03cb82e670f8eead6154b5efc8758fa2aa8e3baa815b80f331da0a722",
+      "model_revisions": {
+        "nvidia/NV-Generate-CT": "75ac080fb1083c403793563477724c038e7d430c",
+        "nvidia/NV-Generate-MR": "b1680c66f2d3152a13a2ebecfd7155341d8fcff9",
+        "nvidia/NV-Generate-MR-Brain": "762ddecc59122081d8e04b9fbec9c0deada973f1"
+      }
+    },
+    "nv_segment_ct": {
+      "model_revision": "afb51518689f71e6abb367ee6301b2cd0225c66a",
+      "metadata_sha256": "7554d8b015426e7034df9504e8407d413ff469114345999bb9ac58340d814149",
+      "requirements_repo_commit": "f9f5f51b589e5dc9c23c453cf5138398e4084056",
+      "requirements_path": "NV-Segment-CT/requirements.txt",
+      "requirements_sha256": "a77f63dc2805f5948b846aa90fc3a6f2db3760eec6bf1807193e3b5971e701ec"
+    },
+    "nv_segment_ctmr": {
+      "git_commit": "f9f5f51b589e5dc9c23c453cf5138398e4084056",
+      "requirements_sha256": "34659a4c3146f89ebdffacda4de9333034d28e52b8d0820899ca9ef5b56cc72b",
+      "model_revision": "4fb8b4a6b2532be9f1c449a3726fe5440ab4213a"
+    },
+    "nv_reason_cxr": {
+      "git_commit": "83a4d51c9fbbff68156a5f01796f04e26519b6ad",
+      "model_revision": "056bd0383b35226554da9dc5866e095df174ae19"
+    }
+  },
+  "profiles": {
+    "cuda_model_runtime": {
+      "python": "3.12.3",
+      "cuda": "13.0",
+      "gpu": "NVIDIA RTX 6000 Ada Generation",
+      "packages": {
+        "einops": "0.8.2",
+        "fire": "0.7.1",
+        "huggingface_hub": "0.36.2",
+        "monai": "1.5.2",
+        "nibabel": "5.4.2",
+        "numpy": "2.4.6",
+        "pillow": "11.2.1",
+        "pydicom": "3.0.2",
+        "pytorch-ignite": "0.5.4",
+        "pyyaml": "6.0.3",
+        "safetensors": "0.7.0",
+        "scikit-image": "0.26.0",
+        "scipy": "1.16.0",
+        "tensorboard": "2.20.0",
+        "torch": "2.12.0+cu130",
+        "torchvision": "0.27.0",
+        "transformers": "4.57.6",
+        "typer": "0.25.1"
+      }
+    },
+    "cuda_monai_1_4_finetune": {
+      "python": "3.12.3",
+      "cuda": "13.0",
+      "gpu": "NVIDIA RTX 6000 Ada Generation",
+      "packages": {
+        "einops": "0.8.2",
+        "fire": "0.7.1",
+        "huggingface_hub": "0.36.2",
+        "mlflow": "3.14.0",
+        "monai": "1.4.0",
+        "nibabel": "5.4.2",
+        "numpy": "1.26.4",
+        "pytorch-ignite": "0.5.4",
+        "pyyaml": "6.0.3",
+        "scipy": "1.16.0",
+        "torch": "2.12.0+cu130",
+        "transformers": "4.57.6",
+        "typer": "0.25.1"
+      }
+    },
+    "cuda_nv_segment_ct_pinned_upstream": {
+      "python": "3.10.12",
+      "cuda": "11.7",
+      "gpu": "NVIDIA RTX 6000 Ada Generation",
+      "requirements_commit": "f9f5f51b589e5dc9c23c453cf5138398e4084056",
+      "packages": {
+        "einops": "0.6.1",
+        "huggingface_hub": "0.36.2",
+        "monai": "1.4.0",
+        "nibabel": "5.2.1",
+        "numpy": "1.24.4",
+        "safetensors": "0.8.0",
+        "scikit-image": "0.24.0",
+        "torch": "2.0.1+cu117",
+        "torchvision": "0.15.2",
+        "transformers": "4.46.3",
+        "typer": "0.26.8"
+      }
+    },
+    "cpu_wrapper_runtime": {
+      "python": "3.12.3",
+      "packages": {
+        "nibabel": "5.4.2",
+        "numpy": "1.26.4",
+        "pydicom": "3.0.2",
+        "typer": "0.25.1"
+      }
+    }
+  },
+  "workflow_results": [
+    {
+      "skill": "dicom-metadata-extract",
+      "mode": "direct_fixture",
+      "profile": "cpu_wrapper_runtime",
+      "result": "passed",
+      "artifact_sha256": "a3bc06ef05ef0fbbb829fc045abf15ae4c2edc88df887dc92af41cb75ef57a5b"
+    },
+    {
+      "skill": "dicom-series-preflight",
+      "mode": "direct_fixture",
+      "profile": "cpu_wrapper_runtime",
+      "result": "passed"
+    },
+    {
+      "skill": "dicom-series-to-volume",
+      "mode": "direct_fixture",
+      "profile": "cpu_wrapper_runtime",
+      "result": "passed",
+      "artifact_sha256": "2e0e9af0ce4e09ac6fdb5eb53c06c2563dc38aed0e564ec418271cb629778aea"
+    },
+    {
+      "skill": "nv-generate-ct-rflow",
+      "mode": "live_cuda",
+      "profile": "cuda_model_runtime",
+      "result": "passed",
+      "artifact_sha256": {
+        "image": "12d4f7d39eae6bea5cafc257c11a98d32cff7101d2e2cf74f5f0d215a34fcb70",
+        "label": "19bfe1ed324cf1b527bdf3026212aed3072466ee5bb0a507941376183c3777cf"
+      }
+    },
+    {
+      "skill": "nv-generate-mr",
+      "mode": "live_cuda",
+      "profile": "cuda_model_runtime",
+      "result": "passed",
+      "artifact_sha256": "65469520512044444b58b9c47a32f4d16b92328dbeff326b224c884d0a705bf8"
+    },
+    {
+      "skill": "nv-generate-mr-brain",
+      "mode": "live_cuda",
+      "profile": "cuda_model_runtime",
+      "result": "passed",
+      "artifact_sha256": "ed6242156450d355063160bbb59b8218af976bfc10dd61f2bc6e9eefa66bd0ae"
+    },
+    {
+      "skill": "nv-generate-mr-brain-finetune",
+      "mode": "declared_preflight",
+      "profile": "cpu_wrapper_runtime",
+      "result": "passed"
+    },
+    {
+      "skill": "nv-generate-vae-finetune",
+      "mode": "declared_preflight",
+      "profile": "cpu_wrapper_runtime",
+      "result": "passed"
+    },
+    {
+      "skill": "nv-reason-cxr",
+      "mode": "live_cuda_and_mock_fixture",
+      "profile": "cuda_model_runtime",
+      "result": "passed",
+      "input_sha256": "767c7ad1c4e799c0b177015970ef7dafa7feedcfad11e03c992146cffb6569cf"
+    },
+    {
+      "skill": "nv-segment-ct",
+      "mode": "live_cuda_pinned_upstream_venv",
+      "profile": "cuda_nv_segment_ct_pinned_upstream",
+      "result": "passed",
+      "artifact_sha256": "f97078ba58bc344320533e72215475040a35baf6658a6ef232236dd5a6053683"
+    },
+    {
+      "skill": "nv-segment-ct-finetune",
+      "mode": "task06_sanity_5_epoch_cuda",
+      "profile": "cuda_monai_1_4_finetune",
+      "result": "passed",
+      "artifact_sha256": {
+        "checkpoint": "f83e7be824fb90be23cb521ad98be4aebf84f2607fbb5be5be9451167b01fe75",
+        "output_json": "a8d44b0684f7e68d4e655a32fe91700b52937985fa657ab7c4b2b4e7d1cd43c4"
+      },
+      "facts": {
+        "checkpoint_differs_from_pretrained": true,
+        "train_loss_finite": true,
+        "oom": false,
+        "formal_pretrained_val_dice": 0.6694612503051758,
+        "formal_finetuned_val_dice": 0.6836816072463989,
+        "formal_improvement": 0.0142203569412231,
+        "training_best_epoch": 3,
+        "training_validation_dice": [
+          0.6762,
+          0.6888,
+          0.6873,
+          0.6907,
+          0.6772,
+          0.6666
+        ]
+      }
+    },
+    {
+      "skill": "nv-segment-ctmr",
+      "mode": "live_cuda",
+      "profile": "cuda_model_runtime",
+      "result": "passed",
+      "artifact_sha256": "1e6c924402c82f6add287abdc88ae6080f7141b367d2317f11d4fd85cbb8b885"
+    }
+  ],
+  "compatibility_findings": [
+    {
+      "skill": "nv-generate-ct-rflow",
+      "failed_resolution": {
+        "numpy": "1.26.4"
+      },
+      "failure": "The upstream mask-selection path calls np.long, which is absent in NumPy 1.26.4.",
+      "passing_resolution": {
+        "numpy": "2.4.6"
+      }
+    }
+  ],
+  "limitations": [
+    "Exact versions describe the tested environment and do not replace upstream dependency ownership.",
+    "GPU results are hardware-specific and do not imply bit-identical artifacts on another CUDA stack.",
+    "The two NV-Generate finetune skills are fixture-validated at their manifest-declared preflight boundary because their committed fixtures contain no training volumes."
+  ]
+}

@@ -26,8 +26,8 @@ Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
 - [FOV and Downloads](references/fov-and-downloads.md) <br>
-- [NV-Generate-CTMR (upstream repository)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR) <br>
-- [NV-Generate-MR (Hugging Face model)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
+- [NVIDIA-Medtech/NV-Generate-CTMR (GitHub)](https://github.com/NVIDIA-Medtech/NV-Generate-CTMR/tree/61c4ec709b84cad468852243c48e250bec732074) <br>
+- [nvidia/NV-Generate-MR (Hugging Face)](https://huggingface.co/nvidia/NV-Generate-MR) <br>
 
 
 ## Skill Output: <br>

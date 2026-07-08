@@ -19,7 +19,7 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Reason-CXR GitHub Repository](https://github.com/NVIDIA-Medtech/NV-Reason-CXR) <br>
+- [NV-Reason-CXR GitHub Repository](https://github.com/NVIDIA-Medtech/NV-Reason-CXR/tree/83a4d51c9fbbff68156a5f01796f04e26519b6ad) <br>
 - [NV-Reason-CXR Hugging Face Space](https://huggingface.co/spaces/nvidia/nv-reason-cxr) <br>
 
 
