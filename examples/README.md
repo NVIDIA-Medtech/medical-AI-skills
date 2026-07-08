@@ -11,6 +11,7 @@ opening study trees.
 ```text
 examples/
   evidence_packs/     # canonical single-run pass/fail packs
+  dependency_locks/   # exact tested dependency resolutions; evidence only
   studies/            # compact narrative studies only; generated records stay ignored
   drift/              # drift comparison examples
   fixtures/           # tiny shared example inputs
@@ -30,6 +31,11 @@ Start with `workflow_run_record.md`, then inspect:
 Committed example `environment.lock` files are compacted to the packages used
 by env-pin checks. Regenerate a pack under `runs/` when you need a full local
 `pip freeze`.
+
+`dependency_locks/` records exact versions that completed cross-skill checks.
+These JSON files are evidence snapshots, not install inputs and not a second
+dependency owner; skills continue to use upstream requirements or declared
+compatibility ranges.
 
 The canonical file list is in [`docs/replay.md`](../docs/replay.md).
 
