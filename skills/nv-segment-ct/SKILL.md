@@ -66,7 +66,10 @@ Do not invent `infer.py`, `Medical AI Skills run`, `python -m nv_segment_ct`, or
 
 The skill assumes a Python 3.12 environment with **no pre-installed
 runtime deps** — its documented command installs everything it needs.
-Pinned dep list is at [`requirements.txt`](./requirements.txt).
+Model dependencies (monai, torch, etc.) come from the upstream model's own
+`requirements.txt`, which ships inside the downloaded bundle; the skill only
+bootstraps its thin wrapper deps (`typer`, `huggingface_hub`). Dependency
+versions are the upstream model's responsibility, not this repo's.
 
 Two one-time downloads (the documented command does the first one; the
 fixture fetch is a separate step you run when bootstrapping):
@@ -90,9 +93,10 @@ From Medical AI Skills repo root, run all steps in a single command so the
 skill is self-bootstrapping against a fresh Python 3.12 venv:
 
 ```bash
-pip install -r skills/nv-segment-ct/requirements.txt && \
+pip install typer huggingface_hub && \
 huggingface-cli download nvidia/NV-Segment-CT \
   --local-dir skills/nv-segment-ct/bundle/ && \
+pip install -r skills/nv-segment-ct/bundle/requirements.txt && \
 python skills/nv-segment-ct/scripts/run_vista3d.py PATH_TO_CT.nii.gz \
   --label-prompts "1,3,5,14" \
   --output-dir vista3d_outputs
@@ -114,11 +118,13 @@ IDs from another label dictionary; the wrapper validates the requested label
 set and will mark the run invalid if the emitted mask contains labels outside
 the requested set.
 
-The `pip install` step is load-bearing: do not assume monai/torch/etc.
-are already in the active environment. The `huggingface-cli download`
-step is also part of the contract — it pulls the ~832 MB model bundle
-into `skills/nv-segment-ct/bundle/` (cached after first run; subsequent
-calls are no-ops).
+The install steps are load-bearing and order-sensitive: the
+`pip install typer huggingface_hub` bootstrap enables the download; the
+`huggingface-cli download` step pulls the ~832 MB model bundle into
+`skills/nv-segment-ct/bundle/` (cached after first run; subsequent calls
+are no-ops); and `pip install -r skills/nv-segment-ct/bundle/requirements.txt`
+installs the model's own pinned dependencies (monai/torch/etc.) from the
+bundle. Do not assume monai/torch are already in the active environment.
 
 `label-prompts` are VISTA3D class IDs. The evidence output records input
 geometry, output mask path, observed label IDs, unexpected labels,

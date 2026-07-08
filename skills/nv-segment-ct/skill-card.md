@@ -21,7 +21,6 @@ Mitigation: Review and scan skill before deployment. <br>
 ## Reference(s): <br>
 - [NV-Segment-CT Model Card (Hugging Face)](https://huggingface.co/nvidia/NV-Segment-CT) <br>
 - [Skill Manifest](skill_manifest.yaml) <br>
-- [Requirements](requirements.txt) <br>
 
 
 ## Skill Output: <br>
