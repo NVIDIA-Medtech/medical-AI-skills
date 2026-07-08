@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers running automated CT or MRI segmentation with the NV-Segment-CTMR MONAI bundle wrapper, producing label-map evidence for engineering verification workflows. <br>
+Developers and engineers use this skill to run CT or MRI segmentation inference on NIfTI medical volumes and produce structured label-map evidence for engineering verification. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -25,23 +25,23 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Segment-CTMR upstream MONAI bundle](https://github.com/NVIDIA-Medtech/NV-Segment-CTMR/tree/f9f5f51b589e5dc9c23c453cf5138398e4084056/NV-Segment-CTMR) <br>
+- [NVIDIA-Medtech/NV-Segment-CTMR upstream bundle](https://github.com/NVIDIA-Medtech/NV-Segment-CTMR/tree/f9f5f51b589e5dc9c23c453cf5138398e4084056/NV-Segment-CTMR) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [JSON, Shell commands] <br>
-**Output Format:** [JSON with segmentation metadata (label IDs, voxel counts, geometry checks)] <br>
+**Output Type(s):** [Shell commands, JSON] <br>
+**Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
 **Other Properties Related to Output:** [None] <br>
 
 ## Evaluation Agents Used: <br>
-- claude-code <br>
-- codex <br>
+- Claude Code (`claude-code`) <br>
+- Codex (`codex`) <br>
 
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks in the NVSkills-Eval external profile (astra-sandbox environment). <br>
+Evaluated against 2 evaluation tasks (2 positive skill-activation cases) using the NVSkills-Eval external profile in the astra-sandbox environment. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -65,14 +65,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 2 | 100% (+50%) | 100% (+0%) |
-| Correctness | 2 | 63% (+42%) | 92% (+52%) |
-| Discoverability | 2 | 46% (+33%) | 86% (+50%) |
-| Effectiveness | 2 | 54% (+28%) | 72% (+45%) |
-| Efficiency | 2 | 55% (+29%) | 77% (+34%) |
+| Security | 2 | 100% (+0%) | 100% (+0%) |
+| Correctness | 2 | 63% (+52%) | 82% (+56%) |
+| Discoverability | 2 | 39% (+24%) | 72% (+36%) |
+| Effectiveness | 2 | 54% (+32%) | 76% (+58%) |
+| Efficiency | 2 | 42% (+13%) | 62% (+24%) |
 
 ## Skill Version(s): <br>
-a7b871e (source: git SHA, committed 2026-07-08) <br>
+a6fdcf5 (source: git SHA, committed 2026-07-08) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
