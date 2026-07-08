@@ -861,6 +861,23 @@ def test_import_scan_uses_python_ast_not_docstring_lines(tmp_path: Path) -> None
     assert grade._scan_imports(skill_dir / "scripts", skill_dir) == {"json"}
 
 
+def test_stdlib_import_does_not_require_pip_declaration(tmp_path: Path) -> None:
+    skill_dir = _write_target_skill(
+        tmp_path,
+        skill_md_body="## Purpose\n\nRun demo.\n",
+    )
+    script_path = skill_dir / "scripts" / "run_demo.py"
+    script_path.write_text(
+        "import json\n"
+        "import mimetypes\n"
+        "print(json.dumps({'mime': mimetypes.guess_type('image.png')[0]}))\n"
+    )
+
+    checks = _checks_by_name(grade.grade_tier2(skill_dir))
+
+    assert checks["pip_imports_declared_in_side_effects"]["pass"] is True
+
+
 def test_import_scan_treats_verifier_shared_package_as_local(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
