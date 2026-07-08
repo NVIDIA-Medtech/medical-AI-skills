@@ -7,36 +7,42 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache 2.0 <br>
+Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill to run VISTA3D CT segmentation on NIfTI volumes and record label-map evidence for medical imaging workflows. <br>
+Developers and engineers use this skill to run VISTA3D CT segmentation inference on NIfTI volumes and record structured evidence for engineering verification workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
+
+## Requirements / Dependencies: <br>
+**Requires API Key or External Credential:** [Not Specified] <br>
+**Credential Type(s):** [None identified] <br>
+
+Do not include secrets in prompts/logs/output; use least-privilege credentials; rotate keys as appropriate. <br>
 
 ## Known Risks and Mitigations: <br>
 Risk: Review before execution as proposals could introduce incorrect or misleading guidance into skills. <br>
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [NV-Segment-CT Model Card (Hugging Face)](https://huggingface.co/nvidia/NV-Segment-CT) <br>
-- [Skill Manifest](skill_manifest.yaml) <br>
+- [nvidia/NV-Segment-CT Model Card](https://huggingface.co/nvidia/NV-Segment-CT) <br>
+- [Medical Decathlon (MSD09 Spleen)](http://medicaldecathlon.com/) <br>
 
 
 ## Skill Output: <br>
 **Output Type(s):** [Files, JSON] <br>
-**Output Format:** [NIfTI label-map file and JSON evidence record] <br>
+**Output Format:** [NIfTI label-map file and structured JSON evidence] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Output JSON validated against validators/output_schema.json; paired verifier checks anatomy plausibility] <br>
 
 ## Evaluation Agents Used: <br>
-- Claude Code (`claude-code`) <br>
-- Codex (`codex`) <br>
+- claude-code <br>
+- codex <br>
 
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 2 evaluation tasks (1 positive skill-activation, 1 negative activation). <br>
+Evaluated against 2 evaluation tasks (1 positive activation, 1 negative activation) in NVSkills-Eval external profile. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
@@ -60,14 +66,14 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Dimension | Num | `claude-code` | `codex` |
 |---|---:|---:|---:|
-| Security | 4 | 100% (+0%) | 75% (-25%) |
-| Correctness | 4 | 93% (-5%) | 73% (-22%) |
-| Discoverability | 4 | 98% (+18%) | 69% (-15%) |
-| Effectiveness | 4 | 71% (-28%) | 65% (-19%) |
-| Efficiency | 4 | 93% (+30%) | 65% (-6%) |
+| Security | 2 | 100% (+0%) | 100% (+0%) |
+| Correctness | 2 | 97% (+59%) | 92% (+42%) |
+| Discoverability | 2 | 91% (+22%) | 88% (+24%) |
+| Effectiveness | 2 | 82% (+72%) | 81% (+51%) |
+| Efficiency | 2 | 79% (+12%) | 72% (+12%) |
 
 ## Skill Version(s): <br>
-a7fe892 (source: git SHA, committed 2026-05-31) <br>
+0.2.0 (source: skill_manifest.yaml) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
