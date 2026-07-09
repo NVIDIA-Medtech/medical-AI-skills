@@ -1,0 +1,9 @@
+# NeMo Anonymizer report redaction skill (scripts/anonymize_reports.py).
+# Requires Python >= 3.11.
+#
+# Set your NVIDIA API key before running (remote detection on build.nvidia.com):
+#   export NVIDIA_API_KEY="nvapi-..."
+nemo-anonymizer>=0.2.1,<0.3
+pandas>=2.0.0
+pyarrow>=14.0.0
+tiktoken>=0.5
