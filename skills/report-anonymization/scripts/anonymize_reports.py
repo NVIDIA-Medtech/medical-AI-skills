@@ -49,6 +49,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -62,7 +63,10 @@ from anonymizer import (
     AnonymizerConfig,
     AnonymizerInput,
     Detect,
+    PrivacyGoal,
     Redact,
+    Rewrite,
+    RiskTolerance,
 )
 from anonymizer.logging import LoggingConfig, configure_logging
 
@@ -153,8 +157,12 @@ class Heartbeat:
 # --------------------------------------------------------------------------- #
 # Environment / input inspection
 # --------------------------------------------------------------------------- #
-def check_environment() -> bool:
+def check_environment(local: bool = False) -> bool:
     has_key = bool(os.environ.get("NVIDIA_API_KEY"))
+    if local:
+        log("Local model providers configured - hosted build.nvidia.com is not required.")
+        log(f"NVIDIA_API_KEY: {'set' if has_key else 'not set (fine for fully local serving)'}")
+        return has_key
     if has_key:
         log("NVIDIA_API_KEY: set")
     else:
@@ -205,9 +213,13 @@ def print_startup_summary(args: argparse.Namespace, config: AnonymizerConfig, st
     log(f"Source       : {args.source}")
     log(f"Output dir   : {args.output_dir}")
     log(f"Text column  : {args.text_column}")
-    log("Strategy     : redact -> [LABEL] tokens")
-    log(f"Labels       : {', '.join(config.detect.entity_labels or [])}")
-    log(f"Threshold    : {config.detect.gliner_threshold}")
+    if config.rewrite is not None:
+        log(f"Strategy     : rewrite -> full-passage rewrite "
+            f"(max_repair_iterations={config.rewrite.max_repair_iterations})")
+    else:
+        log("Strategy     : redact -> [LABEL] tokens")
+        log(f"Labels       : {', '.join(config.detect.entity_labels or [])}")
+        log(f"Threshold    : {config.detect.gliner_threshold}")
     log(f"Input rows   : {stats['total_rows']} total, processing {stats['target_rows']}")
     log(
         f"Report size  : {stats['min_chars']}-{stats['max_chars']} chars "
@@ -232,12 +244,41 @@ def build_config(args: argparse.Namespace) -> tuple[AnonymizerInput, AnonymizerC
         data_summary=(
             "English-language radiology reports written as clinical prose. "
             "Each row is one report. Explicit PHI in the header and signature includes "
-            "patient name, patient full name (first, middle possible abbriviation, last),MRN, date of birth, age, sex, date of service, accession number, "
+            "patient name, MRN, date of birth, age, sex, date of service, accession number, "
             "referring physician, signing physician, physician npi_number, physicianlicense_number, "
             "dicom_uid, study_id, device_serial_number, institution/facility name."
             "Do not anonymize clinical findings, treatment plans, and medical terminology. "
         ),
     )
+    if getattr(args, "mode", "redact") == "rewrite":
+        # Rewrite mode: an LLM rewrites the whole passage to remove PHI, with a
+        # built-in evaluate->repair loop (max_repair_iterations). Output is prose,
+        # NOT [TOKEN]s. All rewrite roles map (via the gpt-oss-120b /
+        # nemotron-30b-thinking aliases) to the local model in models.local.yaml.
+        privacy_goal = PrivacyGoal(
+            protect=(
+                "Direct and quasi identifiers in the report header and signature: patient "
+                "name, medical record number, date of birth, age, sex, service and study "
+                "dates, accession number, referring and signing physician names, and the "
+                "institution or facility name."
+            ),
+            preserve=(
+                "All clinical content: technique, findings, measurements, impressions, "
+                "diagnoses, and medical terminology, so the de-identified report stays "
+                "clinically faithful."
+            ),
+        )
+        config = AnonymizerConfig(
+            rewrite=Rewrite(
+                privacy_goal=privacy_goal,
+                risk_tolerance=RiskTolerance(args.risk_tolerance),
+                max_repair_iterations=args.max_repair_iterations,
+                strict_entity_protection=args.strict_entity_protection,
+            ),
+            emit_telemetry=not args.no_emit_telemetry,
+        )
+        return data, config
+
     detect = Detect(
         entity_labels=list(DEFAULT_ENTITY_LABELS),
         # Lower gliner_threshold (e.g. 0.2) for recall, raise (0.5) to cut cost/FPs.
@@ -262,12 +303,16 @@ def to_output_dataframe(result, text_column: str, id_column: str) -> pd.DataFram
     ``trace_dataframe`` retains them.
     """
     df = result.trace_dataframe
-    replaced_col = f"{text_column}_replaced"
-    if replaced_col not in df.columns:
+    out_col = next(
+        (c for c in (f"{text_column}_replaced", f"{text_column}_rewritten") if c in df.columns),
+        None,
+    )
+    if out_col is None:
         raise SystemExit(
-            f"Expected anonymized column {replaced_col!r}; got {list(df.columns)}"
+            f"Expected anonymized column {text_column}_replaced or {text_column}_rewritten; "
+            f"got {list(df.columns)}"
         )
-    out = df[[replaced_col]].rename(columns={replaced_col: "report"})
+    out = df[[out_col]].rename(columns={out_col: "report"})
     if id_column in df.columns:
         out.insert(0, "study_uid", df[id_column].values)
     else:
@@ -466,30 +511,40 @@ def build_summary(
     failed_summary = _summarize_failed_records(result.failed_records)
     records_passed = records_processed - failed_summary["total_failed"]
 
+    is_rewrite = getattr(args, "mode", "redact") == "rewrite"
     stages: list[dict[str, Any]] = []
     entity_total = 0
     entity_by_label: dict[str, int] = {}
-    for iteration, name, column, payload_key in _PIPELINE_STAGES:
-        stats = _summarize_stage(trace_df, column, payload_key)
-        if name == "final_entity_merge":
-            entity_total = stats["items_total"]
-            entity_by_label = stats["label_counts"] or {}
-        stages.append({
-            "iteration": iteration,
-            "stage": name,
-            "trace_column": column,
-            "records_in": records_processed,
-            "records_out": records_passed,
-            "records_with_data": stats["records_with_data"],
-            "items_total": stats["items_total"],
-            "pass_count": stats["pass_count"],
-            "fail_count": stats["fail_count"],
-            "pass_pct": stats["pass_pct"],
-            "decision_counts": stats["decision_counts"],
-            "label_counts": stats["label_counts"],
-        })
-
-    leak = _detect_residual_phi_leaks(trace_df, args.text_column, args.id_column)
+    if not is_rewrite:
+        for iteration, name, column, payload_key in _PIPELINE_STAGES:
+            stats = _summarize_stage(trace_df, column, payload_key)
+            if name == "final_entity_merge":
+                entity_total = stats["items_total"]
+                entity_by_label = stats["label_counts"] or {}
+            stages.append({
+                "iteration": iteration,
+                "stage": name,
+                "trace_column": column,
+                "records_in": records_processed,
+                "records_out": records_passed,
+                "records_with_data": stats["records_with_data"],
+                "items_total": stats["items_total"],
+                "pass_count": stats["pass_count"],
+                "fail_count": stats["fail_count"],
+                "pass_pct": stats["pass_pct"],
+                "decision_counts": stats["decision_counts"],
+                "label_counts": stats["label_counts"],
+            })
+        leak = _detect_residual_phi_leaks(trace_df, args.text_column, args.id_column)
+    else:
+        # Rewrite mode has a different trace (no GLiNER replacement map); the
+        # verbatim replacement-map leak check does not apply. Residual PHI is
+        # instead scored by the experiment's LLM judge downstream.
+        leak = {
+            "method": "rewrite mode: full-passage rewrite, no replacement map",
+            "n_evaluated": records_processed, "n_leaked": None,
+            "leak_rate": None, "by_label": {},
+        }
     # Trim the verbose per-record leak list out of the stdout summary; it stays in
     # the on-disk run report for auditing.
     leak_stdout = {k: v for k, v in leak.items() if k != "per_record"}
@@ -514,7 +569,7 @@ def build_summary(
     summary = {
         "skill": SKILL_NAME,
         "mode": "full" if args.full else "preview",
-        "strategy": "redact",
+        "strategy": "rewrite" if is_rewrite else "redact",
         "n_reports": records_processed,
         "n_written": n_written,
         "records_passed": records_passed,
@@ -528,6 +583,9 @@ def build_summary(
         "telemetry": {
             "wall_seconds": timings,
             "records_per_second": rps,
+            "mean_seconds_per_report": (
+                round(pipeline_secs / records_processed, 2) if records_processed and pipeline_secs else None
+            ),
             "input_tokens_estimate": input_tokens["input_tokens_estimate"],
             "mean_input_tokens_per_record": input_tokens["mean_input_tokens_per_record"],
             "tokenizer": "cl100k_base",
@@ -560,6 +618,11 @@ def print_run_report(summary: dict[str, Any]) -> None:
         f"evaluate={wc.get('evaluate') if wc.get('evaluate') is not None else 'n/a'}, "
         f"total={wc.get('total', 0):.1f}s"
     )
+    aspr = summary["telemetry"].get("mean_seconds_per_report")
+    log(
+        f"Avg / report : {aspr:.2f}s per report (mean over {summary['n_reports']} reports)"
+        if aspr is not None else "Avg / report : n/a"
+    )
     for stage in summary["pipeline_stages"]:
         log(f"Iteration {stage['iteration']}: {stage['stage']}")
         log(f"  items total    : {stage['items_total']} across {stage['records_with_data']} record(s)")
@@ -569,10 +632,13 @@ def print_run_report(summary: dict[str, Any]) -> None:
             labels = ", ".join(f"{k}={v}" for k, v in stage["label_counts"].items())
             log(f"  PHI labels     : {labels}")
     leak = summary["residual_phi_leak"]
-    log(
-        f"Residual PHI : {leak['n_leaked']}/{leak['n_evaluated']} record(s) "
-        f"({leak['leak_rate'] * 100:.1f}%) with unreplaced detected values"
-    )
+    if leak.get("leak_rate") is None:
+        log(f"Residual PHI : n/a ({leak.get('method', 'not computed')})")
+    else:
+        log(
+            f"Residual PHI : {leak['n_leaked']}/{leak['n_evaluated']} record(s) "
+            f"({leak['leak_rate'] * 100:.1f}%) with unreplaced detected values"
+        )
     if leak.get("by_label"):
         log("  leak types     : " + ", ".join(f"{k}={v}" for k, v in leak["by_label"].items()))
     if summary["failed_records"]["total_failed"]:
@@ -584,6 +650,193 @@ def write_run_report(report: dict[str, Any], report_path: Path) -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     log(f"Wrote run report to {report_path}")
+
+
+# --------------------------------------------------------------------------- #
+# Iterative redaction (critic-hinted; precision via the anonymizer's validator)
+# --------------------------------------------------------------------------- #
+_CRITIC_PROMPT = """You are a PHI critic for radiology reports. You do NOT edit text — you review it and REPORT every span you suspect is Protected Health Information (PHI).
+
+Report text:
+\"\"\"
+{text}
+\"\"\"
+
+Find ALL suspected PHI: personal identifiers such as patient or doctor name, MRN, date of birth, age, sex, service/study/report date, accession number, phone/fax number, institution/facility name, address, or any other unique identifier. Do NOT list clinical content (anatomy, findings, measurements, units, medical terminology, common words).
+
+Text already contains redaction placeholders like [PATIENT], [DOCTOR], or [DATE] — these are NOT PHI; the identifier has already been removed. Do NOT report any span that contains a placeholder. In "exact_string" report ONLY the raw leaked identifier itself — never include placeholders, titles (Dr., Mr., MD, DO), or role/specialty words (ENT, radiology, referring physician).
+
+Return ONLY a JSON array, one object per suspected PHI span:
+[{{"category": "<e.g. patient|doctor|mrn|date_of_birth|date|age|sex|accession_number|institution|phone_number>", "value": "<the suspected PHI value, normalized>", "exact_string": "<the substring exactly as it appears verbatim in the report text>"}}]
+Return [] if you find no PHI. Include an item only when you are confident it is a personal identifier, not clinical content."""
+
+
+def _parse_json_list(raw: str) -> list:
+    """Extract a JSON array from an LLM response; tolerant of code fences / preamble."""
+    s = (raw or "").strip()
+    if s.startswith("```"):
+        s = s.split("\n", 1)[-1]
+        if s.rstrip().endswith("```"):
+            s = s.rstrip()[:-3]
+    start, end = s.find("["), s.rfind("]")
+    if start == -1 or end == -1 or end <= start:
+        return []
+    try:
+        val = json.loads(s[start:end + 1])
+    except json.JSONDecodeError:
+        return []
+    return val if isinstance(val, list) else []
+
+
+def _critic_review(client, model: str, text: str) -> list[dict]:
+    """LLM critic: return [{category, value, exact_string}] suspected PHI. [] on failure."""
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": _CRITIC_PROMPT.format(text=text)}],
+            temperature=0.0,
+            max_tokens=1500,
+        )
+        items = _parse_json_list(resp.choices[0].message.content or "")
+    except Exception as exc:  # noqa: BLE001
+        log(f"  [critic] error (treated as no residual): {exc}")
+        return []
+    out: list[dict] = []
+    for it in items:
+        if not (isinstance(it, dict) and str(it.get("exact_string", "")).strip()):
+            continue
+        es = str(it["exact_string"]).strip()
+        # Drop any span that overlaps an already-inserted redaction placeholder
+        # (e.g. "[PATIENT]", "Dr. [DOCTOR] MD", "[DOCTOR], ENT"). The identifier has
+        # already been removed; the remainder is only scaffolding (titles, specialties).
+        # Without this, the critic re-flags redacted spans forever -> no convergence and
+        # false human-review flags. A genuinely separate leak is reported as its own
+        # atomic item (no placeholder in it) and is kept.
+        _placeholder = re.compile(r"\[[A-Za-z0-9_]+\]")
+        if _placeholder.search(es) or _placeholder.search(str(it.get("value", ""))):
+            continue
+        out.append({
+            "category": (str(it.get("category", "phi")).strip() or "phi"),
+            "value": (str(it.get("value", es)).strip() or es),
+            "exact_string": es,
+        })
+    return out
+
+
+def _threshold_schedule(base: float, n: int) -> list[float]:
+    """One descending GLiNER threshold per pass (more recall each pass); floor 0.1."""
+    out, t = [], float(base)
+    for _ in range(max(1, n)):
+        out.append(round(max(t, 0.1), 3))
+        t -= 0.1
+    return out
+
+
+def _aggregate_exemplars(residual: dict[str, list[dict]], cap: int = 60) -> list[dict]:
+    """Distinct (category, value) suspected-PHI exemplars across all still-leaking rows."""
+    seen: dict[tuple[str, str], dict] = {}
+    for items in residual.values():
+        for it in items:
+            seen.setdefault((it["category"], it["value"]), it)
+    return list(seen.values())[:cap]
+
+
+def _hint_block(exemplars: list[dict]) -> str:
+    if not exemplars:
+        return ""
+    listed = "; ".join(f"'{e['value']}' ({e['category']})" for e in exemplars)
+    return (
+        "\n\nPRIOR PASSES LEFT THESE SUSPECTED PHI VALUES UN-REDACTED — redact these and any "
+        "similar personal identifiers, UNLESS they are clearly clinical content (anatomy, "
+        f"findings, measurements, medical terms): {listed}"
+    )
+
+
+def run_iterative_redaction(anonymizer, args: argparse.Namespace, work_dir: Path,
+                            base_data_summary: str | None) -> dict[str, Any]:
+    """Loop: anonymizer redacts (its validator = precision) -> LLM critic lists suspected
+    residual PHI -> that list becomes hints for the next pass. Redacted text feeds forward;
+    only still-leaking rows are re-processed. A value the critic keeps flagging past
+    ``--revert-flag-n`` passes is flagged for human review.
+    """
+    from openai import OpenAI
+
+    df = pd.read_csv(args.source, encoding="utf-8-sig")
+    id_col, text_col = args.id_column, args.text_column
+    if id_col not in df.columns:
+        df[id_col] = [str(i) for i in range(len(df))]
+    if not args.full:
+        df = df.head(max(1, args.num_records))
+    current = {str(r[id_col]): (str(r[text_col]) if isinstance(r[text_col], str) else "")
+               for _, r in df.iterrows()}
+    order = list(current.keys())
+
+    critic = OpenAI(base_url=args.critic_base_url, api_key=args.critic_api_key or "EMPTY")
+    thresholds = _threshold_schedule(args.gliner_threshold, args.max_redaction_iterations)
+    iter_work = work_dir / "iter_work"          # per-pass inputs (audit trail), off the main output dir
+    iter_work.mkdir(parents=True, exist_ok=True)
+
+    hint_counts: dict[tuple[str, str], int] = {}
+    review_flags: dict[str, list[dict]] = {}
+    iterations: list[dict] = []
+    leaking = list(order)
+    data_summary = base_data_summary or ""
+
+    for i, threshold in enumerate(thresholds, start=1):
+        if not leaking:
+            break
+        t_it = time.perf_counter()
+        sub_path = iter_work / f"_iter{i}_input.csv"
+        pd.DataFrame([{id_col: u, text_col: current[u]} for u in leaking]).to_csv(
+            sub_path, index=False, encoding="utf-8-sig")
+        data = AnonymizerInput(source=str(sub_path), text_column=text_col, data_summary=data_summary)
+        config = AnonymizerConfig(
+            detect=Detect(entity_labels=list(DEFAULT_ENTITY_LABELS), gliner_threshold=threshold),
+            replace=Redact(format_template="[{label}]"),
+            emit_telemetry=not args.no_emit_telemetry,
+        )
+        log(f"[iter {i}/{len(thresholds)}] anonymizing {len(leaking)} row(s) @ gliner_threshold={threshold}")
+        with Heartbeat(f"iteration {i} anonymizing"):
+            result = anonymizer.run(config=config, data=data)
+        trace = result.trace_dataframe
+        rep_col = f"{text_col}_replaced"
+        if id_col in trace.columns and rep_col in trace.columns:
+            for _, r in trace.iterrows():
+                current[str(r[id_col])] = str(r[rep_col])
+
+        # Critic reviews each redacted row -> suspected residual PHI (hints for the next pass).
+        residual: dict[str, list[dict]] = {}
+        for uid in leaking:
+            items = _critic_review(critic, args.critic_model, current[uid])
+            if items:
+                residual[uid] = items
+        for uid, items in residual.items():  # oscillation -> human review
+            for it in items:
+                key = (uid, it["value"])
+                hint_counts[key] = hint_counts.get(key, 0) + 1
+                if hint_counts[key] > args.revert_flag_n:
+                    flagged = review_flags.setdefault(uid, [])
+                    if it["value"] not in [f["value"] for f in flagged]:
+                        flagged.append(it)
+
+        exemplars = _aggregate_exemplars(residual)
+        data_summary = (base_data_summary or "") + _hint_block(exemplars)
+        secs = round(time.perf_counter() - t_it, 2)
+        iterations.append({
+            "iteration": i, "gliner_threshold": threshold, "rows_processed": len(leaking),
+            "rows_with_residual": len(residual),
+            "residual_items": sum(len(v) for v in residual.values()),
+            "residual_exemplars": exemplars[:12], "seconds": secs,
+        })
+        log(f"[iter {i}] {len(residual)}/{len(leaking)} row(s) still have suspected PHI "
+            f"({iterations[-1]['residual_items']} items) in {secs}s")
+        leaking = list(residual.keys())
+
+    return {
+        "records": [{"study_uid": u, "report": current[u]} for u in order],
+        "review_flags": review_flags, "iterations": iterations,
+        "converged": not leaking, "n_reports": len(order),
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -612,6 +865,38 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-emit-telemetry", action="store_true",
                    help="Disable NeMo Anonymizer's own anonymous run telemetry.")
     p.add_argument("--verbose", action="store_true", help="Debug logging from the anonymizer library.")
+    p.add_argument("--model-providers", default=None,
+                   help="Path to a providers.yaml declaring model endpoints (e.g. local "
+                        "Ollama + self-hosted GLiNER). Omit to use hosted build.nvidia.com.")
+    p.add_argument("--model-configs", default=None,
+                   help="Path to a models.yaml model pool. Required whenever --model-providers "
+                        "introduces provider names the default pool does not reference.")
+    p.add_argument("--mode", choices=["redact", "rewrite"], default="redact",
+                   help="redact = replace PHI with [LABEL] tokens (default); "
+                        "rewrite = LLM rewrites the whole passage with an evaluate-repair loop "
+                        "(output is prose, not tokens).")
+    p.add_argument("--max-repair-iterations", type=int, default=3,
+                   help="Rewrite mode only: max evaluate-repair rounds (0 disables repair).")
+    p.add_argument("--strict-entity-protection", action="store_true",
+                   help="Rewrite mode only: require a protective disposition for every entity.")
+    p.add_argument("--risk-tolerance", choices=["low", "medium", "high"], default="low",
+                   help="Rewrite mode only: repair/leakage threshold preset.")
+    # Iterative redaction (redact mode): re-run the anonymizer, using an LLM critic's
+    # suspected-PHI list as hints each pass; the anonymizer's validator gates precision.
+    p.add_argument("--iterative-redaction", action="store_true",
+                   help="Redact mode: loop detect+redact, feeding an LLM critic's suspected-PHI "
+                        "list back as hints each pass, until the critic finds nothing or the cap.")
+    p.add_argument("--max-redaction-iterations", type=int, default=3,
+                   help="Max iterative-redaction passes (default 3). Threshold descends 0.1/pass.")
+    p.add_argument("--revert-flag-n", type=int, default=3,
+                   help="If the critic keeps flagging the same value past N passes, flag it for "
+                        "human review (default 3).")
+    p.add_argument("--critic-base-url", default="http://localhost:11434/v1",
+                   help="OpenAI-compatible endpoint for the PHI critic LLM (default local Ollama).")
+    p.add_argument("--critic-model", default="medgemma:27b",
+                   help="Model for the PHI critic (default medgemma:27b).")
+    p.add_argument("--critic-api-key", default="ollama",
+                   help="API key for the critic endpoint (ignored by Ollama; any non-empty value).")
     return p
 
 
@@ -638,7 +923,7 @@ def main() -> int:
     t_run = time.perf_counter()
     configure_logging(LoggingConfig.debug() if args.verbose else LoggingConfig.verbose())
 
-    check_environment()
+    check_environment(local=bool(args.model_providers))
     data, config = build_config(args)
     stats = inspect_input(args.source, args.text_column, args.num_records, args.full)
     print_startup_summary(args, config, stats)
@@ -651,11 +936,66 @@ def main() -> int:
 
     log("Initializing anonymizer (loading model configs)...")
     t_init = time.perf_counter()
-    anonymizer = Anonymizer()
+    anon_kwargs: dict[str, str] = {}
+    if args.model_providers:
+        anon_kwargs["model_providers"] = args.model_providers
+    if args.model_configs:
+        anon_kwargs["model_configs"] = args.model_configs
+    anonymizer = Anonymizer(**anon_kwargs)
+    if anon_kwargs:
+        log("Custom model config: " + ", ".join(f"{k}={v}" for k, v in anon_kwargs.items()))
     init_secs = time.perf_counter() - t_init
     log(f"Anonymizer ready ({init_secs:.1f}s)")
 
-    log(f"Starting entity detection on {stats['target_rows']} record(s) - remote API calls in flight...")
+    if args.iterative_redaction:
+        log(f"Iterative redaction: up to {args.max_redaction_iterations} pass(es); "
+            f"critic={args.critic_model} @ {args.critic_base_url}")
+        it_res = run_iterative_redaction(anonymizer, args, out_dir, data.data_summary)
+        out_df = pd.DataFrame(it_res["records"], columns=OUTPUT_COLUMNS)
+        anon_csv.parent.mkdir(parents=True, exist_ok=True)
+        out_df.to_csv(anon_csv, index=False, encoding="utf-8-sig")
+        pipe_secs = round(sum(x["seconds"] for x in it_res["iterations"]), 2)
+        n = it_res["n_reports"]
+        summary = {
+            "skill": SKILL_NAME,
+            "mode": "iterative-redaction",
+            "strategy": "redact-iterative",
+            "n_reports": n,
+            "n_written": len(out_df),
+            "converged": it_res["converged"],
+            "n_iterations": len(it_res["iterations"]),
+            "iterations": it_res["iterations"],
+            "human_review": {
+                "n_flagged_reports": len(it_res["review_flags"]),
+                "flags": it_res["review_flags"],
+            },
+            "telemetry": {
+                "wall_seconds": {
+                    "init": round(init_secs, 2), "pipeline": pipe_secs,
+                    "total": round(time.perf_counter() - t_run, 2),
+                },
+                "mean_seconds_per_report": round(pipe_secs / n, 2) if n and pipe_secs else None,
+                "critic_model": args.critic_model,
+            },
+            "artifacts": {
+                "anonymized_csv": str(anon_csv),
+                "run_report_json": str(run_report_path),
+                "input_csv": str(args.source),
+            },
+            "phi_scope_disclaimer": PHI_SCOPE_DISCLAIMER,
+        }
+        write_run_report(summary, run_report_path)
+        log("=" * 72)
+        log(f"Iterative redaction done: {n} report(s), {summary['n_iterations']} pass(es), "
+            f"converged={summary['converged']}, "
+            f"{summary['human_review']['n_flagged_reports']} flagged for human review")
+        log(f"Avg / report : {summary['telemetry']['mean_seconds_per_report']}s")
+        log("=" * 72)
+        print(json.dumps(summary, indent=2))
+        return 0
+
+    detect_where = "local endpoints" if args.model_providers else "remote build.nvidia.com"
+    log(f"Starting entity detection on {stats['target_rows']} record(s) - {detect_where} in flight...")
     t_pipeline = time.perf_counter()
     with Heartbeat("Entity detection still running"):
         if args.full:
