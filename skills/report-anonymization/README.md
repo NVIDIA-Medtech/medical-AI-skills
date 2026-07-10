@@ -55,6 +55,18 @@ python skills/report-anonymization/scripts/anonymize_reports.py \
   --full
 ```
 
+### Test dataset
+
+A 100-case **synthetic** dataset (generated, contains **no real PHI**) is bundled at
+`data/synthetic_reports_100_w_PHI.csv` (`study_uid`, `report_w_PHI`) for end-to-end
+testing and reproducing `BENCHMARK.md`:
+
+```bash
+python skills/report-anonymization/scripts/anonymize_reports.py \
+  skills/report-anonymization/data/synthetic_reports_100_w_PHI.csv \
+  --output-dir runs/report_anonymization_100 --full
+```
+
 ### Key arguments
 
 `REPORTS_CSV --output-dir DIR [--full] [--num-records N] [--text-column report_w_PHI] [--id-column study_uid] [--gliner-threshold 0.3] [--evaluate] [--no-emit-telemetry]`
@@ -84,8 +96,10 @@ report-anonymization/
 │   └── anonymize_reports.py     # entrypoint (real NeMo Anonymizer wrapper)
 ├── validators/
 │   └── output_schema.json       # output JSON schema
+├── data/
+│   └── synthetic_reports_100_w_PHI.csv  # 100-case synthetic test set (no real PHI)
 ├── fixtures/
-│   └── batch00_reports_w_PHI.csv  # synthetic-PHI MR-RATE sample (input)
+│   └── batch00_reports_w_PHI.csv  # small synthetic-PHI preview sample (input)
 ├── references/
 │   ├── upstream-nemo-anonymizer.md    # upstream tool reference
 │   └── preview-trace-columns.md       # preview.parquet trace schema

@@ -65,6 +65,22 @@ python skills/report-anonymization/scripts/anonymize_reports.py \
   --full
 ```
 
+### Bundled test dataset
+
+A 100-case **synthetic** test dataset (generated, no real PHI) is included at
+`data/synthetic_reports_100_w_PHI.csv` (columns `study_uid`, `report_w_PHI`) so you
+can exercise the skill end-to-end and reproduce the `BENCHMARK.md` results:
+
+```bash
+export NVIDIA_API_KEY="nvapi-..."
+python skills/report-anonymization/scripts/anonymize_reports.py \
+  skills/report-anonymization/data/synthetic_reports_100_w_PHI.csv \
+  --output-dir runs/report_anonymization_100 \
+  --full
+```
+
+The smaller `fixtures/batch00_reports_w_PHI.csv` remains the quick preview sample.
+
 Evidence pack via the eval engine:
 
 ```bash
