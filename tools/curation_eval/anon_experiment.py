@@ -38,6 +38,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
@@ -258,6 +259,16 @@ class AttemptResult:
     failed_tiers: list = field(default_factory=list)
     usage: dict = field(default_factory=dict)
     doc_meta: dict = field(default_factory=dict)
+    # Anonymizer pipeline performance, parsed from the tier-5 exec log
+    # (the LLM validator/augmenter is the cost, not GLiNER). All 0 when not parsed.
+    anon_tokens_in: int = 0
+    anon_tokens_out: int = 0
+    anon_tokens_reasoning: int = 0
+    anon_tps: float = 0.0
+    anon_requests_ok: int = 0
+    anon_requests_failed: int = 0
+    anon_detect_seconds: float = 0.0
+    mean_seconds_per_report: float = 0.0
 
 
 def _pick_output_csv(candidates: list[Path], staged_input: Path) -> Path | None:
@@ -532,26 +543,106 @@ def grade(att: AttemptResult, out_rel: Path, out_abs: Path, staged_rel: Path,
     att.failed_tiers = failed
 
 
-def run_command(command: str, out_dir: Path, timeout: float) -> tuple[int, str, str, float]:
+# Parse the anonymizer's own "Model usage summary" from a tier-5 exec log. The
+# summary has one block per model; GLiNER reports 0 tokens, so the LLM (validator/
+# augmenter) is the block with total>0 — that's the real anonymization cost.
+_ANON_TOKENS_RE = re.compile(
+    r"tokens:\s*input=(\d+),\s*output=(\d+)(?:,\s*reasoning=(\d+))?[^\n]*?total=(\d+)[^\n]*?tps=([\d.]+)")
+_ANON_REQS_RE = re.compile(r"requests:\s*success=(\d+),\s*failed=(\d+),\s*total=(\d+)")
+_ANON_DETECT_RE = re.compile(r"Detection complete[^\[]*\[([\d.]+)s\]")
+
+
+def parse_anon_perf(exec_log_text: str) -> dict:
+    """Extract anonymizer LLM token/request/stage-timing metrics from a tier-5 log.
+
+    Returns zeros when the log lacks a usage summary (e.g. the run failed before
+    emitting one). Picks the LLM model-usage block (total tokens > 0), ignoring
+    the GLiNER detector block which reports 0 tokens.
+    """
+    out = {"anon_tokens_in": 0, "anon_tokens_out": 0, "anon_tokens_reasoning": 0,
+           "anon_tps": 0.0, "anon_requests_ok": 0, "anon_requests_failed": 0,
+           "anon_detect_seconds": 0.0}
+    if not exec_log_text:
+        return out
+    best = None  # pick the token block with the largest total (the LLM, not GLiNER)
+    for m in _ANON_TOKENS_RE.finditer(exec_log_text):
+        total = int(m.group(4))
+        if best is None or total > best[3]:
+            best = (int(m.group(1)), int(m.group(2)), int(m.group(3) or 0), total, float(m.group(5)))
+    if best:
+        out["anon_tokens_in"], out["anon_tokens_out"], out["anon_tokens_reasoning"] = best[0], best[1], best[2]
+        out["anon_tps"] = best[4]
+    # Requests: sum across LLM blocks (there can be validator + augmenter lines);
+    # take the max failed/ok pair by total so GLiNER's success=N,failed=0 doesn't dominate.
+    req_best = None
+    for m in _ANON_REQS_RE.finditer(exec_log_text):
+        ok, failed, total = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if req_best is None or total > req_best[2]:
+            req_best = (ok, failed, total)
+    if req_best:
+        out["anon_requests_ok"], out["anon_requests_failed"] = req_best[0], req_best[1]
+    dm = _ANON_DETECT_RE.search(exec_log_text)
+    if dm:
+        out["anon_detect_seconds"] = float(dm.group(1))
+    return out
+
+
+def run_command(command: str, out_dir: Path, timeout: float,
+                progress_label: str = "") -> tuple[int, str, str, float]:
     if out_dir.exists():
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env["PATH"] = f"{ANON_PYTHON_BIN}:{env.get('PATH', '')}"
     env.setdefault("NEMO_TELEMETRY_ENABLED", "false")
+    # Stream child telemetry live: the anonymizer/NeMo CLI log progress to stderr,
+    # but block-buffering otherwise hides it until the command exits. Unbuffer the
+    # child and tee its streams to tail-able per-attempt logs so a long tier-5 run
+    # is observable in real time.
+    env["PYTHONUNBUFFERED"] = "1"
     # NB: do NOT set PYTHONNOUSERSITE here. The shared tier-5 env resolves some
     # transitive deps (e.g. dateutil for pandas) from the user site-packages;
     # blanking user-site breaks `import pandas` for both arms symmetrically.
+    out_log = out_dir / "_exec.out.log"
+    err_log = out_dir / "_exec.err.log"
+    telemetry.log(f"    tier-5 telemetry -> tail -f {err_log}")
+
+    # Harness-side heartbeat so the top-level run log also shows liveness (and the
+    # latest child telemetry line) every 30s during the long execution.
+    stop = threading.Event()
     t0 = time.perf_counter()
+
+    def _heartbeat() -> None:
+        while not stop.wait(30.0):
+            el = time.perf_counter() - t0
+            last = ""
+            try:
+                lines = err_log.read_text(encoding="utf-8", errors="replace").splitlines()
+                last = next((ln.strip() for ln in reversed(lines) if ln.strip()), "")
+            except OSError:
+                pass
+            tag = f" {progress_label}" if progress_label else ""
+            telemetry.log(f"    ... tier-5 running{tag} ({el:.0f}s) | last: {last[-160:]}")
+
+    hb = threading.Thread(target=_heartbeat, daemon=True)
+    hb.start()
     try:
-        proc = subprocess.run(
-            ["bash", "-c", command], cwd=str(SKILLS_ROOT), env=env,
-            capture_output=True, text=True, timeout=timeout,
-        )
+        with open(out_log, "w", encoding="utf-8") as fo, open(err_log, "w", encoding="utf-8") as fe:
+            proc = subprocess.run(
+                ["bash", "-c", command], cwd=str(SKILLS_ROOT), env=env,
+                stdout=fo, stderr=fe, text=True, timeout=timeout,
+            )
         elapsed = time.perf_counter() - t0
-        return proc.returncode, proc.stdout, proc.stderr, elapsed
+        so = out_log.read_text(encoding="utf-8", errors="replace")
+        se = err_log.read_text(encoding="utf-8", errors="replace")
+        return proc.returncode, so, se, elapsed
     except subprocess.TimeoutExpired:
-        return 124, "", f"timeout after {timeout}s", time.perf_counter() - t0
+        elapsed = time.perf_counter() - t0
+        so = out_log.read_text(encoding="utf-8", errors="replace") if out_log.exists() else ""
+        se = (err_log.read_text(encoding="utf-8", errors="replace") if err_log.exists() else "")
+        return 124, so, se + f"\ntimeout after {timeout}s", elapsed
+    finally:
+        stop.set()
 
 
 def run_attempt(backend: Backend, arm: str, repeat: int, doc_path: Path,
@@ -579,13 +670,23 @@ def run_attempt(backend: Backend, arm: str, repeat: int, doc_path: Path,
         att.guard_reason = gr
     if execute and not att.guard_blocked:
         telemetry.log(f"  [{backend.name}/{arm}#{repeat}] executing command (timeout {timeout:.0f}s)...")
-        rc, so, se, secs = run_command(att.command, out_abs, timeout)
+        rc, so, se, secs = run_command(att.command, out_abs, timeout,
+                                       progress_label=f"{backend.name}/{arm}#{repeat}")
         att.exec_rc = rc
         att.exec_seconds = secs
         att.stdout_tail = (so or "")[-800:]
         att.stderr_tail = (se or "")[-800:]
+        # Parse the anonymizer's real performance from the full tier-5 logs. The
+        # skill wrapper logs its usage summary to stderr; the raw `anonymizer run`
+        # CLI is quieter (no usage summary), so we scan both streams to be safe.
+        perf = parse_anon_perf((so or "") + "\n" + (se or ""))
+        for k, v in perf.items():
+            setattr(att, k, v)
         telemetry.log(f"  [{backend.name}/{arm}#{repeat}] exit={rc} {secs:.1f}s")
     grade(att, out_rel, out_abs, staged_rel, staged_abs, n)
+    # Mean tier-5 wall-clock per report (only meaningful when output rows exist).
+    if att.n_out_rows:
+        att.mean_seconds_per_report = round(att.exec_seconds / att.n_out_rows, 2)
     return att
 
 
@@ -786,6 +887,21 @@ def _pct(n: int, d: int) -> str:
     return f"{(100.0 * n / d):.0f}%" if d else "n/a"
 
 
+# Display order for per-backend tables: the NVIDIA default-config backends first
+# (gpt-oss-120b and nemotron), then everything else alphabetically.
+_BACKEND_ORDER = {"gptoss": 0, "nemotron120-remote": 1}
+
+
+def _backend_rank(name: str) -> int:
+    return _BACKEND_ORDER.get(str(name).split("/")[0], 10)
+
+
+def _cell_sort_key(cell: str) -> tuple:
+    """Sort key for 'backend/arm' cells: default backends first, then name, then arm."""
+    backend = cell.split("/")[0]
+    return (_backend_rank(backend), backend, cell)
+
+
 def _md_cell(s: str) -> str:
     """Make a value safe for a Markdown table cell (no pipes/newlines/formatting)."""
     s = re.sub(r"\s+", " ", str(s)).strip()
@@ -842,48 +958,57 @@ def render_report(study: dict) -> str:
 
     L.append("## Current aggregate result\n")
 
-    # Headline: redaction quality by arm (the primary result).
+    # Combined result-by-arm: redaction quality (Headline) + dataset-level pass +
+    # timing (total tier-5 exec and average seconds per report) in one table.
     judged_all = [a for a in atts if a.get("judge_rows_scored")]
-    passmap = {
-        "with": ("With skill (SKILL.md)", agg["with_passes"], agg["with_total"]),
-        "without": ("Without skill (upstream README)", agg["without_passes"], agg["without_total"]),
-        "unaided": ("Unaided (natural request, no doc)", agg.get("unaided_passes", 0), agg.get("unaided_total", 0)),
+    labels = {
+        "with": "With skill (SKILL.md)",
+        "without": "Without skill (upstream README)",
+        "unaided": "Unaided (natural request, no doc)",
     }
-    if judged_all:
-        jm = next((a.get("judge_model") for a in judged_all if a.get("judge_model")), "llm-judge")
-        L.append("### Headline — PHI redaction result by arm\n")
-        L.append(f"**Pass = a backend-run produced output AND had zero residual PHI escapes across all its "
-                 f"reports (any escape is a fail).** Residual escapes (individual PHI items) are counted by an "
-                 f"LLM judge (`{jm}`) re-reading each anonymized report. Each column names its unit: "
-                 "*backend-runs* (out of the backends run) vs *report-runs* (report x backend) vs *items*.\n")
-        L.append("| Arm | Backend-runs producing output | Residual PHI escapes (items) | "
-                 "Report-runs fully redacted (report x backend) | Backend-runs with 0 escapes |")
-        L.append("|---|:--:|--:|:--:|:--:|")
-        for key in ("with", "without", "unaided"):
-            label, _np, nt_ = passmap[key]
-            arm_atts = [a for a in atts if a["arm"] == key]
-            if not arm_atts:
-                continue
-            total = len(arm_atts)
-            completed = sum(1 for a in arm_atts if a.get("completed") or a.get("tier", 0) >= 5)
-            passed = sum(1 for a in arm_atts if a.get("passed"))
-            esc = sum(a.get("judge_out_phi_total", 0) for a in arm_atts if a.get("judge_rows_scored"))
-            clean = sum(a.get("judge_rows_clean", 0) for a in arm_atts if a.get("judge_rows_scored"))
-            scored = sum(a.get("judge_rows_scored", 0) for a in arm_atts)
-            b = "**" if key == "with" else ""
-            L.append(f"| {b}{label}{b} | {completed}/{total} | {b}{esc}{b} | {b}{clean}/{scored}{b} | "
-                     f"{b}{passed}/{total}{b} |")
-        L.append("")
-
-    L.append("### Overall result (dataset level) — pass = produced output with zero PHI escapes\n")
-    L.append("Each row is one **backend-run** (one backend anonymizing the full staged dataset). "
-             "A pass requires tier-5 output and zero residual PHI escapes across all reports in that run.\n")
-    L.append("| Arm | Passes with 0 PHI escapes |")
-    L.append("|---|---:|")
-    L.append(f"| With skill (SKILL.md) | {agg['with_passes']}/{agg['with_total']} ({_pct(agg['with_passes'], agg['with_total'])}) |")
-    L.append(f"| Without skill (upstream README) | {agg['without_passes']}/{agg['without_total']} ({_pct(agg['without_passes'], agg['without_total'])}) |")
-    if agg.get("unaided_total"):
-        L.append(f"| Unaided (natural request, no doc) | {agg['unaided_passes']}/{agg['unaided_total']} ({_pct(agg['unaided_passes'], agg['unaided_total'])}) |")
+    judge_models = sorted({a.get("judge_model") for a in judged_all if a.get("judge_model")})
+    jm = ", ".join(f"`{j}`" for j in judge_models) if judge_models else "`llm-judge`"
+    mixed_judge = len(judge_models) > 1
+    L.append("### Result by arm — redaction quality, pass rate, and timing\n")
+    judge_note = (f" **Escape counts here were produced by MORE THAN ONE judge model ({jm}); counts are "
+                  "therefore NOT directly comparable across arms/backends judged by different models — see the "
+                  "per-backend table for which judge scored each.**" if mixed_judge
+                  else f" Residual escapes (individual PHI items) are counted by an LLM judge ({jm}) re-reading "
+                       "each anonymized report.")
+    L.append(f"One row per **arm** (aggregated over its backend-runs). **Pass = a backend-run produced output "
+             f"AND had zero residual PHI escapes across all its reports (any escape is a fail).**{judge_note} "
+             "Units: *backend-runs* (out of the backends run), *report-runs* (report x backend), *items*. "
+             "**Each arm may aggregate MULTIPLE backend-runs** — e.g. 3 backends x 100 reports = 300 "
+             "report-runs. **Timing** is tier-5 wall-clock (seconds): the `Total` column **sums** wall-clock "
+             "across the arm's backend-runs, while `Avg` divides that total by the number of *report-runs*, so "
+             "`Total / Avg` = report-runs (not 100). Per-backend-run timing is in the "
+             "**Anonymization performance** table below.\n")
+    L.append("| Arm | Backend-runs producing output | Passes with 0 PHI escapes | Residual PHI escapes (items) | "
+             "Report-runs fully redacted (report x backend) | Total tier-5 wall (sec, summed over runs) | "
+             "Avg tier-5 wall (sec/report-run) |")
+    L.append("|---|:--:|:--:|--:|:--:|--:|--:|")
+    for key in ("with", "without", "unaided"):
+        arm_atts = [a for a in atts if a["arm"] == key]
+        if not arm_atts:
+            continue
+        total = len(arm_atts)
+        completed = sum(1 for a in arm_atts if a.get("completed") or a.get("tier", 0) >= 5)
+        passed = sum(1 for a in arm_atts if a.get("passed"))
+        judged_arm = [a for a in arm_atts if a.get("judge_rows_scored")]
+        esc = sum(a.get("judge_out_phi_total", 0) for a in judged_arm)
+        clean = sum(a.get("judge_rows_clean", 0) for a in judged_arm)
+        scored = sum(a.get("judge_rows_scored", 0) for a in judged_arm)
+        exec_atts = [a for a in arm_atts if a.get("exec_rc") == 0]
+        total_exec = sum(a.get("exec_seconds", 0.0) for a in exec_atts)
+        total_reports = sum(a.get("n_out_rows", 0) for a in exec_atts)
+        avg_s = (total_exec / total_reports) if total_reports else 0.0
+        esc_cell = str(esc) if judged_arm else "n/a"
+        clean_cell = f"{clean}/{scored}" if judged_arm else "n/a"
+        exec_cell = f"{total_exec:.1f}" if exec_atts else "n/a"
+        avg_cell = f"{avg_s:.1f}" if total_reports else "n/a"
+        b = "**" if key == "with" else ""
+        L.append(f"| {b}{labels[key]}{b} | {completed}/{total} | {b}{passed}/{total} ({_pct(passed, total)}){b} | "
+                 f"{b}{esc_cell}{b} | {b}{clean_cell}{b} | {exec_cell} | {avg_cell} |")
     L.append("")
 
     L.append("### Paired with-vs-without (exact one-sided sign test, report-row level)\n")
@@ -892,7 +1017,7 @@ def render_report(study: dict) -> str:
              "**Without wins** if without-skill had fewer; **Tie** if equal (including 0 vs 0).\n")
     L.append("| Scope | Report pairs | Skill wins | Without wins | Ties | Sign-test p |")
     L.append("|---|---:|---:|---:|---:|---:|")
-    for backend in sorted(k for k in paired if k != "__overall__"):
+    for backend in sorted((k for k in paired if k != "__overall__"), key=lambda b: (_backend_rank(b), b)):
         p = paired[backend]
         L.append(f"| {backend} | {p['pairs']} | {p['skill_wins']} | {p['without_wins']} | {p['ties']} | {p['sign_test_p']} |")
     L.append(f"| **overall** | {ov['pairs']} | {ov['skill_wins']} | {ov['without_wins']} | {ov['ties']} | {ov['sign_test_p']} |\n")
@@ -902,7 +1027,7 @@ def render_report(study: dict) -> str:
              "**Mean tier** is the attempt-level command ladder (1–5), averaged across repeats.\n")
     L.append("| Backend/arm | Report-rows fully redacted | Mean tier (attempt) |")
     L.append("|---|---:|---:|")
-    for cell in sorted(per_cell):
+    for cell in sorted(per_cell, key=_cell_sort_key):
         c = per_cell[cell]
         L.append(
             f"| {cell} | {c['row_passes']}/{c['row_total']} "
@@ -982,13 +1107,49 @@ def render_report(study: dict) -> str:
             L.append(f"| `{uid}` | {inphi} | " + " | ".join(cells) + f" | {vals} |")
         L.append("")
 
+    # --- Anonymization performance (tier-5) -----------------------------------
+    perf_atts = [a for a in atts if a.get("exec_rc") == 0 and (a.get("anon_tokens_out") or a.get("exec_seconds"))]
+    if perf_atts:
+        L.append("## Anonymization performance (tier-5)\n")
+        L.append("**One row per backend-run** (one backend anonymizing all N reports). Wall-clock and the "
+                 "anonymizer's **own** LLM cost (parsed from the tier-5 run logs — this is the "
+                 "validator/augmenter work, not the command-generation call). **`Total time per run (sec)`** is "
+                 "the full wall-clock for that single backend-run; **`Mean per report`** = that total / its "
+                 "report count. `Reasoning tok` is the hidden chain-of-thought; `req fail` are LLM calls that "
+                 "errored (e.g. the augmenter breaking structured output).\n")
+        L.append("| Backend/arm | Reports | Total time per run (sec) | Mean per report (sec/report) | Detect stage (sec) | "
+                 "LLM in tok | out tok | reasoning tok | tps | LLM req ok/fail |")
+        L.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|:--:|")
+        for a in sorted(perf_atts, key=lambda a: (_backend_rank(a["backend"]), a["backend"], a["arm"])):
+            n_rep = a.get("n_out_rows") or 0
+            # The raw `anonymizer run` CLI emits no usage summary; show n/a rather
+            # than misleading zeros when no token data was parsed for this arm.
+            has_usage = bool(a.get("anon_tokens_out") or a.get("anon_tps"))
+            tin = a.get("anon_tokens_in", 0) if has_usage else "n/a"
+            tout = a.get("anon_tokens_out", 0) if has_usage else "n/a"
+            treas = a.get("anon_tokens_reasoning", 0) if has_usage else "n/a"
+            tps = f"{a.get('anon_tps', 0):.0f}" if has_usage else "n/a"
+            reqs = f"{a.get('anon_requests_ok', 0)}/{a.get('anon_requests_failed', 0)}" if has_usage else "n/a"
+            # Compute mean/report from wall/reports so older attempts (which predate the
+            # stored mean_seconds_per_report / detect-stage parsing) aren't shown as 0.0.
+            mean_pr = a.get("mean_seconds_per_report") or ((a.get("exec_seconds", 0.0) / n_rep) if n_rep else 0.0)
+            mean_cell = f"{mean_pr:.1f}" if n_rep else "n/a"
+            detect = a.get("anon_detect_seconds", 0.0)
+            detect_cell = f"{detect:.1f}" if detect else "n/a"
+            L.append(
+                f"| {a['backend']}/{a['arm']} | {n_rep} | {a.get('exec_seconds', 0):.1f} | "
+                f"{mean_cell} | {detect_cell} | "
+                f"{tin} | {tout} | {treas} | {tps} | {reqs} |")
+        L.append("`n/a` = the raw `anonymizer run` CLI (without-skill arm) emits no token-usage summary; "
+                 "only the skill wrapper reports it. Wall-clock and detect-stage time are measured for both.\n")
+
     L.append("## Token profiling\n")
     L.append("Provider-reported usage for the command-generation call (the agent overhead "
              "to pick the command). The NeMo Anonymizer pipeline's own internal token use "
-             "during tier-5 execution is not surfaced as provider usage.\n")
-    L.append("| Backend | Arm | Repeats | Passes with 0 PHI escapes | LLM calls | Prompt tok | Completion tok | Reasoning tok | Total tok | Mean exec s |")
+             "during tier-5 execution is captured separately in **Anonymization performance** above.\n")
+    L.append("| Backend | Arm | Repeats | Passes with 0 PHI escapes | LLM calls | Prompt tok | Completion tok | Reasoning tok | Total tok | Mean cmd-gen exec (sec) |")
     L.append("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|")
-    for r in study["token_profiling"]:
+    for r in sorted(study["token_profiling"], key=lambda r: (_backend_rank(r["backend"]), r["backend"], r["arm"])):
         star = "*" if r["estimated"] else ""
         L.append(f"| {r['backend']} | {r['arm']} | {r['repeats']} | {r['passes']} | {r['llm_calls']} | "
                  f"{r['prompt_tokens']} | {r['completion_tokens']} | {r['reasoning_tokens']} | "
@@ -1270,10 +1431,14 @@ def _make_collapsible(body_html: str) -> str:
 
 
 def _parse_headline(md_text: str) -> dict[str, list[str]]:
-    """Parse the '### Headline' table from the report so KPIs come from the MD itself."""
+    """Parse the combined 'Result by arm' table (KPIs come from the MD itself).
+
+    Falls back to the legacy '### Headline' heading for older reports.
+    """
     lines = md_text.split("\n")
     try:
-        start = next(i for i, l in enumerate(lines) if l.startswith("### Headline"))
+        start = next(i for i, l in enumerate(lines)
+                     if l.startswith("### Result by arm") or l.startswith("### Headline"))
     except StopIteration:
         return {}
     i = start + 1
@@ -1316,22 +1481,27 @@ def render_dashboard_html(md_text: str) -> str:
                 return cells
         return None
 
-    # Headline cells: [Arm, Backend-runs producing output, Residual PHI escapes (items),
-    #                   Report-runs fully redacted, Backend-runs with 0 escapes]
+    # "Result by arm" cells: [0]=Arm, [1]=Backend-runs producing output,
+    # [2]=Passes with 0 PHI escapes, [3]=Residual PHI escapes (items),
+    # [4]=Report-runs fully redacted, [5]=Total exec (s), [6]=Avg s/report.
     w, o = findrow("with skill"), findrow("without skill")
     cards: list[str] = []
     if w and len(w) >= 5:
-        cards.append(_card("good", "With skill · residual PHI items", w[2], f"{w[3]} report-runs fully redacted"))
+        cards.append(_card("good", "With skill · residual PHI items", w[3], f"{w[4]} report-runs fully redacted"))
     if o and len(o) >= 5:
-        cards.append(_card("bad", "Without skill · residual PHI items", o[2], f"{o[3]} report-runs fully redacted"))
+        cards.append(_card("bad", "Without skill · residual PHI items", o[3], f"{o[4]} report-runs fully redacted"))
     if w and o and len(w) >= 5 and len(o) >= 5:
         try:
-            we, oe = int(w[2]), int(o[2])
+            we, oe = int(w[3]), int(o[3])
             if we and oe > we:
                 cards.append(_card("accent", "Escape reduction with skill", f"~{oe / we:.0f}x",
                                    "fewer residual PHI escapes"))
         except ValueError:
             pass
+    # Timing KPI: average seconds per report (with-skill arm) when present.
+    if w and len(w) >= 7 and w[6] not in ("", "n/a"):
+        cards.append(_card("accent", "With skill · avg tier-5 sec/report", w[6],
+                           f"{w[5]} sec total tier-5" if len(w) >= 6 else "tier-5 mean"))
     mrep = re.search(r"Reports:\s*\**\s*(\d+)", md_text)
     if mrep:
         cards.append(_card("", "Dataset", mrep.group(1), "reports"))

@@ -231,9 +231,35 @@ LIVE_BACKENDS: dict[str, dict] = {
         "base_url": "https://integrate.api.nvidia.com/v1",
         "api_key_env": "NVIDIA_API_KEY",
     },
+    # Default gpt-oss-120b on build.nvidia.com (the anonymizer's default LLM), as a
+    # command backend. Auth: NVIDIA_API_KEY.
+    "gptoss": {
+        "model": "openai/gpt-oss-120b",
+        "base_url": "https://integrate.api.nvidia.com/v1",
+        "api_key_env": "NVIDIA_API_KEY",
+    },
     "vllm-nemotron-nano": {
         "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8",
         "base_url": "http://127.0.0.1:8000/v1",
+    },
+    # --- inference-api.nvidia.com gateway (OpenAI-compatible proxy to many
+    #     frontier models: OpenAI, AWS/Azure Bedrock Anthropic, etc.). Model IDs
+    #     are the gateway's "<provider>/<vendor>/<model>" identifiers (verified via
+    #     GET /v1/models). Auth: set NVIDIA_INFERENCE_API_KEY (an `sk-...` key).
+    "gpt-5.5": {
+        "model": "openai/openai/gpt-5.5",
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "api_key_env": "NVIDIA_INFERENCE_API_KEY",
+    },
+    "claude-opus-4-8": {
+        "model": "aws/anthropic/bedrock-claude-opus-4-8",
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "api_key_env": "NVIDIA_INFERENCE_API_KEY",
+    },
+    "claude-opus-4-6": {
+        "model": "aws/anthropic/bedrock-claude-opus-4-6",
+        "base_url": "https://inference-api.nvidia.com/v1",
+        "api_key_env": "NVIDIA_INFERENCE_API_KEY",
     },
 }
 
