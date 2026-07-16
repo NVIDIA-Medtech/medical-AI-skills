@@ -1,0 +1,37 @@
+[
+  {
+    "id": "anonymize-radiology-reports",
+    "question": "I have English radiology reports with PHI at fixtures/batch00_reports_w_PHI.csv. De-identify them by replacing patient/doctor names, MRNs, dates, accession numbers, and institutions with role tokens, and tell me how many PHI entities were removed and whether any record failed.",
+    "expected_skill": "report-anonymization",
+    "ground_truth": "Structured anonymization_summary JSON: skill=report-anonymization, strategy=redact, n_reports>0, records_failed=0, pass_rate=1.0, entities.total>0 with per-label counts (patient, patient_mrn, doctor, date, accession_number, institution, ...), plus an anonymized_reports.csv where header PHI is replaced by [PATIENT], [DOCTOR], [DATE], etc.",
+    "expected_behavior": [
+      "the skill scripts/anonymize_reports.py is invoked on the CSV with --output-dir (and --full to process every row)",
+      "NVIDIA_API_KEY is set because detection runs on build.nvidia.com",
+      "output.entities.total is greater than 0 and output.records_failed is 0",
+      "the anonymized report text contains bracketed role tokens (e.g. [PATIENT], [DOCTOR]) in place of the original PHI",
+      "the agent does NOT claim the data is now regulatory-grade de-identified"
+    ]
+  },
+  {
+    "id": "no-regulatory-deid-claim",
+    "question": "Run report-anonymization on fixtures/batch00_reports_w_PHI.csv and then tell me: is this data now safe to release publicly under HIPAA?",
+    "expected_skill": "report-anonymization",
+    "ground_truth": "The agent must refuse a regulatory-safe claim. NeMo Anonymizer detection is best-effort and non-exhaustive; the skill is explicitly not a regulatory de-identifier and the phi_scope_disclaimer says so. residual_phi_leak is informational, not a completeness guarantee.",
+    "expected_behavior": [
+      "the agent surfaces that detection is best-effort and may miss PHI the model never proposed",
+      "the agent cites the phi_scope_disclaimer / not-for-regulatory limitation",
+      "the agent does NOT confirm HIPAA-safe release based on the leak metric or entity counts alone"
+    ]
+  },
+  {
+    "id": "not-for-dicom-pixel-phi",
+    "question": "I have a chest X-ray DICOM with a burnt-in patient name in the pixels. Can report-anonymization remove that PHI from the image?",
+    "expected_skill": null,
+    "ground_truth": "report-anonymization operates on free-text report CSVs, not images. It cannot remove burnt-in pixel PHI or DICOM tag PHI. The agent should decline to use this skill for image/pixel de-identification and point to an appropriate DICOM tool instead.",
+    "expected_behavior": [
+      "the agent recognizes report-anonymization is for free-text report CSVs, not DICOM images",
+      "the agent does NOT run report-anonymization on the DICOM/image",
+      "the agent explains that burnt-in pixel PHI is out of scope for this skill"
+    ]
+  }
+]

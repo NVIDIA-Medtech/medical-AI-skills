@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReportAnonymizationOutput",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "skill",
+    "mode",
+    "strategy",
+    "n_reports",
+    "records_passed",
+    "records_failed",
+    "pass_rate",
+    "entities",
+    "residual_phi_leak",
+    "pipeline_stages",
+    "telemetry",
+    "artifacts",
+    "phi_scope_disclaimer"
+  ],
+  "properties": {
+    "skill": {"type": "string"},
+    "mode": {"type": "string", "enum": ["full", "preview"]},
+    "strategy": {"type": "string"},
+    "n_reports": {"type": "integer", "minimum": 0},
+    "n_written": {"type": "integer", "minimum": 0},
+    "records_passed": {"type": "integer", "minimum": 0},
+    "records_failed": {"type": "integer", "minimum": 0},
+    "pass_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "entities": {
+      "type": "object",
+      "required": ["total", "by_label"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "by_label": {"type": "object", "additionalProperties": {"type": "integer"}}
+      }
+    },
+    "residual_phi_leak": {
+      "type": "object",
+      "required": ["method", "n_evaluated", "n_leaked", "leak_rate"],
+      "properties": {
+        "method": {"type": "string"},
+        "n_evaluated": {"type": "integer", "minimum": 0},
+        "n_leaked": {"type": "integer", "minimum": 0},
+        "leak_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "by_label": {"type": "object", "additionalProperties": {"type": "integer"}}
+      }
+    },
+    "evaluation": {
+      "type": ["object", "null"],
+      "properties": {
+        "records_scored": {"type": "integer", "minimum": 0},
+        "pass_count": {"type": "integer", "minimum": 0},
+        "fail_count": {"type": "integer", "minimum": 0},
+        "pass_rate": {"type": ["number", "null"]}
+      }
+    },
+    "pipeline_stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["iteration", "stage", "records_in", "records_out", "items_total"],
+        "properties": {
+          "iteration": {"type": "integer"},
+          "stage": {"type": "string"},
+          "trace_column": {"type": "string"},
+          "records_in": {"type": "integer", "minimum": 0},
+          "records_out": {"type": "integer", "minimum": 0},
+          "records_with_data": {"type": "integer", "minimum": 0},
+          "items_total": {"type": "integer", "minimum": 0},
+          "pass_count": {"type": ["integer", "null"]},
+          "fail_count": {"type": ["integer", "null"]},
+          "pass_pct": {"type": ["number", "null"]},
+          "decision_counts": {"type": ["object", "null"]},
+          "label_counts": {"type": ["object", "null"]}
+        }
+      }
+    },
+    "failed_records": {
+      "type": "object",
+      "required": ["total_failed", "failed_by_step", "records"],
+      "properties": {
+        "total_failed": {"type": "integer", "minimum": 0},
+        "failed_by_step": {"type": "object"},
+        "records": {"type": "array"}
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "required": ["wall_seconds", "input_tokens_estimate", "tokenizer"],
+      "properties": {
+        "wall_seconds": {
+          "type": "object",
+          "required": ["init", "pipeline", "total"],
+          "properties": {
+            "init": {"type": "number"},
+            "pipeline": {"type": "number"},
+            "evaluate": {"type": ["number", "null"]},
+            "total": {"type": "number"}
+          }
+        },
+        "records_per_second": {"type": ["number", "null"]},
+        "input_tokens_estimate": {"type": "integer"},
+        "mean_input_tokens_per_record": {"type": "integer"},
+        "tokenizer": {"type": "string"},
+        "execution": {"type": "string"},
+        "detector": {"type": "string"},
+        "nemo_anonymizer_version": {"type": "string"}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["anonymized_csv", "run_report_json"],
+      "properties": {
+        "anonymized_csv": {"type": ["string", "null"]},
+        "run_report_json": {"type": ["string", "null"]},
+        "preview_parquet": {"type": ["string", "null"]},
+        "input_csv": {"type": ["string", "null"]}
+      }
+    },
+    "phi_scope_disclaimer": {"type": "string"}
+  }
+}
