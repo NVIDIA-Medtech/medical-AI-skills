@@ -1,83 +1,83 @@
-<!--
-SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-SPDX-License-Identifier: Apache-2.0
--->
+# Evaluation Report
 
-# Benchmark — report-anonymization
+Evaluation of the `report-anonymization` skill before publication through NVSkills-Eval.
 
-Engineering behavior benchmark for the report-anonymization skill. This is an
-integration/quality signal, not a clinical or regulatory claim.
+This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the skill. The goal is to document whether the skill is safe, discoverable, effective, and useful for agents before it is published for broader workflow use.
 
-## Task
+## Evaluation Summary
 
-De-identify English radiology reports (replace patient/doctor names, MRNs,
-dates, accession numbers, and institutions with bracketed role tokens via NeMo
-Anonymizer Redact) and emit a schema-valid `anonymization_summary` plus an
-`anonymized_reports.csv`.
+- Skill: `report-anonymization`
+- Evaluation date: 2026-07-16
+- NVSkills-Eval profile: `external`
+- Environment: `astra-sandbox`
+- Dataset: 3 evaluation tasks
+- Attempts per task: 1
+- Pass threshold: 50%
+- Overall verdict: PASS
 
-## With-skill vs without-skill
+## Agents Used
 
-The with-vs-without protocol compares `LLM + report-anonymization/SKILL.md`
-against `LLM + upstream NeMo Anonymizer docs` on the same task and the same
-staged input (the MR-RATE `batch00_reports_w_PHI.csv` reports). Both arms run
-the real NeMo Anonymizer pipeline for tier-5 execution; they differ only in the
-documentation the agent may read.
+- `claude-code`
+- `codex`
 
-- **Without the skill**, an agent must discover from the upstream README/skill
-  how to wire `AnonymizerInput` / `Detect` (strict label mode) / `Redact`,
-  which text column to use, and where to write output — and typically improvises
-  an unaudited script with no machine-readable summary.
-- **With the skill**, the agent gets one documented entrypoint that owns the
-  strict PHI label set, output shaping (`study_uid,report`), a schema-gated JSON
-  summary, per-stage entity telemetry, and the residual-leak audit.
+## Metrics Used
+
+Reported benchmark dimensions:
+
+- Security: checks whether skill-assisted execution avoids unsafe behavior such as secret leakage, destructive commands, or unauthorized access.
+- Correctness: checks whether the agent follows the expected workflow and produces the correct final output.
+- Discoverability: checks whether the agent loads the skill when relevant and avoids using it when irrelevant.
+- Effectiveness: checks whether the agent performs measurably better with the skill than without it.
+- Efficiency: checks whether the agent uses fewer tokens and avoids redundant work.
+
+Underlying evaluation signals used in this run:
+
+- `security` (Security): checks for unsafe operations, secret leakage, and unauthorized access.
+- `skill_execution` (Skill Execution): verifies that the agent loaded the expected skill and workflow.
+- `skill_efficiency` (Efficiency): checks routing quality, decoy avoidance, and redundant tool usage.
+- `accuracy` (Accuracy): grades final-answer correctness against the reference answer.
+- `goal_accuracy` (Goal Accuracy): checks whether the overall user task completed successfully.
+- `behavior_check` (Behavior Check): verifies expected behavior steps, including safety expectations.
+- `token_efficiency` (Token Efficiency): compares token usage with and without the skill.
+
+## Test Tasks
+
+The benchmark dataset contained 3 evaluation tasks:
+
+- Positive tasks: 2 tasks where the skill was expected to activate.
+- Negative tasks: 1 tasks where no skill was expected.
+- Unlabeled tasks: 0 tasks where positive/negative intent could not be inferred.
+
+Task composition is derived from the evaluation dataset when possible. Entries with `expected_skill` set are treated as positive skill-activation cases, while entries with `expected_skill: null` are treated as negative activation cases.
 
 ## Results
 
-Full run: single-shot, no-repair; 1 repeat; **100 reports** staged from the
-MR-RATE `batch00_reports_w_PHI.csv`; two build.nvidia.com backends
-(Nemotron-3-Super-120B, GPT-OSS-120B). Pass criterion: **any residual PHI escape
-is a fail**, where escapes are counted by an **LLM-as-judge** (GPT-OSS-120B) that
-re-reads each anonymized report. Produced-output (tier-5 completion) is reported
-separately.
+| Dimension | Num | `claude-code` | `codex` |
+|---|---:|---:|---:|
+| Security | 3 | 100% (+0%) | 100% (+0%) |
+| Correctness | 3 | 93% (+30%) | 85% (+32%) |
+| Discoverability | 3 | 93% (+38%) | 85% (+23%) |
+| Effectiveness | 3 | 75% (+17%) | 75% (+31%) |
+| Efficiency | 3 | 77% (+24%) | 82% (+19%) |
 
-| Arm | Produced output | Residual PHI escapes (LLM judge) | Rows fully redacted | Pass (0 escapes) |
-|---|:--:|--:|:--:|:--:|
-| **with skill** (`report-anonymization/SKILL.md`) | 2/2 | **21** | **197/200** | 0/2 |
-| without skill (upstream NeMo README) | 2/2 | 227 | 85/200 | 0/2 |
+Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
 
-- **Redaction quality is the decisive gap (~11x).** With the skill, agents left **21** residual PHI escapes and fully redacted **197/200** rows (98.5%); reading only the upstream README they left **227** escapes and fully redacted just **85/200** rows (42.5%). The skill's strict GLiNER label set drives detection; the upstream-default path leaves pervasive residual fragments (mostly name middle initials, plus some dates/institutions).
-- **Neither arm clears the strict zero-escape bar at 100-row scale** (both 0/2 pass): the with-skill misses were a handful of names/one institution GLiNER did not propose (e.g. `Mercy General Hospital`, `Raoul`). The escape counts — not the pass/fail — are the primary signal.
-- **Speed:** mean tier-5 exec ~293s with-skill vs ~343s without on 100 rows (the upstream-default path does far more augmentation; gpt-oss/without ran ~362s).
-- **10-row pilot with a third `unaided` arm** (plain "redact this CSV" request, no doc) is preserved in git history of the report: unaided left 47 escapes / 0 rows clean and one backend produced no output — the hardest baseline.
+## Tier 1: Static Validation Summary
 
-Full per-backend/per-arm detail, per-row judge escape counts, generated commands,
-token profiling, and the five-tier grade are in the checked-in report:
+Tier 1 validation passed with observations. NVSkills-Eval ran 1 checks and found 6 total findings.
 
-- [`docs/anonymization-with-vs-without-experiment.md`](../../docs/anonymization-with-vs-without-experiment.md)
+Top findings:
 
-Reproduce (from the `medical-AI-skills` catalog root):
+- MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/report-anonymization/SKILL.md`)
+- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/report-anonymization/fixtures`)
+- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/report-anonymization/skill_manifest.yaml`)
+- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/report-anonymization/validators`)
+- LOW SCHEMA/unexpected_file: Unexpected 'requirements.txt' in skill root (`skills/report-anonymization/requirements.txt`)
 
-```bash
-export NVIDIA_API_KEY="nvapi-..."
-# with + without arms
-python -m tools.curation_eval.anon_experiment \
-  --backends nemotron120-remote "gptoss=https://integrate.api.nvidia.com/v1=openai/gpt-oss-120b=NVIDIA_API_KEY" \
-  --judge "gptoss=https://integrate.api.nvidia.com/v1=openai/gpt-oss-120b=NVIDIA_API_KEY" \
-  --repeats 1 --limit 10 --timeout 120 \
-  --input <path>/batch00_reports_w_PHI.csv
-# add the unaided arm, folding in a prior study, judging all arms
-python -m tools.curation_eval.anon_experiment --arms unaided \
-  --backends nemotron120-remote "gptoss=…=NVIDIA_API_KEY" \
-  --judge "gptoss=…=NVIDIA_API_KEY" --merge runs/curation_eval/anon/<prior_study> \
-  --repeats 1 --limit 10 --timeout 120 --input <path>/batch00_reports_w_PHI.csv
-```
+## Tier 2: Deduplication Summary
 
-Scale up with `--limit 100` (and more `--repeats`) when the run budget allows.
+This tier was not run or did not produce findings in this report.
 
-## Gaps
+## Publication Recommendation
 
-- Detection runs on remote LLMs (build.nvidia.com); throughput and exact leak
-  counts depend on the model and rate limits and are recorded per run, not
-  pinned here.
-- Grading measures task completion (a contract-valid anonymized artifact) and a
-  deterministic residual-PHI heuristic, not clinical de-identification quality.
+The skill is suitable to proceed toward NVSkills-Eval publication based on this benchmark. Skill owners should keep this file with the skill and refresh it when the evaluation dataset, skill behavior, or target agents materially change.
