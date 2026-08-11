@@ -1,0 +1,161 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+id: medagent.report_anonymization
+version: 0.1.0
+upstream_refs:
+  - kind: pypi_package
+    name: nemo-anonymizer
+    version: "0.2.1"
+    version_constraint: ">=0.2.1,<0.3"
+    notes: >
+      NeMo Anonymizer (https://github.com/NVIDIA-NeMo/Anonymizer). The wrapper
+      calls its documented Anonymizer() Python API in Replace mode (Redact).
+  - kind: github_repo
+    name: NVIDIA-NeMo/Anonymizer
+    repo_url: https://github.com/NVIDIA-NeMo/Anonymizer
+    revision: main
+    notes: >
+      Skill patterned on the upstream skills/anonymizer/SKILL.md contract
+      (detect -> replace). See references/upstream-nemo-anonymizer.md.
+  - kind: hosted_model
+    name: nvidia/gliner-pii
+    revision: main
+    notes: Zero-shot GLiNER-PII entity detector (bundled provider, build.nvidia.com).
+  - kind: hosted_model
+    name: openai/gpt-oss-120b
+    revision: main
+    notes: Default LLM for augmentation/validation in NeMo Anonymizer detection.
+license: Apache-2.0
+intended_use:
+  summary: >
+    De-identify English radiology reports by replacing PHI entities detected by
+    NeMo Anonymizer (GLiNER-PII + LLM augment/validate) with bracketed role
+    tokens such as [PATIENT], [DOCTOR], [DATE] (MR-RATE reports stage 01).
+  scope: development
+  not_for:
+    - clinical deployment
+    - regulatory de-identification
+    - autonomous diagnosis
+    - patient-facing use
+inputs:
+  - name: reports_csv
+    type: file_path
+    formats: [csv]
+    max_size_bytes: 1073741824
+    description: >
+      CSV with a study_uid id column and a report_w_PHI text column of
+      English radiology reports containing PHI.
+outputs:
+  - name: anonymization_summary
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.11"
+  entrypoint: scripts/anonymize_reports.py
+  args:
+    - "${python}"
+    - "${script}"
+    - "${fixture}"
+    - "--output-dir"
+    - "${out}"
+  env_required: [NVIDIA_API_KEY]
+  env_optional: [NEMO_TELEMETRY_ENABLED]
+  dependencies:
+    nemo-anonymizer: ">=0.2.1,<0.3"
+    pandas: ">=2.0"
+    pyarrow: ">=14.0"
+    tiktoken: ">=0.5"
+  side_effects:
+    pip_packages:
+      - nemo-anonymizer>=0.2.1,<0.3
+      - pandas>=2.0
+      - pyarrow>=14.0
+      - tiktoken>=0.5
+    local_writes:
+      - {path: "<output-dir>/anonymized_reports.csv", approx_mb_max: 200, optional: false}
+      - {path: "<output-dir>/run_report.json", approx_mb_max: 20, optional: false}
+      - {path: "<output-dir>/preview.parquet", approx_mb_max: 200, optional: true}
+    home_writes:
+      - {path: "~/.cache/tiktoken/", approx_mb_max: 5, optional: true}
+    network_endpoints:
+      - https://integrate.api.nvidia.com
+      - https://events.telemetry.data.nvidia.com
+    requires_docker: false
+    requires_gpu: none
+    environment:
+      clean_environment_required: false
+      clean_environment_recommended: true
+      modifies_active_python_environment: false
+      user_environment_modification_ok: true
+      recommended_isolation: fresh venv or container for benchmarks; caller-selected env for interactive use
+      notes: >
+        Detection and validation run on remote models hosted at build.nvidia.com
+        (integrate.api.nvidia.com); NVIDIA_API_KEY is required. NeMo Anonymizer
+        emits anonymous run telemetry to events.telemetry.data.nvidia.com unless
+        NEMO_TELEMETRY_ENABLED=false or --no-emit-telemetry is set.
+    env_required: [NVIDIA_API_KEY]
+    env_optional: [NEMO_TELEMETRY_ENABLED]
+paired_verifiers:
+  - id: medagent.verifiers.report_anonymization_quality_v1
+    status: planned
+    notes: >
+      A second-pass audit of residual-PHI leak, entity coverage, and disclosure
+      over the anonymization evidence pack. The existing v1 verifier targets the
+      legacy [entity_N] Token_Mapping contract; a NeMo-Redact-aware verifier is
+      planned for this skill's summary shape.
+limitations:
+  - Detection and validation run on remote LLMs at build.nvidia.com; the skill
+    requires NVIDIA_API_KEY and network access and its output is non-deterministic.
+  - Only PHI entity types listed in the strict GLiNER label set are detected;
+    entity types the detector never proposes are not replaced.
+  - residual_phi_leak is an informational verbatim replacement-map check; it does
+    not catch PHI the detector missed, and skips originals shorter than 3 chars
+    (e.g. sex "M") that would match spuriously as substrings.
+  - Redact strategy only. Upstream NeMo Anonymizer also offers Substitute,
+    Annotate, Hash, and Rewrite; those are out of scope for this stage-01 wrapper.
+phi_scope_disclaimer: >
+  This skill replaces PHI entities detected by NeMo Anonymizer with bracketed
+  role tokens. It is NOT a regulatory de-identifier and does not guarantee
+  removal of all PHI. Review output before sharing data. Not for clinical use.
+validation:
+  expected_runtime_seconds:
+    max: 900.0
+    inference_path: telemetry.wall_seconds.total
+  sanity_checks:
+    - {path: skill, eq: report-anonymization}
+    - {path: strategy, eq: redact}
+    - {path: n_reports, gt: 0}
+    - {path: records_failed, eq: 0}
+    - {path: pass_rate, gte: 1.0}
+    - {path: entities.total, gt: 0}
+    - {path: residual_phi_leak.method, ne: not_evaluated}
+    - {path: phi_scope_disclaimer, matches: "NOT a regulatory de-identifier"}
+  expected_cost:
+    wall_seconds: {max: 900}
+    gpu_seconds: {max: 0}
+    gpu_memory_mb_peak: {max: 0}
+  env_pin:
+    nemo-anonymizer: ">=0.2.1,<0.3"
+  reproducibility:
+    mode: preflight
+    fixture: fixtures/batch00_reports_w_PHI.csv
+    runs: 2
+    reason: >
+      Detection and validation run on remote LLMs hosted at build.nvidia.com and
+      require NVIDIA_API_KEY plus network access; GLiNER-PII + LLM augment/validate
+      output is non-deterministic, so a byte-identical local repeat comparison is
+      not meaningful. Preflight verifies inputs/config without a live remote run.
