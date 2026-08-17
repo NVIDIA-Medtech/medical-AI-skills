@@ -170,7 +170,7 @@ runtime:
       - {path: "~/.cache/huggingface/", approx_mb_max: 1500}
     network_endpoints:
       - https://huggingface.co
-      - https://raw.githubusercontent.com
+      - https://github.com
       - "https://<caller-provided-databricks-workspace>"
     requires_docker: false
     requires_gpu: cuda

@@ -48,8 +48,6 @@ import shutil
 import subprocess
 import sys
 import time
-import urllib.error
-import urllib.request
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 from pathlib import Path
@@ -65,11 +63,7 @@ BUNDLE_DIR = SKILL_DIR / "bundle"
 LABEL_DICT = BUNDLE_DIR / "label_dict.json"
 UPSTREAM_CTMR_COMMIT = "f9f5f51b589e5dc9c23c453cf5138398e4084056"
 HF_MODEL_REVISION = "afb51518689f71e6abb367ee6301b2cd0225c66a"
-LABEL_DICT_URL = (
-    f"https://raw.githubusercontent.com/NVIDIA-Medtech/NV-Segment-CTMR/{UPSTREAM_CTMR_COMMIT}/"
-    "NV-Segment-CT/configs/label_dict.json"
-)
-LABEL_DICT_DOWNLOAD_SHA256 = "186226ba214b3e02cc5394427c6395364905129e449a6b726253269117302475"
+UPSTREAM_LABEL_DICT_SHA256 = "186226ba214b3e02cc5394427c6395364905129e449a6b726253269117302475"
 EXPECTED_BUNDLE_SHA256 = {
     "label_dict.json": "ceed59291098eaf6aa960a22696f68c15f7cb224d40e95ba3fa192eb398c37d1",
     "configs/train.json": "4117406ff7966f0c6b121106e46c59f74d4c00427560a2a73608a2cad645ca86",
@@ -191,18 +185,8 @@ def require_bundle_files() -> None:
     raise typer.BadParameter(
         "bundle setup is incomplete; missing: "
         + ", ".join(rel_missing)
-        + "\nFrom skills/nv-segment-ct-finetune, run:\n"
-        + f"  hf download nvidia/NV-Segment-CT --revision {HF_MODEL_REVISION} --local-dir bundle/\n"
-        + "  # Then rerun this wrapper; it downloads and verifies label_dict.json.\n"
-        + "  python - <<'PY'\n"
-        + "from pathlib import Path\n"
-        + "import shutil\n"
-        + "for src, dst in [(Path('bundle/metadata.json'), Path('bundle/configs/metadata.json')), (Path('bundle/vista3d_pretrained_model/model.pt'), Path('bundle/models/model.pt'))]:\n"
-        + "    dst.parent.mkdir(parents=True, exist_ok=True)\n"
-        + "    if dst.is_symlink() or not dst.exists():\n"
-        + "        dst.unlink(missing_ok=True)\n"
-        + "        shutil.copy2(src, dst)\n"
-        + "PY\n"
+        + "\nStage the pinned GitHub and Hugging Face assets as documented in SKILL.md, "
+        + f"using commits {UPSTREAM_CTMR_COMMIT} and {HF_MODEL_REVISION}, then rerun.\n"
     )
 
 
@@ -282,21 +266,14 @@ def _copy_upstream_config(name: str, *, overwrite_if_different: bool = False) ->
     return False
 
 
-def _download_label_dict(dst: Path) -> bool:
-    if dst.exists():
+def _normalize_pinned_label_dict(path: Path) -> bool:
+    """Normalize only the exact label dictionary from the pinned upstream commit."""
+    if not path.exists() or _sha256(path) != UPSTREAM_LABEL_DICT_SHA256:
         return False
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with urllib.request.urlopen(LABEL_DICT_URL, timeout=30) as response:  # nosec B310
-            payload = response.read()
-    except (OSError, urllib.error.URLError):
-        return False
-    if hashlib.sha256(payload).hexdigest() != LABEL_DICT_DOWNLOAD_SHA256:
-        raise typer.BadParameter("downloaded label_dict.json failed its SHA-256 check")
-    data = json.loads(payload.decode("utf-8"))
+    data = json.loads(path.read_text())
     if not isinstance(data, dict) or "lung tumor" not in data:
-        return False
-    dst.write_text(json.dumps(data, indent=2) + "\n")
+        raise typer.BadParameter("pinned label_dict.json has an unexpected structure")
+    path.write_text(json.dumps(data, indent=2) + "\n")
     return True
 
 
@@ -336,8 +313,13 @@ def prepare_bundle_files() -> list[str]:
     sibling_label_dict = SKILL_DIR.parent / "nv-segment-ct" / "bundle" / "label_dict.json"
     if _copy_if_missing_or_broken(sibling_label_dict, LABEL_DICT):
         notes.append("copied label_dict.json from nv-segment-ct cache")
-    if _download_label_dict(LABEL_DICT):
-        notes.append("downloaded label_dict.json from NVIDIA-Medtech/NV-Segment-CTMR")
+    if not LABEL_DICT.exists():
+        for config_dir in _upstream_config_dirs():
+            if _copy_if_missing_or_broken(config_dir / "label_dict.json", LABEL_DICT):
+                notes.append("staged label_dict.json from pinned local upstream")
+                break
+    if _normalize_pinned_label_dict(LABEL_DICT):
+        notes.append("normalized pinned label_dict.json")
 
     for config_name in (
         "train.json",
@@ -347,34 +329,6 @@ def prepare_bundle_files() -> list[str]:
     ):
         if _copy_upstream_config(config_name, overwrite_if_different=True):
             notes.append(f"restored configs/{config_name} from local upstream cache")
-
-    needed_sources = [
-        BUNDLE_DIR / "configs" / "train.json",
-        BUNDLE_DIR / "configs" / "train_continual.json",
-        BUNDLE_DIR / "metadata.json",
-        BUNDLE_DIR / "vista3d_pretrained_model" / "model.pt",
-    ]
-    if not all(p.exists() for p in needed_sources):
-        try:
-            from huggingface_hub import snapshot_download
-        except ImportError:
-            return notes
-        snapshot_download(
-            repo_id="nvidia/NV-Segment-CT",
-            revision=HF_MODEL_REVISION,
-            local_dir=str(BUNDLE_DIR),
-            local_dir_use_symlinks=False,
-        )
-        notes.append("downloaded nvidia/NV-Segment-CT bundle")
-
-        for config_name in (
-            "train.json",
-            "train_continual.json",
-            "multi_gpu_train.json",
-            "evaluate.json",
-        ):
-            if _copy_upstream_config(config_name, overwrite_if_different=True):
-                notes.append(f"restored configs/{config_name} from local upstream cache")
 
     if _copy_if_missing_or_broken(
         BUNDLE_DIR / "metadata.json",

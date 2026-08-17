@@ -26,6 +26,13 @@ assert spec.loader is not None
 spec.loader.exec_module(mod)
 
 
+def test_runtime_does_not_download_bundle_assets():
+    source = SCRIPT.read_text()
+
+    assert "urllib.request" not in source
+    assert "snapshot_download" not in source
+
+
 def test_prepare_bundle_files_stages_train_configs_from_local_upstream(tmp_path, monkeypatch):
     bundle = tmp_path / "skill" / "bundle"
     upstream_configs = (

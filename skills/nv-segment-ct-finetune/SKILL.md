@@ -42,7 +42,7 @@ metadata:
 - Runtime packages from `skill_manifest.yaml`, especially `monai==1.4.0`, `numpy<2`, `nibabel`, `scipy`, `typer`, `PyYAML`, `fire`, `pytorch-ignite`, `einops`, and `huggingface_hub`. Install `mlflow>=2.10,<4` only when MLflow tracking is enabled.
 - The active environment must already contain the exact runtime dependencies; the wrapper does not create environments or install packages.
 - Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs. Databricks MLflow mode may use `DATABRICKS_HOST` and `DATABRICKS_TOKEN` from the caller's environment and may contact `https://<caller-provided-databricks-workspace>`.
-- Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir`, writes `<output-dir>/mlruns` when local MLflow tracking is enabled without an explicit URI, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://raw.githubusercontent.com`.
+- Side effects: explicit setup commands cache pinned upstream assets under `.workbench_data/upstreams/`, `skills/nv-segment-ct-finetune/bundle/`, and `~/.cache/huggingface/`. The wrapper writes `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; it writes checkpoints/evidence under `--output-dir` and `<output-dir>/mlruns` when local MLflow tracking is enabled.
 
 Fresh environment setup:
 
@@ -58,11 +58,10 @@ python -m pip install "mlflow>=2.10,<4"
 
 ## Required permissions
 
-- **Network (required for first-run bundle staging):** the wrapper may download
-  commit-pinned assets from `https://huggingface.co` and
-  `https://raw.githubusercontent.com`. It verifies every behavior-bearing asset
-  against a fixed SHA-256 digest before use. Once those assets are cached,
-  training does not require these endpoints.
+- **Network (setup only):** the caller must explicitly stage commit-pinned
+  assets from `https://github.com` and `https://huggingface.co` using the
+  commands below. The runtime wrapper performs no artifact downloads and
+  verifies every behavior-bearing asset against a fixed SHA-256 digest.
 - **Network (optional for remote MLflow):** when the caller explicitly enables
   MLflow with a remote tracking URI, the wrapper sends training metrics to that
   caller-selected endpoint. Databricks credentials remain in caller-provided
@@ -70,6 +69,23 @@ python -m pip install "mlflow>=2.10,<4"
 - **Filesystem write:** the wrapper writes generated bundle configs under this
   skill directory and writes checkpoints, logs, metrics, and optional local
   MLflow data under the caller-provided output directory.
+
+Stage the upstream files once from the repository root:
+
+```bash
+mkdir -p .workbench_data/upstreams
+git clone https://github.com/NVIDIA-Medtech/NV-Segment-CTMR.git \
+  .workbench_data/upstreams/NV-Segment-CTMR
+git -C .workbench_data/upstreams/NV-Segment-CTMR checkout --detach \
+  f9f5f51b589e5dc9c23c453cf5138398e4084056
+hf download nvidia/NV-Segment-CT \
+  --revision afb51518689f71e6abb367ee6301b2cd0225c66a \
+  --local-dir skills/nv-segment-ct-finetune/bundle/
+```
+
+The next wrapper invocation copies the pinned configs and label dictionary from
+the local checkout, stages the model and metadata from the Hugging Face cache,
+and rejects any digest mismatch before launching MONAI.
 
 Known upstream compatibility constraints:
 

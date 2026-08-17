@@ -6,28 +6,35 @@ This file holds details that are useful during reproduction but too large for
 
 ## Bundle Setup Notes
 
-The wrapper repairs or downloads local bundle files after required Python
-packages are installed. Manual setup is only needed when debugging a missing
-asset outside normal wrapper execution:
+The runtime wrapper performs no artifact downloads. Stage both pinned upstream
+sources explicitly from the repository root after installing the required
+Python packages:
 
 ```bash
-cd skills/nv-segment-ct-finetune
+mkdir -p .workbench_data/upstreams
+git clone https://github.com/NVIDIA-Medtech/NV-Segment-CTMR.git \
+  .workbench_data/upstreams/NV-Segment-CTMR
+git -C .workbench_data/upstreams/NV-Segment-CTMR checkout --detach \
+  f9f5f51b589e5dc9c23c453cf5138398e4084056
 hf download nvidia/NV-Segment-CT \
   --revision afb51518689f71e6abb367ee6301b2cd0225c66a \
-  --local-dir bundle/
-python -c "import urllib.request; urllib.request.urlretrieve('https://raw.githubusercontent.com/NVIDIA-Medtech/NV-Segment-CTMR/f9f5f51b589e5dc9c23c453cf5138398e4084056/NV-Segment-CT/configs/label_dict.json', 'bundle/label_dict.json')"
+  --local-dir skills/nv-segment-ct-finetune/bundle/
 ```
 
 Expected local files:
 
 - `bundle/configs/train.json`
 - `bundle/configs/train_continual.json`
+- `bundle/configs/multi_gpu_train.json`
+- `bundle/configs/evaluate.json`
 - `bundle/configs/metadata.json`
 - `bundle/label_dict.json`
 - `bundle/models/model.pt`
 
-The wrapper stages `metadata.json`, `models/model.pt`, and upstream CT config
-files when the repo-local upstream cache is available.
+The wrapper copies the CT configs and label dictionary from the pinned local
+checkout, stages `metadata.json` and `models/model.pt` from the local Hugging
+Face bundle, normalizes the pinned label dictionary, and verifies every listed
+file by SHA-256 before execution.
 
 ## Task06 Sanity Recipe
 
