@@ -56,6 +56,21 @@ When MLflow tracking is enabled, also install:
 python -m pip install "mlflow>=2.10,<4"
 ```
 
+## Required permissions
+
+- **Network (required for first-run bundle staging):** the wrapper may download
+  commit-pinned assets from `https://huggingface.co` and
+  `https://raw.githubusercontent.com`. It verifies every behavior-bearing asset
+  against a fixed SHA-256 digest before use. Once those assets are cached,
+  training does not require these endpoints.
+- **Network (optional for remote MLflow):** when the caller explicitly enables
+  MLflow with a remote tracking URI, the wrapper sends training metrics to that
+  caller-selected endpoint. Databricks credentials remain in caller-provided
+  environment variables.
+- **Filesystem write:** the wrapper writes generated bundle configs under this
+  skill directory and writes checkpoints, logs, metrics, and optional local
+  MLflow data under the caller-provided output directory.
+
 Known upstream compatibility constraints:
 
 - DFW Task06 reference: Python `3.10.16`, MONAI `1.4.0`, Torch `2.7.0+cu126`.
