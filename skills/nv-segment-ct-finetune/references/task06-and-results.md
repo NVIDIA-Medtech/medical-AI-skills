@@ -31,10 +31,9 @@ Expected local files:
 - `bundle/label_dict.json`
 - `bundle/models/model.pt`
 
-The wrapper copies the CT configs and label dictionary from the pinned local
-checkout, stages `metadata.json` and `models/model.pt` from the local Hugging
-Face bundle, normalizes the pinned label dictionary, and verifies every listed
-file by SHA-256 before execution.
+The wrapper stages the four CT configs and label dictionary from the pinned
+local checkout, stages `metadata.json` and `models/model.pt` from the local
+Hugging Face bundle, and verifies every listed file by SHA-256 before execution.
 
 ## Task06 Sanity Recipe
 

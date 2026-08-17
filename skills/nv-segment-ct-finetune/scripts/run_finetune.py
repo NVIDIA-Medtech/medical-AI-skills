@@ -63,9 +63,8 @@ BUNDLE_DIR = SKILL_DIR / "bundle"
 LABEL_DICT = BUNDLE_DIR / "label_dict.json"
 UPSTREAM_CTMR_COMMIT = "f9f5f51b589e5dc9c23c453cf5138398e4084056"
 HF_MODEL_REVISION = "afb51518689f71e6abb367ee6301b2cd0225c66a"
-UPSTREAM_LABEL_DICT_SHA256 = "186226ba214b3e02cc5394427c6395364905129e449a6b726253269117302475"
 EXPECTED_BUNDLE_SHA256 = {
-    "label_dict.json": "ceed59291098eaf6aa960a22696f68c15f7cb224d40e95ba3fa192eb398c37d1",
+    "label_dict.json": "186226ba214b3e02cc5394427c6395364905129e449a6b726253269117302475",
     "configs/train.json": "4117406ff7966f0c6b121106e46c59f74d4c00427560a2a73608a2cad645ca86",
     "configs/train_continual.json": "6336677108895f5518386fb5dd8512981edd02854a75c877244cc84e826ca7dd",
     "configs/multi_gpu_train.json": "147ac052a94849a184fc315d32979b70d64d315a330d9a78c684b97c959c1e17",
@@ -77,6 +76,18 @@ SMOKE_FIXTURE = SKILL_DIR / "fixtures" / "spleen_micro"
 # Resolve Medical AI Skills cache root from the script's own location: repo_root/.workbench_data.
 # Callers can still override with --dataset-dir when their cache lives elsewhere.
 _REPO_ROOT = SKILL_DIR.parent.parent
+UPSTREAM_CONFIG_DIR = _REPO_ROOT / (
+    ".workbench_data/upstreams/NV-Segment-CTMR/NV-Segment-CT/configs"
+)
+BUNDLE_ASSET_SOURCES = {
+    "label_dict.json": UPSTREAM_CONFIG_DIR / "label_dict.json",
+    "configs/train.json": UPSTREAM_CONFIG_DIR / "train.json",
+    "configs/train_continual.json": UPSTREAM_CONFIG_DIR / "train_continual.json",
+    "configs/multi_gpu_train.json": UPSTREAM_CONFIG_DIR / "multi_gpu_train.json",
+    "configs/evaluate.json": UPSTREAM_CONFIG_DIR / "evaluate.json",
+    "configs/metadata.json": BUNDLE_DIR / "metadata.json",
+    "models/model.pt": BUNDLE_DIR / "vista3d_pretrained_model" / "model.pt",
+}
 SANITY_DATASET = _REPO_ROOT / ".workbench_data" / "datasets" / "Task06_Lung"
 SANITY_ANATOMY = "lung tumor"  # MSD06 label 1 (cancer) -> vista3d global index 23
 VERSION = "0.4.2"
@@ -154,127 +165,41 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def require_bundle_integrity() -> None:
-    """Reject behavior-bearing bundle assets that differ from pinned upstream bytes."""
-    mismatches = []
-    for relative_path, expected in EXPECTED_BUNDLE_SHA256.items():
-        path = BUNDLE_DIR / relative_path
-        actual = _sha256(path)
-        if actual != expected:
-            mismatches.append(f"{relative_path} (expected {expected}, found {actual})")
-    if mismatches:
-        raise typer.BadParameter("bundle integrity check failed: " + "; ".join(mismatches))
-
-
 def require_bundle_files() -> None:
-    """Fail with setup instructions before MONAI emits a deep config error."""
-    bundle_notes = prepare_bundle_files()
-    required = [BUNDLE_DIR / relative_path for relative_path in EXPECTED_BUNDLE_SHA256]
-    missing = [p for p in required if not p.exists()]
-    if not missing:
-        require_bundle_integrity()
-        if bundle_notes:
-            sys.stderr.write(
-                "[nv_segment_ct_finetune] prepared bundle files: " + "; ".join(bundle_notes) + "\n"
-            )
-        return
+    """Stage declared local assets and reject missing or unpinned bytes."""
+    staged: list[str] = []
+    problems: list[str] = []
+    for relative_path, expected in EXPECTED_BUNDLE_SHA256.items():
+        destination = BUNDLE_DIR / relative_path
+        actual = _sha256(destination) if destination.is_file() else None
+        if actual != expected:
+            if destination.exists() and not destination.is_file():
+                problems.append(f"{relative_path} (not a file)")
+                continue
+            source = BUNDLE_ASSET_SOURCES[relative_path]
+            if source.is_file():
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                if destination.is_symlink():
+                    destination.unlink()
+                shutil.copy2(source, destination)
+                staged.append(relative_path)
+                actual = _sha256(destination)
+        if actual is None:
+            problems.append(f"{relative_path} (missing)")
+        elif actual != expected:
+            problems.append(f"{relative_path} (expected {expected}, found {actual})")
 
-    rel_missing = [
-        str(p.relative_to(SKILL_DIR)) if p.is_relative_to(SKILL_DIR) else str(p) for p in missing
-    ]
-    raise typer.BadParameter(
-        "bundle setup is incomplete; missing: "
-        + ", ".join(rel_missing)
-        + "\nStage the pinned GitHub and Hugging Face assets as documented in SKILL.md, "
-        + f"using commits {UPSTREAM_CTMR_COMMIT} and {HF_MODEL_REVISION}, then rerun.\n"
-    )
-
-
-def _unlink_broken_symlink(path: Path) -> bool:
-    if path.is_symlink() and not path.exists():
-        path.unlink()
-        return True
-    return False
-
-
-def _copy_if_missing_or_broken(src: Path, dst: Path) -> bool:
-    if not src.exists():
-        return False
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    if dst.is_symlink() and not dst.exists():
-        dst.unlink()
-    if dst.exists():
-        return False
-    shutil.copy2(src, dst)
-    return True
-
-
-def _upstream_config_dirs() -> list[Path]:
-    """Local upstream checkouts that can seed missing bundle configs."""
-    dirs: list[Path] = []
-    env_root = os.environ.get("NV_SEGMENT_CT_ROOT", "").strip()
-    if env_root:
-        dirs.append(Path(env_root) / "configs")
-    ctmr_root = os.environ.get("NV_SEGMENT_CTMR_ROOT", "").strip()
-    if ctmr_root:
-        root = Path(ctmr_root)
-        dirs.extend([root / "configs", root.parent / "NV-Segment-CT" / "configs"])
-    dirs.extend(
-        [
-            _REPO_ROOT
-            / ".workbench_data"
-            / "upstreams"
-            / "NV-Segment-CTMR"
-            / "NV-Segment-CT"
-            / "configs",
-            _REPO_ROOT
-            / ".workbench_data"
-            / "upstreams"
-            / "NV-Segment-CTMR"
-            / "NV-Segment-CTMR"
-            / "configs",
-        ]
-    )
-    unique: list[Path] = []
-    seen: set[Path] = set()
-    for path in dirs:
-        resolved = path.expanduser()
-        if resolved in seen:
-            continue
-        seen.add(resolved)
-        unique.append(resolved)
-    return unique
-
-
-def _copy_upstream_config(name: str, *, overwrite_if_different: bool = False) -> bool:
-    dst = BUNDLE_DIR / "configs" / name
-    for config_dir in _upstream_config_dirs():
-        src = config_dir / name
-        if not src.exists():
-            continue
-        if dst.is_symlink() and not dst.exists():
-            dst.unlink()
-        if not dst.exists():
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dst)
-            return True
-        if overwrite_if_different and src.read_bytes() != dst.read_bytes():
-            shutil.copy2(src, dst)
-            return True
-        if dst.exists():
-            return False
-    return False
-
-
-def _normalize_pinned_label_dict(path: Path) -> bool:
-    """Normalize only the exact label dictionary from the pinned upstream commit."""
-    if not path.exists() or _sha256(path) != UPSTREAM_LABEL_DICT_SHA256:
-        return False
-    data = json.loads(path.read_text())
-    if not isinstance(data, dict) or "lung tumor" not in data:
-        raise typer.BadParameter("pinned label_dict.json has an unexpected structure")
-    path.write_text(json.dumps(data, indent=2) + "\n")
-    return True
+    if problems:
+        raise typer.BadParameter(
+            "bundle setup or integrity check failed: "
+            + "; ".join(problems)
+            + "\nStage the pinned GitHub and Hugging Face assets documented in SKILL.md "
+            + f"at revisions {UPSTREAM_CTMR_COMMIT} and {HF_MODEL_REVISION}, then rerun.\n"
+        )
+    if staged:
+        sys.stderr.write(
+            "[nv_segment_ct_finetune] staged bundle files: " + ", ".join(staged) + "\n"
+        )
 
 
 def _fixture_preset(fixture: Path) -> str | None:
@@ -292,55 +217,6 @@ def _resolve_sanity_dataset(fixture: Optional[Path], dataset_dir: Optional[Path]
     if fixture is not None and fixture.is_dir():
         return fixture.resolve()
     return SANITY_DATASET
-
-
-def prepare_bundle_files() -> list[str]:
-    """Make the local downloaded bundle usable in fresh agent commands.
-
-    `hf download --local-dir` can leave old local symlinks untouched when a
-    previous checkout used a different skill path. Repairing those files here
-    keeps the user-facing command idempotent without requiring shell cleanup.
-    """
-    notes: list[str] = []
-    for rel in (
-        "label_dict.json",
-        "configs/metadata.json",
-        "models/model.pt",
-    ):
-        if _unlink_broken_symlink(BUNDLE_DIR / rel):
-            notes.append(f"removed dangling {rel}")
-
-    sibling_label_dict = SKILL_DIR.parent / "nv-segment-ct" / "bundle" / "label_dict.json"
-    if _copy_if_missing_or_broken(sibling_label_dict, LABEL_DICT):
-        notes.append("copied label_dict.json from nv-segment-ct cache")
-    if not LABEL_DICT.exists():
-        for config_dir in _upstream_config_dirs():
-            if _copy_if_missing_or_broken(config_dir / "label_dict.json", LABEL_DICT):
-                notes.append("staged label_dict.json from pinned local upstream")
-                break
-    if _normalize_pinned_label_dict(LABEL_DICT):
-        notes.append("normalized pinned label_dict.json")
-
-    for config_name in (
-        "train.json",
-        "train_continual.json",
-        "multi_gpu_train.json",
-        "evaluate.json",
-    ):
-        if _copy_upstream_config(config_name, overwrite_if_different=True):
-            notes.append(f"restored configs/{config_name} from local upstream cache")
-
-    if _copy_if_missing_or_broken(
-        BUNDLE_DIR / "metadata.json",
-        BUNDLE_DIR / "configs" / "metadata.json",
-    ):
-        notes.append("staged configs/metadata.json")
-    if _copy_if_missing_or_broken(
-        BUNDLE_DIR / "vista3d_pretrained_model" / "model.pt",
-        BUNDLE_DIR / "models" / "model.pt",
-    ):
-        notes.append("staged models/model.pt")
-    return notes
 
 
 def _mean_dice_accepts_num_classes() -> bool:

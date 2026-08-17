@@ -33,87 +33,26 @@ def test_runtime_does_not_download_bundle_assets():
     assert "snapshot_download" not in source
 
 
-def test_prepare_bundle_files_stages_train_configs_from_local_upstream(tmp_path, monkeypatch):
-    bundle = tmp_path / "skill" / "bundle"
-    upstream_configs = (
-        tmp_path / ".workbench_data" / "upstreams" / "NV-Segment-CTMR" / "NV-Segment-CT" / "configs"
-    )
-    upstream_configs.mkdir(parents=True)
-    for name in (
-        "train.json",
-        "train_continual.json",
-        "multi_gpu_train.json",
-        "evaluate.json",
-    ):
-        (upstream_configs / name).write_text(f'{{"name": "{name}"}}\n')
-    (bundle / "configs").mkdir(parents=True)
-    (bundle / "metadata.json").write_text("{}\n")
-    (bundle / "vista3d_pretrained_model").mkdir(parents=True)
-    (bundle / "vista3d_pretrained_model" / "model.pt").write_bytes(b"model")
-    (bundle / "label_dict.json").write_text('{"lung tumor": 23}\n')
+def test_require_bundle_files_stages_declared_local_assets(tmp_path, monkeypatch):
+    bundle = tmp_path / "bundle"
+    source_dir = tmp_path / "sources"
+    sources = {
+        "label_dict.json": source_dir / "label_dict.json",
+        "configs/train.json": source_dir / "train.json",
+    }
+    expected = {}
+    for relative_path, source in sources.items():
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(relative_path)
+        expected[relative_path] = hashlib.sha256(source.read_bytes()).hexdigest()
 
     monkeypatch.setattr(mod, "BUNDLE_DIR", bundle)
-    monkeypatch.setattr(mod, "SKILL_DIR", tmp_path / "skill")
-    monkeypatch.setattr(mod, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(mod, "LABEL_DICT", bundle / "label_dict.json")
-    notes = mod.prepare_bundle_files()
+    monkeypatch.setattr(mod, "BUNDLE_ASSET_SOURCES", sources)
+    monkeypatch.setattr(mod, "EXPECTED_BUNDLE_SHA256", expected)
+    mod.require_bundle_files()
 
-    for name in (
-        "train.json",
-        "train_continual.json",
-        "multi_gpu_train.json",
-        "evaluate.json",
-    ):
-        assert (bundle / "configs" / name).read_text() == f'{{"name": "{name}"}}\n'
-    assert (bundle / "configs" / "metadata.json").is_file()
-    assert (bundle / "models" / "model.pt").is_file()
-    assert "restored configs/train.json from local upstream cache" in notes
-
-
-def test_prepare_bundle_files_restores_drifted_train_configs(tmp_path, monkeypatch):
-    bundle = tmp_path / "skill" / "bundle"
-    upstream_configs = (
-        tmp_path / ".workbench_data" / "upstreams" / "NV-Segment-CTMR" / "NV-Segment-CT" / "configs"
-    )
-    upstream_configs.mkdir(parents=True)
-    for name in (
-        "train.json",
-        "train_continual.json",
-        "multi_gpu_train.json",
-        "evaluate.json",
-    ):
-        (upstream_configs / name).write_text(f'{{"canonical": "{name}"}}\n')
-    (bundle / "configs").mkdir(parents=True)
-    for name in (
-        "train.json",
-        "train_continual.json",
-        "multi_gpu_train.json",
-        "evaluate.json",
-    ):
-        (bundle / "configs" / name).write_text(f'{{"drifted": "{name}"}}\n')
-    (bundle / "metadata.json").write_text("{}\n")
-    (bundle / "vista3d_pretrained_model").mkdir(parents=True)
-    (bundle / "vista3d_pretrained_model" / "model.pt").write_bytes(b"model")
-    (bundle / "label_dict.json").write_text('{"lung tumor": 23}\n')
-
-    monkeypatch.setattr(mod, "BUNDLE_DIR", bundle)
-    monkeypatch.setattr(mod, "SKILL_DIR", tmp_path / "skill")
-    monkeypatch.setattr(mod, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(mod, "LABEL_DICT", bundle / "label_dict.json")
-    notes = mod.prepare_bundle_files()
-
-    assert (bundle / "configs" / "evaluate.json").read_text() == '{"canonical": "evaluate.json"}\n'
-    assert "restored configs/evaluate.json from local upstream cache" in notes
-
-
-def test_upstream_config_dirs_accept_explicit_local_checkout(tmp_path, monkeypatch):
-    config_dir = (
-        tmp_path / ".workbench_data" / "upstreams" / "NV-Segment-CTMR" / "NV-Segment-CT" / "configs"
-    )
-    config_dir.mkdir(parents=True)
-    monkeypatch.setattr(mod, "_REPO_ROOT", tmp_path)
-
-    assert config_dir in mod._upstream_config_dirs()
+    for relative_path, source in sources.items():
+        assert (bundle / relative_path).read_bytes() == source.read_bytes()
 
 
 def test_build_override_defines_bundle_image_and_label_keys(tmp_path):
@@ -172,12 +111,13 @@ def test_bundle_integrity_rejects_changed_asset(tmp_path, monkeypatch):
     expected = hashlib.sha256(asset.read_bytes()).hexdigest()
     monkeypatch.setattr(mod, "BUNDLE_DIR", tmp_path)
     monkeypatch.setattr(mod, "EXPECTED_BUNDLE_SHA256", {"asset.json": expected})
+    monkeypatch.setattr(mod, "BUNDLE_ASSET_SOURCES", {"asset.json": tmp_path / "missing.json"})
 
-    mod.require_bundle_integrity()
+    mod.require_bundle_files()
     asset.write_text("changed\n")
 
-    with pytest.raises(mod.typer.BadParameter, match="bundle integrity check failed"):
-        mod.require_bundle_integrity()
+    with pytest.raises(mod.typer.BadParameter, match="bundle setup or integrity check failed"):
+        mod.require_bundle_files()
 
 
 def test_sanity_dataset_prefers_explicit_paths(tmp_path):

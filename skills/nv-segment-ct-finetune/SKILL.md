@@ -89,9 +89,8 @@ hf download nvidia/NV-Segment-CT \
   --local-dir skills/nv-segment-ct-finetune/bundle/
 ```
 
-The next wrapper invocation copies the pinned configs and label dictionary from
-the local checkout, stages the model and metadata from the Hugging Face cache,
-and rejects any digest mismatch before launching MONAI.
+The wrapper stages those seven declared assets into the bundle's runtime
+layout and rejects any digest mismatch before launching MONAI.
 
 Known upstream compatibility constraints:
 
