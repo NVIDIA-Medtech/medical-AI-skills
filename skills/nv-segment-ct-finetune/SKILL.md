@@ -40,6 +40,7 @@ metadata:
 
 - Python 3.10+ with CUDA-capable Torch for GPU runs.
 - Runtime packages from `skill_manifest.yaml`, especially `monai==1.4.0`, `numpy<2`, `nibabel`, `scipy`, `typer`, `PyYAML`, `fire`, `pytorch-ignite`, `einops`, and `huggingface_hub`. Install `mlflow>=2.10,<4` only when MLflow tracking is enabled.
+- The active environment must already contain the exact runtime dependencies; the wrapper does not create environments or install packages.
 - Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs. Databricks MLflow mode may use `DATABRICKS_HOST` and `DATABRICKS_TOKEN` from the caller's environment and may contact `https://<caller-provided-databricks-workspace>`.
 - Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir`, writes `<output-dir>/mlruns` when local MLflow tracking is enabled without an explicit URI, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://raw.githubusercontent.com`.
 
@@ -174,6 +175,7 @@ Decision rule: prefer formal original-spacing pre/post scores when present; reje
   not additional package constraints or a claim that other versions cannot
   work.
 - The auto-derived plan is heuristic; caller-provided `--patch-size`, `--cache-rate`, `--epochs`, and `--learning-rate` win.
+- Commit-pinned bundle downloads are checked against fixed SHA-256 digests before training; an integrity mismatch stops the run.
 - The Task06 sanity recipe intentionally forces single-GPU execution to match the DFW reference. Multi-GPU mode for other datasets requires host `torchrun` support.
 - The paired verifier is CPU-only and audits the evidence pack; it does not re-run GPU segmentation.
 - MLflow support is optional and uses MONAI's built-in tracking handlers. Tracking errors are part of the upstream MONAI run and therefore can fail the finetune command.

@@ -260,6 +260,8 @@ limitations:
     converge.
   - Optional MLflow support uses MONAI's built-in rank-zero tracking handlers.
     Tracking failures can fail the upstream MONAI run.
+  - Commit-pinned bundle assets are SHA-256 checked before execution; users
+    must update the wrapper's expected digests intentionally when changing the pin.
 validation:
   expected_runtime_seconds:
     # smoke_only on H100 ~= 5s; CPU fallback ~= 120s. Real finetune is

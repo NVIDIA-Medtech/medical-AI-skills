@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import importlib.util
 from pathlib import Path
 
@@ -154,9 +155,22 @@ def test_task06_fixture_selects_sanity_preset() -> None:
 def test_monai_runtime_pin_is_exact(monkeypatch):
     monkeypatch.setattr(mod, "package_version", lambda _name: "1.4.1")
 
-    assert mod._monai_is_compatible() is False
     with pytest.raises(mod.typer.BadParameter, match="monai==1.4.0"):
         mod.require_compatible_runtime()
+
+
+def test_bundle_integrity_rejects_changed_asset(tmp_path, monkeypatch):
+    asset = tmp_path / "asset.json"
+    asset.write_text("trusted\n")
+    expected = hashlib.sha256(asset.read_bytes()).hexdigest()
+    monkeypatch.setattr(mod, "BUNDLE_DIR", tmp_path)
+    monkeypatch.setattr(mod, "EXPECTED_BUNDLE_SHA256", {"asset.json": expected})
+
+    mod.require_bundle_integrity()
+    asset.write_text("changed\n")
+
+    with pytest.raises(mod.typer.BadParameter, match="bundle integrity check failed"):
+        mod.require_bundle_integrity()
 
 
 def test_sanity_dataset_prefers_explicit_paths(tmp_path):

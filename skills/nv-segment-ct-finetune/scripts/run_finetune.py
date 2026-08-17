@@ -37,6 +37,7 @@ Engineering verification only. Output is NOT clinically meaningful.
 
 from __future__ import annotations
 
+import hashlib
 import inspect
 import json
 import os
@@ -49,7 +50,6 @@ import sys
 import time
 import urllib.error
 import urllib.request
-import venv
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 from pathlib import Path
@@ -69,6 +69,16 @@ LABEL_DICT_URL = (
     f"https://raw.githubusercontent.com/NVIDIA-Medtech/NV-Segment-CTMR/{UPSTREAM_CTMR_COMMIT}/"
     "NV-Segment-CT/configs/label_dict.json"
 )
+LABEL_DICT_DOWNLOAD_SHA256 = "186226ba214b3e02cc5394427c6395364905129e449a6b726253269117302475"
+EXPECTED_BUNDLE_SHA256 = {
+    "label_dict.json": "ceed59291098eaf6aa960a22696f68c15f7cb224d40e95ba3fa192eb398c37d1",
+    "configs/train.json": "4117406ff7966f0c6b121106e46c59f74d4c00427560a2a73608a2cad645ca86",
+    "configs/train_continual.json": "6336677108895f5518386fb5dd8512981edd02854a75c877244cc84e826ca7dd",
+    "configs/multi_gpu_train.json": "147ac052a94849a184fc315d32979b70d64d315a330d9a78c684b97c959c1e17",
+    "configs/evaluate.json": "4e91d4031fd152f2e3f7219265b7ce1fed36e84db8cc7d4bfedcd0318c0682ec",
+    "configs/metadata.json": "7554d8b015426e7034df9504e8407d413ff469114345999bb9ac58340d814149",
+    "models/model.pt": "c92bab26d00b4a5d89fa8a383900cdeb88302fd318e5e816df0bbec7106d9a1b",
+}
 SMOKE_FIXTURE = SKILL_DIR / "fixtures" / "spleen_micro"
 # Resolve Medical AI Skills cache root from the script's own location: repo_root/.workbench_data.
 # Callers can still override with --dataset-dir when their cache lives elsewhere.
@@ -142,64 +152,33 @@ def require_compatible_runtime() -> None:
         )
 
 
-def _monai_is_compatible() -> bool:
-    try:
-        monai_version = package_version("monai")
-    except PackageNotFoundError:
-        return False
-    return monai_version.split("+", 1)[0] == REQUIRED_MONAI_VERSION
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
-def maybe_reexec_compatible_runtime() -> None:
-    """Use a temporary compatible venv when the caller's MONAI is outside this range.
-
-    Re-exec keeps the user-facing command simple while preserving the active
-    environment's CUDA/Torch via --system-site-packages. The DFW reference
-    run used MONAI 1.4.0 on Python 3.10; Python 3.12 environments usually
-    should still use MONAI 1.4.0 for this upstream trainer.
-    """
-    if _monai_is_compatible():
-        return
-    if os.environ.get("NVSEG_FINETUNE_AUTO_VENV") == "0":
-        return
-    if os.environ.get("NVSEG_FINETUNE_IN_AUTO_VENV") == "1":
-        return
-
-    venv_dir = Path(os.environ.get("NVSEG_FINETUNE_AUTO_VENV_DIR", "/tmp/nvseg-m14"))
-    python_bin = venv_dir / "bin" / "python"
-    if not python_bin.exists():
-        venv.EnvBuilder(system_site_packages=True, with_pip=True).create(venv_dir)
-
-    subprocess.check_call(
-        [
-            str(python_bin),
-            "-m",
-            "pip",
-            "install",
-            f"monai=={REQUIRED_MONAI_VERSION}",
-            "numpy<2",
-        ],
-        stdout=sys.stderr,
-        stderr=sys.stderr,
-    )
-    env = os.environ.copy()
-    env["NVSEG_FINETUNE_IN_AUTO_VENV"] = "1"
-    sys.stderr.write(f"[nv_segment_ct_finetune] re-exec with {python_bin}\n")
-    os.execvpe(str(python_bin), [str(python_bin), *sys.argv], env)
+def require_bundle_integrity() -> None:
+    """Reject behavior-bearing bundle assets that differ from pinned upstream bytes."""
+    mismatches = []
+    for relative_path, expected in EXPECTED_BUNDLE_SHA256.items():
+        path = BUNDLE_DIR / relative_path
+        actual = _sha256(path)
+        if actual != expected:
+            mismatches.append(f"{relative_path} (expected {expected}, found {actual})")
+    if mismatches:
+        raise typer.BadParameter("bundle integrity check failed: " + "; ".join(mismatches))
 
 
 def require_bundle_files() -> None:
     """Fail with setup instructions before MONAI emits a deep config error."""
     bundle_notes = prepare_bundle_files()
-    required = [
-        BUNDLE_DIR / "configs" / "train.json",
-        BUNDLE_DIR / "configs" / "train_continual.json",
-        BUNDLE_DIR / "configs" / "metadata.json",
-        LABEL_DICT,
-        BUNDLE_DIR / "models" / "model.pt",
-    ]
+    required = [BUNDLE_DIR / relative_path for relative_path in EXPECTED_BUNDLE_SHA256]
     missing = [p for p in required if not p.exists()]
     if not missing:
+        require_bundle_integrity()
         if bundle_notes:
             sys.stderr.write(
                 "[nv_segment_ct_finetune] prepared bundle files: " + "; ".join(bundle_notes) + "\n"
@@ -214,9 +193,7 @@ def require_bundle_files() -> None:
         + ", ".join(rel_missing)
         + "\nFrom skills/nv-segment-ct-finetune, run:\n"
         + f"  hf download nvidia/NV-Segment-CT --revision {HF_MODEL_REVISION} --local-dir bundle/\n"
-        + '  python -c "import urllib.request; '
-        + f"urllib.request.urlretrieve('{LABEL_DICT_URL}', "
-        + "'bundle/label_dict.json')\"\n"
+        + "  # Then rerun this wrapper; it downloads and verifies label_dict.json.\n"
         + "  python - <<'PY'\n"
         + "from pathlib import Path\n"
         + "import shutil\n"
@@ -310,10 +287,12 @@ def _download_label_dict(dst: Path) -> bool:
         return False
     dst.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with urllib.request.urlopen(LABEL_DICT_URL, timeout=30) as response:
+        with urllib.request.urlopen(LABEL_DICT_URL, timeout=30) as response:  # nosec B310
             payload = response.read()
     except (OSError, urllib.error.URLError):
         return False
+    if hashlib.sha256(payload).hexdigest() != LABEL_DICT_DOWNLOAD_SHA256:
+        raise typer.BadParameter("downloaded label_dict.json failed its SHA-256 check")
     data = json.loads(payload.decode("utf-8"))
     if not isinstance(data, dict) or "lung tumor" not in data:
         return False
@@ -1049,13 +1028,15 @@ def run_monai_bundle(
             smi_cmd[1:1] = ["-i", "0"]
         smi_out = open(gpu_csv, "w")
         smi = subprocess.Popen(smi_cmd, stdout=smi_out, stderr=subprocess.DEVNULL)
+    injected_cuda_visibility = force_single_gpu and "CUDA_VISIBLE_DEVICES" not in os.environ
+    if injected_cuda_visibility:
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     try:
-        env = os.environ.copy()
-        if force_single_gpu and "CUDA_VISIBLE_DEVICES" not in env:
-            env["CUDA_VISIBLE_DEVICES"] = "0"
         with open(log_path, "w") as f:
-            rc = subprocess.call(cmd, cwd=BUNDLE_DIR, stdout=f, stderr=subprocess.STDOUT, env=env)
+            rc = subprocess.call(cmd, cwd=BUNDLE_DIR, stdout=f, stderr=subprocess.STDOUT)
     finally:
+        if injected_cuda_visibility:
+            os.environ.pop("CUDA_VISIBLE_DEVICES", None)
         if smi is not None:
             smi.terminate()
             try:
@@ -1166,8 +1147,8 @@ def compare_checkpoint_weights(reference: Path, candidate: Path) -> dict:
     try:
         import torch  # type: ignore
 
-        ref_obj = torch.load(reference, map_location="cpu", weights_only=False)
-        cand_obj = torch.load(candidate, map_location="cpu", weights_only=False)
+        ref_obj = torch.load(reference, map_location="cpu", weights_only=True)
+        cand_obj = torch.load(candidate, map_location="cpu", weights_only=True)
         ref_state = _extract_state_dict(ref_obj)
         cand_state = _extract_state_dict(cand_obj)
         if ref_state is None or cand_state is None:
@@ -1401,7 +1382,6 @@ def main(
     timings: dict[str, float] = {}
     t_phase = time.perf_counter()
 
-    maybe_reexec_compatible_runtime()
     require_compatible_runtime()
     require_bundle_files()
 
