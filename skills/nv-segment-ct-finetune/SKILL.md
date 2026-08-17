@@ -3,6 +3,12 @@ name: nv-segment-ct-finetune
 description: Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels. Not for clinical validation.
 license: Apache-2.0
 allowed-tools: Bash
+permissions:
+  - shell
+  - file_read
+  - file_write
+  - env
+  - network
 metadata:
   author: NVIDIA MedTech Team
   tags:
