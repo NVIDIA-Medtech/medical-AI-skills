@@ -14,7 +14,7 @@
 # limitations under the License.
 
 id: medagent.nv_segment_ct_finetune
-version: 0.4.3
+version: 0.4.2
 upstream_refs:
   - kind: huggingface_repo
     name: nvidia/NV-Segment-CT
@@ -24,7 +24,7 @@ upstream_refs:
     name: NVIDIA-Medtech/NV-Segment-CTMR
     repo_url: https://github.com/NVIDIA-Medtech/NV-Segment-CTMR
     git_commit: f9f5f51b589e5dc9c23c453cf5138398e4084056
-    notes: Recommended compatibility source for staged training configs and the verified trainer.py; an explicit local checkout is accepted when its trainer matches the recorded implementation.
+    notes: Recommended compatibility source for missing staged training configs; an explicit local checkout is accepted.
 license: Apache-2.0
 intended_use:
   summary: >
@@ -100,19 +100,14 @@ inputs:
     description: Skip the pre/post original-spacing evaluate.json passes.
     optional: true
     default: false
-  - name: mlflow_mode
-    type: string
-    description: MLflow mode; off, local post-run summary, or Databricks live tracking.
-    optional: true
-    default: off
   - name: mlflow_tracking_uri
     type: string
-    description: Optional explicit MLflow tracking URI.
+    description: Optional MLflow tracking URI; defaults to a local store under the output directory.
     optional: true
   - name: mlflow_experiment_name
     type: string
-    description: MLflow experiment name; required when mlflow_mode is databricks.
-    optional_when: mlflow_mode != databricks
+    description: MLflow experiment name; setting it enables MONAI-native live tracking.
+    optional: true
   - name: mlflow_run_name
     type: string
     description: Optional MLflow run name.
@@ -150,7 +145,7 @@ runtime:
     scipy: ">=1.10"
     huggingface_hub: "*"
     safetensors: ">=0.4"
-    mlflow: ">=2.10"
+    mlflow: ">=2.10,<4"
     typer: ">=0.9"
   side_effects:
     pip_packages:
@@ -158,7 +153,7 @@ runtime:
       - torch>=2.0
       - "transformers>=4.40,<5"
       - huggingface_hub
-      - mlflow>=2.10
+      - "mlflow>=2.10,<4"
       - nibabel>=4.0
       - numpy>=1.23
       - safetensors>=0.4
@@ -170,7 +165,6 @@ runtime:
       - {path: "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json", approx_mb_max: 1}
       - {path: "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json", approx_mb_max: 1}
       - {path: "<caller-provided --output-dir>", approx_mb_max: 20000}
-      - {path: "<caller-provided --output-dir>/mlflow_tracking_settings.json", approx_mb_max: 1, optional: true}
       - {path: "<caller-provided --output-dir>/mlruns", approx_mb_max: 100, optional: true}
     home_writes:
       - {path: "~/.cache/huggingface/", approx_mb_max: 1500}
@@ -198,7 +192,6 @@ runtime:
       - CUDA_VISIBLE_DEVICES
       - DATABRICKS_HOST
       - DATABRICKS_TOKEN
-      - MLFLOW_TRACKING_URI
   external_assets:
     - kind: huggingface_repo
       repo_id: nvidia/NV-Segment-CT
@@ -265,10 +258,8 @@ limitations:
   - Smoke mode is an executable oracle for "pipeline plumbs end to end",
     not a quality bar - it cannot prove the full-dataset finetune will
     converge.
-  - Local MLflow mode is post-run only. Databricks mode uses MONAI-native
-    live tracking on rank zero and spawn-based DataLoader workers.
-  - MLflow logging failures are recorded in output.mlflow and do not change
-    the finetune return code.
+  - Optional MLflow support uses MONAI's built-in rank-zero tracking handlers.
+    Tracking failures can fail the upstream MONAI run.
 validation:
   expected_runtime_seconds:
     # smoke_only on H100 ~= 5s; CPU fallback ~= 120s. Real finetune is

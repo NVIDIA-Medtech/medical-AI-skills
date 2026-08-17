@@ -158,27 +158,6 @@
         "total_seconds": {"type": "number", "minimum": 0}
       }
     },
-    "mlflow": {
-      "type": "object",
-      "required": [
-        "enabled", "mode", "status", "tracking_uri",
-        "experiment_name", "run_name", "run_id", "live_tracking",
-        "tracking_settings_file", "run_status", "error"
-      ],
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "mode": {"enum": ["local", "databricks"]},
-        "status": {"enum": ["logged", "failed"]},
-        "tracking_uri": {"type": "string"},
-        "experiment_name": {"type": ["string", "null"]},
-        "run_name": {"type": ["string", "null"]},
-        "run_id": {"type": ["string", "null"]},
-        "live_tracking": {"type": "boolean"},
-        "tracking_settings_file": {"type": ["string", "null"]},
-        "run_status": {"type": ["string", "null"]},
-        "error": {"type": ["string", "null"]}
-      }
-    },
     "intended_use_disclaimer": {"type": "string"}
   }
 }

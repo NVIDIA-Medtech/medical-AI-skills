@@ -37,7 +37,6 @@ Engineering verification only. Output is NOT clinically meaningful.
 
 from __future__ import annotations
 
-import hashlib
 import inspect
 import json
 import os
@@ -50,12 +49,11 @@ import sys
 import time
 import urllib.error
 import urllib.request
-import uuid
 import venv
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as package_version
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import nibabel as nib
 import numpy as np
@@ -71,34 +69,14 @@ LABEL_DICT_URL = (
     f"https://raw.githubusercontent.com/NVIDIA-Medtech/NV-Segment-CTMR/{UPSTREAM_CTMR_COMMIT}/"
     "NV-Segment-CT/configs/label_dict.json"
 )
-UPSTREAM_TRAINER_COMMIT = "f9f5f51b589e5dc9c23c453cf5138398e4084056"
-UPSTREAM_TRAINER_SHA256 = "b236eb552d20672a3f72a16fdb13101ee6e8f547a5c6ec51cb73c5e51aa482fb"
-UPSTREAM_TRAINER_URL = (
-    "https://raw.githubusercontent.com/NVIDIA-Medtech/NV-Segment-CTMR/"
-    f"{UPSTREAM_TRAINER_COMMIT}/NV-Segment-CT/scripts/trainer.py"
-)
 SMOKE_FIXTURE = SKILL_DIR / "fixtures" / "spleen_micro"
 # Resolve Medical AI Skills cache root from the script's own location: repo_root/.workbench_data.
 # Callers can still override with --dataset-dir when their cache lives elsewhere.
 _REPO_ROOT = SKILL_DIR.parent.parent
 SANITY_DATASET = _REPO_ROOT / ".workbench_data" / "datasets" / "Task06_Lung"
 SANITY_ANATOMY = "lung tumor"  # MSD06 label 1 (cancer) -> vista3d global index 23
-VERSION = "0.4.3"
+VERSION = "0.4.2"
 REQUIRED_MONAI_VERSION = "1.4.0"
-MLFLOW_MODES = {"off", "local", "databricks"}
-MLFLOW_TRACKING_CONFIG_KEYS = frozenset(
-    {
-        "tracking_uri",
-        "experiment_name",
-        "run_name",
-        "save_execute_config",
-        "is_not_rank0",
-        "train#dataloader#multiprocessing_context",
-        "validate#dataloader#multiprocessing_context",
-        "trainer",
-        "validator",
-    }
-)
 SANITY_REFERENCE_THRESHOLDS = {
     "formal_pretrained_val_dice_min": 0.65,
     "formal_finetuned_val_dice_min": 0.67,
@@ -217,7 +195,6 @@ def require_bundle_files() -> None:
         BUNDLE_DIR / "configs" / "train.json",
         BUNDLE_DIR / "configs" / "train_continual.json",
         BUNDLE_DIR / "configs" / "metadata.json",
-        BUNDLE_DIR / "scripts" / "trainer.py",
         LABEL_DICT,
         BUNDLE_DIR / "models" / "model.pt",
     ]
@@ -328,35 +305,6 @@ def _copy_upstream_config(name: str, *, overwrite_if_different: bool = False) ->
     return False
 
 
-def _stage_pinned_trainer() -> str | None:
-    """Replace the Hugging Face trainer with the verified Task06 implementation."""
-    dst = BUNDLE_DIR / "scripts" / "trainer.py"
-    if dst.exists() and hashlib.sha256(dst.read_bytes()).hexdigest() == UPSTREAM_TRAINER_SHA256:
-        return None
-
-    for config_dir in _upstream_config_dirs():
-        src = config_dir.parent / "scripts" / "trainer.py"
-        if not src.exists():
-            continue
-        payload = src.read_bytes()
-        if hashlib.sha256(payload).hexdigest() != UPSTREAM_TRAINER_SHA256:
-            continue
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.write_bytes(payload)
-        return "restored scripts/trainer.py from pinned local upstream cache"
-
-    try:
-        with urllib.request.urlopen(UPSTREAM_TRAINER_URL, timeout=30) as response:
-            payload = response.read()
-    except (OSError, urllib.error.URLError) as exc:
-        raise RuntimeError("could not restore the pinned Task06 trainer") from exc
-    if hashlib.sha256(payload).hexdigest() != UPSTREAM_TRAINER_SHA256:
-        raise RuntimeError("downloaded Task06 trainer failed its SHA-256 check")
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    dst.write_bytes(payload)
-    return "downloaded pinned scripts/trainer.py"
-
-
 def _download_label_dict(dst: Path) -> bool:
     if dst.exists():
         return False
@@ -459,9 +407,6 @@ def prepare_bundle_files() -> list[str]:
         BUNDLE_DIR / "models" / "model.pt",
     ):
         notes.append("staged models/model.pt")
-    trainer_note = _stage_pinned_trainer()
-    if trainer_note:
-        notes.append(trainer_note)
     return notes
 
 
@@ -1147,256 +1092,33 @@ def parse_log(log_path: Path) -> dict:
     }
 
 
-def build_monai_mlflow_tracking_settings(
-    tracking_uri: str,
-    experiment_name: str,
-    run_name: str,
-) -> dict[str, Any]:
-    """Build a tracking-only MONAI patch; it cannot change training values."""
-    common = {
-        "_target_": "MLFlowHandler",
-        "_disabled_": "@is_not_rank0",
-        "tracking_uri": "@tracking_uri",
-        "experiment_name": "@experiment_name",
-        "run_name": "@run_name",
-        "close_on_complete": False,
-    }
-    configs = {
-        "tracking_uri": tracking_uri,
-        "experiment_name": experiment_name,
-        "run_name": run_name,
-        "save_execute_config": False,
-        "is_not_rank0": (
-            "$torch.distributed.is_available() and torch.distributed.is_initialized() "
-            "and torch.distributed.get_rank() > 0"
-        ),
-        # MLFlowHandler is constructed before DataLoader workers. Spawn avoids
-        # inheriting its client locks through fork.
-        "train#dataloader#multiprocessing_context": "spawn",
-        "validate#dataloader#multiprocessing_context": "spawn",
-        "trainer": {
-            **common,
-            "iteration_log": True,
-            "epoch_log": True,
-            "tag_name": "train_loss",
-            "output_transform": "$monai.handlers.from_engine(['loss'], first=True)",
-        },
-        "validator": {
-            **common,
-            "iteration_log": False,
-            "epoch_log": True,
-        },
-    }
-    unexpected = set(configs).difference(MLFLOW_TRACKING_CONFIG_KEYS)
-    if unexpected:
-        raise ValueError(f"tracking settings cannot override training: {sorted(unexpected)}")
-    return {
-        "handlers_id": {
-            "trainer": {"id": "train#trainer", "handlers": "train#handlers"},
-            "validator": {"id": "validate#evaluator", "handlers": "validate#handlers"},
-        },
-        "configs": configs,
-    }
-
-
-def prepare_live_mlflow_run(
+def build_mlflow_tracking_args(
     output_dir: Path,
     *,
     tracking_uri: str | None,
     experiment_name: str,
     requested_run_name: str | None,
-    preset: str,
-    mlflow_module: Any | None = None,
-) -> dict[str, Any]:
-    """Create the run once, then let MONAI stream into it by unique name."""
-    uri = tracking_uri or "databricks"
-    base_name = requested_run_name or f"nv-segment-ct-finetune:{preset}"
-    run_name = f"{base_name}-{time.strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}"
-    settings_path = output_dir / "mlflow_tracking_settings.json"
-    settings_path.write_text(
-        json.dumps(
-            build_monai_mlflow_tracking_settings(uri, experiment_name, run_name),
-            indent=2,
-        )
-    )
-    try:
-        if uri.startswith("file:"):
-            os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
-        if mlflow_module is None:
-            import mlflow as mlflow_module  # type: ignore[import-not-found,no-redef]
-
-        mlflow_module.set_tracking_uri(uri)
-        experiment = mlflow_module.set_experiment(experiment_name)
-        run = mlflow_module.MlflowClient(tracking_uri=uri).create_run(
-            experiment.experiment_id,
-            run_name=run_name,
-            tags={
-                "medical_ai_skills.skill_id": "medagent.nv_segment_ct_finetune",
-                "medical_ai_skills.not_clinical": "true",
-                "medical_ai_skills.tracking": "monai_live",
-            },
-        )
-    except Exception as exc:
-        return {
-            "enabled": True,
-            "mode": "databricks",
-            "status": "failed",
-            "tracking_uri": uri,
-            "experiment_name": experiment_name,
-            "run_name": run_name,
-            "run_id": None,
-            "live_tracking": False,
-            "tracking_settings_file": str(settings_path),
-            "run_status": None,
-            "error": f"{type(exc).__name__}: {exc}",
-        }
-    return {
-        "enabled": True,
-        "mode": "databricks",
-        "status": "ready",
+) -> tuple[list[str], dict[str, str]]:
+    """Use MONAI's built-in MLflow tracking configuration without patching training."""
+    uri = tracking_uri or (output_dir / "mlruns").resolve().as_uri()
+    metadata = {
         "tracking_uri": uri,
         "experiment_name": experiment_name,
-        "run_name": run_name,
-        "run_id": run.info.run_id,
-        "live_tracking": True,
-        "tracking_settings_file": str(settings_path),
-        "run_status": "RUNNING",
-        "error": None,
     }
-
-
-def log_finetune_summary_to_mlflow(
-    result: dict[str, Any],
-    output_dir: Path,
-    *,
-    mode: str,
-    tracking_uri: str | None = None,
-    experiment_name: str | None = None,
-    run_name: str | None = None,
-    live_run: dict[str, Any] | None = None,
-    final_status: str = "FINISHED",
-    mlflow_module: Any | None = None,
-) -> dict[str, Any] | None:
-    """Append a sanitized summary and finalize the selected MLflow run."""
-    if mode == "off":
-        return None
-    uri = (
-        live_run["tracking_uri"]
-        if live_run is not None
-        else tracking_uri
-        or ("databricks" if mode == "databricks" else (output_dir / "mlruns").resolve().as_uri())
-    )
-    selected_experiment = live_run["experiment_name"] if live_run else experiment_name
-    selected_run_name = (
-        live_run["run_name"]
-        if live_run
-        else run_name or f"nv-segment-ct-finetune:{result['plan'].get('preset')}"
-    )
-    selected_run_id = live_run["run_id"] if live_run else None
-
-    output = result["output"]
-    runtime = result["runtime"]
-    plan = result["plan"]
-    metric_candidates = {
-        "wall_seconds": runtime.get("wall_seconds"),
-        "peak_gpu_mb": runtime.get("peak_gpu_mb"),
-        "return_code": runtime.get("return_code"),
-        "training_start_val_dice": output.get("training_start_val_dice"),
-        "training_best_val_dice": output.get("training_best_val_dice"),
-        "formal_pretrained_val_dice": output.get("formal_pretrained_val_dice"),
-        "formal_finetuned_val_dice": output.get("formal_finetuned_val_dice"),
-        "formal_improvement_over_pretrained": output.get("formal_improvement_over_pretrained"),
-    }
-    metrics = {
-        key: float(value)
-        for key, value in metric_candidates.items()
-        if isinstance(value, (int, float)) and not isinstance(value, bool)
-    }
-    trajectory = [float(value) for value in output.get("val_dice_per_epoch", [])]
-    params = {
-        "preset": str(plan.get("preset")),
-        "epochs": str(plan.get("epochs")),
-        "learning_rate": str(plan.get("learning_rate")),
-        "patch_size": json.dumps(plan.get("patch_size")),
-        "nproc_per_node": str(plan.get("nproc_per_node")),
-    }
-    safe_summary = {
-        "skill": result["skill"],
-        "version": result.get("version"),
-        "plan": {
-            "preset": plan.get("preset"),
-            "epochs": plan.get("epochs"),
-            "learning_rate": plan.get("learning_rate"),
-            "patch_size": plan.get("patch_size"),
-            "nproc_per_node": plan.get("nproc_per_node"),
-        },
-        "metrics": metrics,
-        "val_dice_per_epoch": trajectory,
-    }
-
-    try:
-        if uri.startswith("file:"):
-            os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
-        if mlflow_module is None:
-            import mlflow as mlflow_module  # type: ignore[import-not-found,no-redef]
-
-        mlflow_module.set_tracking_uri(uri)
-        if selected_experiment:
-            mlflow_module.set_experiment(selected_experiment)
-        active_run = mlflow_module.start_run(
-            **({"run_id": selected_run_id} if selected_run_id else {"run_name": selected_run_name})
-        )
-        try:
-            mlflow_module.set_tags(
-                {
-                    "medical_ai_skills.skill_id": "medagent.nv_segment_ct_finetune",
-                    "medical_ai_skills.not_clinical": "true",
-                    "medical_ai_skills.intended_use": "engineering_verification",
-                    "medical_ai_skills.tracking": ("monai_live" if live_run else "post_run"),
-                }
-            )
-            mlflow_module.log_params(params)
-            if metrics:
-                mlflow_module.log_metrics(metrics)
-            if live_run is None:
-                for step, value in enumerate(trajectory):
-                    mlflow_module.log_metric("validation_dice", value, step=step)
-            mlflow_module.log_dict(
-                safe_summary,
-                "medical_ai_skills/finetune_summary.json",
-            )
-            run_id = active_run.info.run_id
-            mlflow_module.end_run(status=final_status)
-        except Exception:
-            mlflow_module.end_run(status="FAILED")
-            raise
-    except Exception as exc:
-        return {
-            "enabled": True,
-            "mode": mode,
-            "status": "failed",
-            "tracking_uri": uri,
-            "experiment_name": selected_experiment,
-            "run_name": selected_run_name,
-            "run_id": selected_run_id,
-            "live_tracking": live_run is not None,
-            "tracking_settings_file": (live_run["tracking_settings_file"] if live_run else None),
-            "run_status": "FAILED" if selected_run_id else None,
-            "error": f"{type(exc).__name__}: {exc}",
-        }
-    return {
-        "enabled": True,
-        "mode": mode,
-        "status": "logged",
-        "tracking_uri": uri,
-        "experiment_name": selected_experiment,
-        "run_name": selected_run_name,
-        "run_id": run_id,
-        "live_tracking": live_run is not None,
-        "tracking_settings_file": (live_run["tracking_settings_file"] if live_run else None),
-        "run_status": final_status,
-        "error": None,
-    }
+    args = [
+        "--tracking",
+        "mlflow",
+        "--tracking_uri",
+        uri,
+        "--experiment_name",
+        experiment_name,
+        "--save_execute_config",
+        "False",
+    ]
+    if requested_run_name:
+        args.extend(["--run_name", requested_run_name])
+        metadata["run_name"] = requested_run_name
+    return args, metadata
 
 
 def read_val_mean_dice(metrics_dir: Path) -> float | None:
@@ -1645,13 +1367,12 @@ def main(
         "--skip-formal-eval",
         help="Skip evaluate.json before/after scoring. Smoke always skips it.",
     ),
-    mlflow_mode: str = typer.Option(
-        "off",
-        "--mlflow-mode",
-        help="MLflow logging: off, local post-run, or databricks live.",
-    ),
     mlflow_tracking_uri: Optional[str] = typer.Option(None, "--mlflow-tracking-uri"),
-    mlflow_experiment_name: Optional[str] = typer.Option(None, "--mlflow-experiment-name"),
+    mlflow_experiment_name: Optional[str] = typer.Option(
+        None,
+        "--mlflow-experiment-name",
+        help="Enable MONAI-native MLflow tracking for this experiment.",
+    ),
     mlflow_run_name: Optional[str] = typer.Option(None, "--mlflow-run-name"),
 ) -> None:
     """Auto-configure and run the VISTA3D continual-learning finetune.
@@ -1671,11 +1392,9 @@ def main(
     the canonical sanity dataset.
     """
     t0 = time.perf_counter()
-    if mlflow_mode not in MLFLOW_MODES:
-        raise typer.BadParameter(f"--mlflow-mode must be one of: {', '.join(sorted(MLFLOW_MODES))}")
-    if mlflow_mode == "databricks" and not mlflow_experiment_name:
+    if mlflow_experiment_name is None and (mlflow_tracking_uri or mlflow_run_name):
         raise typer.BadParameter(
-            "--mlflow-experiment-name is required for Databricks live tracking."
+            "--mlflow-experiment-name is required when other MLflow options are set."
         )
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1864,7 +1583,7 @@ def main(
     formal_pre_cmd: list[str] | None = None
     formal_post_cmd: list[str] | None = None
     phase_peaks: dict[str, int] = {}
-    live_mlflow_run: dict[str, Any] | None = None
+    mlflow_tracking: dict[str, str] | None = None
 
     if formal_eval:
         pre_eval_dir = output_dir / "eval_pretrained"
@@ -1887,21 +1606,13 @@ def main(
         t_phase = time.perf_counter()
 
     train_extra_args: list[str] | None = None
-    if mlflow_mode == "databricks":
-        live_mlflow_run = prepare_live_mlflow_run(
+    if mlflow_experiment_name is not None:
+        train_extra_args, mlflow_tracking = build_mlflow_tracking_args(
             output_dir,
             tracking_uri=mlflow_tracking_uri,
-            experiment_name=str(mlflow_experiment_name),
+            experiment_name=mlflow_experiment_name,
             requested_run_name=mlflow_run_name,
-            preset=str(plan["preset"]),
         )
-        if live_mlflow_run["status"] == "ready":
-            train_extra_args = ["--tracking", live_mlflow_run["tracking_settings_file"]]
-        else:
-            sys.stderr.write(
-                "[nv_segment_ct_finetune] live MLflow setup failed; "
-                f"continuing without tracking: {live_mlflow_run['error']}\n"
-            )
 
     log_path = output_dir / "finetune.log"
     rc, train_peak, cmd = run_monai_bundle(
@@ -2054,10 +1765,7 @@ def main(
             "cwd": str(BUNDLE_DIR),
             "override_file": override_file,
             "no_logging_file": no_logging_file,
-            "mlflow_tracking_settings_file": (
-                live_mlflow_run["tracking_settings_file"] if live_mlflow_run else None
-            ),
-            "mlflow_live_tracking": bool(live_mlflow_run and live_mlflow_run["status"] == "ready"),
+            "mlflow_tracking": mlflow_tracking,
         },
         "output": {
             "finetuned_ckpt": str(finetune_ckpt) if finetune_ckpt.exists() else None,
@@ -2145,26 +1853,6 @@ def main(
             "described in NV-Segment-CT's finetune.md; it does not modify training."
         ),
     }
-    wrapper_failed = bool(
-        overall_rc != 0
-        or metrics["oom"]
-        or (sanity and not result["output"]["sanity_recovery_demonstrated"])
-    )
-    if live_mlflow_run is not None and live_mlflow_run["status"] == "failed":
-        mlflow_result = live_mlflow_run
-    else:
-        mlflow_result = log_finetune_summary_to_mlflow(
-            result,
-            output_dir,
-            mode=mlflow_mode,
-            tracking_uri=mlflow_tracking_uri,
-            experiment_name=mlflow_experiment_name,
-            run_name=mlflow_run_name,
-            live_run=live_mlflow_run,
-            final_status="FAILED" if wrapper_failed else "FINISHED",
-        )
-    if mlflow_result is not None:
-        result["mlflow"] = mlflow_result
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "output.json").write_text(json.dumps(result, indent=2))
     print(json.dumps(result, indent=2))
