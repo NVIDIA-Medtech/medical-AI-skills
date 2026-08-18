@@ -3,6 +3,12 @@
   "site": "synthetic-demo",
   "smoke_limit": 1,
   "fail_closed": true,
+  "llm": {
+    "backend": "openai",
+    "model": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4",
+    "base_url": "http://127.0.0.1:8080",
+    "api_key": "EMPTY"
+  },
   "publish": {
     "skip_upload": true,
     "repo_id": null

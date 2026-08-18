@@ -34,19 +34,29 @@ are missing.
 ## Fill these
 - study.json path (or create one from the template fixtures/study.json): <STUDY_JSON>
 - --out: <OUT_DIR>
-- --mode: mock | live     # live needs MR_RATE_ROOT, MR_RATE_REPORTS_ROOT, GPU
+- --mode: mock | live     # live needs MR_RATE_ROOT, MR_RATE_REPORTS_ROOT, GPU,
+                          # and a local OpenAI-compatible LLM server
 - --device: <DEVICE>       # live only
 - --mr-rate-root: <MR_RATE_ROOT>   # live only
+- Local report LLM (defaults — override only if needed):
+  - model: nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
+  - base_url: http://127.0.0.1:8080
+  - set in study.json "llm" block, or --model / --base-url, or
+    CURATION_LLM_MODEL / CURATION_LLM_BASE_URL
 
 ## Required behavior
-1. Run:
+1. For live mode, ensure the local LLM server is already serving Nemotron 3 Super 120B
+   (or your override) at llm.base_url before curation.
+2. Run:
    python skills/nv-curate-study/scripts/run_curate_study.py <STUDY_JSON> \
-     --mode <MODE> --out <OUT_DIR> [--device <DEVICE>] [--mr-rate-root <MR_RATE_ROOT>]
-2. Prefer live preflight first when mode=live:
+     --mode <MODE> --out <OUT_DIR> [--device <DEVICE>] [--mr-rate-root <MR_RATE_ROOT>] \
+     [--model nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4] \
+     [--base-url http://127.0.0.1:8080]
+3. Prefer live preflight first when mode=live:
    ... --preflight
-3. Keep publish.skip_upload true until I explicitly approve QC.
-4. Report join.status (matched/rejected), MRI/report out dirs, and blockers.
-5. If I later need a full tranche, switch to nv-curate-batch (it calls this skill).
+4. Keep publish.skip_upload true until I explicitly approve QC.
+5. Report join.status (matched/rejected), MRI/report out dirs, llm.model/base_url used, and blockers.
+6. If I later need a full tranche, switch to nv-curate-batch (it calls this skill).
 
 ## Hard rules
 - Engineering curation only — no clinical or regulatory claims.
@@ -79,16 +89,22 @@ Also skim skills/nv-curate-study/SKILL.md so you know the per-study contract.
 - --mode: mock | live
 - --smoke: <N>            # e.g. 5
 - --device / --mr-rate-root for live mode as needed
+- Local report LLM defaults (batch.json "llm" or CLI):
+  - model: nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
+  - base_url: http://127.0.0.1:8080
 
 ## Required behavior
 1. Ensure each studies[] entry is a study.json that nv-curate-study accepts.
-2. Run:
+2. For live mode, serve Nemotron 3 Super 120B (or override) at llm.base_url first.
+3. Run:
    python skills/nv-curate-batch/scripts/run_curate_batch.py <BATCH_JSON> \
-     --mode <MODE> --smoke <N> --out <OUT_DIR> [...]
-3. If smoke rejects and fail_closed is true, stop and fix before full batch.
-4. Deliver matched vs rejected lists, per-study summary paths under
-   <OUT_DIR>/studies/<study_uid>/, and publish.blocked status.
-5. Do not upload while skip_upload is true or rejects remain (fail_closed).
+     --mode <MODE> --smoke <N> --out <OUT_DIR> \
+     [--model nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4] \
+     [--base-url http://127.0.0.1:8080] [...]
+4. If smoke rejects and fail_closed is true, stop and fix before full batch.
+5. Deliver matched vs rejected lists, per-study summary paths under
+   <OUT_DIR>/studies/<study_uid>/, llm settings used, and publish.blocked status.
+6. Do not upload while skip_upload is true or rejects remain (fail_closed).
 
 ## Hard rules
 - Composition only: batch → nv-curate-study → (live) nv-curate-mri + nv-curate.

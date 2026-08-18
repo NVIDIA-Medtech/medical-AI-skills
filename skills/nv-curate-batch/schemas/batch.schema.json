@@ -9,6 +9,22 @@
     "site": {"type": "string"},
     "smoke_limit": {"type": "integer", "minimum": 0},
     "fail_closed": {"type": "boolean", "default": true},
+    "llm": {
+      "type": "object",
+      "description": "Local OpenAI-compatible report LLM applied to every study (default: Nemotron 3 Super 120B)",
+      "properties": {
+        "backend": {"type": "string", "default": "openai"},
+        "model": {
+          "type": "string",
+          "default": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4"
+        },
+        "base_url": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080"
+        },
+        "api_key": {"type": "string", "default": "EMPTY"}
+      }
+    },
     "publish": {
       "type": "object",
       "properties": {

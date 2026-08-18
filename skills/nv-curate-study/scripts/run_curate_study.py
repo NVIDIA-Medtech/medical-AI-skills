@@ -22,9 +22,43 @@ SKILLS_DIR = Path(__file__).resolve().parents[2]
 NV_CURATE = SKILLS_DIR / "nv-curate" / "scripts" / "nv_curate.py"
 NV_CURATE_MRI = SKILLS_DIR / "nv-curate-mri" / "scripts" / "run_mri_pipeline.py"
 
+# Default local report LLM: Nemotron 3 Super 120B (NVFP4) behind an OpenAI-compatible
+# server. Upstream MR-RATE report stages default --base_url to http://127.0.0.1:8080.
+DEFAULT_LLM_MODEL = "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4"
+DEFAULT_LLM_BASE_URL = "http://127.0.0.1:8080"
+
 
 def log(msg: str) -> None:
     print(f"[{SKILL_NAME}] {msg}", file=sys.stderr, flush=True)
+
+
+def resolve_llm(cfg: dict, model_cli: str | None = None, base_url_cli: str | None = None) -> dict:
+    """Resolve local LLM settings. CLI overrides study.json; study.json overrides defaults."""
+    import os
+
+    llm = dict(cfg.get("llm") or {})
+    reports = cfg.get("reports") or {}
+    model = (
+        model_cli
+        or llm.get("model")
+        or reports.get("model")
+        or os.environ.get("CURATION_LLM_MODEL")
+        or DEFAULT_LLM_MODEL
+    )
+    base_url = (
+        base_url_cli
+        or llm.get("base_url")
+        or reports.get("base_url")
+        or os.environ.get("CURATION_LLM_BASE_URL")
+        or DEFAULT_LLM_BASE_URL
+    )
+    api_key = llm.get("api_key") or os.environ.get("CURATION_LLM_API_KEY") or "EMPTY"
+    return {
+        "model": model,
+        "base_url": base_url,
+        "api_key": api_key,
+        "backend": llm.get("backend") or "openai",
+    }
 
 
 def load_study(path: Path) -> dict:
@@ -39,6 +73,10 @@ def load_study(path: Path) -> dict:
     cfg.setdefault("publish", {})
     cfg["publish"].setdefault("skip_upload", True)
     cfg.setdefault("mri", {})
+    cfg.setdefault("llm", {})
+    cfg["llm"].setdefault("model", DEFAULT_LLM_MODEL)
+    cfg["llm"].setdefault("base_url", DEFAULT_LLM_BASE_URL)
+    cfg["llm"].setdefault("backend", "openai")
     cfg["_config_dir"] = str(path.resolve().parent)
     return cfg
 
@@ -198,7 +236,7 @@ def run_reports_mock(cfg: dict, out_dir: Path) -> dict:
     return summary
 
 
-def run_reports(cfg: dict, out_dir: Path, mode: str) -> dict:
+def run_reports(cfg: dict, out_dir: Path, mode: str, llm: dict | None = None) -> dict:
     if mode == "mock":
         # Prefer real nv-curate when its stage entrypoints exist; else local stub.
         anon_entry = SKILLS_DIR / "report-anonymization" / "scripts" / "run_anonymization.py"
@@ -212,6 +250,7 @@ def run_reports(cfg: dict, out_dir: Path, mode: str) -> dict:
     if ds is None or not ds.exists():
         raise FileNotFoundError(f"reports.datasources not found: {cfg['reports']['datasources']}")
 
+    llm = llm or resolve_llm(cfg)
     reports_out = out_dir / "reports"
     reports_out.mkdir(parents=True, exist_ok=True)
     cmd = [
@@ -224,6 +263,8 @@ def run_reports(cfg: dict, out_dir: Path, mode: str) -> dict:
         mode,
         "--out",
         str(reports_out),
+        "--model",
+        llm["model"],
     ]
     limit = int(cfg["reports"].get("limit") or 0)
     if limit > 0:
@@ -231,8 +272,21 @@ def run_reports(cfg: dict, out_dir: Path, mode: str) -> dict:
     if mode == "mock" and limit <= 0:
         cmd += ["--limit", "1"]
 
-    result = run_json(cmd)
+    import os
+
+    env = os.environ.copy()
+    # Upstream MR-RATE stages read --base_url (default 127.0.0.1:8080). Export so
+    # wrappers / future passthrough can pick the same local endpoint.
+    env["CURATION_LLM_MODEL"] = llm["model"]
+    env["CURATION_LLM_BASE_URL"] = llm["base_url"]
+    env.setdefault("OPENAI_BASE_URL", llm["base_url"])
+    if llm.get("api_key"):
+        env.setdefault("OPENAI_API_KEY", str(llm["api_key"]))
+
+    log(f"report LLM: model={llm['model']} base_url={llm['base_url']}")
+    result = run_json(cmd, env=env)
     result["out_dir"] = str(reports_out)
+    result["llm"] = {"model": llm["model"], "base_url": llm["base_url"], "backend": llm["backend"]}
     return result
 
 
@@ -283,6 +337,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default="0")
     p.add_argument("--preflight", action="store_true", help="MRI preflight only (live)")
     p.add_argument("--mr-rate-root", default=None)
+    p.add_argument(
+        "--model",
+        default=None,
+        help=f"Local/report LLM id (default: {DEFAULT_LLM_MODEL})",
+    )
+    p.add_argument(
+        "--base-url",
+        default=None,
+        help=f"OpenAI-compatible local server URL (default: {DEFAULT_LLM_BASE_URL})",
+    )
     return p
 
 
@@ -294,6 +358,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         cfg = load_study(args.study_json)
+        llm = resolve_llm(cfg, model_cli=args.model, base_url_cli=args.base_url)
         mri = run_mri(cfg, out_dir, args.mode, args.device, args.preflight, args.mr_rate_root)
         if args.preflight and args.mode == "live":
             summary = {
@@ -301,6 +366,7 @@ def main(argv: list[str] | None = None) -> int:
                 "study_uid": cfg["study_uid"],
                 "mode": args.mode,
                 "action": "preflight",
+                "llm": llm,
                 "mri": mri,
                 "reports": {"status": "skipped"},
                 "join": {"status": "rejected", "reason": "preflight_only"},
@@ -315,7 +381,7 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(summary))
             return 0
 
-        reports = run_reports(cfg, out_dir, args.mode)
+        reports = run_reports(cfg, out_dir, args.mode, llm=llm)
         join = join_sides(cfg, mri, reports)
         skip = bool((cfg.get("publish") or {}).get("skip_upload", True))
         blocked = skip or join["status"] != "matched"
@@ -324,6 +390,11 @@ def main(argv: list[str] | None = None) -> int:
             "study_uid": cfg["study_uid"],
             "mode": args.mode,
             "action": "curate",
+            "llm": {
+                "model": llm["model"],
+                "base_url": llm["base_url"],
+                "backend": llm["backend"],
+            },
             "mri": {
                 "status": mri.get("status"),
                 "out_dir": mri.get("out_dir"),

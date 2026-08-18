@@ -37,9 +37,36 @@ metadata:
   [`nv-curate-batch`](../nv-curate-batch/SKILL.md) (calls the study skill).
   Copy-paste prompts: [`docs/prompts/mr-rate-ingest.md`](../../docs/prompts/mr-rate-ingest.md).
 
-- Default `--mode mock` is deterministic and GPU-free (each stage uses its skill's mock path). Use `--mode live` for real de-identification/translation/structuring/labeling with the upstream vLLM models (needs a CUDA GPU and `$MR_RATE_REPORTS_ROOT`).
+- Default `--mode mock` is deterministic and GPU-free (each stage uses its skill's mock path). Use `--mode live` for real de-identification/translation/structuring/labeling against a **local** OpenAI-compatible LLM (default: Nemotron 3 Super 120B `nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`; needs that model served locally plus `$MR_RATE_REPORTS_ROOT`).
 - After a `curate`/`finetune` run, audit each stage's evidence pack under `<out>/stages/<step>` with that stage's paired verifier (`report_anonymization_quality_v1`, `report_translation_quality_v1`, `report_structuring_quality_v1`, `report_pathology_quality_v1`).
 - The image track (diffusion finetune) requires NIfTI volumes in `raw_data` named/keyed by `study_uid`. Without them, the curated dataset is the analysis track (reports + labels) and the finetune hand-off is reported not-ready — do not fabricate a finetune.
+
+## Configure the local report LLM (default: Nemotron 3 Super 120B)
+
+Live mode expects a local OpenAI-compatible server. Preferred defaults:
+
+| Setting | Default |
+|---|---|
+| `--model` / `pipeline.model` | `nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` |
+| Upstream stage `--base_url` | `http://127.0.0.1:8080` (MR-RATE `pipeline_common` default) |
+
+In `datasources.json`:
+
+```json
+"pipeline": {
+  "steps": ["anonymize", "translate", "structure", "classify"],
+  "mode": "live",
+  "model": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4"
+}
+```
+
+Serve first, then curate:
+
+```bash
+vllm serve nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4 --port 8080
+```
+
+End-to-end ingest skills (`nv-curate-study` / `nv-curate-batch`) expose the same defaults via their `llm` block and `--model` / `--base-url` flags.
 
 ## Available Scripts
 | Script | Purpose | Arguments |
@@ -48,13 +75,15 @@ metadata:
 
 ## Prerequisites
 - `--mode mock` (default): Python 3.10+ only — no GPU, no network, no extra packages.
-- `--mode live`: a CUDA GPU, `vllm`, the configured vLLM model, and `$MR_RATE_REPORTS_ROOT` pointing at the `reports_preprocessing` directory.
+- `--mode live`: a CUDA GPU host serving the configured local LLM (default Nemotron 3 Super 120B), `vllm` or another OpenAI-compatible server, and `$MR_RATE_REPORTS_ROOT` pointing at the `reports_preprocessing` directory.
 - The four sibling stage skills must be present in the same `skills/` directory.
 
 | Variable | Mode | Purpose |
 |---|---|---|
 | `MR_RATE_REPORTS_ROOT` | live | Path to `reports_preprocessing` for upstream-script lookup (passed through to each stage). |
 | `CUDA_VISIBLE_DEVICES` | live | GPU selection passed through to each stage (e.g. `1`). |
+| `CURATION_LLM_MODEL` | live | Optional override for the local model id (study/batch skills). |
+| `CURATION_LLM_BASE_URL` | live | Optional override for the OpenAI-compatible base URL (study/batch skills). |
 
 ## Usage
 
@@ -79,7 +108,7 @@ python skills/nv-curate/scripts/nv_curate.py skills/nv-curate/fixtures/datasourc
   --action finetune --out runs/nv_curate_finetune
 ```
 
-Live end-to-end on real data (run from the vLLM env):
+Live end-to-end on real data (local Nemotron 3 Super 120B already served):
 
 ```bash
 MR_RATE_REPORTS_ROOT=/path/to/reports_preprocessing \

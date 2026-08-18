@@ -16,6 +16,9 @@ SKILL_NAME = "nv-curate-batch"
 SKILLS_DIR = Path(__file__).resolve().parents[2]
 STUDY_ENTRY = SKILLS_DIR / "nv-curate-study" / "scripts" / "run_curate_study.py"
 
+DEFAULT_LLM_MODEL = "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4"
+DEFAULT_LLM_BASE_URL = "http://127.0.0.1:8080"
+
 
 def log(msg: str) -> None:
     print(f"[{SKILL_NAME}] {msg}", file=sys.stderr, flush=True)
@@ -33,8 +36,29 @@ def load_batch(path: Path) -> dict:
     cfg["publish"].setdefault("skip_upload", True)
     cfg.setdefault("fail_closed", True)
     cfg.setdefault("smoke_limit", 0)
+    cfg.setdefault("llm", {})
+    cfg["llm"].setdefault("model", DEFAULT_LLM_MODEL)
+    cfg["llm"].setdefault("base_url", DEFAULT_LLM_BASE_URL)
+    cfg["llm"].setdefault("backend", "openai")
     cfg["_config_dir"] = str(path.resolve().parent)
     return cfg
+
+
+def resolve_llm(cfg: dict, model_cli: str | None = None, base_url_cli: str | None = None) -> dict:
+    import os
+
+    llm = dict(cfg.get("llm") or {})
+    return {
+        "model": model_cli
+        or llm.get("model")
+        or os.environ.get("CURATION_LLM_MODEL")
+        or DEFAULT_LLM_MODEL,
+        "base_url": base_url_cli
+        or llm.get("base_url")
+        or os.environ.get("CURATION_LLM_BASE_URL")
+        or DEFAULT_LLM_BASE_URL,
+        "backend": llm.get("backend") or "openai",
+    }
 
 
 def materialize_study(item, config_dir: Path, work: Path, idx: int) -> tuple[str, Path]:
@@ -94,6 +118,7 @@ def run_one_study(
     mode: str,
     device: str,
     mr_rate_root: str | None,
+    llm: dict | None = None,
 ) -> dict:
     if not STUDY_ENTRY.exists():
         raise FileNotFoundError(
@@ -114,6 +139,8 @@ def run_one_study(
     ]
     if mr_rate_root:
         cmd += ["--mr-rate-root", mr_rate_root]
+    if llm:
+        cmd += ["--model", llm["model"], "--base-url", llm["base_url"]]
     log(" ".join(cmd))
     proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if proc.stderr:
@@ -147,6 +174,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--smoke", type=int, default=None, help="override batch.smoke_limit")
     p.add_argument("--device", default="0")
     p.add_argument("--mr-rate-root", default=None)
+    p.add_argument(
+        "--model",
+        default=None,
+        help=f"Local/report LLM id passed to each study (default: {DEFAULT_LLM_MODEL})",
+    )
+    p.add_argument(
+        "--base-url",
+        default=None,
+        help=f"OpenAI-compatible local server URL (default: {DEFAULT_LLM_BASE_URL})",
+    )
     return p
 
 
@@ -158,6 +195,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         cfg = load_batch(args.batch_json)
+        llm = resolve_llm(cfg, model_cli=args.model, base_url_cli=args.base_url)
         config_dir = Path(cfg["_config_dir"])
         smoke_n = args.smoke if args.smoke is not None else int(cfg.get("smoke_limit") or 0)
 
@@ -178,7 +216,9 @@ def main(argv: list[str] | None = None) -> int:
                 uid, study_path = studies_meta[i]
                 study_out = out_dir / "studies" / uid
                 log(f"{phase}: {uid}")
-                result = run_one_study(study_path, study_out, args.mode, args.device, args.mr_rate_root)
+                result = run_one_study(
+                    study_path, study_out, args.mode, args.device, args.mr_rate_root, llm=llm
+                )
                 per_study[uid] = result
                 join_status = (result.get("join") or {}).get("status")
                 rec = {
@@ -193,6 +233,7 @@ def main(argv: list[str] | None = None) -> int:
                 else:
                     rejected.append(rec)
 
+        log(f"batch LLM: model={llm['model']} base_url={llm['base_url']}")
         if smoke_idx:
             process(smoke_idx, "smoke")
             smoke_rejects = [r for r in rejected if r["phase"] == "smoke"]
@@ -201,6 +242,7 @@ def main(argv: list[str] | None = None) -> int:
                     "skill": SKILL_NAME,
                     "batch_id": cfg["batch_id"],
                     "mode": args.mode,
+                    "llm": llm,
                     "n_studies": len(studies_meta),
                     "n_matched": len(matched),
                     "n_rejected": len(rejected),
@@ -231,6 +273,7 @@ def main(argv: list[str] | None = None) -> int:
             "skill": SKILL_NAME,
             "batch_id": cfg["batch_id"],
             "mode": args.mode,
+            "llm": llm,
             "n_studies": len(studies_meta),
             "n_matched": len(matched),
             "n_rejected": len(rejected),

@@ -22,7 +22,26 @@
       "required": ["datasources"],
       "properties": {
         "datasources": {"type": "string"},
-        "limit": {"type": "integer", "minimum": 0}
+        "limit": {"type": "integer", "minimum": 0},
+        "model": {"type": "string", "description": "Deprecated alias; prefer top-level llm.model"}
+      }
+    },
+    "llm": {
+      "type": "object",
+      "description": "Local OpenAI-compatible report LLM (default: Nemotron 3 Super 120B)",
+      "properties": {
+        "backend": {"type": "string", "default": "openai"},
+        "model": {
+          "type": "string",
+          "default": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4",
+          "description": "Model id as the local server knows it (default Nemotron 3 Super 120B NVFP4)"
+        },
+        "base_url": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080",
+          "description": "OpenAI-compatible endpoint (vllm serve / llama-server / Ollama /v1)"
+        },
+        "api_key": {"type": "string", "default": "EMPTY"}
       }
     },
     "publish": {
