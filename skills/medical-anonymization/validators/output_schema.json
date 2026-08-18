@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MedicalAnonymizationOutput",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "skill",
+    "input_kind",
+    "phi_scope_disclaimer",
+    "telemetry",
+    "artifacts"
+  ],
+  "properties": {
+    "skill": {"type": "string", "const": "medical-anonymization"},
+    "input": {"type": "string"},
+    "input_kind": {
+      "type": "string",
+      "enum": ["text", "csv", "dicom-metadata-csv"]
+    },
+    "text_strategies_available": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "structured_actions_available": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "text_strategy": {"type": "string"},
+    "n_records": {"type": "integer", "minimum": 0},
+    "n_audit_events": {"type": "integer", "minimum": 0},
+    "policy": {"type": "string"},
+    "phi_scope_disclaimer": {"type": "string"},
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "wall_seconds": {
+          "type": "object",
+          "properties": {
+            "total": {"type": "number"}
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "run_report_json": {"type": "string"},
+        "deidentified_metadata_jsonl": {"type": "string"},
+        "audit_jsonl": {"type": "string"},
+        "deidentified_metadata_flat_csv": {"type": "string"},
+        "anonymized_csv": {"type": "string"},
+        "anonymized_text_txt": {"type": "string"}
+      }
+    }
+  }
+}

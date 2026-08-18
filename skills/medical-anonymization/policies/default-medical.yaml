@@ -1,0 +1,125 @@
+# Default medical data anonymization policy.
+# Not a regulatory de-identification profile — tune per deployment.
+
+text:
+  # NeMo Anonymizer replace strategies: redact | substitute | annotate | hash | rewrite
+  strategy: redact
+  redact_template: "[{label}]"
+  entity_labels:
+    - patient
+    - patient_mrn
+    - doctor
+    - date_of_birth
+    - age
+    - sex
+    - date
+    - accession_number
+    - institution
+    - phone
+    - email
+    - address
+  data_summary: >
+    English clinical text: radiology reports, EHR notes, discharge summaries,
+    pathology reports. PHI includes names, MRNs, dates, ages, addresses, phone
+    numbers, physician names, and facility identifiers.
+
+structured:
+  # Actions on CSV columns (non-text or pre-classified): keep | drop | redact | hash | uid_remap | date_shift | bucket
+  default_action: keep
+  columns:
+    patient_mrn: { action: hash }
+    patient_uid: { action: hash }
+    PatientID: { action: hash }
+    PatientName: { action: redact, template: "[PATIENT]" }
+    AccessionNumber: { action: redact, template: "[ACCESSION]" }
+    StudyInstanceUID: { action: uid_remap }
+    SeriesInstanceUID: { action: uid_remap }
+    SOPInstanceUID: { action: uid_remap }
+    FrameofReferenceUID: { action: uid_remap }
+    InstanceCreatorUID: { action: uid_remap }
+    IrradiationEventUID: { action: uid_remap }
+    study_uid: { action: uid_remap }
+    StudyDate: { action: date_shift }
+    PatientBirthDate: { action: date_shift }
+    AcquisitionDate: { action: date_shift }
+    AcquisitionDateTime: { action: date_shift }
+    ContentDate: { action: date_shift }
+    AdmittingDate: { action: date_shift }
+    anon_study_date: { action: keep }
+    Patient'sAge: { action: bucket }
+    Patient'sSex: { action: keep }
+
+dicom_metadata:
+  default_action: keep
+  private_tag_prefixes: ["[private]", "Privatetagdata", "Tag_"]
+  private_tags_action: drop
+  field_classes:
+    direct_identifier:
+      action: redact
+      template: "[{field}]"
+      fields:
+        - PatientName
+        - PatientID
+        - OtherPatientIDs
+        - OtherPatientNames
+        - PatientAddress
+        - PatientTelephoneNumbers
+        - ReferringPhysicianName
+        - PerformingPhysicianName
+        - OperatorsName
+        - Operators'Name
+        - InstitutionName
+        - InstitutionAddress
+        - InstitutionalDepartmentName
+        - AccessionNumber
+        - PatientBirthDate
+        - StationName
+        - ContentCreator'sName
+        - DeviceSerialNumber
+    linkable_identifier:
+      action: uid_remap
+      fields:
+        - StudyInstanceUID
+        - SeriesInstanceUID
+        - SOPInstanceUID
+        - FrameofReferenceUID
+        - InstanceCreatorUID
+        - IrradiationEventUID
+        - study_uid
+        - patient_uid
+    date:
+      action: date_shift
+      fields:
+        - StudyDate
+        - SeriesDate
+        - AcquisitionDate
+        - AcquisitionDateTime
+        - ContentDate
+        - AdmittingDate
+        - InstanceCreationDate
+        - CurveDate
+        - OverlayDate
+        - IssueDateofImagingServiceRequest
+        - LastMenstrualDate
+        - anon_study_date
+    free_text:
+      action: redact
+      template: "[REDACTED_TEXT]"
+      fields:
+        - StudyDescription
+        - SeriesDescription
+        - StudyComments
+        - CommentsonthePerformedProcedureStep
+        - PatientComments
+        - AdditionalPatientHistory
+        - AdmittingDiagnosesDescription
+        - RequestedProcedureDescription
+        - PerformedProcedureStepDescription
+        - ProtocolName
+        - ImageComments
+        - OverlayDescription
+        - AcquisitionDeviceProcessingDescription
+        - DerivationDescription
+        - DetectorDescription
+        - ExposureControlModeDescription
+        - ClinicalTrialTimePointDescription
