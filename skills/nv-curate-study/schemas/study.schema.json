@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NvCurateStudyConfig",
+  "type": "object",
+  "required": ["study_uid", "reports"],
+  "additionalProperties": true,
+  "properties": {
+    "study_uid": {"type": "string", "minLength": 1},
+    "join_key": {"type": "string", "default": "study_uid"},
+    "batch_id": {"type": "string"},
+    "mri": {
+      "type": "object",
+      "properties": {
+        "fixtures": {"type": "string"},
+        "mr_rate_root": {"type": "string"},
+        "device": {"type": "string"},
+        "skip": {"type": "boolean"}
+      }
+    },
+    "reports": {
+      "type": "object",
+      "required": ["datasources"],
+      "properties": {
+        "datasources": {"type": "string"},
+        "limit": {"type": "integer", "minimum": 0}
+      }
+    },
+    "publish": {
+      "type": "object",
+      "properties": {
+        "skip_upload": {"type": "boolean", "default": true},
+        "repo_id": {"type": "string"}
+      }
+    }
+  }
+}

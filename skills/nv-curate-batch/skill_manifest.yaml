@@ -1,0 +1,82 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+id: medagent.nv_curate_batch
+version: 0.1.0
+upstream_refs:
+  - kind: skill_pack
+    name: nv-curate-study
+    revision: monorepo-local
+    notes: Invoked once per study; batch does not reimplement MRI/report stages.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Curate a batch of MRI studies and associated reports for MR-RATE by calling
+    nv-curate-study per study, with smoke-cohort and reject-list aggregation.
+  scope: development
+  not_for:
+    - clinical deployment
+    - regulatory de-identification
+    - autonomous diagnosis
+    - patient-facing use
+inputs:
+  - name: batch_json
+    type: file_path
+    formats: [json]
+    description: batch.json listing studies (schema in schemas/batch.schema.json).
+outputs:
+  - name: batch_curation_summary
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_curate_batch.py
+  args:
+    - "${python}"
+    - "${script}"
+    - "${fixture}"
+    - "--out"
+    - "${out}"
+    - "--mode"
+    - "mock"
+  env_optional: [MR_RATE_ROOT, MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes:
+      - {path: "<out>/studies", approx_mb_max: 2000, optional: false}
+      - {path: "<out>/summary.json", approx_mb_max: 10, optional: false}
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    gpu_fallback: mock
+    env_optional: [MR_RATE_ROOT, MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+paired_verifiers: []
+limitations:
+  - Delegates all per-study work to nv-curate-study.
+  - Publish remains blocked while skip_upload is true or fail_closed rejects remain.
+phi_scope_disclaimer: >
+  Orchestrates per-study curation wrappers. Mock mode is not a regulatory
+  de-identifier. Review matched outputs before sharing.
+validation:
+  expected_runtime_seconds:
+    max: 600.0
+    inference_path: runtime.elapsed_seconds
+  sanity_checks:
+    - {path: skill, eq: nv-curate-batch}
+    - {path: mode, eq: mock}
+    - {path: n_matched, gt: 0}
+    - {path: publish.blocked, eq: true}
+  expected_cost:
+    wall_seconds: {max: 600}
+    gpu_seconds: {max: 0}
+    gpu_memory_mb_peak: {max: 0}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/batch.json
+    runs: 2
+    ignore_paths:
+      - "runtime\\.elapsed_seconds"
+      - "studies\\."

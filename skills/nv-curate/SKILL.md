@@ -32,6 +32,11 @@ metadata:
 | "Extract, de-identify, translate, structure, and save it to TARGET" | `--action curate` | Runs the 4 transform stages on the configured raw data and assembles the AI-ready datalist. |
 | "Use nv-curate to retrieve and transform DATA and fine-tune the MR-brain diffusion model" | `--action finetune` | Runs `curate`, builds the MONAI datalist, and reports hand-off readiness for `nv-generate-mr-brain-finetune`. |
 
+- For end-to-end **MR-RATE database ingest** of one study (MRI + report), use
+  [`nv-curate-study`](../nv-curate-study/SKILL.md). For a tranche, use
+  [`nv-curate-batch`](../nv-curate-batch/SKILL.md) (calls the study skill).
+  Copy-paste prompts: [`docs/prompts/mr-rate-ingest.md`](../../docs/prompts/mr-rate-ingest.md).
+
 - Default `--mode mock` is deterministic and GPU-free (each stage uses its skill's mock path). Use `--mode live` for real de-identification/translation/structuring/labeling with the upstream vLLM models (needs a CUDA GPU and `$MR_RATE_REPORTS_ROOT`).
 - After a `curate`/`finetune` run, audit each stage's evidence pack under `<out>/stages/<step>` with that stage's paired verifier (`report_anonymization_quality_v1`, `report_translation_quality_v1`, `report_structuring_quality_v1`, `report_pathology_quality_v1`).
 - The image track (diffusion finetune) requires NIfTI volumes in `raw_data` named/keyed by `study_uid`. Without them, the curated dataset is the analysis track (reports + labels) and the finetune hand-off is reported not-ready — do not fabricate a finetune.

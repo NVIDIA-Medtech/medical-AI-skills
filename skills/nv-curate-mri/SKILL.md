@@ -68,6 +68,12 @@ The wrapper prints exactly one JSON object on stdout (conforming to
 `0` means aligned/success; non-zero means a misaligned environment or an upstream
 failure.
 
+For end-to-end **MR-RATE database ingest**, prefer
+[`nv-curate-study`](../nv-curate-study/SKILL.md) (one study) or
+[`nv-curate-batch`](../nv-curate-batch/SKILL.md) (tranche; calls study skill).
+Those compose this skill with `nv-curate`. Copy-paste prompts:
+[`docs/prompts/mr-rate-ingest.md`](../../docs/prompts/mr-rate-ingest.md).
+
 ## Available Scripts
 
 | Script | Purpose | Arguments |

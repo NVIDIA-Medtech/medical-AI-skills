@@ -1,0 +1,16 @@
+{
+  "study_uid": "MR-0002",
+  "batch_id": "fixture-batch",
+  "join_key": "study_uid",
+  "mri": {
+    "skip": true
+  },
+  "reports": {
+    "datasources": "datasources.json",
+    "limit": 1
+  },
+  "publish": {
+    "skip_upload": true
+  },
+  "allow_single_fixture_join": true
+}

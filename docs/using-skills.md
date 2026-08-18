@@ -81,6 +81,17 @@ cd examples/evidence_packs/dicom_metadata_pass && ./replay.sh
 
 See [`replay.md`](replay.md) for pack file names.
 
+## MR-RATE ingest (copy-paste agent prompts)
+
+Use the two composing skills (not ad-hoc stage wiring):
+
+| Goal | Skill |
+|---|---|
+| One MRI + report | [`nv-curate-study`](../skills/nv-curate-study/SKILL.md) |
+| Batch / tranche | [`nv-curate-batch`](../skills/nv-curate-batch/SKILL.md) (calls study skill per study) |
+
+Ready-to-paste prompts: [`prompts/mr-rate-ingest.md`](prompts/mr-rate-ingest.md).
+
 ## Safety
 
 - Do not use patient-identifiable data in public issues or PRs.

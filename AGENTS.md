@@ -30,6 +30,9 @@ MVP scaffolding; `spec/` is draft, not a released package API.
 - `ARCHITECTURE.md`: object model, gate ladder, directory boundaries.
 - `CONTRIBUTING.md`: authoring lanes and review rules.
 - `docs/using-skills.md`: discover and run skills with local data.
+- `docs/prompts/mr-rate-ingest.md`: copy-paste prompts for `nv-curate-study` / `nv-curate-batch`.
+- `skills/nv-curate-study/`: curate one MRI + report for MR-RATE.
+- `skills/nv-curate-batch/`: curate a tranche by calling `nv-curate-study` per study.
 - `docs/authoring-skills.md`: add a publishable wrapper skill.
 - `docs/skill-scope.md`: what belongs in the public skill catalog.
 - `docs/trust-and-evidence.md`: manifests, packs, replay, verifiers.
