@@ -3,13 +3,7 @@ name: medtech-model-evidence-export
 description: Exports sanitized metadata, parameters, reproducibility details, quality metrics, and optional review artifacts from Medical AI inference runs or evidence packs to MLflow. Use after inference, including NV-Generate runs; not for live training tracking, model registration, or clinical use.
 license: Apache-2.0
 allowed-tools: Bash
-metadata:
-  permissions:
-    - env
-    - file_read
-    - file_write
-    - network
-    - shell
+permissions: [env, file_read, file_write, network, shell]
 ---
 
 # Medtech Model Evidence Export to MLflow
