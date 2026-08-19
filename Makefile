@@ -35,14 +35,14 @@ B ?=
 COMPARE_OUT ?=
 AUDIT_OUT ?= runs/audit_$(SKILL)
 ACTION ?=
-NV_BASE ?= nv-base
-NV_BASE_OUT ?= /tmp/medical-AI-skills-nvbase
-NV_BASE_FLAGS ?= --no-dedup -c
-NV_BASE_REQUIRE_SKILLSPECTOR ?= 1
+SKILL_EVALUATOR ?= skillevaluator
+SKILL_EVALUATOR_OUT ?= /tmp/medical-AI-skills-skillevaluator
+SKILL_EVALUATOR_REPORTS ?= json,markdown
+SKILL_EVALUATOR_FLAGS ?= --external --no-dedup -c --min-score 70
 
 WORKFLOW_CT_SEG ?= examples/workflows/ct_dicom_to_segmentation_evidence.yaml
 WORKFLOW_CT_SEG_OUT ?= runs/ct_dicom_seg_evidence
-.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without invariants-with-vs-without check-invariants-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study nv-base-check nv-base-validate validate-skills-internal list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix copyright copyright-check
+.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without invariants-with-vs-without check-invariants-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study skill-evaluator-check skill-evaluator-validate validate-skills-external nv-base-check nv-base-validate validate-skills-internal list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix copyright copyright-check
 
 help:
 	@echo "Targets:"
@@ -88,9 +88,9 @@ help-all:
 	@echo "  validate-skill SCENARIO=<path> [VALIDATE_SKILL_OUT=<dir>]   paired with/without skill behavior eval (v0: mock backend)"
 	@echo "  verify-skills                                           audit every skill/verifier + repeat reproducibility checks"
 	@echo "  verify-reproducibility                                  run manifest-declared repeat/preflight reproducibility audit"
-	@echo "  nv-base-check                                           verify nv-base is available on PATH or via NV_BASE"
-	@echo "  nv-base-validate [NV_BASE=/path/to/nv-base]             run internal NV-BASE skill profile"
-	@echo "  validate-skills-internal                                alias for nv-base-validate"
+	@echo "  skill-evaluator-check                                   verify the public skillevaluator CLI is available"
+	@echo "  skill-evaluator-validate [SKILL_EVALUATOR=/path/to/skillevaluator]   run the public external publication preflight"
+	@echo "  validate-skills-external                                alias for skill-evaluator-validate"
 	@echo "  --- Trust ---"
 	@echo "  verify                                                  smoke-test evidence harness (lint + canonical pack diff)"
 	@echo "  verify-negative-fixtures                                run every manifest-declared negative fixture"
@@ -118,6 +118,10 @@ help-all:
 	@echo "  lint                                                    structural + doc lints"
 	@echo "  test                                                    pytest (eval_engine + skills + verifiers + with-vs-without harness)"
 	@echo "  clean-runs                                              remove local generated runs"
+	@echo "  --- Deprecated compatibility aliases ---"
+	@echo "  nv-base-check                                           deprecated alias for skill-evaluator-check"
+	@echo "  nv-base-validate                                        deprecated alias for skill-evaluator-validate"
+	@echo "  validate-skills-internal                                deprecated alias for skill-evaluator-validate"
 
 help-run:
 	@echo "Run targets:"
@@ -134,9 +138,10 @@ help-author:
 	@echo "  validate-skill SCENARIO=<path> [VALIDATE_SKILL_OUT=<dir>]   paired with/without skill behavior eval (v0: mock backend)"
 	@echo "  verify-skills                                           audit every skill/verifier + repeat reproducibility checks"
 	@echo "  verify-reproducibility                                  run manifest-declared repeat/preflight reproducibility audit"
-	@echo "  nv-base-check                                           verify nv-base is available on PATH or via NV_BASE"
-	@echo "  nv-base-validate [NV_BASE=/path/to/nv-base]             run internal NV-BASE skill profile"
-	@echo "  validate-skills-internal                                alias for nv-base-validate"
+	@echo "  skill-evaluator-check                                   verify the public skillevaluator CLI is available"
+	@echo "  skill-evaluator-validate [SKILL_EVALUATOR=/path/to/skillevaluator]   run the public external publication preflight"
+	@echo "  validate-skills-external                                alias for skill-evaluator-validate"
+	@echo "  nv-base-validate                                        deprecated compatibility alias"
 	@echo "  list-skills                                             regenerate SKILL_INDEX.md"
 	@echo "  lint                                                    structural + doc lints"
 	@echo "  test                                                    pytest (eval_engine + skills + verifiers + with-vs-without harness)"
@@ -309,33 +314,37 @@ prove-with-vs-without:
 plan-with-vs-without:
 	@$(PYTHON) tools/with_vs_without/audit_nv_model_studies.py --format commands
 
+skill-evaluator-check:
+	@if ! command -v "$(SKILL_EVALUATOR)" >/dev/null 2>&1; then \
+		echo "skillevaluator command not found: $(SKILL_EVALUATOR)"; \
+		echo "Install the public release (https://docs.nvidia.com/skills/skillevaluator/installation), or run:"; \
+		echo "  make skill-evaluator-validate SKILL_EVALUATOR=/path/to/skillevaluator"; \
+		exit 127; \
+	fi
+	@skill_evaluator_path="$$(command -v "$(SKILL_EVALUATOR)")"; \
+		echo "skillevaluator: $$skill_evaluator_path"; \
+		"$$skill_evaluator_path" --version
+
+skill-evaluator-validate: skill-evaluator-check
+	@skill_evaluator_path="$$(command -v "$(SKILL_EVALUATOR)")"; \
+		"$$skill_evaluator_path" validate skills \
+		$(SKILL_EVALUATOR_FLAGS) \
+		-r "$(SKILL_EVALUATOR_REPORTS)" \
+		-o "$(SKILL_EVALUATOR_OUT)"
+
+validate-skills-external: skill-evaluator-validate
+
 nv-base-check:
-	@if ! command -v "$(NV_BASE)" >/dev/null 2>&1; then \
-		echo "nv-base command not found: $(NV_BASE)"; \
-		echo "Install/activate nv-base, or run:"; \
-		echo "  make nv-base-validate NV_BASE=/path/to/nv-base"; \
-		exit 127; \
-	fi
-	@nv_base_path="$$(command -v "$(NV_BASE)")"; \
-	nv_base_bin="$$(dirname "$$nv_base_path")"; \
-	echo "nv-base: $$nv_base_path"; \
-	if PATH="$$nv_base_bin:$$PATH" command -v skillspector >/dev/null 2>&1; then \
-		echo "skillspector: $$(PATH="$$nv_base_bin:$$PATH" command -v skillspector)"; \
-	elif [ "$(NV_BASE_REQUIRE_SKILLSPECTOR)" = "1" ]; then \
-		echo "skillspector command not found in nv-base environment"; \
-		echo "Install it into the same environment as nv-base, for example:"; \
-		echo "  $$nv_base_bin/python -m pip install 'git+https://gitlab-master.nvidia.com/demos/skillspector.git'"; \
-		exit 127; \
-	else \
-		echo "warning: skillspector command not found; NV-base will skip security scan"; \
-	fi
+	@echo "warning: nv-base-check is deprecated; use skill-evaluator-check" >&2
+	@$(MAKE) --no-print-directory skill-evaluator-check
 
-nv-base-validate: nv-base-check
-	@nv_base_path="$$(command -v "$(NV_BASE)")"; \
-	nv_base_bin="$$(dirname "$$nv_base_path")"; \
-	PATH="$$nv_base_bin:$$PATH" "$$nv_base_path" validate skills -r cli json -o "$(NV_BASE_OUT)" --catalog-path "$(CURDIR)" $(NV_BASE_FLAGS)
+nv-base-validate:
+	@echo "warning: nv-base-validate is deprecated; use skill-evaluator-validate" >&2
+	@$(MAKE) --no-print-directory skill-evaluator-validate
 
-validate-skills-internal: nv-base-validate
+validate-skills-internal:
+	@echo "warning: validate-skills-internal is deprecated; use validate-skills-external" >&2
+	@$(MAKE) --no-print-directory skill-evaluator-validate
 
 list-skills:
 	$(PYTHON) -m eval_engine.list_skills --out SKILL_INDEX.md

@@ -25,7 +25,7 @@ catalog entries. Sections below apply to both unless noted.
 - [Upstream fidelity and reference baselines](#upstream-fidelity-and-reference-baselines)
 - [Workflows and feedback loops](#workflows-and-feedback-loops)
 - [Scripts: solve, don't punt](#scripts-solve-dont-punt)
-- [Internal NV-BASE profile](#internal-nv-base-profile)
+- [SkillEvaluator publication preflight](#skillevaluator-publication-preflight)
 - [Anti-patterns](#anti-patterns)
 - [Where checks belong](#where-checks-belong)
 - [Authoring checklist](#authoring-checklist)
@@ -180,10 +180,10 @@ skills/<name>/
 - **Bundle large reference material freely** — files that aren't read don't
   cost tokens. The penalty is only paid on read.
 
-### Internal quality section pattern
+### Publication quality section pattern
 
-The internal NV-BASE quality profile expects SKILL.md to be immediately useful
-to an agent. Include this shape near the top of every skill body:
+The SkillEvaluator publication profile expects SKILL.md to be immediately
+useful to an agent. Include this shape near the top of every skill body:
 
 ```markdown
 ## Purpose
@@ -395,23 +395,28 @@ def load_volume(path):
 - **Reference the script's output schema** from the manifest when the output
   is gated. See [`spec/skill_manifest.schema.json`](../spec/skill_manifest.schema.json).
 
-## Internal NV-BASE profile
+## SkillEvaluator publication preflight
 
-Run the same local profile used for this repo before asking for review:
-
-```bash
-make nv-base-validate
-```
-
-The Makefile defaults to `NV_BASE=nv-base`, writes reports under
-`/tmp/medical-AI-skills-nvbase`, and passes `--no-dedup -c` for local no-key
-validation. If `nv-base` lives in a local virtualenv, pass it explicitly:
+Run the repository's public external preflight before asking for review:
 
 ```bash
-make nv-base-validate NV_BASE=/path/to/nv-base
+make skill-evaluator-validate
 ```
 
-Internal CI may run the same validator without the local `--no-dedup` flag.
+The Makefile defaults to `SKILL_EVALUATOR=skillevaluator`, writes JSON and
+Markdown reports under `/tmp/medical-AI-skills-skillevaluator`, and applies
+`--external --no-dedup -c --min-score 70`. If `skillevaluator` lives in a
+local environment, pass it explicitly:
+
+```bash
+make skill-evaluator-validate \
+  SKILL_EVALUATOR=/path/to/skillevaluator
+```
+
+The command follows public SkillEvaluator's external CI gate. Managed NVSkills
+CI may use a newer internal build, agent runtimes, and an independent gate
+policy; a local pass is useful preflight evidence, not a substitute for the PR
+check.
 
 Keep these checks clean:
 
