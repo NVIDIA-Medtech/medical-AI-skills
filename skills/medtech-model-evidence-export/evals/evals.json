@@ -2,7 +2,7 @@
   {
     "id": "preview-inference-export",
     "question": "Show what this NV-Generate CT evidence pack would send to MLflow without contacting a tracking server.",
-    "expected_skill": "mlflow-evidence-export",
+    "expected_skill": "medtech-model-evidence-export",
     "ground_truth": "The agent runs the exporter in dry-run mode and reviews sanitized parameters, metrics, provenance, notes, and the artifact plan.",
     "expected_behavior": [
       "runs scripts/export_evidence_pack.py with --mode dry-run",
@@ -14,7 +14,7 @@
   {
     "id": "export-approved-slice-previews",
     "question": "Export this completed inference run to Databricks MLflow and include reviewable slice previews, but not the raw NIfTI volumes. The workspace is approved for these images.",
-    "expected_skill": "mlflow-evidence-export",
+    "expected_skill": "medtech-model-evidence-export",
     "ground_truth": "The agent uses databricks mode, preview artifact policy, and explicit medical-artifact confirmation without selecting the all/raw policy.",
     "expected_behavior": [
       "uses --mode databricks and --artifact-policy preview",
@@ -36,7 +36,7 @@
   },
   {
     "id": "reject-live-training-tracking",
-    "question": "Use mlflow-evidence-export to stream every epoch of my segmentation finetuning job live.",
+    "question": "Use medtech-model-evidence-export to stream every epoch of my segmentation finetuning job live.",
     "expected_skill": null,
     "ground_truth": "Live training metrics belong inside the training loop; this skill is post-hoc and inference-focused.",
     "expected_behavior": [

@@ -244,7 +244,7 @@ make verify
 | [`skills/nv-generate-mr-brain-finetune`](skills/nv-generate-mr-brain-finetune/) | NV-Generate-CTMR rflow-mr-brain diffusion-UNet finetuning from a user datalist |
 | [`skills/nv-generate-vae-finetune`](skills/nv-generate-vae-finetune/) | NV-Generate-CTMR MAISI VAE finetuning from CT/MRI datalists |
 | [`skills/nv-reason-cxr`](skills/nv-reason-cxr/) | NV-Reason-CXR-3B inference on a user-provided chest X-ray PNG/JPEG |
-| [`skills/mlflow-evidence-export`](skills/mlflow-evidence-export/) | Post-hoc MLflow export for sanitized medical-inference metadata, metrics, provenance, and approved review artifacts |
+| [`skills/medtech-model-evidence-export`](skills/medtech-model-evidence-export/) | Post-hoc MLflow export for sanitized medtech model-inference metadata, metrics, provenance, and approved review artifacts |
 | [`verifiers/skill_completeness_v1`](verifiers/skill_completeness_v1/) | structural and manifest-spec verifier |
 | [`verifiers/dicom_metadata_quality_v1`](verifiers/dicom_metadata_quality_v1/) | paired verifier for DICOM metadata evidence packs and PHI-scope disclosure |
 | [`verifiers/dicom_preflight_quality_v1`](verifiers/dicom_preflight_quality_v1/) | paired verifier for DICOM preflight evidence packs |

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-id: medagent.mlflow_evidence_export
+id: medagent.medtech_model_evidence_export
 version: 0.2.0
 upstream_refs:
   - kind: pypi_package
@@ -90,7 +90,7 @@ validation:
     min: 0.0
     max: 15.0
   sanity_checks:
-    - {path: skill, eq: mlflow_evidence_export}
+    - {path: skill, eq: medtech_model_evidence_export}
     - {path: status, eq: dry_run}
     - {path: mode, eq: dry-run}
     - {path: source.pack_kind, eq: skill_run}

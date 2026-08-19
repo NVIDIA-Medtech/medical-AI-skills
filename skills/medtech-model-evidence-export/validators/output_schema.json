@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "MLflowEvidenceExportOutput",
+  "title": "MedtechModelEvidenceExportOutput",
   "type": "object",
   "required": [
     "skill",
@@ -18,7 +18,7 @@
     "intended_use_disclaimer"
   ],
   "properties": {
-    "skill": {"const": "mlflow_evidence_export"},
+    "skill": {"const": "medtech_model_evidence_export"},
     "status": {"enum": ["dry_run", "logged", "failed"]},
     "mode": {"enum": ["dry-run", "local", "databricks"]},
     "source": {

@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
-SKILL_NAME = "mlflow_evidence_export"
+SKILL_NAME = "medtech_model_evidence_export"
 MODES = ("dry-run", "local", "databricks")
 ARTIFACT_POLICIES = ("metadata", "preview", "all")
 PACK_DOCUMENTS = (

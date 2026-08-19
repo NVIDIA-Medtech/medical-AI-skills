@@ -1,5 +1,5 @@
 ---
-name: mlflow-evidence-export
+name: medtech-model-evidence-export
 description: Exports sanitized metadata, parameters, reproducibility details, quality metrics, and optional review artifacts from Medical AI inference runs or evidence packs to MLflow. Use after inference, including NV-Generate runs; not for live training tracking, model registration, or clinical use.
 license: Apache-2.0
 allowed-tools: Bash
@@ -12,7 +12,7 @@ metadata:
     - shell
 ---
 
-# MLflow Evidence Export
+# Medtech Model Evidence Export to MLflow
 
 ## Purpose
 
@@ -59,14 +59,14 @@ Hosts with a script helper can use
 Preview the export without contacting MLflow:
 
 ```bash
-python skills/mlflow-evidence-export/scripts/export_evidence_pack.py \
+python skills/medtech-model-evidence-export/scripts/export_evidence_pack.py \
   runs/inference_pack --mode dry-run --artifact-policy metadata
 ```
 
 Export a direct NV-Generate result with reproducibility metadata:
 
 ```bash
-python skills/mlflow-evidence-export/scripts/export_evidence_pack.py \
+python skills/medtech-model-evidence-export/scripts/export_evidence_pack.py \
   runs/nv-generate/result.json \
   --mode local \
   --experiment-name medical-ai-inference \
@@ -78,7 +78,7 @@ python skills/mlflow-evidence-export/scripts/export_evidence_pack.py \
 Log downsampled slice previews, but not raw NIfTI files:
 
 ```bash
-python skills/mlflow-evidence-export/scripts/export_evidence_pack.py \
+python skills/medtech-model-evidence-export/scripts/export_evidence_pack.py \
   runs/nv-generate/result.json \
   --mode databricks \
   --experiment-name /Shared/medical-ai-inference \
