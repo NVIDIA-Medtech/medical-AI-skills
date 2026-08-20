@@ -96,10 +96,13 @@ skills/<name>/
    too large or otherwise prohibited from git, record that as an explicit gap
    rather than promoting the pack as a complete trusted pass.
 
-## Internal NV-BASE profile
+## SkillEvaluator publication preflight
 
-The local/internal validation profile is intentionally stricter than the base
-Agent Skills spec. Before opening a PR, make the skill friendly to that check:
+The public SkillEvaluator `external` profile adds publication checks beyond the
+base Agent Skills spec. Before opening a PR, make the skill friendly to that
+check. Follow the public
+[SkillEvaluator installation guide](https://docs.nvidia.com/skills/skillevaluator/installation)
+when the CLI is not already available:
 
 - Use kebab-case for both `skills/<name>/` and frontmatter `name`.
 - Keep `description` concise, usually under 200 characters. Include both a
@@ -135,7 +138,7 @@ not emit the needed signal.
 ## Check before PR
 
 ```bash
-make nv-base-validate
+make skill-evaluator-validate
 make list-skills
 make verify-skills
 make run-skill SKILL=<name> FIXTURE=<fixture> OUT=runs/<name>_smoke
@@ -144,12 +147,20 @@ make verify
 
 Record intentional gaps under the manifest's `limitations` field.
 
-If `nv-base` is installed in a local virtualenv rather than on `PATH`, pass it
-explicitly:
+If `skillevaluator` is installed in a local environment rather than on `PATH`,
+pass it explicitly:
 
 ```bash
-make nv-base-validate NV_BASE=/path/to/nv-base
+make skill-evaluator-validate \
+  SKILL_EVALUATOR=/path/to/skillevaluator
 ```
+
+This runs the public external preflight with Tier 2 disabled, complete
+collection reporting, a quality threshold of 70, and JSON/Markdown reports in
+`/tmp/medical-AI-skills-skillevaluator`. Override the report directory with
+`SKILL_EVALUATOR_OUT=<path>`. Central NVSkills CI may use a newer managed
+SkillEvaluator build, agent runtimes, and gate policy, so a local pass does not
+replace the managed PR check.
 
 ## Related
 

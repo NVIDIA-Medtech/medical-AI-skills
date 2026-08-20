@@ -35,14 +35,12 @@ B ?=
 COMPARE_OUT ?=
 AUDIT_OUT ?= runs/audit_$(SKILL)
 ACTION ?=
-NV_BASE ?= nv-base
-NV_BASE_OUT ?= /tmp/medical-AI-skills-nvbase
-NV_BASE_FLAGS ?= --no-dedup -c
-NV_BASE_REQUIRE_SKILLSPECTOR ?= 1
+SKILL_EVALUATOR ?= skillevaluator
+SKILL_EVALUATOR_OUT ?= /tmp/medical-AI-skills-skillevaluator
 
 WORKFLOW_CT_SEG ?= examples/workflows/ct_dicom_to_segmentation_evidence.yaml
 WORKFLOW_CT_SEG_OUT ?= runs/ct_dicom_seg_evidence
-.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without invariants-with-vs-without check-invariants-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study nv-base-check nv-base-validate validate-skills-internal list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix copyright copyright-check
+.PHONY: help help-run help-author help-trust help-study help-all run-skill run-llm-skill run-workflow run-workflow-ct-seg run-benchmark run-trusted diff lint test verify verify-skills verify-reproducibility verify-negative-fixtures verify-with-vs-without audit-with-vs-without preflight-with-vs-without transfer-manifest-with-vs-without approval-packet-with-vs-without approved-rerun-plan-with-vs-without invariants-with-vs-without check-invariants-with-vs-without status-agent-skills prove-agent-skills prove-with-vs-without plan-with-vs-without study skill-evaluator-validate list-skills compare-skills audit-skill clean-runs validate-pack review-packet validate-skill bench-matrix copyright copyright-check
 
 help:
 	@echo "Targets:"
@@ -50,7 +48,7 @@ help:
 	@echo "  help-author   skill authoring, catalog validation, and repo checks"
 	@echo "  help-trust    evidence-pack, verifier, and trust commands"
 	@echo "  help-study    with-vs-without study maintenance"
-	@echo "  help-all      every target, including compatibility aliases"
+	@echo "  help-all      complete target list"
 	@echo ""
 	@echo "Common:"
 	@echo "  make list-skills"
@@ -73,7 +71,7 @@ help-all:
 	@echo "  help-author                                             skill authoring, catalog validation, and repo checks"
 	@echo "  help-trust                                              evidence-pack, verifier, and trust commands"
 	@echo "  help-study                                              with-vs-without study maintenance"
-	@echo "  help-all                                                every target, including compatibility aliases"
+	@echo "  help-all                                                complete target list"
 	@echo "  --- Discover ---"
 	@echo "  list-skills                                             regenerate SKILL_INDEX.md"
 	@echo "  --- Run ---"
@@ -88,9 +86,7 @@ help-all:
 	@echo "  validate-skill SCENARIO=<path> [VALIDATE_SKILL_OUT=<dir>]   paired with/without skill behavior eval (v0: mock backend)"
 	@echo "  verify-skills                                           audit every skill/verifier + repeat reproducibility checks"
 	@echo "  verify-reproducibility                                  run manifest-declared repeat/preflight reproducibility audit"
-	@echo "  nv-base-check                                           verify nv-base is available on PATH or via NV_BASE"
-	@echo "  nv-base-validate [NV_BASE=/path/to/nv-base]             run internal NV-BASE skill profile"
-	@echo "  validate-skills-internal                                alias for nv-base-validate"
+	@echo "  skill-evaluator-validate [SKILL_EVALUATOR=/path/to/skillevaluator]   run the public external publication preflight"
 	@echo "  --- Trust ---"
 	@echo "  verify                                                  smoke-test evidence harness (lint + canonical pack diff)"
 	@echo "  verify-negative-fixtures                                run every manifest-declared negative fixture"
@@ -134,9 +130,7 @@ help-author:
 	@echo "  validate-skill SCENARIO=<path> [VALIDATE_SKILL_OUT=<dir>]   paired with/without skill behavior eval (v0: mock backend)"
 	@echo "  verify-skills                                           audit every skill/verifier + repeat reproducibility checks"
 	@echo "  verify-reproducibility                                  run manifest-declared repeat/preflight reproducibility audit"
-	@echo "  nv-base-check                                           verify nv-base is available on PATH or via NV_BASE"
-	@echo "  nv-base-validate [NV_BASE=/path/to/nv-base]             run internal NV-BASE skill profile"
-	@echo "  validate-skills-internal                                alias for nv-base-validate"
+	@echo "  skill-evaluator-validate [SKILL_EVALUATOR=/path/to/skillevaluator]   run the public external publication preflight"
 	@echo "  list-skills                                             regenerate SKILL_INDEX.md"
 	@echo "  lint                                                    structural + doc lints"
 	@echo "  test                                                    pytest (eval_engine + skills + verifiers + with-vs-without harness)"
@@ -309,33 +303,20 @@ prove-with-vs-without:
 plan-with-vs-without:
 	@$(PYTHON) tools/with_vs_without/audit_nv_model_studies.py --format commands
 
-nv-base-check:
-	@if ! command -v "$(NV_BASE)" >/dev/null 2>&1; then \
-		echo "nv-base command not found: $(NV_BASE)"; \
-		echo "Install/activate nv-base, or run:"; \
-		echo "  make nv-base-validate NV_BASE=/path/to/nv-base"; \
+skill-evaluator-validate:
+	@if ! command -v "$(SKILL_EVALUATOR)" >/dev/null 2>&1; then \
+		echo "skillevaluator command not found: $(SKILL_EVALUATOR)"; \
+		echo "Install the public release (https://docs.nvidia.com/skills/skillevaluator/installation), or run:"; \
+		echo "  make skill-evaluator-validate SKILL_EVALUATOR=/path/to/skillevaluator"; \
 		exit 127; \
 	fi
-	@nv_base_path="$$(command -v "$(NV_BASE)")"; \
-	nv_base_bin="$$(dirname "$$nv_base_path")"; \
-	echo "nv-base: $$nv_base_path"; \
-	if PATH="$$nv_base_bin:$$PATH" command -v skillspector >/dev/null 2>&1; then \
-		echo "skillspector: $$(PATH="$$nv_base_bin:$$PATH" command -v skillspector)"; \
-	elif [ "$(NV_BASE_REQUIRE_SKILLSPECTOR)" = "1" ]; then \
-		echo "skillspector command not found in nv-base environment"; \
-		echo "Install it into the same environment as nv-base, for example:"; \
-		echo "  $$nv_base_bin/python -m pip install 'git+https://gitlab-master.nvidia.com/demos/skillspector.git'"; \
-		exit 127; \
-	else \
-		echo "warning: skillspector command not found; NV-base will skip security scan"; \
-	fi
-
-nv-base-validate: nv-base-check
-	@nv_base_path="$$(command -v "$(NV_BASE)")"; \
-	nv_base_bin="$$(dirname "$$nv_base_path")"; \
-	PATH="$$nv_base_bin:$$PATH" "$$nv_base_path" validate skills -r cli json -o "$(NV_BASE_OUT)" --catalog-path "$(CURDIR)" $(NV_BASE_FLAGS)
-
-validate-skills-internal: nv-base-validate
+	@skill_evaluator_path="$$(command -v "$(SKILL_EVALUATOR)")"; \
+		echo "skillevaluator: $$skill_evaluator_path"; \
+		"$$skill_evaluator_path" --version && \
+		"$$skill_evaluator_path" validate skills \
+		--external --no-dedup -c --min-score 70 \
+		-r json,markdown \
+		-o "$(SKILL_EVALUATOR_OUT)"
 
 list-skills:
 	$(PYTHON) -m eval_engine.list_skills --out SKILL_INDEX.md
