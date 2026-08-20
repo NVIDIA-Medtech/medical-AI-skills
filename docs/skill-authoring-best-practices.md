@@ -403,20 +403,10 @@ Run the repository's public external preflight before asking for review:
 make skill-evaluator-validate
 ```
 
-The Makefile defaults to `SKILL_EVALUATOR=skillevaluator`, writes JSON and
-Markdown reports under `/tmp/medical-AI-skills-skillevaluator`, and applies
-`--external --no-dedup -c --min-score 70`. If `skillevaluator` lives in a
-local environment, pass it explicitly:
-
-```bash
-make skill-evaluator-validate \
-  SKILL_EVALUATOR=/path/to/skillevaluator
-```
-
-The command follows public SkillEvaluator's external CI gate. Managed NVSkills
-CI may use a newer internal build, agent runtimes, and an independent gate
-policy; a local pass is useful preflight evidence, not a substitute for the PR
-check.
+The command follows public SkillEvaluator's external CI gate. Installation,
+overrides, report location, and the boundary with managed NVSkills CI are
+documented once in
+[`authoring-skills.md`](authoring-skills.md#skillevaluator-publication-preflight).
 
 Keep these checks clean:
 

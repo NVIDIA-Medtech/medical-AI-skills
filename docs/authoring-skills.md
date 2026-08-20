@@ -156,9 +156,11 @@ make skill-evaluator-validate \
 ```
 
 This runs the public external preflight with Tier 2 disabled, complete
-collection reporting, and a quality threshold of 70. Central NVSkills CI may
-use a newer managed SkillEvaluator build, agent runtimes, and gate policy, so a
-local pass does not replace the managed PR check.
+collection reporting, a quality threshold of 70, and JSON/Markdown reports in
+`/tmp/medical-AI-skills-skillevaluator`. Override the report directory with
+`SKILL_EVALUATOR_OUT=<path>`. Central NVSkills CI may use a newer managed
+SkillEvaluator build, agent runtimes, and gate policy, so a local pass does not
+replace the managed PR check.
 
 ## Related
 
