@@ -161,7 +161,7 @@ skills/<name>/
   validators/           # output_schema.json (gated by manifest)
   fixtures/             # small synthetic/public inputs
   evals/evals.json      # prompt-shaped behavior evals for publication
-  BENCHMARK.md          # with-skill / without-skill result summary
+  BENCHMARK.md          # managed with-skill / without-skill result summary
   tests/                # focused parsing or invariant tests
   REFERENCE.md          # optional — deeper details, one level deep
   EXAMPLES.md           # optional — input/output pairs
@@ -525,8 +525,8 @@ Before merging a new or modified skill, verify:
   `.codex/skills/`, `.cursor/skills/`, or another agent-specific primary path
 - [ ] Directory name matches `name:` for externally published skills
 - [ ] `evals/evals.json` includes positive and negative trigger cases
-- [ ] `BENCHMARK.md` summarizes with-skill and without-skill results, tokens or
-  time where available, and remaining gaps
+- [ ] Managed NVSkills CI has generated `BENCHMARK.md`, `skill-card.md`, and
+  `skill.oms.sig` for the final source
 
 Run before submitting:
 

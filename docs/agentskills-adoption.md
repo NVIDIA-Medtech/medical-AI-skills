@@ -67,18 +67,19 @@ Current authored examples:
 | `dicom_series_preflight` | A1 onboarding; agent must use the gates to make a go/no-go call, not bypass them |
 
 Legacy GPU/Docker skills may still rely on `fixtures/` + manifest gates until
-their external-publication pass adds prompt evals and `BENCHMARK.md`. Treat
-that as publication work, not a reason to skip the format for new skills.
+their external-publication pass adds prompt evals. NVSkills CI generates the
+corresponding `BENCHMARK.md`; this gap is not a reason to skip the eval format
+for new skills.
 
 ### 4. with_skill vs without_skill baseline framing
 
 Each `evals.json` carries a `baseline_methodology` block describing what
 running the test case looks like *with* the skill installed vs *without* it.
-`BENCHMARK.md` is the publication-facing report for those results: agents
-tested, task completion, quality notes, token/time cost where available, and
-remaining gaps. Running the baseline is an authoring-time task (run the agent
-twice, grade both); the Medical AI Skills evidence harness remains the domain-gate
-path.
+`BENCHMARK.md` is the managed publication-facing report for those results:
+agents tested, task completion, quality notes, token/time cost where available,
+and remaining gaps. Contributors prepare and review the eval inputs; NVSkills
+CI runs the publication baseline and generates the report. The Medical AI
+Skills evidence harness remains the local domain-gate path.
 
 ## What We Deliberately Keep Internal
 

@@ -52,9 +52,13 @@ skills/<name>/
   validators/output_schema.json   # when output JSON is gated
   fixtures/                # small synthetic/public inputs
   evals/evals.json         # prompt-shaped skill-behavior evals for publication
-  BENCHMARK.md             # with-skill / without-skill results for publication
   tests/                   # optional but encouraged for wrapper internals
 ```
+
+NVSkills CI generates or refreshes the publication artifacts `BENCHMARK.md`,
+`skill-card.md`, and `skill.oms.sig` after the pull-request source is stable.
+Do not create or edit them manually. For an existing skill, leave its current
+generated artifacts unchanged while authoring; managed CI will replace them.
 
 ## Authoring order
 
@@ -84,10 +88,7 @@ skills/<name>/
    prompts, expected skill/script use, and scope assertions. GPU-heavy skills
    may use command-shape or preflight evals when full inference is not suitable
    for an agent harness.
-6. **Benchmark report** — add `BENCHMARK.md` summarizing with-skill and
-   without-skill behavior, agents tested, task completion, token/time cost, and
-   any remaining gaps.
-7. **Evidence** — run locally, render a review packet, then promote a small
+6. **Evidence** — run locally, render a review packet, then promote a small
    pass pack to `examples/` if it should be a regression anchor. Wrapper output
    should include concrete artifact paths, runtime facts, and limitations that
    make the review packet useful without requiring a reviewer to read every JSON
