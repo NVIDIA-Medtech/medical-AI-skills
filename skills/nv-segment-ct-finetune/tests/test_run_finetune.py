@@ -187,6 +187,19 @@ def test_validate_softmax_mapping_accepts_unique_positive_pairs():
     mod.validate_softmax_mapping({"default": [[1, 3], [2, 13]]})
 
 
+def test_child_process_env_keeps_runtime_values_and_drops_credentials(monkeypatch):
+    monkeypatch.setenv("PATH", "/trusted/bin")
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2")
+    monkeypatch.setenv("OPENAI_API_KEY", "not-forwarded")
+
+    env = mod._child_process_env({"NVSEG_FINETUNE_IN_AUTO_VENV": "1"})
+
+    assert env["PATH"] == "/trusted/bin"
+    assert env["CUDA_VISIBLE_DEVICES"] == "2"
+    assert env["NVSEG_FINETUNE_IN_AUTO_VENV"] == "1"
+    assert "OPENAI_API_KEY" not in env
+
+
 @pytest.mark.parametrize(
     "mapping",
     [

@@ -2,7 +2,7 @@
 name: nv-segment-ct-finetune
 description: Runs standard or fixed-channel softmax finetuning of NV-Segment-CT VISTA3D on CT NIfTI image/label datasets and records checkpoint evidence. Uses softmax for predefined, mutually exclusive classes; keeps the standard workflow when point prompts or runtime-variable classes are needed. Not for clinical validation.
 license: Apache-2.0
-allowed-tools: Bash
+allowed-tools: Bash Read Write WebFetch Env
 metadata:
   author: NVIDIA MedTech Team
   tags:
@@ -53,9 +53,9 @@ For `--label-mapping '[[1,3],[2,13]]'`, channel 0 is background, channel 1 repre
 
 - Python 3.10+ with CUDA-capable Torch for GPU runs.
 - Runtime packages from `skill_manifest.yaml`, especially `monai==1.4.0`, `numpy<2`, `nibabel`, `scipy`, `typer`, `PyYAML`, `fire`, `pytorch-ignite`, `einops`, and `huggingface_hub`.
-- Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs.
+- Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs; `NVSEG_FINETUNE_AUTO_VENV=0` disables the cached MONAI 1.4 compatibility environment.
 - `--softmax` also needs the pinned NVIDIA-Medtech source checkout. Set `NV_SEGMENT_CT_ROOT` to its `NV-Segment-CT` directory, or set `NV_SEGMENT_CTMR_ROOT` to the sibling `NV-Segment-CTMR` directory. The wrapper reads the official softmax config and implementation in place and writes generated overrides only under `--output-dir`.
-- Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://huggingface.co` or `https://raw.githubusercontent.com`.
+- Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir`; may create the MONAI compatibility environment under `~/.cache/nvidia-skills/venvs/nv-segment-ct-finetune-monai14/`; may cache model assets under `~/.cache/huggingface/`; and may contact `https://huggingface.co` or `https://raw.githubusercontent.com`.
 
 Fresh environment setup:
 

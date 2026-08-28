@@ -102,6 +102,9 @@ runtime:
     env_required: []
     env_optional:
       - NV_SEGMENT_CTMR_ROOT
+      - CUDA_VISIBLE_DEVICES
+      - MONAI_DATA_DIRECTORY
+      - PYTORCH_CUDA_ALLOC_CONF
   external_assets:
     - kind: upstream_repo
       repo_url: https://github.com/NVIDIA-Medtech/NV-Segment-CTMR

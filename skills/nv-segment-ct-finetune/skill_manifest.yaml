@@ -167,6 +167,7 @@ runtime:
       - {path: "<caller-provided --output-dir>", approx_mb_max: 20000}
     home_writes:
       - {path: "~/.cache/huggingface/", approx_mb_max: 1500}
+      - {path: "~/.cache/nvidia-skills/venvs/nv-segment-ct-finetune-monai14/", approx_mb_max: 500}
     network_endpoints:
       - https://huggingface.co
       - https://raw.githubusercontent.com
@@ -190,6 +191,7 @@ runtime:
       - CUDA_VISIBLE_DEVICES
       - NV_SEGMENT_CT_ROOT
       - NV_SEGMENT_CTMR_ROOT
+      - NVSEG_FINETUNE_AUTO_VENV
   external_assets:
     - kind: huggingface_repo
       repo_id: nvidia/NV-Segment-CT

@@ -80,6 +80,48 @@ SANITY_DATASET = _REPO_ROOT / ".workbench_data" / "datasets" / "Task06_Lung"
 SANITY_ANATOMY = "lung tumor"  # MSD06 label 1 (cancer) -> vista3d global index 23
 VERSION = "0.5.0"
 SUPPORTED_MONAI_MAJOR_MINOR = {(1, 4)}
+AUTO_VENV_DIR = (
+    Path.home() / ".cache" / "nvidia-skills" / "venvs" / "nv-segment-ct-finetune-monai14"
+)
+_CHILD_ENV_KEYS = (
+    "CUDA_DEVICE_ORDER",
+    "CUDA_HOME",
+    "CUDA_PATH",
+    "CUDA_VISIBLE_DEVICES",
+    "CUBLAS_WORKSPACE_CONFIG",
+    "CURL_CA_BUNDLE",
+    "HF_HOME",
+    "HF_HUB_CACHE",
+    "HF_HUB_OFFLINE",
+    "HOME",
+    "HUGGINGFACE_HUB_CACHE",
+    "LANG",
+    "LC_ALL",
+    "LD_LIBRARY_PATH",
+    "MONAI_DATA_DIRECTORY",
+    "NCCL_DEBUG",
+    "NCCL_IB_DISABLE",
+    "NCCL_P2P_DISABLE",
+    "NCCL_SOCKET_IFNAME",
+    "NVIDIA_DRIVER_CAPABILITIES",
+    "NVIDIA_VISIBLE_DEVICES",
+    "NPROC_PER_NODE",
+    "NVSEG_FINETUNE_IN_AUTO_VENV",
+    "NV_SEGMENT_CTMR_ROOT",
+    "NV_SEGMENT_CT_ROOT",
+    "OMP_NUM_THREADS",
+    "PATH",
+    "PYTHONNOUSERSITE",
+    "PYTHONPATH",
+    "PYTORCH_CUDA_ALLOC_CONF",
+    "REQUESTS_CA_BUNDLE",
+    "SSL_CERT_FILE",
+    "TMPDIR",
+    "TORCH_EXTENSIONS_DIR",
+    "TORCH_HOME",
+    "TRANSFORMERS_CACHE",
+    "XDG_CACHE_HOME",
+)
 SANITY_REFERENCE_THRESHOLDS = {
     "formal_pretrained_val_dice_min": 0.65,
     "formal_finetuned_val_dice_min": 0.67,
@@ -128,6 +170,19 @@ ANATOMY_EXPECTED_COMPONENTS = {  # solitary organs; user can override
 app = typer.Typer(add_completion=False)
 
 
+def _child_process_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    """Build the minimal environment needed by trusted local model processes."""
+    env: dict[str, str] = {}
+    for name in _CHILD_ENV_KEYS:
+        value = os.environ.get(name)
+        if value is not None:
+            env[name] = value
+    env.setdefault("PATH", os.defpath)
+    if overrides:
+        env.update(overrides)
+    return env
+
+
 def _monai_major_minor(monai_version: str) -> tuple[int, int] | None:
     parts = monai_version.split("+", 1)[0].split(".", 2)
     if len(parts) < 2 or not all(p.isdigit() for p in parts[:2]):
@@ -160,11 +215,11 @@ def _monai_is_compatible() -> bool:
     return _monai_major_minor(monai_version) in SUPPORTED_MONAI_MAJOR_MINOR
 
 
-def maybe_reexec_compatible_runtime() -> None:
-    """Use a temporary compatible venv when the caller's MONAI is outside this range.
+def maybe_run_compatible_runtime() -> None:
+    """Use a cached compatible venv when the caller's MONAI is outside this range.
 
-    Re-exec keeps the user-facing command simple while preserving the active
-    environment's CUDA/Torch via --system-site-packages. The DFW reference
+    A child process keeps the user-facing command simple while preserving the
+    active environment's CUDA/Torch via --system-site-packages. The DFW reference
     run used MONAI 1.4.0 on Python 3.10; Python 3.12 environments usually
     should still use MONAI 1.4.0 for this upstream trainer.
     """
@@ -175,7 +230,7 @@ def maybe_reexec_compatible_runtime() -> None:
     if os.environ.get("NVSEG_FINETUNE_IN_AUTO_VENV") == "1":
         return
 
-    venv_dir = Path(os.environ.get("NVSEG_FINETUNE_AUTO_VENV_DIR", "/tmp/nvseg-m14"))
+    venv_dir = AUTO_VENV_DIR
     python_bin = venv_dir / "bin" / "python"
     if not python_bin.exists():
         venv.EnvBuilder(system_site_packages=True, with_pip=True).create(venv_dir)
@@ -191,11 +246,15 @@ def maybe_reexec_compatible_runtime() -> None:
         ],
         stdout=sys.stderr,
         stderr=sys.stderr,
+        env=_child_process_env(),
     )
-    env = os.environ.copy()
-    env["NVSEG_FINETUNE_IN_AUTO_VENV"] = "1"
-    sys.stderr.write(f"[nv_segment_ct_finetune] re-exec with {python_bin}\n")
-    os.execvpe(str(python_bin), [str(python_bin), *sys.argv], env)
+    sys.stderr.write(f"[nv_segment_ct_finetune] run with {python_bin}\n")
+    completed = subprocess.run(
+        [str(python_bin), *sys.argv],
+        env=_child_process_env({"NVSEG_FINETUNE_IN_AUTO_VENV": "1"}),
+        check=False,
+    )
+    raise typer.Exit(code=completed.returncode)
 
 
 def require_bundle_files(*, softmax: bool = False) -> Path | None:
@@ -1168,9 +1227,10 @@ def run_monai_bundle(
     gpu_csv = log_path.with_suffix(".gpu.csv")
     smi = None
     smi_out = None
-    if subprocess.run(["which", "nvidia-smi"], capture_output=True).returncode == 0:
+    nvidia_smi = shutil.which("nvidia-smi")
+    if nvidia_smi is not None:
         smi_cmd = [
-            "nvidia-smi",
+            nvidia_smi,
             "--query-gpu=timestamp,index,memory.used",
             "--format=csv,noheader,nounits",
             "-l",
@@ -1179,9 +1239,14 @@ def run_monai_bundle(
         if force_single_gpu:
             smi_cmd[1:1] = ["-i", "0"]
         smi_out = open(gpu_csv, "w")
-        smi = subprocess.Popen(smi_cmd, stdout=smi_out, stderr=subprocess.DEVNULL)
+        smi = subprocess.Popen(
+            smi_cmd,
+            stdout=smi_out,
+            stderr=subprocess.DEVNULL,
+            env=_child_process_env(),
+        )
     try:
-        env = os.environ.copy()
+        env = _child_process_env()
         if force_single_gpu and "CUDA_VISIBLE_DEVICES" not in env:
             env["CUDA_VISIBLE_DEVICES"] = "0"
         with open(log_path, "w") as f:
@@ -1518,7 +1583,7 @@ def main(
             "scores belong to the standard VISTA3D continual-learning workflow."
         )
 
-    maybe_reexec_compatible_runtime()
+    maybe_run_compatible_runtime()
     require_compatible_runtime()
     softmax_bundle_root = require_bundle_files(softmax=softmax)
 

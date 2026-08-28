@@ -2,7 +2,7 @@
 name: nv-segment-ctmr
 description: Used for running NV-Segment-CTMR on CT or MRI NIfTI volumes and recording label-map evidence. Not for clinical interpretation.
 license: Apache-2.0
-allowed-tools: Bash
+allowed-tools: Bash Read Write WebFetch Env
 metadata:
   author: NVIDIA MedTech Team
   tags:
@@ -31,6 +31,7 @@ metadata:
 
 ## Prerequisites
 - Runtime requirements: GPU/CUDA when declared by the manifest; Python packages listed in `runtime.side_effects.pip_packages`.
+- Optional environment variables: `NV_SEGMENT_CTMR_ROOT` selects the trusted upstream checkout; `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `MONAI_DATA_DIRECTORY` and `PYTORCH_CUDA_ALLOC_CONF` override the wrapper's output-local cache and allocator defaults when needed.
 - Side effects: writes segmentation outputs under the caller's `--output-dir`, may cache model assets under `~/.cache/huggingface/`, and may contact `https://github.com` or `https://huggingface.co` during setup.
 - Run commands from the repository root unless an existing section below says otherwise.
 
