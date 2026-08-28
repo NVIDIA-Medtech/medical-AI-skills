@@ -27,6 +27,9 @@ Three presets:
             finetuned Dice 0.6836, and training-best Dice 0.6905.
   default   user dataset under --dataset-dir, lr=5e-5, 50 epochs.
 
+Add ``--softmax`` to use the upstream fixed-channel, mutually exclusive
+segmentation workflow. Its documented defaults are lr=1e-4 and 100 epochs.
+
 The wrapper auto-detects GPU + RAM, picks patch_size and cache_rate, writes
 `configs/auto_override.json`, and runs `python -m monai.bundle run` (or
 `torchrun --nproc_per_node=N -m monai.bundle run` for multi-GPU) exactly as
@@ -63,7 +66,7 @@ import typer
 SKILL_DIR = Path(__file__).resolve().parent.parent
 BUNDLE_DIR = SKILL_DIR / "bundle"
 LABEL_DICT = BUNDLE_DIR / "label_dict.json"
-UPSTREAM_CTMR_COMMIT = "f9f5f51b589e5dc9c23c453cf5138398e4084056"
+UPSTREAM_CTMR_COMMIT = "cb921f5c58837c0f42a713855d68b32af88e1cdd"
 HF_MODEL_REVISION = "afb51518689f71e6abb367ee6301b2cd0225c66a"
 LABEL_DICT_URL = (
     f"https://raw.githubusercontent.com/NVIDIA-Medtech/NV-Segment-CTMR/{UPSTREAM_CTMR_COMMIT}/"
@@ -75,7 +78,7 @@ SMOKE_FIXTURE = SKILL_DIR / "fixtures" / "spleen_micro"
 _REPO_ROOT = SKILL_DIR.parent.parent
 SANITY_DATASET = _REPO_ROOT / ".workbench_data" / "datasets" / "Task06_Lung"
 SANITY_ANATOMY = "lung tumor"  # MSD06 label 1 (cancer) -> vista3d global index 23
-VERSION = "0.4.1"
+VERSION = "0.5.0"
 SUPPORTED_MONAI_MAJOR_MINOR = {(1, 4)}
 SANITY_REFERENCE_THRESHOLDS = {
     "formal_pretrained_val_dice_min": 0.65,
@@ -195,7 +198,7 @@ def maybe_reexec_compatible_runtime() -> None:
     os.execvpe(str(python_bin), [str(python_bin), *sys.argv], env)
 
 
-def require_bundle_files() -> None:
+def require_bundle_files(*, softmax: bool = False) -> Path | None:
     """Fail with setup instructions before MONAI emits a deep config error."""
     bundle_notes = prepare_bundle_files()
     required = [
@@ -211,7 +214,7 @@ def require_bundle_files() -> None:
             sys.stderr.write(
                 "[nv_segment_ct_finetune] prepared bundle files: " + "; ".join(bundle_notes) + "\n"
             )
-        return
+        return resolve_softmax_bundle_root() if softmax else None
 
     rel_missing = [
         str(p.relative_to(SKILL_DIR)) if p.is_relative_to(SKILL_DIR) else str(p) for p in missing
@@ -267,6 +270,20 @@ def _upstream_config_dirs() -> list[Path]:
         dirs.extend([root / "configs", root.parent / "NV-Segment-CT" / "configs"])
     dirs.extend(
         [
+            Path.home()
+            / ".cache"
+            / "nvidia-skills"
+            / "upstreams"
+            / "NV-Segment-CTMR-cb921f5"
+            / "NV-Segment-CT"
+            / "configs",
+            Path.home()
+            / ".cache"
+            / "nvidia-skills"
+            / "upstreams"
+            / "NV-Segment-CTMR-cb921f5"
+            / "NV-Segment-CTMR"
+            / "configs",
             _REPO_ROOT
             / ".workbench_data"
             / "upstreams"
@@ -290,6 +307,45 @@ def _upstream_config_dirs() -> list[Path]:
         seen.add(resolved)
         unique.append(resolved)
     return unique
+
+
+def _git_commit(path: Path) -> str | None:
+    """Return the containing checkout commit when Git metadata is available."""
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(path), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+
+
+def resolve_softmax_bundle_root() -> Path:
+    """Find the pinned upstream bundle that owns the documented softmax workflow."""
+    candidates = sorted(
+        (config_dir.parent for config_dir in _upstream_config_dirs()),
+        key=lambda path: (path.name != "NV-Segment-CT", str(path)),
+    )
+    for root in candidates:
+        required = (
+            root / "configs" / "train_continual_softmax.json",
+            root / "configs" / "inference_softmax.json",
+            root / "scripts" / "vista3d_softmax.py",
+        )
+        if not all(path.is_file() for path in required):
+            continue
+        commit = _git_commit(root)
+        if commit is not None and commit != UPSTREAM_CTMR_COMMIT:
+            continue
+        return root
+
+    raise typer.BadParameter(
+        "--softmax requires the pinned NVIDIA-Medtech/NV-Segment-CTMR checkout "
+        f"at {UPSTREAM_CTMR_COMMIT}. Clone it once, check out that commit, and "
+        "set NV_SEGMENT_CT_ROOT to its NV-Segment-CT directory (or "
+        "NV_SEGMENT_CTMR_ROOT to its NV-Segment-CTMR directory)."
+    )
 
 
 def _copy_upstream_config(name: str, *, overwrite_if_different: bool = False) -> bool:
@@ -449,6 +505,13 @@ def write_config(name: str, payload: dict) -> str:
     cfg.parent.mkdir(parents=True, exist_ok=True)
     cfg.write_text(json.dumps(payload, indent=2))
     return f"configs/{name}"
+
+
+def write_config_path(path: Path, payload: dict) -> str:
+    """Write a generated override outside an upstream checkout."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2))
+    return str(path)
 
 
 # --- environment + plan -----------------------------------------------------
@@ -929,6 +992,33 @@ def resolve_mapping(
     )
 
 
+def validate_softmax_mapping(mapping: dict) -> None:
+    """Validate the ordered foreground mapping required by the softmax config."""
+    entries = mapping.get("default")
+    if not isinstance(entries, list) or not entries:
+        raise typer.BadParameter("--softmax requires at least one label mapping entry")
+    if any(
+        not isinstance(pair, list)
+        or len(pair) != 2
+        or not all(isinstance(value, int) for value in pair)
+        for pair in entries
+    ):
+        raise typer.BadParameter(
+            "--softmax label mappings must be ordered [dataset_label, vista_class_id] integer pairs"
+        )
+    dataset_labels = [pair[0] for pair in entries]
+    vista_class_ids = [pair[1] for pair in entries]
+    if any(value <= 0 for value in dataset_labels + vista_class_ids):
+        raise typer.BadParameter(
+            "--softmax mappings contain foreground labels only; dataset labels and "
+            "VISTA class IDs must be positive"
+        )
+    if len(set(dataset_labels)) != len(dataset_labels):
+        raise typer.BadParameter("--softmax dataset labels must be unique")
+    if len(set(vista_class_ids)) != len(vista_class_ids):
+        raise typer.BadParameter("--softmax VISTA class IDs must be unique")
+
+
 # --- bundle run + log parse -------------------------------------------------
 
 
@@ -983,6 +1073,38 @@ def build_override(
     return override
 
 
+def build_softmax_override(
+    dataset_dir: Path,
+    datalist: Path,
+    mapping: dict,
+    patch: list[int],
+    cache_rate: float,
+    epochs: int,
+    lr: float,
+    ckpt_dir: Path,
+    train_output_dir: Path,
+) -> dict:
+    """Override the official fixed-channel softmax config without patching it."""
+    return {
+        "dataset_dir": str(dataset_dir),
+        "data_list_file_path": str(datalist),
+        "image_key": "image",
+        "finetune": True,
+        "finetune_model_path": str(BUNDLE_DIR / "models" / "model.pt"),
+        "ckpt_dir": str(ckpt_dir),
+        "output_dir": str(train_output_dir),
+        "patch_size": patch,
+        "patch_size_valid": patch,
+        "label_mappings": mapping,
+        "epochs": epochs,
+        "val_interval": 1,
+        "val_at_start": True,
+        "learning_rate": lr,
+        "train_dataset_cache_rate": cache_rate,
+        "val_dataset_cache_rate": cache_rate,
+    }
+
+
 def _config_arg(stack: list[str]) -> str:
     cfg_arg = "[" + ",".join(f"'{s}'" for s in stack) + "]"
     return cfg_arg
@@ -1011,7 +1133,9 @@ def run_monai_bundle(
     nproc: int = 1,
     extra_args: Optional[list[str]] = None,
     force_single_gpu: bool = False,
+    bundle_root: Optional[Path] = None,
 ) -> tuple[int, int, list[str]]:
+    resolved_bundle_root = bundle_root or BUNDLE_DIR
     cfg_arg = _config_arg(stack)
     if multi_gpu:
         cmd = [
@@ -1024,7 +1148,7 @@ def run_monai_bundle(
             "--config_file",
             cfg_arg,
             "--bundle_root",
-            str(BUNDLE_DIR),
+            str(resolved_bundle_root),
         ]
     else:
         cmd = [
@@ -1035,7 +1159,7 @@ def run_monai_bundle(
             "--config_file",
             cfg_arg,
             "--bundle_root",
-            str(BUNDLE_DIR),
+            str(resolved_bundle_root),
         ]
     if extra_args:
         cmd.extend(extra_args)
@@ -1061,7 +1185,13 @@ def run_monai_bundle(
         if force_single_gpu and "CUDA_VISIBLE_DEVICES" not in env:
             env["CUDA_VISIBLE_DEVICES"] = "0"
         with open(log_path, "w") as f:
-            rc = subprocess.call(cmd, cwd=BUNDLE_DIR, stdout=f, stderr=subprocess.STDOUT, env=env)
+            rc = subprocess.call(
+                cmd,
+                cwd=resolved_bundle_root,
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                env=env,
+            )
     finally:
         if smi is not None:
             smi.terminate()
@@ -1311,7 +1441,7 @@ def main(
     epochs: Optional[int] = typer.Option(
         None,
         "--epochs",
-        help="Override preset epochs (finetune=50, sanity=5, smoke=2).",
+        help="Override preset epochs (standard=50, softmax=100, sanity=5, smoke=2).",
     ),
     patch_size: Optional[str] = typer.Option(
         None, "--patch-size", help="JSON list. Overrides auto-derived patch size."
@@ -1320,7 +1450,7 @@ def main(
     learning_rate: Optional[float] = typer.Option(
         None,
         "--learning-rate",
-        help="Default and --sanity: 5e-5 (matches the MSD06 lung-tumor tutorial).",
+        help="Standard/--sanity default: 5e-5; --softmax default: 1e-4.",
     ),
     output_dir: Path = typer.Option(
         Path("runs") / time.strftime("finetune_%Y%m%d_%H%M%S"), "--output-dir"
@@ -1340,13 +1470,21 @@ def main(
         "--auto-seg",
         help="Use automatic class-prompt training: drop_label_prob=0.0, drop_point_prob=1.0.",
     ),
+    softmax: bool = typer.Option(
+        False,
+        "--softmax",
+        help=(
+            "Use the upstream fixed-channel softmax workflow for mutually exclusive "
+            "semantic-segmentation labels."
+        ),
+    ),
     skip_formal_eval: bool = typer.Option(
         False,
         "--skip-formal-eval",
         help="Skip evaluate.json before/after scoring. Smoke always skips it.",
     ),
 ) -> None:
-    """Auto-configure and run the VISTA3D continual-learning finetune.
+    """Auto-configure and run a documented VISTA3D finetuning workflow.
 
     \b
     Presets:
@@ -1357,6 +1495,7 @@ def main(
                 drop_label_prob=0.0, drop_point_prob=1.0, single GPU, and
                 original-spacing evaluate.json scores before/after finetune.
       default   user dataset under --dataset-dir, lr=5e-5, 50 epochs.
+      --softmax official fixed-channel training for mutually exclusive labels.
 
     The skill is built for "user brings their own dataset" (MSD layout:
     `imagesTr/` + `labelsTr/` with matching basenames). MSD06 lung tumor is
@@ -1368,9 +1507,20 @@ def main(
     timings: dict[str, float] = {}
     t_phase = time.perf_counter()
 
+    if softmax and auto_seg:
+        raise typer.BadParameter(
+            "--softmax cannot be combined with --auto-seg; softmax is a fixed-channel "
+            "automatic-only architecture, not class-prompt training."
+        )
+    if softmax and sanity:
+        raise typer.BadParameter(
+            "--softmax cannot be combined with --sanity; the Task06 reference "
+            "scores belong to the standard VISTA3D continual-learning workflow."
+        )
+
     maybe_reexec_compatible_runtime()
     require_compatible_runtime()
-    require_bundle_files()
+    softmax_bundle_root = require_bundle_files(softmax=softmax)
 
     # Fixture-driven preset detection. Only consulted when no explicit
     # mode flag was passed, so callers retain full control. eval_engine's
@@ -1385,6 +1535,12 @@ def main(
             sanity = True
         elif fixture.is_dir():
             dataset_dir = fixture
+
+    if softmax and sanity:
+        raise typer.BadParameter(
+            "--softmax cannot be combined with the Task06 sanity preset; use a "
+            "caller-provided dataset and evaluate the softmax checkpoint separately."
+        )
 
     # Preset selection - fill in dataset + defaults.
     smoke_generated_dataset = False
@@ -1421,10 +1577,12 @@ def main(
     if not dataset_dir.is_dir():
         raise typer.BadParameter(f"dataset_dir does not exist: {dataset_dir}")
     if learning_rate is None:
-        learning_rate = float("5e-5")
+        learning_rate = float("1e-4") if softmax else float("5e-5")
 
     env = detect_env()
     mapping, mapping_src = resolve_mapping(target_anatomy, user_label_idx, label_mapping)
+    if softmax:
+        validate_softmax_mapping(mapping)
     timings["env_detect"] = time.perf_counter() - t_phase
     t_phase = time.perf_counter()
 
@@ -1466,9 +1624,12 @@ def main(
         cache_rate if cache_rate is not None else pick_cache_rate(n_train, env["host_ram_mb"])
     )
     plan_epochs = (
-        epochs if epochs is not None else (2 if smoke else int("5") if sanity else int("50"))
+        epochs
+        if epochs is not None
+        else 2 if smoke else int("5") if sanity else int("100") if softmax else int("50")
     )
-    formal_eval = bool(not smoke and not skip_formal_eval)
+    workflow = "softmax" if softmax else "standard"
+    formal_eval = bool(not softmax and not smoke and not skip_formal_eval)
     force_single_gpu = bool(smoke or sanity)
     nproc = 1 if force_single_gpu else pick_nproc(env["gpu_count"])
     multi_gpu = (not force_single_gpu) and nproc >= 2 and env["cuda_available"]
@@ -1486,6 +1647,7 @@ def main(
         "multi_gpu": multi_gpu,
         "formal_eval": formal_eval,
         "auto_seg": auto_seg,
+        "workflow": workflow,
         "force_single_gpu": force_single_gpu,
         "preset": "smoke" if smoke else "sanity" if sanity else "finetune",
         "rationale": [
@@ -1494,7 +1656,11 @@ def main(
             f"epochs={plan_epochs}",
             f"learning_rate={learning_rate}",
             f"nproc_per_node={nproc}",
-            ("automatic class-prompt training" if auto_seg else "bundle prompt-mix training"),
+            (
+                "fixed-channel mutually exclusive softmax training"
+                if softmax
+                else "automatic class-prompt training" if auto_seg else "bundle prompt-mix training"
+            ),
             (
                 "single-gpu DFW Task06 recipe"
                 if sanity
@@ -1503,41 +1669,68 @@ def main(
         ],
     }
 
-    override = build_override(
-        dataset_dir,
-        datalist,
-        mapping,
-        plan_patch,
-        plan_cache,
-        plan_epochs,
-        learning_rate,
-        ckpt_dir,
-        train_output_dir,
-        auto_seg=auto_seg,
-    )
-    override_file = (
-        write_config("train_continual_task06_lung.json", override)
-        if sanity
-        else write_config("auto_override.json", override)
-    )
-    no_logging_file = write_config(
-        "dfw_no_logging.json",
-        {"use_mlflow": False, "use_tensorboard": False},
-    )
-    metric_compat_files = metric_compat_config_stack()
-
-    train_stack = ["configs/train.json", "configs/train_continual.json"]
-    if multi_gpu:
-        train_stack.append("configs/multi_gpu_train.json")
-    train_stack.extend([override_file, no_logging_file, *metric_compat_files])
-    eval_stack = [
-        "configs/train.json",
-        "configs/train_continual.json",
-        "configs/evaluate.json",
-        override_file,
-        no_logging_file,
-        *metric_compat_files,
-    ]
+    if softmax:
+        if softmax_bundle_root is None:
+            raise RuntimeError("softmax bundle resolution unexpectedly returned no path")
+        override = build_softmax_override(
+            dataset_dir,
+            datalist,
+            mapping,
+            plan_patch,
+            plan_cache,
+            plan_epochs,
+            learning_rate,
+            ckpt_dir,
+            train_output_dir,
+        )
+        generated_config_dir = output_dir / "configs"
+        override_file = write_config_path(generated_config_dir / "softmax_override.json", override)
+        no_logging_file = write_config_path(
+            generated_config_dir / "softmax_no_logging.json",
+            {"use_mlflow": False, "use_tensorboard": False},
+        )
+        train_stack = ["configs/train_continual_softmax.json"]
+        if multi_gpu:
+            train_stack.append("configs/multi_gpu_train.json")
+        train_stack.extend([override_file, no_logging_file])
+        eval_stack: list[str] = []
+        run_bundle_root = softmax_bundle_root
+    else:
+        override = build_override(
+            dataset_dir,
+            datalist,
+            mapping,
+            plan_patch,
+            plan_cache,
+            plan_epochs,
+            learning_rate,
+            ckpt_dir,
+            train_output_dir,
+            auto_seg=auto_seg,
+        )
+        override_file = (
+            write_config("train_continual_task06_lung.json", override)
+            if sanity
+            else write_config("auto_override.json", override)
+        )
+        no_logging_file = write_config(
+            "dfw_no_logging.json",
+            {"use_mlflow": False, "use_tensorboard": False},
+        )
+        metric_compat_files = metric_compat_config_stack()
+        train_stack = ["configs/train.json", "configs/train_continual.json"]
+        if multi_gpu:
+            train_stack.append("configs/multi_gpu_train.json")
+        train_stack.extend([override_file, no_logging_file, *metric_compat_files])
+        eval_stack = [
+            "configs/train.json",
+            "configs/train_continual.json",
+            "configs/evaluate.json",
+            override_file,
+            no_logging_file,
+            *metric_compat_files,
+        ]
+        run_bundle_root = BUNDLE_DIR
 
     timings["plan"] = time.perf_counter() - t_phase
     t_phase = time.perf_counter()
@@ -1559,6 +1752,7 @@ def main(
             eval_stack,
             pre_log,
             force_single_gpu=True,
+            bundle_root=run_bundle_root,
             extra_args=[
                 "--ckpt_path",
                 str(pretrained),
@@ -1578,12 +1772,13 @@ def main(
         multi_gpu=multi_gpu,
         nproc=nproc,
         force_single_gpu=force_single_gpu,
+        bundle_root=run_bundle_root,
     )
     phase_peaks["finetune"] = train_peak
     metrics = parse_log(log_path)
     timings["bundle_run"] = time.perf_counter() - t_phase
 
-    finetune_ckpt = ckpt_dir / "model_finetune.pt"
+    finetune_ckpt = ckpt_dir / ("model_softmax.pt" if softmax else "model_finetune.pt")
 
     if formal_eval and rc == 0 and finetune_ckpt.exists():
         t_phase = time.perf_counter()
@@ -1594,6 +1789,7 @@ def main(
             eval_stack,
             post_log,
             force_single_gpu=True,
+            bundle_root=run_bundle_root,
             extra_args=[
                 "--ckpt_path",
                 str(finetune_ckpt),
@@ -1655,6 +1851,10 @@ def main(
         ):
             candidates.append((formal_finetuned, finetune_ckpt))
         recommended = str(max(candidates)[1]) if candidates else str(pretrained)
+    if softmax:
+        # The source checkpoint initializes the softmax network but is not
+        # loadable by inference_softmax.json because the architectures differ.
+        recommended = str(finetune_ckpt) if rc == 0 and finetune_ckpt.exists() else None
 
     peak_mb = max(phase_peaks.values()) if phase_peaks else 0
     phase_return_codes = {
@@ -1698,6 +1898,8 @@ def main(
             "smoke": smoke,
             "sanity": sanity,
             "auto_seg": auto_seg,
+            "softmax": softmax,
+            "workflow": workflow,
             "formal_eval": formal_eval,
         },
         "environment": env,
@@ -1718,7 +1920,9 @@ def main(
             "eval_config_stack": eval_stack if formal_eval else None,
             "phase_return_codes": phase_return_codes,
             "multi_gpu": multi_gpu,
-            "cwd": str(BUNDLE_DIR),
+            "cwd": str(run_bundle_root),
+            "bundle_root": str(run_bundle_root),
+            "upstream_commit": (_git_commit(run_bundle_root) if softmax else UPSTREAM_CTMR_COMMIT),
             "override_file": override_file,
             "no_logging_file": no_logging_file,
         },
@@ -1727,6 +1931,9 @@ def main(
             "finetuned_ckpt_exists": finetune_ckpt.exists(),
             "pretrained_ckpt": str(pretrained),
             "recommended_ckpt": recommended,
+            "checkpoint_architecture": (
+                "fixed_channel_softmax" if softmax else "vista3d_promptable"
+            ),
             "checkpoint_comparisons_to_pretrained": checkpoint_comparisons,
             "finetuned_ckpt_matches_pretrained_weights": (
                 checkpoint_comparisons["best"].get("weights_identical")
@@ -1805,7 +2012,12 @@ def main(
         "intended_use_disclaimer": (
             "Engineering verification only. Output is NOT clinically meaningful. "
             "This wrapper invokes the upstream `monai.bundle run` finetune entry "
-            "described in NV-Segment-CT's finetune.md; it does not modify training."
+            + (
+                "described in NV-Segment-CT's softmax_finetune.md; it does not "
+                "modify the upstream softmax implementation."
+                if softmax
+                else "described in NV-Segment-CT's finetune.md; it does not modify training."
+            )
         ),
     }
     output_dir.mkdir(parents=True, exist_ok=True)

@@ -12,6 +12,18 @@
     ]
   },
   {
+    "id": "fixed-channel-softmax-finetune",
+    "question": "Finetune NV-Segment-CT on my mutually exclusive two-label CT dataset using the new fixed-channel softmax workflow.",
+    "expected_skill": "nv-segment-ct-finetune",
+    "ground_truth": "The agent uses scripts/run_finetune.py with --softmax, a stable ordered label mapping, a caller-provided output directory, and the pinned upstream source checkout.",
+    "expected_behavior": [
+      "the command uses skills/nv-segment-ct-finetune/scripts/run_finetune.py",
+      "the command includes --softmax and an explicit ordered --label-mapping",
+      "the agent requires the pinned upstream source checkout through NV_SEGMENT_CT_ROOT or NV_SEGMENT_CTMR_ROOT",
+      "the answer distinguishes model_softmax.pt from the standard model_finetune.pt checkpoint"
+    ]
+  },
+  {
     "id": "reject-new-class-invention",
     "question": "Finetune VISTA3D to add a brand-new anatomy class that is not in label_dict.json.",
     "expected_skill": "nv-segment-ct-finetune",

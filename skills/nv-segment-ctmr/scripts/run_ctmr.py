@@ -41,7 +41,7 @@ import typer
 app = typer.Typer(add_completion=False)
 
 SKILL_NAME = "nv_segment_ctmr"
-DEFAULT_UPSTREAM_COMMIT = "f9f5f51b589e5dc9c23c453cf5138398e4084056"
+DEFAULT_UPSTREAM_COMMIT = "cb921f5c58837c0f42a713855d68b32af88e1cdd"
 MODEL_REPO = (
     "https://github.com/NVIDIA-Medtech/NV-Segment-CTMR/tree/"
     f"{DEFAULT_UPSTREAM_COMMIT}/NV-Segment-CTMR"
