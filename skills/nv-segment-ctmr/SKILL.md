@@ -2,7 +2,7 @@
 name: nv-segment-ctmr
 description: Used for running NV-Segment-CTMR on CT or MRI NIfTI volumes and recording label-map evidence. Not for clinical interpretation.
 license: Apache-2.0
-allowed-tools: Bash Read Write WebFetch Env
+allowed-tools: Bash, Read, Write, WebFetch, Env
 metadata:
   author: NVIDIA MedTech Team
   tags:
