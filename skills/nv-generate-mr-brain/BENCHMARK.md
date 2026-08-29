@@ -13,7 +13,7 @@ Recommended for publication based on the completed evaluation evidence in this r
 - Evaluator version: `1.3.2`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
 - Tasks: 3 evaluation tasks (3 positive)
-- Dataset digest: `sha256:6544c0c744a533b37f94490f5f73583a94f2e900338dc33d97afc79a31580915` (skill-evaluator-dataset-snapshot/1)
+- Dataset digest: `sha256:cd7314cae4d2269a61962e6b3e8e7cc821983453218701162a4526ceecd5ee28` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
 - Environment: `k8s-sandbox`
 - Tier 3 evidence: required for publication
@@ -45,12 +45,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 46% → 89% (+44 points) | 50% → 84% (+34 points) |
+| Overall | 45% → 98% (+53 points) | 58% → 99% (+41 points) |
 | Security | 100% → 100% (±0 points) | 100% → 100% (±0 points) |
-| Correctness | 27% → 100% (+73 points) | 33% → 87% (+53 points) |
-| Discoverability | 46% → 83% (+38 points) | 54% → 90% (+35 points) |
-| Effectiveness | 10% → 67% (+57 points) | 26% → 44% (+17 points) |
-| Efficiency | 47% → 97% (+50 points) | 38% → 100% (+62 points) |
+| Correctness | 20% → 100% (+80 points) | 53% → 100% (+47 points) |
+| Discoverability | 50% → 90% (+40 points) | 56% → 94% (+38 points) |
+| Effectiveness | 18% → 100% (+82 points) | 51% → 100% (+49 points) |
+| Efficiency | 39% → 100% (+61 points) | 27% → 100% (+73 points) |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Uplift is `skill score - baseline score`, shown in percentage points.
 
@@ -60,7 +60,7 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 
 | Tier | Purpose | Status | Evidence |
 |---|---|---|---|
-| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 5 finding(s) |
+| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 4 finding(s) |
 | Tier 2 | Semantic deduplication | **NOT RUN** | No result was recorded |
 | Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 3 task(s) |
 
@@ -69,7 +69,6 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 <details>
 <summary>Show detailed findings and successful checks</summary>
 
-- **MEDIUM** SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-generate-mr-brain/SKILL.md`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-generate-mr-brain/fixtures`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-generate-mr-brain/validators`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-generate-mr-brain/skill_manifest.yaml`)
