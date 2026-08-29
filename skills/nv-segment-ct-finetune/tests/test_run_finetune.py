@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import hashlib
 import importlib.util
 from pathlib import Path
 
@@ -26,33 +25,101 @@ assert spec.loader is not None
 spec.loader.exec_module(mod)
 
 
-def test_runtime_does_not_download_bundle_assets():
-    source = SCRIPT.read_text()
-
-    assert "urllib.request" not in source
-    assert "snapshot_download" not in source
-
-
-def test_require_bundle_files_stages_declared_local_assets(tmp_path, monkeypatch):
-    bundle = tmp_path / "bundle"
-    source_dir = tmp_path / "sources"
-    sources = {
-        "label_dict.json": source_dir / "label_dict.json",
-        "configs/train.json": source_dir / "train.json",
-    }
-    expected = {}
-    for relative_path, source in sources.items():
-        source.parent.mkdir(parents=True, exist_ok=True)
-        source.write_text(relative_path)
-        expected[relative_path] = hashlib.sha256(source.read_bytes()).hexdigest()
+def test_prepare_bundle_files_stages_train_configs_from_local_upstream(tmp_path, monkeypatch):
+    bundle = tmp_path / "skill" / "bundle"
+    upstream_configs = (
+        tmp_path / ".workbench_data" / "upstreams" / "NV-Segment-CTMR" / "NV-Segment-CT" / "configs"
+    )
+    upstream_configs.mkdir(parents=True)
+    for name in (
+        "train.json",
+        "train_continual.json",
+        "multi_gpu_train.json",
+        "evaluate.json",
+    ):
+        (upstream_configs / name).write_text(f'{{"name": "{name}"}}\n')
+    (bundle / "configs").mkdir(parents=True)
+    (bundle / "metadata.json").write_text("{}\n")
+    (bundle / "vista3d_pretrained_model").mkdir(parents=True)
+    (bundle / "vista3d_pretrained_model" / "model.pt").write_bytes(b"model")
+    (bundle / "label_dict.json").write_text('{"lung tumor": 23}\n')
 
     monkeypatch.setattr(mod, "BUNDLE_DIR", bundle)
-    monkeypatch.setattr(mod, "BUNDLE_ASSET_SOURCES", sources)
-    monkeypatch.setattr(mod, "EXPECTED_BUNDLE_SHA256", expected)
-    mod.require_bundle_files()
+    monkeypatch.setattr(mod, "SKILL_DIR", tmp_path / "skill")
+    monkeypatch.setattr(mod, "_REPO_ROOT", tmp_path)
+    monkeypatch.setattr(mod, "LABEL_DICT", bundle / "label_dict.json")
+    notes = mod.prepare_bundle_files()
 
-    for relative_path, source in sources.items():
-        assert (bundle / relative_path).read_bytes() == source.read_bytes()
+    for name in (
+        "train.json",
+        "train_continual.json",
+        "multi_gpu_train.json",
+        "evaluate.json",
+    ):
+        assert (bundle / "configs" / name).read_text() == f'{{"name": "{name}"}}\n'
+    assert (bundle / "configs" / "metadata.json").is_file()
+    assert (bundle / "models" / "model.pt").is_file()
+    assert "restored configs/train.json from local upstream cache" in notes
+
+
+def test_prepare_bundle_files_restores_drifted_train_configs(tmp_path, monkeypatch):
+    bundle = tmp_path / "skill" / "bundle"
+    upstream_configs = (
+        tmp_path / ".workbench_data" / "upstreams" / "NV-Segment-CTMR" / "NV-Segment-CT" / "configs"
+    )
+    upstream_configs.mkdir(parents=True)
+    for name in (
+        "train.json",
+        "train_continual.json",
+        "multi_gpu_train.json",
+        "evaluate.json",
+    ):
+        (upstream_configs / name).write_text(f'{{"canonical": "{name}"}}\n')
+    (bundle / "configs").mkdir(parents=True)
+    for name in (
+        "train.json",
+        "train_continual.json",
+        "multi_gpu_train.json",
+        "evaluate.json",
+    ):
+        (bundle / "configs" / name).write_text(f'{{"drifted": "{name}"}}\n')
+    (bundle / "metadata.json").write_text("{}\n")
+    (bundle / "vista3d_pretrained_model").mkdir(parents=True)
+    (bundle / "vista3d_pretrained_model" / "model.pt").write_bytes(b"model")
+    (bundle / "label_dict.json").write_text('{"lung tumor": 23}\n')
+
+    monkeypatch.setattr(mod, "BUNDLE_DIR", bundle)
+    monkeypatch.setattr(mod, "SKILL_DIR", tmp_path / "skill")
+    monkeypatch.setattr(mod, "_REPO_ROOT", tmp_path)
+    monkeypatch.setattr(mod, "LABEL_DICT", bundle / "label_dict.json")
+    notes = mod.prepare_bundle_files()
+
+    assert (bundle / "configs" / "evaluate.json").read_text() == '{"canonical": "evaluate.json"}\n'
+    assert "restored configs/evaluate.json from local upstream cache" in notes
+
+
+def test_upstream_config_dirs_accept_explicit_local_checkout(tmp_path, monkeypatch):
+    config_dir = (
+        tmp_path / ".workbench_data" / "upstreams" / "NV-Segment-CTMR" / "NV-Segment-CT" / "configs"
+    )
+    config_dir.mkdir(parents=True)
+    monkeypatch.setattr(mod, "_REPO_ROOT", tmp_path)
+
+    assert config_dir in mod._upstream_config_dirs()
+
+
+def test_resolve_softmax_bundle_root_accepts_pinned_layout(tmp_path, monkeypatch):
+    bundle_root = tmp_path / "NV-Segment-CT"
+    (bundle_root / "configs").mkdir(parents=True)
+    (bundle_root / "scripts").mkdir()
+    for name in ("train_continual_softmax.json", "inference_softmax.json"):
+        (bundle_root / "configs" / name).write_text("{}\n")
+    (bundle_root / "scripts" / "vista3d_softmax.py").write_text("class Vista3dSoftmax: pass\n")
+
+    monkeypatch.setenv("NV_SEGMENT_CT_ROOT", str(bundle_root))
+    monkeypatch.delenv("NV_SEGMENT_CTMR_ROOT", raising=False)
+
+    assert mod.resolve_softmax_bundle_root() == bundle_root
 
 
 def test_build_override_defines_bundle_image_and_label_keys(tmp_path):
@@ -92,32 +159,71 @@ def test_build_override_auto_seg_matches_task06_prompt_settings(tmp_path):
     assert override["resample_to_spacing"] == expected_spacing
 
 
+def test_build_softmax_override_uses_fixed_channel_contract(tmp_path, monkeypatch):
+    bundle = tmp_path / "bundle"
+    monkeypatch.setattr(mod, "BUNDLE_DIR", bundle)
+
+    override = mod.build_softmax_override(
+        tmp_path / "dataset",
+        tmp_path / "datalist.json",
+        {"default": [[1, 3], [2, 13]]},
+        [128, 128, 128],
+        0.5,
+        10,
+        1e-4,
+        tmp_path / "checkpoints",
+        tmp_path / "validation",
+    )
+
+    assert override["label_mappings"] == {"default": [[1, 3], [2, 13]]}
+    assert override["finetune_model_path"] == str(bundle / "models" / "model.pt")
+    assert override["ckpt_dir"] == str(tmp_path / "checkpoints")
+    assert override["patch_size"] == [128, 128, 128]
+    assert "drop_label_prob" not in override
+    assert "drop_point_prob" not in override
+
+
+def test_validate_softmax_mapping_accepts_unique_positive_pairs():
+    mod.validate_softmax_mapping({"default": [[1, 3], [2, 13]]})
+
+
+def test_child_process_env_keeps_runtime_values_and_drops_credentials(monkeypatch):
+    monkeypatch.setenv("PATH", "/trusted/bin")
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2")
+    monkeypatch.setenv("OPENAI_API_KEY", "not-forwarded")
+    monkeypatch.setenv("DATABRICKS_TOKEN", "tracking-only")
+
+    env = mod._child_process_env({"NVSEG_FINETUNE_IN_AUTO_VENV": "1"})
+
+    assert env["PATH"] == "/trusted/bin"
+    assert env["CUDA_VISIBLE_DEVICES"] == "2"
+    assert env["NVSEG_FINETUNE_IN_AUTO_VENV"] == "1"
+    assert "OPENAI_API_KEY" not in env
+    assert "DATABRICKS_TOKEN" not in env
+
+    tracking_env = mod._child_process_env(extra_keys=mod._MLFLOW_CHILD_ENV_KEYS)
+    assert tracking_env["DATABRICKS_TOKEN"] == "tracking-only"
+    assert "OPENAI_API_KEY" not in tracking_env
+
+
+@pytest.mark.parametrize(
+    "mapping",
+    [
+        {"default": []},
+        {"default": [[0, 3]]},
+        {"default": [[1, 3], [1, 13]]},
+        {"default": [[1, 3], [2, 3]]},
+    ],
+)
+def test_validate_softmax_mapping_rejects_invalid_channels(mapping):
+    with pytest.raises(mod.typer.BadParameter, match="softmax"):
+        mod.validate_softmax_mapping(mapping)
+
+
 def test_task06_fixture_selects_sanity_preset() -> None:
     assert mod._fixture_preset(Path("/data/Task06")) == "sanity"
     assert mod._fixture_preset(Path("/data/Task06_Lung")) == "sanity"
     assert mod._fixture_preset(Path("/data/spleen_micro")) == "smoke"
-
-
-def test_monai_runtime_pin_is_exact(monkeypatch):
-    monkeypatch.setattr(mod, "package_version", lambda _name: "1.4.1")
-
-    with pytest.raises(mod.typer.BadParameter, match="monai==1.4.0"):
-        mod.require_compatible_runtime()
-
-
-def test_bundle_integrity_rejects_changed_asset(tmp_path, monkeypatch):
-    asset = tmp_path / "asset.json"
-    asset.write_text("trusted\n")
-    expected = hashlib.sha256(asset.read_bytes()).hexdigest()
-    monkeypatch.setattr(mod, "BUNDLE_DIR", tmp_path)
-    monkeypatch.setattr(mod, "EXPECTED_BUNDLE_SHA256", {"asset.json": expected})
-    monkeypatch.setattr(mod, "BUNDLE_ASSET_SOURCES", {"asset.json": tmp_path / "missing.json"})
-
-    mod.require_bundle_files()
-    asset.write_text("changed\n")
-
-    with pytest.raises(mod.typer.BadParameter, match="bundle setup or integrity check failed"):
-        mod.require_bundle_files()
 
 
 def test_sanity_dataset_prefers_explicit_paths(tmp_path):

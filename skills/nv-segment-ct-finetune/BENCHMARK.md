@@ -9,16 +9,27 @@ Recommended for publication based on the completed evaluation evidence in this r
 ## Evaluation Metadata
 
 - Skill: `nv-segment-ct-finetune`
-- Evaluation date: 2026-08-19
-- Evaluator version: `1.2.7`
+- Evaluation date: 2026-08-29
+- Evaluator version: `1.3.2`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
-- Tasks: 2 evaluation tasks (2 positive)
-- Dataset digest: `sha256:0998a2866f67df2bd623616ef19534479c6166d789cb31e93771fe4eb281cc12` (skill-evaluator-dataset-snapshot/1)
+- Tasks: 3 evaluation tasks (3 positive)
+- Dataset digest: `sha256:4afa050e5c2e5076fecb4cd236e673d9c9950d3e2f662cfd7f4733c76b32f543` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
-- Environment: `local`
+- Environment: `k8s-sandbox`
 - Tier 3 evidence: required for publication
 
-Tasks ran on the trusted local host; local mode is not sandboxed.
+Each task attempt ran in its own isolated sandbox pod.
+
+## Execution and Provenance
+
+- Validation status: `passed`
+- Report generation: `complete`
+- Evaluator version: `1.3.2`
+- Git commit: `64be1471c5fd4364d27cf503eb8218cb86f36ee2`
+- Content type: requested `auto`, detected `skill`
+- Container image: `gitlab-master.nvidia.com:5005/nvcarps/ci-group/nvcarps-ci/skillevaluator-ci:sha-64be1471c5fd4364d27cf503eb8218cb86f36ee2`
+- Container image digest: `not recorded`
+- Tier 3: requested `true`, executed `true`, status `succeeded`
 
 ## What This Report Answers
 
@@ -34,12 +45,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 47% → 90% (+43 points) | 55% → 87% (+32 points) |
-| Security | 100% → 100% (±0 points) | 100% → 100% (±0 points) |
-| Correctness | 20% → 100% (+80 points) | 50% → 100% (+50 points) |
-| Discoverability | 47% → 99% (+52 points) | 44% → 84% (+41 points) |
-| Effectiveness | 24% → 62% (+38 points) | 50% → 69% (+19 points) |
-| Efficiency | 43% → 89% (+46 points) | 31% → 83% (+53 points) |
+| Overall | 41% → 91% (+50 points) | 60% → 92% (+33 points) |
+| Security | 67% → 100% (+33 points) | 100% → 100% (±0 points) |
+| Correctness | 47% → 93% (+47 points) | 87% → 100% (+13 points) |
+| Discoverability | 42% → 96% (+54 points) | 42% → 85% (+44 points) |
+| Effectiveness | 21% → 82% (+61 points) | 55% → 76% (+21 points) |
+| Efficiency | 29% → 84% (+55 points) | 15% → 100% (+85 points) |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Uplift is `skill score - baseline score`, shown in percentage points.
 
@@ -51,7 +62,7 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 |---|---|---|---|
 | Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 4 finding(s) |
 | Tier 2 | Semantic deduplication | **NOT RUN** | No result was recorded |
-| Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 2 task(s) |
+| Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 3 task(s) |
 
 ## Findings and Observations
 

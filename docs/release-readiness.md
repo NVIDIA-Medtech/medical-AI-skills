@@ -21,9 +21,10 @@ human review, and repo validation all line up:
   verifier coverage, provenance gaps, trace digest, artifacts, and limitations
   are readable without opening every JSON file first.
 - Repo validation: `make verify-skills` passes. With-vs-without checks pass when
-  the skill is part of that backend comparison story. `make nv-base-validate`
-  should pass in an NV-BASE environment when the release depends on that
-  internal profile, or the unavailable profile is recorded as a release gap.
+  the skill is part of that backend comparison story.
+  `make skill-evaluator-validate` should pass with the public SkillEvaluator
+  external profile, or the unavailable preflight is recorded as a release gap.
+  Managed NVSkills CI remains a separate PR gate.
 
 ## Snapshot command
 
@@ -66,9 +67,10 @@ Evidence from the local readiness run:
 - Pending external LLM calls: 0. Maximum possible repair calls: 0.
 - Reviewed with-vs-without payload fingerprint:
   `a226c31aefa65f97a760ee97f3d90560ecda10cd409aed24fe8f4712d1354143`.
-- NV-BASE is not part of this no-network snapshot. Run
-  `make nv-base-validate` in an NV-BASE environment before claiming internal
-  profile readiness.
+- SkillEvaluator is not part of this historical no-network snapshot. Run
+  `make skill-evaluator-validate` with the public tool before claiming external
+  publication-preflight readiness; do not present it as a managed NVSkills CI
+  result.
 
 There are no top lifecycle blockers in this snapshot. Review priority therefore
 moves from blocker cleanup to release-claim review and evidence-boundary review.
