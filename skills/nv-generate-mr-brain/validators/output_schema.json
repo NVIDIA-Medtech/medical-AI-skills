@@ -101,19 +101,22 @@
         "subprocess_seconds": {"type": "number"},
         "model_inventory": {
           "type": "object",
-          "required": ["all_present", "files"],
+          "required": ["all_present", "all_sha256_match", "files"],
           "properties": {
             "all_present": {"type": "boolean"},
+            "all_sha256_match": {"type": "boolean"},
             "files": {
               "type": "array",
               "items": {
                 "type": "object",
-                "required": ["path", "present"],
+                "required": ["path", "present", "expected_sha256", "sha256_match"],
                 "properties": {
                   "path": {"type": "string"},
                   "present": {"type": "boolean"},
                   "bytes": {"type": ["integer", "null"]},
-                  "sha256": {"type": "string"}
+                  "sha256": {"type": "string"},
+                  "expected_sha256": {"type": "string"},
+                  "sha256_match": {"type": "boolean"}
                 }
               }
             }

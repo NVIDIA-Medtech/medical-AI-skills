@@ -21,5 +21,17 @@
       "the command shape still uses scripts/run_mr_brain.py",
       "the agent does NOT claim clinical or production-training validity"
     ]
+  },
+  {
+    "id": "generate-brain-mra-v1",
+    "question": "Prepare an NV-Generate MR-Brain v1 command for an axial MRA request at /data/mra_request.json.",
+    "expected_skill": "nv-generate-mr-brain",
+    "ground_truth": "The agent uses scripts/run_mr_brain.py with --modality mri_mra and warns that upstream reports sparse MRA training coverage.",
+    "expected_behavior": [
+      "the command uses skills/nv-generate-mr-brain/scripts/run_mr_brain.py",
+      "the command includes --modality mri_mra",
+      "the agent mentions sparse MRA training coverage or that MRA output quality is not guaranteed",
+      "the agent does NOT claim clinical or production-training validity"
+    ]
   }
 ]

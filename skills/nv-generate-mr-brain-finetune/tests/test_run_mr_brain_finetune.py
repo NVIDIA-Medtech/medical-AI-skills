@@ -81,8 +81,8 @@ def _fake_upstream(root: Path) -> Path:
         json.dumps(
             {
                 "trained_autoencoder_path": "models/autoencoder_v1.pt",
-                "existing_ckpt_filepath": "models/diff_unet_3d_rflow-mr-brain_v0.pt",
-                "model_filename": "diff_unet_3d_rflow-mr-brain_v0.pt",
+                "existing_ckpt_filepath": "models/diff_unet_3d_rflow-mr-brain_v1.pt",
+                "model_filename": "diff_unet_3d_rflow-mr-brain_v1.pt",
             }
         )
     )
@@ -90,7 +90,12 @@ def _fake_upstream(root: Path) -> Path:
         json.dumps(
             {
                 "diffusion_unet_train": {"lr": 1e-5, "batch_size": 1},
-                "diffusion_unet_inference": {"num_inference_steps": 30},
+                "diffusion_unet_inference": {
+                    "dim": [256, 256, 128],
+                    "spacing": [0.94, 0.94, 1.36],
+                    "num_inference_steps": 30,
+                    "cfg_guidance_scale": 2,
+                },
             }
         )
     )
@@ -116,6 +121,14 @@ def test_validate_datalist_rejects_missing_image(tmp_path: Path) -> None:
         mod._validate_datalist(tmp_path, datalist, "mri_t1")
 
 
+def test_validate_datalist_accepts_v1_mra_modalities(tmp_path: Path) -> None:
+    datalist = _write_datalist(tmp_path)
+
+    summary = mod._validate_datalist(tmp_path, datalist, "mri_mra")
+
+    assert summary["modalities"] == ["mri_mra"]
+
+
 def test_stage_configs_targets_existing_upstream_scripts(tmp_path: Path) -> None:
     datalist = _write_datalist(tmp_path)
     args = _args(tmp_path, datalist)
@@ -132,6 +145,8 @@ def test_stage_configs_targets_existing_upstream_scripts(tmp_path: Path) -> None
     staged_env = json.loads(Path(staged["env_config"]).read_text())
     assert staged_env["json_data_list"].endswith("workflow/dataset.json")
     assert staged_env["modality_mapping_path"].endswith("configs/modality_mapping.json")
+    assert staged_env["existing_ckpt_filepath"].endswith("rflow-mr-brain_v1.pt")
+    assert staged_env["model_filename"] == "diff_unet_3d_rflow-mr-brain_v1.pt"
 
     # Thin shim: only n_epochs (+ inference modality) is rewritten; other
     # hyperparameters are left exactly as they appear in the model-config JSON.
@@ -140,7 +155,27 @@ def test_stage_configs_targets_existing_upstream_scripts(tmp_path: Path) -> None
     assert staged_model["diffusion_unet_train"]["lr"] == 1e-5
     assert staged_model["diffusion_unet_train"]["batch_size"] == 1
     assert staged_model["diffusion_unet_inference"]["num_inference_steps"] == 30
+    assert staged_model["diffusion_unet_inference"]["dim"] == [256, 256, 128]
+    assert staged_model["diffusion_unet_inference"]["spacing"] == [0.94, 0.94, 1.36]
+    assert staged_model["diffusion_unet_inference"]["cfg_guidance_scale"] == 2
     assert staged_model["diffusion_unet_inference"]["modality"] == 9
+
+
+def test_download_plan_pins_both_model_revisions(tmp_path: Path) -> None:
+    datalist = _write_datalist(tmp_path)
+    args = _args(tmp_path, datalist)
+    args.download_model_data = True
+    upstream = _fake_upstream(tmp_path / "upstream")
+
+    plan = mod._build_command_plan(args, upstream)
+    downloads = plan[: len(mod.MODEL_ASSETS)]
+
+    assert len(downloads) == 2
+    assert all("huggingface_hub.commands.huggingface_cli" in command for command in downloads)
+    for command, asset in zip(downloads, mod.MODEL_ASSETS, strict=True):
+        assert asset["repo_id"] in command
+        assert asset["filename"] in command
+        assert command[command.index("--revision") + 1] == asset["revision"]
 
 
 def test_custom_model_config_override_is_used(tmp_path: Path) -> None:

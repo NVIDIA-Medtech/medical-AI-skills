@@ -54,6 +54,18 @@ UPSTREAM_ENTRYPOINT = (
     "python -m scripts.diff_model_create_training_data; " "python -m scripts.diff_model_train"
 )
 VERSION = "rflow-mr-brain"
+MODEL_ASSETS = (
+    {
+        "repo_id": "nvidia/NV-Generate-CT",
+        "revision": "75ac080fb1083c403793563477724c038e7d430c",
+        "filename": "models/autoencoder_v1.pt",
+    },
+    {
+        "repo_id": "nvidia/NV-Generate-MR-Brain",
+        "revision": "ef9759bf221265b2704569cdeeac20bbf03b62ee",
+        "filename": "models/diff_unet_3d_rflow-mr-brain_v1.pt",
+    },
+)
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_UPSTREAM = REPO_ROOT / ".workbench_data" / "upstreams" / "NV-Generate-CTMR"
 REQUIRED_UPSTREAM_FILES = (
@@ -71,10 +83,12 @@ SUPPORTED_MODALITIES = (
     "mri_t1",
     "mri_t2",
     "mri_flair",
+    "mri_mra",
     "mri_swi",
     "mri_t1_skull_stripped",
     "mri_t2_skull_stripped",
     "mri_flair_skull_stripped",
+    "mri_mra_skull_stripped",
     "mri_swi_skull_stripped",
 )
 
@@ -350,18 +364,21 @@ def _build_command_plan(
     model_def = str(staged["model_def"]) if staged else "<staged-model-def>"
     plan: list[list[str]] = []
     if args.download_model_data:
-        plan.append(
-            [
-                sys.executable,
-                "-m",
-                "scripts.download_model_data",
-                "--version",
-                VERSION,
-                "--root_dir",
-                str(upstream_root),
-                "--model_only",
-            ]
-        )
+        for asset in MODEL_ASSETS:
+            plan.append(
+                [
+                    sys.executable,
+                    "-m",
+                    "huggingface_hub.commands.huggingface_cli",
+                    "download",
+                    asset["repo_id"],
+                    asset["filename"],
+                    "--revision",
+                    asset["revision"],
+                    "--local-dir",
+                    str(upstream_root),
+                ]
+            )
     if not args.skip_create_training_data:
         plan.append(
             _module_command(
@@ -478,12 +495,18 @@ def _run_workflow(
 
     command_index = 0
     if args.download_model_data:
-        proc = _run_command(command_plan[command_index], upstream_root, env)
-        stdout_parts.append(proc.stdout)
-        stderr_parts.append(proc.stderr)
-        command_index += 1
-        if proc.returncode != 0:
-            return proc.returncode, "\n".join(stdout_parts), "\n".join(stderr_parts), command_plan
+        for _asset in MODEL_ASSETS:
+            proc = _run_command(command_plan[command_index], upstream_root, env)
+            stdout_parts.append(proc.stdout)
+            stderr_parts.append(proc.stderr)
+            command_index += 1
+            if proc.returncode != 0:
+                return (
+                    proc.returncode,
+                    "\n".join(stdout_parts),
+                    "\n".join(stderr_parts),
+                    command_plan,
+                )
 
     if not args.skip_create_training_data:
         proc = _run_command(command_plan[command_index], upstream_root, env)

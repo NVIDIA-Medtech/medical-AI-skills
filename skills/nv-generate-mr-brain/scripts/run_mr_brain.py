@@ -50,20 +50,24 @@ UPSTREAM_NETWORK_CONFIG = "configs/config_network_rflow.json"
 UPSTREAM_MODEL_CONFIG = "configs/config_maisi_diff_model_rflow-mr-brain.json"
 UPSTREAM_ENV_CONFIG = "configs/environment_maisi_diff_model_rflow-mr-brain.json"
 UPSTREAM_MODALITY_MAPPING = "configs/modality_mapping.json"
-UPSTREAM_MODEL_FILES = (
-    "models/autoencoder_v1.pt",
-    "models/diff_unet_3d_rflow-mr-brain_v0.pt",
-)
+UPSTREAM_MODEL_FILES = {
+    "models/autoencoder_v1.pt": "1f8a7a056d0ebc00486edc43c26768bf1c12eaa6df9dd172e34598003be95eb3",
+    "models/diff_unet_3d_rflow-mr-brain_v1.pt": (
+        "90c4a015879d4f2caa3f398ea85a7e14af208ad5404bd62d54b4b59327c73b36"
+    ),
+}
 
 SUPPORTED_MODALITIES = (
     "mri",
     "mri_t1",
     "mri_t2",
     "mri_flair",
+    "mri_mra",
     "mri_swi",
     "mri_t1_skull_stripped",
     "mri_t2_skull_stripped",
     "mri_flair_skull_stripped",
+    "mri_mra_skull_stripped",
     "mri_swi_skull_stripped",
 )
 OVERRIDE_KEYS = (
@@ -368,19 +372,29 @@ def _preflight(rendered_inference: dict[str, Any]) -> tuple[list[str], list[str]
 def _model_inventory(upstream_root: Path) -> dict[str, Any]:
     files: list[dict[str, Any]] = []
     all_present = True
-    for rel in UPSTREAM_MODEL_FILES:
+    all_sha256_match = True
+    for rel, expected_sha256 in UPSTREAM_MODEL_FILES.items():
         path = upstream_root / rel
         present = path.is_file()
+        actual_sha256 = file_sha256_safe(path) if present else ""
+        sha256_match = bool(present and actual_sha256 == expected_sha256)
         files.append(
             {
                 "path": rel,
                 "present": present,
                 "bytes": path.stat().st_size if present else None,
-                "sha256": file_sha256_safe(path) if present else "",
+                "sha256": actual_sha256,
+                "expected_sha256": expected_sha256,
+                "sha256_match": sha256_match,
             }
         )
         all_present = all_present and present
-    return {"all_present": all_present, "files": files}
+        all_sha256_match = all_sha256_match and sha256_match
+    return {
+        "all_present": all_present,
+        "all_sha256_match": all_sha256_match,
+        "files": files,
+    }
 
 
 def _build_command(staged_model_path: Path, staged_env_path: Path, num_gpus: int) -> list[str]:
@@ -550,8 +564,13 @@ def main(
     inventory = _model_inventory(upstream_root)
     if not inventory["all_present"]:
         errors.append(
-            "missing rflow-mr-brain model weights. Run `python -m scripts.download_model_data "
-            "--version rflow-mr-brain --root_dir ./ --model_only` from $NV_GENERATE_ROOT."
+            "missing rflow-mr-brain v1 model weights. Run the immutable Hugging Face "
+            "download commands documented in SKILL.md."
+        )
+    elif not inventory["all_sha256_match"]:
+        errors.append(
+            "rflow-mr-brain model weights do not match the pinned v1 snapshots. "
+            "Re-download the immutable revisions documented in SKILL.md."
         )
 
     cost = context["estimated_cost"]

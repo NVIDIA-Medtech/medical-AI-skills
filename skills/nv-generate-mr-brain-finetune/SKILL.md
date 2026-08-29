@@ -1,6 +1,6 @@
 ---
 name: nv-generate-mr-brain-finetune
-description: Used for finetuning NV-Generate-CTMR MR-brain diffusion UNet from a NIfTI datalist. Not for clinical or production data approval.
+description: Used for finetuning NV-Generate-CTMR MR-Brain v1 for T1, T2, FLAIR, SWI, or MRA data from a NIfTI datalist. Not for clinical or production data approval.
 license: Apache-2.0
 allowed-tools: Bash
 metadata:
@@ -15,7 +15,7 @@ metadata:
 # NV-Generate-MR-Brain-Finetune
 
 ## Purpose
-- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` diffusion UNet from user-supplied NIfTI training volumes.
+- Used for finetuning the NV-Generate-CTMR `rflow-mr-brain` v1 diffusion UNet from user-supplied T1, T2, FLAIR, SWI, or MRA NIfTI training volumes.
 - Not for clinical interpretation, regulatory use, or approving synthetic data for production training.
 - The wrapper stages the config glue locally and delegates execution to existing upstream scripts: `scripts.diff_model_create_training_data`, `scripts.diff_model_train`, and optionally `scripts.diff_model_infer`. It does not execute the notebook.
 - Manifest I/O: inputs are `datalist` and `data_base_dir`; outputs are `finetuned_checkpoint`, optional `inference_outputs`, and `result_json`.
@@ -33,7 +33,7 @@ metadata:
 Validate and stage a preflight finetune check from an input bundle (the recommended first step — no GPU, no training). This is the single canonical command; replace `INPUT_BUNDLE` and `OUT_DIR` with your paths:
 
 ```bash
-export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-61c4ec7}" && \
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-da438fe}" && \
 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
   INPUT_BUNDLE/preflight_datalist.json \
   --data-base-dir INPUT_BUNDLE/preflight_dataset \
@@ -47,7 +47,7 @@ For real GPU finetuning and other variations, see [Usage](#2-usage-one-line-trai
 ## Available Scripts
 | Script | Purpose | Arguments |
 |---|---|---|
-| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--num-gpus N] [--no-amp] [--model-config FILE] [--run-inference] [--preflight]` |
+| `scripts/run_mr_brain_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`. | `DATALIST.json --data-base-dir DATA_DIR --output-dir OUT_DIR [--epochs N] [--modality mri_t1] [--num-gpus N] [--no-amp] [--model-config FILE] [--download-model-data] [--run-inference] [--preflight]` |
 
 ## Prerequisites
 - An explicit `NV_GENERATE_ROOT` may point to the caller's local checkout and
@@ -65,13 +65,28 @@ checkout once:
 
 ```bash
 if [ -z "${NV_GENERATE_ROOT:-}" ]; then
-  export NV_GENERATE_COMMIT=61c4ec709b84cad468852243c48e250bec732074
-  export NV_GENERATE_ROOT="$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-61c4ec7"
+  export NV_GENERATE_COMMIT=da438fec6484cdb6f421f8c7051d954ebefff730
+  export NV_GENERATE_ROOT="$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-da438fe"
   if [ ! -d "$NV_GENERATE_ROOT/.git" ]; then
     git clone https://github.com/NVIDIA-Medtech/NV-Generate-CTMR.git "$NV_GENERATE_ROOT"
     git -C "$NV_GENERATE_ROOT" checkout --detach "$NV_GENERATE_COMMIT"
   fi
 fi
+```
+
+Before a GPU run, download the exact autoencoder and MR-Brain v1 checkpoint
+revisions declared by the manifest. Passing `--download-model-data` performs
+these same two pinned downloads:
+
+```bash
+python -m huggingface_hub.commands.huggingface_cli download \
+  nvidia/NV-Generate-CT models/autoencoder_v1.pt \
+  --revision 75ac080fb1083c403793563477724c038e7d430c \
+  --local-dir "$NV_GENERATE_ROOT"
+python -m huggingface_hub.commands.huggingface_cli download \
+  nvidia/NV-Generate-MR-Brain models/diff_unet_3d_rflow-mr-brain_v1.pt \
+  --revision ef9759bf221265b2704569cdeeac20bbf03b62ee \
+  --local-dir "$NV_GENERATE_ROOT"
 ```
 
 ## 1. Config and environment JSON (adapt to your data)
@@ -93,7 +108,7 @@ Environment JSON (`environment_maisi_diff_model_rflow-mr-brain.json`) — fields
 | `json_data_list` | your datalist | Staged copy with per-entry `modality` filled in. |
 | `embedding_base_dir`, `model_dir`, `output_dir` | `--output-dir` | Latent embeddings, checkpoints, inference images. |
 | `modality_mapping_path` | upstream | Maps modality name → integer code. |
-| `model_filename` | `--model-filename` | Output checkpoint name (default `diff_unet_3d_rflow-mr-brain_v0.pt`). |
+| `model_filename` | `--model-filename` | Output checkpoint name (default `diff_unet_3d_rflow-mr-brain_v1.pt`). |
 | `existing_ckpt_filepath` | upstream weights / `--existing-ckpt-filepath` | Starting checkpoint; cleared by `--train-from-scratch`. |
 | `trained_autoencoder_path` | upstream weights / `--trained-autoencoder-path` | VAE used to encode/decode latents. |
 
@@ -106,9 +121,22 @@ Model config (`config_maisi_diff_model_rflow-mr-brain.json`) — the only fields
 
 Everything else in that file (`lr`, `batch_size`, `cache_rate`, the rest of `diffusion_unet_inference`) is left exactly as written — edit the JSON to change it.
 
+The pinned v1 inference block defaults to `dim=[256,256,128]`,
+`spacing=[0.94,0.94,1.36]`, and `cfg_guidance_scale=2`. The wrapper preserves
+those fields. Older v0 examples may show `256^3`, 1 mm spacing, and guidance
+scale 10; use the staged v1 JSON as the execution source of truth.
+
 Runtime flags (not config fields): `--num-gpus N` (`>1` launches `torch.distributed.run`), `--no-amp` (disable mixed precision, passed through to `diff_model_train`).
 
-`--modality` selects the integer code from `configs/modality_mapping.json`. Supported brain values: `mri` (8), `mri_t1` (9, default), `mri_t2` (10), `mri_flair` (11), `mri_swi` (20), and their `*_skull_stripped` variants (29/30/31/32). Per-case `training[].modality` overrides `--modality`. The modality also feeds the step-3 embedding sidecars.
+`--modality` selects the integer code from `configs/modality_mapping.json`.
+Supported brain values include `mri` (8), `mri_t1` (9, default), `mri_t2`
+(10), `mri_flair` (11), `mri_mra` (16), `mri_swi` (20), and the
+skull-stripped values `mri_t1_skull_stripped` (29),
+`mri_t2_skull_stripped` (30), `mri_flair_skull_stripped` (31),
+`mri_swi_skull_stripped` (32), and `mri_mra_skull_stripped` (33). Per-case
+`training[].modality` overrides `--modality`. The modality also feeds the
+step-3 embedding sidecars. Upstream reports sparse MRA training coverage, so
+MRA output quality is not guaranteed.
 
 For an end-to-end reference including example data download and checkpoint loading, see the upstream tutorial `train_diff_unet_tutorial.ipynb`.
 
@@ -117,7 +145,7 @@ For an end-to-end reference including example data download and checkpoint loadi
 Preflight only:
 
 ```bash
-export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-61c4ec7}" && \
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-da438fe}" && \
 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
   PATH_TO_DATALIST.json \
   --data-base-dir PATH_TO_DATA_ROOT \
@@ -128,7 +156,7 @@ python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
 Preflight bundle input:
 
 ```bash
-export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-61c4ec7}" && \
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-da438fe}" && \
 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
   PATH_TO_INPUT_BUNDLE/preflight_datalist.json \
   --data-base-dir PATH_TO_INPUT_BUNDLE/preflight_dataset \
@@ -139,7 +167,7 @@ python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
 GPU finetuning:
 
 ```bash
-export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-61c4ec7}" && \
+export NV_GENERATE_ROOT="${NV_GENERATE_ROOT:-$HOME/.cache/nvidia-skills/upstreams/NV-Generate-CTMR-da438fe}" && \
 python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt" && \
 python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
   PATH_TO_DATALIST.json \
