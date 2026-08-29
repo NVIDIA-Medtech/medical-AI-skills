@@ -27,6 +27,20 @@
     ]
   },
   {
+    "id": "local-mlflow-tracking",
+    "question": "Prepare an NV-Segment-CT finetune command for my CT dataset at /data/lung_ct with datalist /data/lung_ct/dataset.json. Track the run locally in MLflow experiment nvseg-review with run name trial-01, and write outputs under runs/nvseg_mlflow. This is a command-shape review only; do not install packages or start training in this environment.",
+    "expected_skill": "nv-segment-ct-finetune",
+    "ground_truth": "The agent provides, but does not execute, scripts/run_finetune.py with the exact dataset, datalist, output directory, --mlflow-experiment-name, and --mlflow-run-name. It omits a remote tracking URI so MONAI uses the local output-directory MLflow store.",
+    "expected_behavior": [
+      "the command uses skills/nv-segment-ct-finetune/scripts/run_finetune.py",
+      "the command includes --dataset-dir /data/lung_ct, --datalist /data/lung_ct/dataset.json, and --output-dir runs/nvseg_mlflow",
+      "the command includes --mlflow-experiment-name nvseg-review and --mlflow-run-name trial-01",
+      "the command does not set --mlflow-tracking-uri because local tracking was requested",
+      "the answer identifies runs/nvseg_mlflow/mlruns as the local tracking store",
+      "the agent does not install packages or start training during this command-shape review"
+    ]
+  },
+  {
     "id": "reject-new-class-invention",
     "question": "Finetune VISTA3D to add a brand-new anatomy class that is not in label_dict.json.",
     "expected_skill": "nv-segment-ct-finetune",

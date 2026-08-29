@@ -102,6 +102,7 @@ PyYAML (https://github.com/yaml/pyyaml)
 Licensed under MIT (https://github.com/yaml/pyyaml/blob/main/LICENSE)
 
 MLflow (https://github.com/mlflow/mlflow)
+Copyright 2018 Databricks, Inc. All rights reserved.
 Licensed under Apache-2.0 (https://github.com/mlflow/mlflow/blob/master/LICENSE.txt)
 
 LPIPS / PerceptualSimilarity (https://github.com/richzhang/PerceptualSimilarity)

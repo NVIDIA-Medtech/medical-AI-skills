@@ -78,7 +78,7 @@ SMOKE_FIXTURE = SKILL_DIR / "fixtures" / "spleen_micro"
 _REPO_ROOT = SKILL_DIR.parent.parent
 SANITY_DATASET = _REPO_ROOT / ".workbench_data" / "datasets" / "Task06_Lung"
 SANITY_ANATOMY = "lung tumor"  # MSD06 label 1 (cancer) -> vista3d global index 23
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 SUPPORTED_MONAI_MAJOR_MINOR = {(1, 4)}
 AUTO_VENV_DIR = (
     Path.home() / ".cache" / "nvidia-skills" / "venvs" / "nv-segment-ct-finetune-monai14"
@@ -121,6 +121,17 @@ _CHILD_ENV_KEYS = (
     "TORCH_HOME",
     "TRANSFORMERS_CACHE",
     "XDG_CACHE_HOME",
+)
+_MLFLOW_CHILD_ENV_KEYS = (
+    "DATABRICKS_CONFIG_PROFILE",
+    "DATABRICKS_HOST",
+    "DATABRICKS_TOKEN",
+    "MLFLOW_TRACKING_CLIENT_CERT_PATH",
+    "MLFLOW_TRACKING_INSECURE_TLS",
+    "MLFLOW_TRACKING_PASSWORD",
+    "MLFLOW_TRACKING_SERVER_CERT_PATH",
+    "MLFLOW_TRACKING_TOKEN",
+    "MLFLOW_TRACKING_USERNAME",
 )
 SANITY_REFERENCE_THRESHOLDS = {
     "formal_pretrained_val_dice_min": 0.65,
@@ -170,10 +181,14 @@ ANATOMY_EXPECTED_COMPONENTS = {  # solitary organs; user can override
 app = typer.Typer(add_completion=False)
 
 
-def _child_process_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+def _child_process_env(
+    overrides: dict[str, str] | None = None,
+    *,
+    extra_keys: tuple[str, ...] = (),
+) -> dict[str, str]:
     """Build the minimal environment needed by trusted local model processes."""
     env: dict[str, str] = {}
-    for name in _CHILD_ENV_KEYS:
+    for name in (*_CHILD_ENV_KEYS, *extra_keys):
         value = os.environ.get(name)
         if value is not None:
             env[name] = value
@@ -215,7 +230,7 @@ def _monai_is_compatible() -> bool:
     return _monai_major_minor(monai_version) in SUPPORTED_MONAI_MAJOR_MINOR
 
 
-def maybe_run_compatible_runtime() -> None:
+def maybe_run_compatible_runtime(*, extra_env_keys: tuple[str, ...] = ()) -> None:
     """Use a cached compatible venv when the caller's MONAI is outside this range.
 
     A child process keeps the user-facing command simple while preserving the
@@ -251,7 +266,10 @@ def maybe_run_compatible_runtime() -> None:
     sys.stderr.write(f"[nv_segment_ct_finetune] run with {python_bin}\n")
     completed = subprocess.run(
         [str(python_bin), *sys.argv],
-        env=_child_process_env({"NVSEG_FINETUNE_IN_AUTO_VENV": "1"}),
+        env=_child_process_env(
+            {"NVSEG_FINETUNE_IN_AUTO_VENV": "1"},
+            extra_keys=extra_env_keys,
+        ),
         check=False,
     )
     raise typer.Exit(code=completed.returncode)
@@ -1193,6 +1211,7 @@ def run_monai_bundle(
     extra_args: Optional[list[str]] = None,
     force_single_gpu: bool = False,
     bundle_root: Optional[Path] = None,
+    extra_env_keys: tuple[str, ...] = (),
 ) -> tuple[int, int, list[str]]:
     resolved_bundle_root = bundle_root or BUNDLE_DIR
     cfg_arg = _config_arg(stack)
@@ -1246,7 +1265,7 @@ def run_monai_bundle(
             env=_child_process_env(),
         )
     try:
-        env = _child_process_env()
+        env = _child_process_env(extra_keys=extra_env_keys)
         if force_single_gpu and "CUDA_VISIBLE_DEVICES" not in env:
             env["CUDA_VISIBLE_DEVICES"] = "0"
         with open(log_path, "w") as f:
@@ -1292,6 +1311,35 @@ def parse_log(log_path: Path) -> dict:
         "oom": bool(_OOM.search(text)),
         "log_tail": text.splitlines()[-int("25") :],
     }
+
+
+def build_mlflow_tracking_args(
+    output_dir: Path,
+    *,
+    tracking_uri: str | None,
+    experiment_name: str,
+    requested_run_name: str | None,
+) -> tuple[list[str], dict[str, str]]:
+    """Use MONAI's built-in MLflow tracking without changing training config."""
+    uri = tracking_uri or (output_dir / "mlruns").resolve().as_uri()
+    metadata = {
+        "tracking_uri": uri,
+        "experiment_name": experiment_name,
+    }
+    args = [
+        "--tracking",
+        "mlflow",
+        "--tracking_uri",
+        uri,
+        "--experiment_name",
+        experiment_name,
+        "--save_execute_config",
+        "False",
+    ]
+    if requested_run_name:
+        args.extend(["--run_name", requested_run_name])
+        metadata["run_name"] = requested_run_name
+    return args, metadata
 
 
 def read_val_mean_dice(metrics_dir: Path) -> float | None:
@@ -1548,6 +1596,13 @@ def main(
         "--skip-formal-eval",
         help="Skip evaluate.json before/after scoring. Smoke always skips it.",
     ),
+    mlflow_tracking_uri: Optional[str] = typer.Option(None, "--mlflow-tracking-uri"),
+    mlflow_experiment_name: Optional[str] = typer.Option(
+        None,
+        "--mlflow-experiment-name",
+        help="Enable MONAI-native MLflow tracking for this experiment.",
+    ),
+    mlflow_run_name: Optional[str] = typer.Option(None, "--mlflow-run-name"),
 ) -> None:
     """Auto-configure and run a documented VISTA3D finetuning workflow.
 
@@ -1567,6 +1622,10 @@ def main(
     the canonical sanity dataset.
     """
     t0 = time.perf_counter()
+    if mlflow_experiment_name is None and (mlflow_tracking_uri or mlflow_run_name):
+        raise typer.BadParameter(
+            "--mlflow-experiment-name is required when other MLflow options are set."
+        )
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     timings: dict[str, float] = {}
@@ -1583,7 +1642,8 @@ def main(
             "scores belong to the standard VISTA3D continual-learning workflow."
         )
 
-    maybe_run_compatible_runtime()
+    mlflow_env_keys = _MLFLOW_CHILD_ENV_KEYS if mlflow_experiment_name is not None else ()
+    maybe_run_compatible_runtime(extra_env_keys=mlflow_env_keys)
     require_compatible_runtime()
     softmax_bundle_root = require_bundle_files(softmax=softmax)
 
@@ -1808,6 +1868,7 @@ def main(
     formal_pre_cmd: list[str] | None = None
     formal_post_cmd: list[str] | None = None
     phase_peaks: dict[str, int] = {}
+    mlflow_tracking: dict[str, str] | None = None
 
     if formal_eval:
         pre_eval_dir = output_dir / "eval_pretrained"
@@ -1830,14 +1891,25 @@ def main(
         formal_pretrained = read_val_mean_dice(pre_eval_dir)
         t_phase = time.perf_counter()
 
+    train_extra_args: list[str] | None = None
+    if mlflow_experiment_name is not None:
+        train_extra_args, mlflow_tracking = build_mlflow_tracking_args(
+            output_dir,
+            tracking_uri=mlflow_tracking_uri,
+            experiment_name=mlflow_experiment_name,
+            requested_run_name=mlflow_run_name,
+        )
+
     log_path = output_dir / "finetune.log"
     rc, train_peak, cmd = run_monai_bundle(
         train_stack,
         log_path,
         multi_gpu=multi_gpu,
         nproc=nproc,
+        extra_args=train_extra_args,
         force_single_gpu=force_single_gpu,
         bundle_root=run_bundle_root,
+        extra_env_keys=mlflow_env_keys,
     )
     phase_peaks["finetune"] = train_peak
     metrics = parse_log(log_path)
@@ -1990,6 +2062,7 @@ def main(
             "upstream_commit": (_git_commit(run_bundle_root) if softmax else UPSTREAM_CTMR_COMMIT),
             "override_file": override_file,
             "no_logging_file": no_logging_file,
+            "mlflow_tracking": mlflow_tracking,
         },
         "output": {
             "finetuned_ckpt": str(finetune_ckpt) if finetune_ckpt.exists() else None,

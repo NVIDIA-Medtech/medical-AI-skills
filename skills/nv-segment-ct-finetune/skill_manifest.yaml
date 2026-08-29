@@ -14,7 +14,7 @@
 # limitations under the License.
 
 id: medagent.nv_segment_ct_finetune
-version: 0.5.0
+version: 0.6.0
 upstream_refs:
   - kind: huggingface_repo
     name: nvidia/NV-Segment-CT
@@ -31,14 +31,14 @@ license: Apache-2.0
 intended_use:
   summary: >
     Auto-configuring wrapper around NVIDIA-Medtech NV-Segment-CT's
-    continual-learning finetune entries, including the optional official
-    fixed-channel softmax workflow. For the MSD Task06 sanity recipe it
-    follows the DFW single-GPU setting: one GPU, fold-0 validation, label
-    mapping `[[1, 23]]`, automatic class-prompt segmentation, patch
-    `[128,128,128]`, 5 epochs, and original-spacing evaluate.json scoring
-    before and after fine-tuning. Anatomy name -> label_mappings is resolved
-    against `bundle/label_dict.json` so the caller never hand-codes the
-    vista3d global index.
+    continual-learning finetune entries, with optional MONAI-native MLflow
+    tracking and the optional official fixed-channel softmax workflow. For
+    the MSD Task06 sanity recipe it follows the DFW single-GPU setting: one
+    GPU, fold-0 validation, label mapping `[[1, 23]]`, automatic class-prompt
+    segmentation, patch `[128,128,128]`, 5 epochs, and original-spacing
+    evaluate.json scoring before and after fine-tuning. Anatomy name ->
+    label_mappings is resolved against `bundle/label_dict.json` so the caller
+    never hand-codes the vista3d global index.
   scope: development
   not_for:
     - clinical deployment
@@ -111,6 +111,18 @@ inputs:
     description: Skip the pre/post original-spacing evaluate.json passes.
     optional: true
     default: false
+  - name: mlflow_tracking_uri
+    type: string
+    description: Optional MLflow tracking URI; defaults to a local store under the output directory.
+    optional: true
+  - name: mlflow_experiment_name
+    type: string
+    description: MLflow experiment name; setting it enables MONAI-native live tracking.
+    optional: true
+  - name: mlflow_run_name
+    type: string
+    description: Optional MLflow run name.
+    optional: true
 outputs:
   - name: finetuned_ckpt
     type: file_path
@@ -145,7 +157,7 @@ runtime:
     scipy: ">=1.10"
     huggingface_hub: "*"
     safetensors: ">=0.4"
-    mlflow: ">=2.10"
+    mlflow: ">=2.10,<4"
     typer: ">=0.9"
   side_effects:
     pip_packages:
@@ -153,7 +165,7 @@ runtime:
       - torch>=2.0
       - "transformers>=4.40,<5"
       - huggingface_hub
-      - mlflow>=2.10
+      - "mlflow>=2.10,<4"
       - nibabel>=4.0
       - numpy>=1.23
       - safetensors>=0.4
@@ -165,12 +177,14 @@ runtime:
       - {path: "skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json", approx_mb_max: 1}
       - {path: "skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json", approx_mb_max: 1}
       - {path: "<caller-provided --output-dir>", approx_mb_max: 20000}
+      - {path: "<caller-provided --output-dir>/mlruns", approx_mb_max: 100, optional: true}
     home_writes:
       - {path: "~/.cache/huggingface/", approx_mb_max: 1500}
       - {path: "~/.cache/nvidia-skills/venvs/nv-segment-ct-finetune-monai14/", approx_mb_max: 500}
     network_endpoints:
       - https://huggingface.co
       - https://raw.githubusercontent.com
+      - "https://<caller-provided-mlflow-or-databricks-workspace>"
     requires_docker: false
     requires_gpu: cuda
     gpu_fallback: cpu
@@ -192,6 +206,15 @@ runtime:
       - NV_SEGMENT_CT_ROOT
       - NV_SEGMENT_CTMR_ROOT
       - NVSEG_FINETUNE_AUTO_VENV
+      - DATABRICKS_CONFIG_PROFILE
+      - DATABRICKS_HOST
+      - DATABRICKS_TOKEN
+      - MLFLOW_TRACKING_CLIENT_CERT_PATH
+      - MLFLOW_TRACKING_INSECURE_TLS
+      - MLFLOW_TRACKING_PASSWORD
+      - MLFLOW_TRACKING_SERVER_CERT_PATH
+      - MLFLOW_TRACKING_TOKEN
+      - MLFLOW_TRACKING_USERNAME
   external_assets:
     - kind: huggingface_repo
       repo_id: nvidia/NV-Segment-CT
@@ -271,6 +294,8 @@ limitations:
     stable between training and inference, cannot be combined with `--auto-seg`
     or `--sanity`, and does not use the standard Task06 pre/post evaluation
     baseline.
+  - Optional MLflow support uses MONAI's built-in rank-zero tracking handlers.
+    Tracking failures can fail the upstream MONAI run.
   - Smoke mode is an executable oracle for "pipeline plumbs end to end",
     not a quality bar - it cannot prove the full-dataset finetune will
     converge.
