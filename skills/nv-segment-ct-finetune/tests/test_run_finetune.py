@@ -191,6 +191,7 @@ def test_child_process_env_keeps_runtime_values_and_drops_credentials(monkeypatc
     monkeypatch.setenv("PATH", "/trusted/bin")
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2")
     monkeypatch.setenv("OPENAI_API_KEY", "not-forwarded")
+    monkeypatch.setenv("DATABRICKS_TOKEN", "tracking-only")
 
     env = mod._child_process_env({"NVSEG_FINETUNE_IN_AUTO_VENV": "1"})
 
@@ -198,6 +199,11 @@ def test_child_process_env_keeps_runtime_values_and_drops_credentials(monkeypatc
     assert env["CUDA_VISIBLE_DEVICES"] == "2"
     assert env["NVSEG_FINETUNE_IN_AUTO_VENV"] == "1"
     assert "OPENAI_API_KEY" not in env
+    assert "DATABRICKS_TOKEN" not in env
+
+    tracking_env = mod._child_process_env(extra_keys=mod._MLFLOW_CHILD_ENV_KEYS)
+    assert tracking_env["DATABRICKS_TOKEN"] == "tracking-only"
+    assert "OPENAI_API_KEY" not in tracking_env
 
 
 @pytest.mark.parametrize(
@@ -339,3 +345,37 @@ def test_compare_checkpoint_weights_detects_changed_tensor(tmp_path):
     assert comparison["weights_identical"] is False
     assert comparison["differing_tensors"] == 1
     assert comparison["max_abs_diff"] == 1.0
+
+
+def test_mlflow_tracking_uses_monai_builtin_without_training_overrides(tmp_path):
+    args, metadata = mod.build_mlflow_tracking_args(
+        tmp_path,
+        tracking_uri=None,
+        experiment_name="task06-demo",
+        requested_run_name="sanity",
+    )
+
+    assert args[:2] == ["--tracking", "mlflow"]
+    assert "--tracking_uri" in args
+    assert "--experiment_name" in args
+    assert "--run_name" in args
+    assert args[args.index("--save_execute_config") + 1] == "False"
+    assert not any("dataloader" in value or "patch_size" in value for value in args)
+    assert metadata["tracking_uri"] == (tmp_path / "mlruns").resolve().as_uri()
+    assert metadata["experiment_name"] == "task06-demo"
+    assert metadata["run_name"] == "sanity"
+    assert args[args.index("--run_name") + 1] == "sanity"
+
+
+def test_mlflow_tracking_preserves_explicit_remote_uri(tmp_path):
+    args, metadata = mod.build_mlflow_tracking_args(
+        tmp_path,
+        tracking_uri="databricks",
+        experiment_name="/Shared/nvseg",
+        requested_run_name=None,
+    )
+
+    assert args[args.index("--tracking_uri") + 1] == "databricks"
+    assert metadata["tracking_uri"] == "databricks"
+    assert "--run_name" not in args
+    assert "run_name" not in metadata

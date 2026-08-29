@@ -1,10 +1,10 @@
 ---
 name: nv-segment-ct-finetune
-description: Runs standard or fixed-channel softmax finetuning of NV-Segment-CT VISTA3D on CT NIfTI image/label datasets and records checkpoint evidence. Uses softmax for predefined, mutually exclusive classes; keeps the standard workflow when point prompts or runtime-variable classes are needed. Not for clinical validation.
+description: Runs standard or fixed-channel softmax finetuning of NV-Segment-CT VISTA3D on CT NIfTI image/label datasets, with optional MONAI-native MLflow tracking and checkpoint evidence. Uses softmax for predefined, mutually exclusive classes; keeps the standard workflow when point prompts or runtime-variable classes are needed. Not for clinical validation.
 license: Apache-2.0
 allowed-tools: Bash, Read, Write, WebFetch, Env
 metadata:
-  author: NVIDIA MedTech Team
+  author: "NVIDIA MedTech <noreply@nvidia.com>"
   tags:
     - MedTech
     - CT
@@ -16,9 +16,9 @@ metadata:
 
 ## Purpose
 
-- Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels, including the upstream fixed-channel softmax workflow. Not for clinical validation.
+- Used for smoke or dataset finetuning of NV-Segment-CT VISTA3D on CT NIfTI labels, including the upstream fixed-channel softmax workflow and optional MLflow tracking. Not for clinical validation.
 - Wraps the upstream MONAI bundle entrypoint; do not replace it with handwritten training or inference code.
-- Manifest inputs are `dataset_dir`, `datalist`, `target_anatomy`, `label_mapping`, `smoke`, `sanity`, `auto_seg`, `softmax`, and `skip_formal_eval`.
+- Manifest inputs are `dataset_dir`, `datalist`, `target_anatomy`, `label_mapping`, `smoke`, `sanity`, `auto_seg`, `softmax`, `skip_formal_eval`, `mlflow_tracking_uri`, `mlflow_experiment_name`, and `mlflow_run_name`.
 - Manifest outputs are `finetuned_ckpt` and schema-checked `result_json`.
 
 ## Instructions
@@ -29,6 +29,7 @@ metadata:
 - If a host exposes `run_script`, use `run_script("scripts/run_finetune.py", args=[...])`; otherwise run from the repo root.
 - For the shortest workflow check, use `--smoke`; for MSD Task06 Lung Tumor reproduction, use `--sanity`.
 - Choose between the standard and `--softmax` workflows using the criteria below. Do not combine `--softmax` with `--auto-seg` or `--sanity`.
+- Set `--mlflow-experiment-name` to enable MLflow for the training phase of either workflow. `--mlflow-tracking-uri` and `--mlflow-run-name` require an experiment name. Formal pre/post evaluation does not receive MLflow credentials.
 - Read `references/task06-and-results.md` only when you need Task06 reference details, output-field definitions, or manual bundle setup notes.
 
 ## Choosing the Workflow
@@ -47,20 +48,26 @@ For `--label-mapping '[[1,3],[2,13]]'`, channel 0 is background, channel 1 repre
 
 | Script | Purpose | Arguments |
 |---|---|---|
-| `scripts/run_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`; stages configs, runs MONAI, and writes `output.json`. | `[FIXTURE_OR_DATASET] --output-dir OUT_DIR [--smoke] [--sanity] [--auto-seg] [--softmax] [--dataset-dir DIR] [--datalist JSON] [--target-anatomy TEXT] [--label-mapping JSON] [--patch-size JSON]` |
+| `scripts/run_finetune.py` | Primary entrypoint declared by `skill_manifest.yaml`; stages configs, runs MONAI, and writes `output.json`. | `[FIXTURE_OR_DATASET] --output-dir OUT_DIR [--smoke] [--sanity] [--auto-seg] [--softmax] [--dataset-dir DIR] [--datalist JSON] [--target-anatomy TEXT] [--label-mapping JSON] [--patch-size JSON] [--mlflow-experiment-name NAME] [--mlflow-tracking-uri URI] [--mlflow-run-name NAME]` |
 
 ## Prerequisites
 
 - Python 3.10+ with CUDA-capable Torch for GPU runs.
-- Runtime packages from `skill_manifest.yaml`, especially `monai==1.4.0`, `numpy<2`, `nibabel`, `scipy`, `typer`, `PyYAML`, `fire`, `pytorch-ignite`, `einops`, and `huggingface_hub`.
-- Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs; `NVSEG_FINETUNE_AUTO_VENV=0` disables the cached MONAI 1.4 compatibility environment.
+- Runtime packages from `skill_manifest.yaml`, especially `monai==1.4.0`, `numpy<2`, `nibabel`, `scipy`, `typer`, `PyYAML`, `fire`, `pytorch-ignite`, `einops`, and `huggingface_hub`. Install `mlflow>=2.10,<4` when MLflow tracking is enabled.
+- Optional environment variables: `CUDA_VISIBLE_DEVICES` restricts visible GPUs; `NPROC_PER_NODE` overrides GPU count and values `>=2` select multi-GPU mode for non-sanity runs; `NVSEG_FINETUNE_AUTO_VENV=0` disables the cached MONAI 1.4 compatibility environment. Remote tracking may use `DATABRICKS_CONFIG_PROFILE`, `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `MLFLOW_TRACKING_CLIENT_CERT_PATH`, `MLFLOW_TRACKING_INSECURE_TLS`, `MLFLOW_TRACKING_PASSWORD`, `MLFLOW_TRACKING_SERVER_CERT_PATH`, `MLFLOW_TRACKING_TOKEN`, or `MLFLOW_TRACKING_USERNAME`; these variables are forwarded only when MLflow is explicitly enabled, and unrelated credentials are not forwarded.
 - `--softmax` also needs the pinned NVIDIA-Medtech source checkout. Set `NV_SEGMENT_CT_ROOT` to its `NV-Segment-CT` directory, or set `NV_SEGMENT_CTMR_ROOT` to the sibling `NV-Segment-CTMR` directory. The wrapper reads the official softmax config and implementation in place and writes generated overrides only under `--output-dir`.
-- Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir`; may create the MONAI compatibility environment under `~/.cache/nvidia-skills/venvs/nv-segment-ct-finetune-monai14/`; may cache model assets under `~/.cache/huggingface/`; and may contact `https://huggingface.co` or `https://raw.githubusercontent.com`.
+- Side effects: writes generated bundle configs under `skills/nv-segment-ct-finetune/bundle/configs/`, including `skills/nv-segment-ct-finetune/bundle/configs/auto_override.json`, `skills/nv-segment-ct-finetune/bundle/configs/train_continual_task06_lung.json`, and `skills/nv-segment-ct-finetune/bundle/configs/dfw_no_logging.json`; writes checkpoints/evidence under `--output-dir` and local tracking data under `<output-dir>/mlruns` when enabled; may create the MONAI compatibility environment under `~/.cache/nvidia-skills/venvs/nv-segment-ct-finetune-monai14/`; may cache model assets under `~/.cache/huggingface/`; and may contact `https://huggingface.co`, `https://raw.githubusercontent.com`, or `https://<caller-provided-mlflow-or-databricks-workspace>` when remote tracking is explicitly enabled.
 
 Fresh environment setup:
 
 ```bash
 python -m pip install "monai==1.4.0" "numpy<2" pytorch-ignite einops nibabel scipy typer PyYAML fire huggingface_hub
+```
+
+When MLflow tracking is enabled, also install:
+
+```bash
+python -m pip install "mlflow>=2.10,<4"
 ```
 
 Known upstream compatibility constraints:
@@ -123,6 +130,21 @@ python skills/nv-segment-ct-finetune/scripts/run_finetune.py \
 
 Use `--label-mapping '[[1, 23]]'` when local label values are custom or the anatomy name is ambiguous.
 
+Optional local MLflow tracking:
+
+```bash
+python skills/nv-segment-ct-finetune/scripts/run_finetune.py \
+  --dataset-dir /path/to/dataset \
+  --datalist /path/to/datalist.json \
+  --target-anatomy "lung tumor" \
+  --epochs 5 \
+  --mlflow-experiment-name nvseg-finetune \
+  --mlflow-run-name trial-01 \
+  --output-dir runs/nvseg_mlflow
+```
+
+This uses MONAI's documented `--tracking mlflow` path and built-in rank-zero handlers. With no `--mlflow-tracking-uri`, data stays in `<output-dir>/mlruns`. Pass a caller-approved remote URI, including `databricks`, only when remote tracking is intended. MLflow does not change patch size, transforms, optimizer values, DataLoader settings, or other training configuration.
+
 Fixed-channel softmax finetune for mutually exclusive labels:
 
 ```bash
@@ -179,6 +201,7 @@ Check `output.json` in the run directory first:
 - `training_start_val_dice`, `val_dice_per_epoch`, and `training_best_val_dice`: training-time validation trace.
 - `finetuned_ckpt_matches_pretrained_weights`: detects the standard workflow's epoch-0 checkpoint trap when `val_at_start=true`; softmax uses a different checkpoint architecture.
 - `recommended_ckpt`: checkpoint to keep. Do not blindly use the last epoch, `model_finetune.pt`, or `model_softmax.pt` without checking the recorded workflow and metrics.
+- `invocation.mlflow_tracking`: selected tracking URI, experiment name, and optional run name, or `null` when tracking was disabled.
 - `runtime.oom`, `runtime.peak_gpu_mb`, and phase logs: distinguish OOM, slow validation, and process failure.
 
 Decision rule: prefer formal original-spacing pre/post scores when present; reject tensor-identical "fine-tuned" checkpoints for sanity recovery; treat `improved: false` as valid evidence rather than a wrapper failure.
@@ -198,6 +221,7 @@ Decision rule: prefer formal original-spacing pre/post scores when present; reje
 - `--softmax` is not compatible with `--sanity`: the Task06 reference scores and original-spacing pre/post evaluation belong to the standard VISTA3D continual-learning workflow. Softmax runs record the training validation trajectory but need a separate task-specific evaluation before quality claims.
 - The Task06 sanity recipe intentionally forces single-GPU execution to match the DFW reference. Multi-GPU mode for other datasets requires host `torchrun` support.
 - The paired verifier is CPU-only and audits the evidence pack; it does not re-run GPU segmentation.
+- MLflow support is optional and uses MONAI's built-in tracking handlers. Tracking errors are part of the upstream MONAI run and can therefore fail the finetune command.
 - Not for clinical deployment, clinical interpretation, autonomous diagnosis, or regulatory submission.
 
 ## Troubleshooting
@@ -211,6 +235,7 @@ Decision rule: prefer formal original-spacing pre/post scores when present; reje
 | GPU out of memory | Patch/cache settings too large. | Reduce `--patch-size`, lower `--cache-rate`, or reduce workers. |
 | No validation cases | Datalist lacks `fold: 0`. | Provide at least one validation entry. |
 | `--softmax requires the pinned ... checkout` | The August softmax config/implementation is absent or the checkout is at a different commit. | Check out `cb921f5c58837c0f42a713855d68b32af88e1cdd` and set `NV_SEGMENT_CT_ROOT` or `NV_SEGMENT_CTMR_ROOT`. |
+| MLflow tracking fails | MLflow is absent, credentials are invalid, or the experiment is inaccessible. | Inspect `finetune.log`, fix the MLflow client configuration, and rerun; omit `--mlflow-experiment-name` to disable tracking. |
 
 ## Verification
 
