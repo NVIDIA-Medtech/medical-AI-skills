@@ -20,7 +20,9 @@ from pathlib import Path
 
 import pytest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "run_mr_brain_finetune.py"
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = SKILL_ROOT / "scripts" / "run_mr_brain_finetune.py"
+EVALS = SKILL_ROOT / "evals" / "evals.json"
 spec = importlib.util.spec_from_file_location("run_mr_brain_finetune", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -101,6 +103,21 @@ def _fake_upstream(root: Path) -> Path:
     )
     (configs / "modality_mapping.json").write_text(json.dumps({"mri_t1": 9}))
     return root
+
+
+def test_gpu_evals_are_reproducible_command_shape_reviews() -> None:
+    cases = {case["id"]: case for case in json.loads(EVALS.read_text())}
+
+    train = cases["finetune-mr-brain-from-datalist"]
+    assert "command-shape review only" in train["question"].lower()
+    assert "do not install packages" in train["question"].lower()
+    assert any("does not include --preflight" in item for item in train["expected_behavior"])
+
+    preflight = cases["preflight-before-gpu-run"]
+    assert "command-shape review only" in preflight["question"].lower()
+    assert any("--preflight" in item for item in preflight["expected_behavior"])
+    assert any("--data-base-dir" in item for item in preflight["expected_behavior"])
+    assert any("--output-dir" in item for item in preflight["expected_behavior"])
 
 
 def test_child_process_env_omits_parent_secrets(monkeypatch) -> None:

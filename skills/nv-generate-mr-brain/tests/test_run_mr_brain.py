@@ -22,7 +22,9 @@ import nibabel as nib
 import numpy as np
 import pytest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "run_mr_brain.py"
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = SKILL_ROOT / "scripts" / "run_mr_brain.py"
+EVALS = SKILL_ROOT / "evals" / "evals.json"
 spec = importlib.util.spec_from_file_location("run_mr_brain", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -38,6 +40,18 @@ def test_load_config_override_default_returns_empty() -> None:
     override, source = mod._load_config_override("default")
     assert override == {}
     assert source is None
+
+
+def test_gpu_eval_is_reproducible_command_shape_review() -> None:
+    cases = {case["id"]: case for case in json.loads(EVALS.read_text())}
+    question = cases["generate-brain-mri-t1"]["question"].lower()
+
+    assert "command-shape review only" in question
+    assert "do not install packages" in question
+    assert "do not" in question and "start gpu inference" in question
+    behavior = cases["generate-brain-mri-t1"]["expected_behavior"]
+    assert any("--output-dir" in item for item in behavior)
+    assert any("--random-seed" in item for item in behavior)
 
 
 def test_child_process_env_omits_parent_secrets(monkeypatch) -> None:

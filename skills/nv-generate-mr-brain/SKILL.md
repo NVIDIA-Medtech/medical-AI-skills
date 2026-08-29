@@ -24,9 +24,33 @@ metadata:
 - Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.
 - Run `scripts/run_mr_brain.py` through the documented command below; keep outputs under a caller-provided run directory.
 - If a host agent exposes `run_script`, use `run_script("scripts/run_mr_brain.py", args=[...])`; otherwise run the Bash/Python command shown below.
-- Emit a single bash code block, and keep the `python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt"` step in that same command — the runtime may be a fresh environment without `nibabel`/MONAI, so dropping the install fails with `ModuleNotFoundError`.
+- For a command-shape review, do not install packages, clone repositories,
+  download weights, or start GPU inference. Emit only the exact wrapper command
+  with the supplied config path plus explicit `--output-dir`, `--modality`, and
+  `--random-seed` values.
+- For an executable run, emit a single bash code block and keep the
+  `python -m pip install -r "$NV_GENERATE_ROOT/requirements.txt"` step in that
+  same command — the runtime may be a fresh environment without
+  `nibabel`/MONAI, so dropping the install fails with `ModuleNotFoundError`.
+- If `--modality mri_mra` is selected, state that upstream reports sparse MRA
+  training coverage and that output quality is not guaranteed.
 - Do not add `rm`, `mkdir`, or any cleanup of `--output-dir`; the wrapper creates it. Use a fresh `--output-dir` instead of deleting one.
 - Check the emitted JSON and paired verifier guidance before treating the run as evidence.
+
+## Examples
+
+Command-shape review only (no setup or execution):
+
+```bash
+python skills/nv-generate-mr-brain/scripts/run_mr_brain.py \
+  PATH_TO_MR_BRAIN_CONFIG.json \
+  --output-dir runs/nv_generate_mr_brain_demo \
+  --modality mri_t1 \
+  --random-seed 1234
+```
+
+For an executable run, use the setup-aware command under
+[Usage](#usage).
 
 ## Available Scripts
 | Script | Purpose | Arguments |

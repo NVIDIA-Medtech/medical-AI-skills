@@ -26,6 +26,13 @@ metadata:
 - Read `skill_manifest.yaml` before changing arguments, side effects, or validation gates.
 - Run `scripts/run_mr_brain_finetune.py` from the Medical AI Skills repo root.
 - If a host agent exposes `run_script`, use `run_script("scripts/run_mr_brain_finetune.py", args=[...])`; otherwise run the Bash/Python command below.
+- For a command-shape review, do not install packages, clone repositories,
+  download weights, or start GPU training. Emit only the wrapper command with
+  the supplied datalist, an explicit `--data-base-dir`, an explicit
+  `--output-dir`, and the requested modality.
+- When the user explicitly asks for a training-launch command, do not silently
+  replace it with `--preflight`; include `--preflight` only for a preflight
+  request.
 - Use `--preflight` first when checking a new datalist; remove `--preflight` only when the user explicitly wants to launch GPU finetuning.
 - For a staged preflight input bundle directory, use `BUNDLE/preflight_datalist.json` as the datalist and `BUNDLE/preflight_dataset` as `--data-base-dir` when those files are present.
 
@@ -44,6 +51,17 @@ python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
 ```
 
 For real GPU finetuning and other variations, see [Usage](#2-usage-one-line-training) below.
+
+Command-shape review for a requested training launch (no setup or execution):
+
+```bash
+python skills/nv-generate-mr-brain-finetune/scripts/run_mr_brain_finetune.py \
+  PATH_TO_DATALIST.json \
+  --data-base-dir PATH_TO_DATA_ROOT \
+  --output-dir runs/nv_generate_mr_brain_finetune \
+  --epochs 2 \
+  --modality mri_t1
+```
 
 ## Available Scripts
 | Script | Purpose | Arguments |
