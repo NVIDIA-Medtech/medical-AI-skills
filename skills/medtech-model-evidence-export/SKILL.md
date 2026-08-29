@@ -4,6 +4,8 @@ description: Exports sanitized metadata, parameters, reproducibility details, qu
 license: Apache-2.0
 allowed-tools: Bash
 permissions: [env, file_read, file_write, network, shell]
+metadata:
+  author: "NVIDIA MedTech <noreply@nvidia.com>"
 ---
 
 # Medtech Model Evidence Export to MLflow
@@ -48,7 +50,7 @@ Hosts with a script helper can use
 - Local mode may write the MLflow store under
   `<current-working-directory>/mlruns`.
 
-## Usage
+## Examples
 
 Preview the export without contacting MLflow:
 
