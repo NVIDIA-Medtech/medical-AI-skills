@@ -9,25 +9,25 @@ Recommended for publication based on the completed evaluation evidence in this r
 ## Evaluation Metadata
 
 - Skill: `medtech-model-evidence-export`
-- Evaluation date: 2026-08-19
-- Evaluator version: `1.3.1`
+- Evaluation date: 2026-08-29
+- Evaluator version: `1.3.2`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
 - Tasks: 4 evaluation tasks (2 positive, 2 negative)
 - Dataset digest: `sha256:20dc012111b0aa3dc1ff37d9ba71d5f505c9fccdf540783bcb0acf6764f3c4b7` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
-- Environment: `local`
+- Environment: `k8s-sandbox`
 - Tier 3 evidence: required for publication
 
-Tasks ran on the trusted local host; local mode is not sandboxed.
+Each task attempt ran in its own isolated sandbox pod.
 
 ## Execution and Provenance
 
 - Validation status: `passed`
 - Report generation: `complete`
-- Evaluator version: `1.3.1`
-- Git commit: `83cf4c0b1e81e0c84824f5789bece78274421ec7`
+- Evaluator version: `1.3.2`
+- Git commit: `64be1471c5fd4364d27cf503eb8218cb86f36ee2`
 - Content type: requested `auto`, detected `skill`
-- Container image: `gitlab-master.nvidia.com:5005/nvcarps/ci-group/nvcarps-ci/skillevaluator-ci:sha-83cf4c0b1e81e0c84824f5789bece78274421ec7`
+- Container image: `gitlab-master.nvidia.com:5005/nvcarps/ci-group/nvcarps-ci/skillevaluator-ci:sha-64be1471c5fd4364d27cf503eb8218cb86f36ee2`
 - Container image digest: `not recorded`
 - Tier 3: requested `true`, executed `true`, status `succeeded`
 
@@ -45,12 +45,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | Not available | 78% → 96% (+18 points) |
-| Security | Not available | 75% → 100% (+25 points) |
-| Correctness | Not available | 100% → 100% (±0 points) |
-| Discoverability | Not available | 67% → 92% (+25 points) |
-| Effectiveness | Not available | 76% → 97% (+21 points) |
-| Efficiency | Not available | 72% → 93% (+21 points) |
+| Overall | 70% → 97% (+27 points) | 69% → 97% (+28 points) |
+| Security | 100% → 100% (±0 points) | 100% → 100% (±0 points) |
+| Correctness | 55% → 100% (+45 points) | 55% → 100% (+45 points) |
+| Discoverability | 75% → 98% (+23 points) | 66% → 92% (+27 points) |
+| Effectiveness | 50% → 87% (+37 points) | 54% → 96% (+42 points) |
+| Efficiency | 70% → 98% (+28 points) | 71% → 98% (+26 points) |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Uplift is `skill score - baseline score`, shown in percentage points.
 
@@ -60,7 +60,7 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 
 | Tier | Purpose | Status | Evidence |
 |---|---|---|---|
-| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 5 finding(s) |
+| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 3 finding(s) |
 | Tier 2 | Semantic deduplication | **NOT RUN** | No result was recorded |
 | Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 4 task(s) |
 
@@ -69,8 +69,6 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 <details>
 <summary>Show detailed findings and successful checks</summary>
 
-- **MEDIUM** SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/medtech-model-evidence-export/SKILL.md`)
-- **MEDIUM** SCHEMA/author_missing: Author not specified in metadata (`skills/medtech-model-evidence-export/SKILL.md`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/medtech-model-evidence-export/fixtures`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/medtech-model-evidence-export/skill_manifest.yaml`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/medtech-model-evidence-export/validators`)

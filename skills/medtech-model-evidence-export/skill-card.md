@@ -7,9 +7,9 @@ This skill is ready for commercial/non-commercial use. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill to export post-hoc medical AI inference results and evidence packs to MLflow for reproducibility tracking, quality metrics review, and provenance audit. <br>
+Developers and engineers use this skill to export sanitized inference-run metadata, quality metrics, reproducibility parameters, and review artifacts from Medical AI evidence packs to MLflow for post-hoc tracking and audit. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -25,13 +25,16 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
+- [Output schema](validators/output_schema.json) <br>
+- [Skill manifest](skill_manifest.yaml) <br>
+- [Evaluation benchmark](BENCHMARK.md) <br>
 
 
 ## Skill Output: <br>
-**Output Type(s):** [JSON, Shell commands] <br>
+**Output Type(s):** [Analysis, API Calls] <br>
 **Output Format:** [JSON] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Dry-run mode produces a preview without contacting MLflow; live modes log runs via the MLflow Python API] <br>
 
 ## Evaluation Agents Used: <br>
 - Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`) <br>
@@ -40,38 +43,38 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-4 evaluation tasks (2 positive, 2 negative) from a versioned skill-evaluator dataset. <br>
+4 evaluation tasks (2 positive, 2 negative), each in an isolated k8s-sandbox pod. Evaluator version 1.3.2, Tier 3 live agent evaluation. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
-- Security: Whether the skill is safe to use: checks for unsafe operations, secret leakage, and unauthorized access. <br>
-- Correctness: Whether the answer is correct against the reference answer. <br>
-- Discoverability: Whether the right skill was loaded and executed when needed. <br>
-- Effectiveness: Whether the skill helped complete the user's goal and followed the expected workflow. <br>
-- Efficiency: Whether the skill avoided wasted tool or skill usage. <br>
+- Security: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- Correctness: Validates final-answer correctness against the reference answer. <br>
+- Discoverability: Measures whether the expected skill was found and executed when needed. <br>
+- Effectiveness: Equal-weight mean of goal completion and expected workflow adherence. <br>
+- Efficiency: Evaluates routing quality, workspace-aware skill reads, and productive tool use. <br>
 
 Underlying evaluation signals used in this run: <br>
 - `security`: Detects unsafe operations, secret leakage, and unauthorized access. <br>
-- `skill_execution`: Whether the expected skill was found and executed. <br>
-- `skill_efficiency`: Routing quality, workspace-aware skill reads, and productive tool use. <br>
-- `accuracy`: Final-answer correctness against the reference answer. <br>
-- `goal_accuracy`: Whether the user's goal was achieved. <br>
-- `behavior_check`: Whether the expected workflow behavior was followed. <br>
+- `skill_execution`: Verifies the expected skill was found and executed. <br>
+- `skill_efficiency`: Measures routing quality, workspace-aware skill reads, and productive tool use. <br>
+- `accuracy`: Checks final-answer correctness against the reference answer. <br>
+- `goal_accuracy`: Assesses whether the user's goal was achieved. <br>
+- `behavior_check`: Verifies expected workflow behavior was followed. <br>
 
 
 
 ## Evaluation Results: <br>
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | Not available | 78% → 96% (+18 points) |
-| Security | Not available | 75% → 100% (+25 points) |
-| Correctness | Not available | 100% → 100% (±0 points) |
-| Discoverability | Not available | 67% → 92% (+25 points) |
-| Effectiveness | Not available | 76% → 97% (+21 points) |
-| Efficiency | Not available | 72% → 93% (+21 points) |
+| Overall | 70% → 97% (+27 points) | 69% → 97% (+28 points) |
+| Security | 100% → 100% (±0 points) | 100% → 100% (±0 points) |
+| Correctness | 55% → 100% (+45 points) | 55% → 100% (+45 points) |
+| Discoverability | 75% → 98% (+23 points) | 66% → 92% (+27 points) |
+| Effectiveness | 50% → 87% (+37 points) | 54% → 96% (+42 points) |
+| Efficiency | 70% → 98% (+28 points) | 71% → 98% (+26 points) |
 
 ## Skill Version(s): <br>
-6a28f73 (source: git SHA, committed 2026-08-19) <br>
+0.2.0 (source: skill_manifest.yaml) <br>
 
 ## Ethical Considerations: <br>
 NVIDIA believes Trustworthy AI is a shared responsibility and we have established policies and practices to enable development for a wide array of AI applications. When downloaded or used in accordance with our terms of service, developers should work with their internal team to ensure this skill meets requirements for the relevant industry and use case and addresses unforeseen product misuse. <br>
