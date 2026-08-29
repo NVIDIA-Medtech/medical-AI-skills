@@ -108,6 +108,20 @@ def test_upstream_config_dirs_accept_explicit_local_checkout(tmp_path, monkeypat
     assert config_dir in mod._upstream_config_dirs()
 
 
+def test_resolve_softmax_bundle_root_accepts_pinned_layout(tmp_path, monkeypatch):
+    bundle_root = tmp_path / "NV-Segment-CT"
+    (bundle_root / "configs").mkdir(parents=True)
+    (bundle_root / "scripts").mkdir()
+    for name in ("train_continual_softmax.json", "inference_softmax.json"):
+        (bundle_root / "configs" / name).write_text("{}\n")
+    (bundle_root / "scripts" / "vista3d_softmax.py").write_text("class Vista3dSoftmax: pass\n")
+
+    monkeypatch.setenv("NV_SEGMENT_CT_ROOT", str(bundle_root))
+    monkeypatch.delenv("NV_SEGMENT_CTMR_ROOT", raising=False)
+
+    assert mod.resolve_softmax_bundle_root() == bundle_root
+
+
 def test_build_override_defines_bundle_image_and_label_keys(tmp_path):
     override = mod.build_override(
         tmp_path / "dataset",
@@ -143,6 +157,61 @@ def test_build_override_auto_seg_matches_task06_prompt_settings(tmp_path):
     assert override["drop_point_prob"] == 1.0
     expected_spacing = tuple(float("1.5") for _ in range(3))
     assert override["resample_to_spacing"] == expected_spacing
+
+
+def test_build_softmax_override_uses_fixed_channel_contract(tmp_path, monkeypatch):
+    bundle = tmp_path / "bundle"
+    monkeypatch.setattr(mod, "BUNDLE_DIR", bundle)
+
+    override = mod.build_softmax_override(
+        tmp_path / "dataset",
+        tmp_path / "datalist.json",
+        {"default": [[1, 3], [2, 13]]},
+        [128, 128, 128],
+        0.5,
+        10,
+        1e-4,
+        tmp_path / "checkpoints",
+        tmp_path / "validation",
+    )
+
+    assert override["label_mappings"] == {"default": [[1, 3], [2, 13]]}
+    assert override["finetune_model_path"] == str(bundle / "models" / "model.pt")
+    assert override["ckpt_dir"] == str(tmp_path / "checkpoints")
+    assert override["patch_size"] == [128, 128, 128]
+    assert "drop_label_prob" not in override
+    assert "drop_point_prob" not in override
+
+
+def test_validate_softmax_mapping_accepts_unique_positive_pairs():
+    mod.validate_softmax_mapping({"default": [[1, 3], [2, 13]]})
+
+
+def test_child_process_env_keeps_runtime_values_and_drops_credentials(monkeypatch):
+    monkeypatch.setenv("PATH", "/trusted/bin")
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2")
+    monkeypatch.setenv("OPENAI_API_KEY", "not-forwarded")
+
+    env = mod._child_process_env({"NVSEG_FINETUNE_IN_AUTO_VENV": "1"})
+
+    assert env["PATH"] == "/trusted/bin"
+    assert env["CUDA_VISIBLE_DEVICES"] == "2"
+    assert env["NVSEG_FINETUNE_IN_AUTO_VENV"] == "1"
+    assert "OPENAI_API_KEY" not in env
+
+
+@pytest.mark.parametrize(
+    "mapping",
+    [
+        {"default": []},
+        {"default": [[0, 3]]},
+        {"default": [[1, 3], [1, 13]]},
+        {"default": [[1, 3], [2, 3]]},
+    ],
+)
+def test_validate_softmax_mapping_rejects_invalid_channels(mapping):
+    with pytest.raises(mod.typer.BadParameter, match="softmax"):
+        mod.validate_softmax_mapping(mapping)
 
 
 def test_task06_fixture_selects_sanity_preset() -> None:
