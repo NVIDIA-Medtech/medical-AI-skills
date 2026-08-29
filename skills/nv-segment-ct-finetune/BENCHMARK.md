@@ -9,11 +9,11 @@ Recommended for publication based on the completed evaluation evidence in this r
 ## Evaluation Metadata
 
 - Skill: `nv-segment-ct-finetune`
-- Evaluation date: 2026-08-28
+- Evaluation date: 2026-08-29
 - Evaluator version: `1.3.2`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
 - Tasks: 3 evaluation tasks (3 positive)
-- Dataset digest: `sha256:5e4946be10cac367e27e515f73835a84a698fc722d7c8a27fb07a73936321a4e` (skill-evaluator-dataset-snapshot/1)
+- Dataset digest: `sha256:4afa050e5c2e5076fecb4cd236e673d9c9950d3e2f662cfd7f4733c76b32f543` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
 - Environment: `k8s-sandbox`
 - Tier 3 evidence: required for publication
@@ -45,12 +45,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 49% → 86% (+37 points) | 70% → 84% (+13 points) |
-| Security | 83% → 100% (+17 points) | 67% → 100% (+33 points) |
-| Correctness | 53% → 100% (+47 points) | 100% → 100% (±0 points) |
-| Discoverability | 42% → 94% (+52 points) | 60% → 75% (+15 points) |
-| Effectiveness | 28% → 45% (+18 points) | 66% → 58% (-8 points) |
-| Efficiency | 39% → 89% (+50 points) | 59% → 86% (+27 points) |
+| Overall | 41% → 91% (+50 points) | 60% → 92% (+33 points) |
+| Security | 67% → 100% (+33 points) | 100% → 100% (±0 points) |
+| Correctness | 47% → 93% (+47 points) | 87% → 100% (+13 points) |
+| Discoverability | 42% → 96% (+54 points) | 42% → 85% (+44 points) |
+| Effectiveness | 21% → 82% (+61 points) | 55% → 76% (+21 points) |
+| Efficiency | 29% → 84% (+55 points) | 15% → 100% (+85 points) |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Uplift is `skill score - baseline score`, shown in percentage points.
 
