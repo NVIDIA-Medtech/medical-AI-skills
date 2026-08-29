@@ -12,8 +12,8 @@ Recommended for publication based on the completed evaluation evidence in this r
 - Evaluation date: 2026-08-29
 - Evaluator version: `1.3.2`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
-- Tasks: 3 evaluation tasks (3 positive)
-- Dataset digest: `sha256:4afa050e5c2e5076fecb4cd236e673d9c9950d3e2f662cfd7f4733c76b32f543` (skill-evaluator-dataset-snapshot/1)
+- Tasks: 4 evaluation tasks (4 positive)
+- Dataset digest: `sha256:d41af257bcccc6bfdc4eeff8f516d55c89024acd4b8ebe5452e2c34717040a83` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
 - Environment: `k8s-sandbox`
 - Tier 3 evidence: required for publication
@@ -45,12 +45,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 41% → 91% (+50 points) | 60% → 92% (+33 points) |
-| Security | 67% → 100% (+33 points) | 100% → 100% (±0 points) |
-| Correctness | 47% → 93% (+47 points) | 87% → 100% (+13 points) |
-| Discoverability | 42% → 96% (+54 points) | 42% → 85% (+44 points) |
-| Effectiveness | 21% → 82% (+61 points) | 55% → 76% (+21 points) |
-| Efficiency | 29% → 84% (+55 points) | 15% → 100% (+85 points) |
+| Overall | 53% → 94% (+42 points) | 60% → 93% (+33 points) |
+| Security | 88% → 100% (+12 points) | 100% → 100% (±0 points) |
+| Correctness | 70% → 95% (+25 points) | 80% → 95% (+15 points) |
+| Discoverability | 46% → 100% (+54 points) | 50% → 89% (+39 points) |
+| Effectiveness | 31% → 82% (+51 points) | 56% → 92% (+36 points) |
+| Efficiency | 28% → 93% (+65 points) | 16% → 91% (+74 points) |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Uplift is `skill score - baseline score`, shown in percentage points.
 
@@ -60,9 +60,9 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 
 | Tier | Purpose | Status | Evidence |
 |---|---|---|---|
-| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 4 finding(s) |
+| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 1 validator(s); 3 finding(s) |
 | Tier 2 | Semantic deduplication | **NOT RUN** | No result was recorded |
-| Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 3 task(s) |
+| Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 4 task(s) |
 
 ## Findings and Observations
 
@@ -72,7 +72,6 @@ Example: `47% → 92% (+45 points)` means the skill-assisted run scored 92%, 45 
 - **LOW** SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct-finetune/fixtures`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct-finetune/validators`)
 - **LOW** SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct-finetune/skill_manifest.yaml`)
-- **LOW** SCHEMA/author_format: Author must be of the form 'Name <email@host>' (`skills/nv-segment-ct-finetune/SKILL.md`)
 
 </details>
 
