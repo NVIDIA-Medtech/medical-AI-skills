@@ -2,7 +2,8 @@
 name: nv-generate-mr-brain-finetune
 description: Used for finetuning NV-Generate-CTMR MR-Brain v1 for T1, T2, FLAIR, SWI, or MRA data from a NIfTI datalist. Not for clinical or production data approval.
 license: Apache-2.0
-allowed-tools: Bash
+allowed-tools: Bash, Read, Write, WebFetch, Env
+permissions: [env, file_read, file_write, network, shell]
 metadata:
   author: NVIDIA MedTech Team
   tags:
@@ -73,6 +74,14 @@ if [ -z "${NV_GENERATE_ROOT:-}" ]; then
   fi
 fi
 ```
+
+The wrapper executes upstream code only when `NV_GENERATE_ROOT` is at the exact
+manifest commit and its tracked files are clean. Supply custom training and
+inference settings through the documented config flags rather than editing the
+checkout. Child processes receive only an allowlist of runtime, CUDA, locale,
+and certificate variables; API keys, tokens, passwords, and unrelated parent
+environment values are not forwarded. The public v1 assets do not require a
+credential; pre-download them if your network setup requires separate tooling.
 
 Before a GPU run, download the exact autoencoder and MR-Brain v1 checkpoint
 revisions declared by the manifest. Passing `--download-model-data` performs

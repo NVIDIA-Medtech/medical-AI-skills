@@ -103,6 +103,35 @@ def _fake_upstream(root: Path) -> Path:
     return root
 
 
+def test_child_process_env_omits_parent_secrets(monkeypatch) -> None:
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "3")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "do-not-forward")
+    monkeypatch.setenv("HUGGINGFACE_TOKEN", "do-not-forward")
+    monkeypatch.setenv("PYTHONPATH", "/tmp/untrusted-pythonpath")
+
+    env = mod._child_process_env({"HF_HOME": "/tmp/run-owned-hf-cache"})
+
+    assert env["CUDA_VISIBLE_DEVICES"] == "3"
+    assert env["HF_HOME"] == "/tmp/run-owned-hf-cache"
+    assert "AWS_SECRET_ACCESS_KEY" not in env
+    assert "HUGGINGFACE_TOKEN" not in env
+    assert "PYTHONPATH" not in env
+
+
+def test_upstream_identity_requires_pinned_clean_checkout(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(mod, "_git_commit", lambda _root: mod.UPSTREAM_COMMIT)
+    monkeypatch.setattr(mod, "_git_tracked_files_clean", lambda _root: True)
+
+    identity = mod._upstream_identity(tmp_path)
+
+    assert identity["commit_match"] is True
+    assert identity["tracked_files_clean"] is True
+    assert identity["trusted"] is True
+
+    monkeypatch.setattr(mod, "_git_commit", lambda _root: "wrong-commit")
+    assert mod._upstream_identity(tmp_path)["trusted"] is False
+
+
 def test_validate_datalist_accepts_relative_images_and_default_modality(tmp_path: Path) -> None:
     datalist = _write_datalist(tmp_path)
 

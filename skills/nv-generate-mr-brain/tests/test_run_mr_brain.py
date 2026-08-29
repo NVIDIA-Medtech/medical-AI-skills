@@ -40,6 +40,35 @@ def test_load_config_override_default_returns_empty() -> None:
     assert source is None
 
 
+def test_child_process_env_omits_parent_secrets(monkeypatch) -> None:
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2")
+    monkeypatch.setenv("NVIDIA_API_KEY", "do-not-forward")
+    monkeypatch.setenv("HF_TOKEN", "do-not-forward")
+    monkeypatch.setenv("PYTHONPATH", "/tmp/untrusted-pythonpath")
+
+    env = mod._child_process_env({"HF_HOME": "/tmp/run-owned-hf-cache"})
+
+    assert env["CUDA_VISIBLE_DEVICES"] == "2"
+    assert env["HF_HOME"] == "/tmp/run-owned-hf-cache"
+    assert "NVIDIA_API_KEY" not in env
+    assert "HF_TOKEN" not in env
+    assert "PYTHONPATH" not in env
+
+
+def test_upstream_identity_requires_pinned_clean_checkout(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(mod, "git_commit", lambda _root: mod.UPSTREAM_COMMIT)
+    monkeypatch.setattr(mod, "_git_tracked_files_clean", lambda _root: True)
+
+    identity = mod._upstream_identity(tmp_path)
+
+    assert identity["commit_match"] is True
+    assert identity["tracked_files_clean"] is True
+    assert identity["trusted"] is True
+
+    monkeypatch.setattr(mod, "_git_tracked_files_clean", lambda _root: False)
+    assert mod._upstream_identity(tmp_path)["trusted"] is False
+
+
 def test_load_config_override_accepts_flat_and_nested_keys(tmp_path: Path) -> None:
     p = tmp_path / "cfg.json"
     p.write_text(

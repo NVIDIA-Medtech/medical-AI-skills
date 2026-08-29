@@ -2,7 +2,8 @@
 name: nv-generate-mr-brain
 description: Used for generating synthetic T1, T2, FLAIR, SWI, or MRA brain MRI volumes with NV-Generate-CTMR MR-Brain v1. Not for production training data.
 license: Apache-2.0
-allowed-tools: Bash
+allowed-tools: Bash, Read, Write, WebFetch, Env
+permissions: [env, file_read, file_write, network, shell]
 metadata:
   author: NVIDIA MedTech Team
   tags:
@@ -87,6 +88,13 @@ if [ -z "${NV_GENERATE_ROOT:-}" ]; then
 fi
 pip install -r "$NV_GENERATE_ROOT/requirements.txt"
 ```
+
+The wrapper executes upstream code only when `NV_GENERATE_ROOT` is at the exact
+manifest commit and its tracked files are clean. Keep model weights untracked
+under `models/`, and use the wrapper override JSON instead of editing upstream
+configs. Child processes receive only an allowlist of runtime, CUDA, locale,
+and certificate variables; API keys, tokens, passwords, and unrelated parent
+environment values are not forwarded.
 
 Download the reused autoencoder and MR-Brain v1 checkpoint from their exact
 manifest revisions:

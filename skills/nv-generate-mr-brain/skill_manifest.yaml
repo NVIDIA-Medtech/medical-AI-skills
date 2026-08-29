@@ -192,6 +192,7 @@ validation:
     - {path: skill, eq: nv_generate_mr_brain}
     - {path: invocation.official_entrypoint, eq: "python -m scripts.diff_model_infer"}
     - {path: invocation.exit_code, eq: 0}
+    - {path: invocation.upstream_identity.trusted, eq: true}
     - {path: invocation.model_inventory.all_present, eq: true}
     - {path: invocation.model_inventory.all_sha256_match, eq: true}
     - {path: output.num_samples, gte: 1}

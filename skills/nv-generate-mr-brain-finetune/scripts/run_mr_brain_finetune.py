@@ -50,6 +50,7 @@ from typing import Any
 
 SKILL_NAME = "nv_generate_mr_brain_finetune"
 UPSTREAM_REPO = "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR"
+UPSTREAM_COMMIT = "da438fec6484cdb6f421f8c7051d954ebefff730"
 UPSTREAM_ENTRYPOINT = (
     "python -m scripts.diff_model_create_training_data; " "python -m scripts.diff_model_train"
 )
@@ -68,6 +69,32 @@ MODEL_ASSETS = (
 )
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_UPSTREAM = REPO_ROOT / ".workbench_data" / "upstreams" / "NV-Generate-CTMR"
+_CHILD_ENV_KEYS = (
+    "CUDA_DEVICE_ORDER",
+    "CUDA_HOME",
+    "CUDA_PATH",
+    "CUDA_VISIBLE_DEVICES",
+    "CUBLAS_WORKSPACE_CONFIG",
+    "CURL_CA_BUNDLE",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LD_LIBRARY_PATH",
+    "NCCL_DEBUG",
+    "NCCL_IB_DISABLE",
+    "NCCL_P2P_DISABLE",
+    "NCCL_SOCKET_IFNAME",
+    "NVIDIA_DRIVER_CAPABILITIES",
+    "NVIDIA_VISIBLE_DEVICES",
+    "OMP_NUM_THREADS",
+    "PATH",
+    "PYTHONNOUSERSITE",
+    "REQUESTS_CA_BUNDLE",
+    "SSL_CERT_FILE",
+    "TMPDIR",
+    "TORCH_EXTENSIONS_DIR",
+    "TORCH_HOME",
+)
 REQUIRED_UPSTREAM_FILES = (
     "scripts/download_model_data.py",
     "scripts/diff_model_create_training_data.py",
@@ -100,6 +127,19 @@ def _emit(payload: dict[str, Any]) -> None:
 
 def _tail(text: str, n_chars: int = 4000) -> str:
     return text if len(text) <= n_chars else "..." + text[-n_chars:]
+
+
+def _child_process_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    """Build the minimal environment needed by the pinned upstream workflow."""
+    env: dict[str, str] = {}
+    for name in _CHILD_ENV_KEYS:
+        value = os.environ.get(name)
+        if value is not None:
+            env[name] = value
+    env.setdefault("PATH", os.defpath)
+    if overrides:
+        env.update(overrides)
+    return env
 
 
 def _load_json(path: Path) -> Any:
@@ -210,6 +250,7 @@ def _git_commit(root: Path) -> str:
         proc = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=str(root),
+            env=_child_process_env(),
             check=False,
             capture_output=True,
             text=True,
@@ -218,6 +259,34 @@ def _git_commit(root: Path) -> str:
     except Exception:
         return ""
     return proc.stdout.strip() if proc.returncode == 0 else ""
+
+
+def _git_tracked_files_clean(root: Path) -> bool:
+    try:
+        proc = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            cwd=str(root),
+            env=_child_process_env(),
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except Exception:
+        return False
+    return proc.returncode == 0 and not proc.stdout.strip()
+
+
+def _upstream_identity(root: Path) -> dict[str, Any]:
+    commit = _git_commit(root)
+    tracked_files_clean = _git_tracked_files_clean(root)
+    return {
+        "commit": commit,
+        "expected_commit": UPSTREAM_COMMIT,
+        "commit_match": commit == UPSTREAM_COMMIT,
+        "tracked_files_clean": tracked_files_clean,
+        "trusted": commit == UPSTREAM_COMMIT and tracked_files_clean,
+    }
 
 
 def _config_sources(args: argparse.Namespace, upstream_root: Path) -> tuple[Path, Path, Path]:
@@ -617,6 +686,7 @@ def _payload(
             "official_entrypoint": UPSTREAM_ENTRYPOINT,
             "upstream_root": str(upstream_root) if upstream_root else None,
             "upstream_commit": _git_commit(upstream_root) if upstream_root else "",
+            "upstream_identity": _upstream_identity(upstream_root) if upstream_root else None,
             "checked_upstream_roots": checked_roots,
             "command": command_plan[0] if command_plan else [],
             "command_plan": command_plan,
@@ -703,6 +773,18 @@ def main() -> None:
         _emit(payload)
         raise SystemExit(2)
 
+    upstream_identity = _upstream_identity(upstream_root)
+    if not upstream_identity["trusted"]:
+        payload = _payload(
+            args, dataset, upstream_root, checked, command_plan, 2, time.time() - start
+        )
+        payload["logs"]["stderr_tail"] = (
+            "Use the exact clean NV-Generate-CTMR checkout documented in SKILL.md; "
+            "tracked source edits and other commits are rejected before upstream code execution."
+        )
+        _emit(payload)
+        raise SystemExit(2)
+
     try:
         staged = _stage_configs(args, upstream_root)
         command_plan = _build_command_plan(args, upstream_root, staged)
@@ -730,11 +812,16 @@ def main() -> None:
         _emit(payload)
         return
 
-    env = os.environ.copy()
     cache_dir = args.output_dir / "cache"
-    env.setdefault("MPLCONFIGDIR", str(cache_dir / "matplotlib"))
-    env.setdefault("XDG_CACHE_HOME", str(cache_dir / "xdg"))
-    env.setdefault("CUDA_CACHE_PATH", str(cache_dir / "cuda"))
+    env = _child_process_env(
+        {
+            "CUDA_CACHE_PATH": str(cache_dir / "cuda"),
+            "HF_HOME": str(cache_dir / "huggingface"),
+            "HF_HUB_CACHE": str(cache_dir / "huggingface" / "hub"),
+            "MPLCONFIGDIR": str(cache_dir / "matplotlib"),
+            "XDG_CACHE_HOME": str(cache_dir / "xdg"),
+        }
+    )
     exit_code, stdout, stderr, command_plan = _run_workflow(args, upstream_root, staged, env)
     payload = _payload(
         args,

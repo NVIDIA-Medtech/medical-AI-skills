@@ -42,9 +42,33 @@ import typer
 SKILL_NAME = "nv_generate_mr_brain"
 MODEL_REPO = "https://github.com/NVIDIA-Medtech/NV-Generate-CTMR"
 MODEL_WEIGHTS_REPO = "https://huggingface.co/nvidia/NV-Generate-MR-Brain"
+UPSTREAM_COMMIT = "da438fec6484cdb6f421f8c7051d954ebefff730"
 VERSION = "rflow-mr-brain"
 NETWORK = "rflow"
 REPO_ROOT = Path(__file__).resolve().parents[int("3")]
+
+_CHILD_ENV_KEYS = (
+    "CUDA_DEVICE_ORDER",
+    "CUDA_HOME",
+    "CUDA_PATH",
+    "CUDA_VISIBLE_DEVICES",
+    "CUBLAS_WORKSPACE_CONFIG",
+    "CURL_CA_BUNDLE",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LD_LIBRARY_PATH",
+    "NVIDIA_DRIVER_CAPABILITIES",
+    "NVIDIA_VISIBLE_DEVICES",
+    "OMP_NUM_THREADS",
+    "PATH",
+    "PYTHONNOUSERSITE",
+    "REQUESTS_CA_BUNDLE",
+    "SSL_CERT_FILE",
+    "TMPDIR",
+    "TORCH_EXTENSIONS_DIR",
+    "TORCH_HOME",
+)
 
 UPSTREAM_NETWORK_CONFIG = "configs/config_network_rflow.json"
 UPSTREAM_MODEL_CONFIG = "configs/config_maisi_diff_model_rflow-mr-brain.json"
@@ -118,11 +142,25 @@ def file_sha256_safe(path: Path) -> str:
         return ""
 
 
+def _child_process_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    """Build the minimal environment needed by the pinned upstream process."""
+    env: dict[str, str] = {}
+    for name in _CHILD_ENV_KEYS:
+        value = os.environ.get(name)
+        if value is not None:
+            env[name] = value
+    env.setdefault("PATH", os.defpath)
+    if overrides:
+        env.update(overrides)
+    return env
+
+
 def git_commit(root: Path) -> str:
     try:
         proc = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=str(root),
+            env=_child_process_env(),
             check=False,
             capture_output=True,
             text=True,
@@ -133,6 +171,34 @@ def git_commit(root: Path) -> str:
     if proc.returncode == 0:
         return proc.stdout.strip()
     return ""
+
+
+def _git_tracked_files_clean(root: Path) -> bool:
+    try:
+        proc = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            cwd=str(root),
+            env=_child_process_env(),
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=int("10"),
+        )
+    except Exception:
+        return False
+    return proc.returncode == 0 and not proc.stdout.strip()
+
+
+def _upstream_identity(root: Path) -> dict[str, Any]:
+    commit = git_commit(root)
+    tracked_files_clean = _git_tracked_files_clean(root)
+    return {
+        "commit": commit,
+        "expected_commit": UPSTREAM_COMMIT,
+        "commit_match": commit == UPSTREAM_COMMIT,
+        "tracked_files_clean": tracked_files_clean,
+        "trusted": commit == UPSTREAM_COMMIT and tracked_files_clean,
+    }
 
 
 def _round(values: Any, ndigits: int = int("6")) -> Any:
@@ -537,6 +603,20 @@ def main(
             }
         )
         raise typer.Exit(2)
+    upstream_identity = _upstream_identity(upstream_root)
+    if not upstream_identity["trusted"]:
+        emit(
+            {
+                "skill": SKILL_NAME,
+                "error": "NV_GENERATE_ROOT identity invalid",
+                "detail": (
+                    "Use the exact clean checkout documented in SKILL.md; tracked source "
+                    "edits and other commits are rejected before upstream code execution."
+                ),
+                "upstream_identity": upstream_identity,
+            }
+        )
+        raise typer.Exit(2)
     if output_dir is None:
         output_dir = upstream_root / "output"
     output_dir = output_dir.expanduser().resolve()
@@ -614,6 +694,7 @@ def main(
                 "estimated_cost": cost,
                 "cuda": cuda,
                 "model_inventory": inventory,
+                "upstream_identity": upstream_identity,
                 "rendered_model_config": rendered_model,
                 "rendered_env_config": rendered_env,
             }
@@ -635,9 +716,17 @@ def main(
         raise typer.Exit(2)
 
     cmd = _build_command(staged_model_path, staged_env_path, num_gpus)
-    run_env = os.environ.copy()
-    run_env.setdefault("MONAI_DATA_DIRECTORY", str(upstream_root / "temp_work_dir"))
-    run_env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "max_split_size_mb:128,expandable_segments:True")
+    runtime_cache = output_dir / "_runtime_cache"
+    run_env = _child_process_env(
+        {
+            "CUDA_CACHE_PATH": str(runtime_cache / "cuda"),
+            "HF_HOME": str(runtime_cache / "huggingface"),
+            "MPLCONFIGDIR": str(runtime_cache / "matplotlib"),
+            "MONAI_DATA_DIRECTORY": str(upstream_root / "temp_work_dir"),
+            "PYTORCH_CUDA_ALLOC_CONF": "max_split_size_mb:128,expandable_segments:True",
+            "XDG_CACHE_HOME": str(runtime_cache / "xdg"),
+        }
+    )
 
     run_started = time.time()
     t0 = time.monotonic()
@@ -693,7 +782,8 @@ def main(
         "invocation": {
             "official_entrypoint": "python -m scripts.diff_model_infer",
             "upstream_root": str(upstream_root),
-            "upstream_commit": git_commit(upstream_root),
+            "upstream_commit": upstream_identity["commit"],
+            "upstream_identity": upstream_identity,
             "command": cmd,
             "exit_code": rc,
             "subprocess_seconds": round(elapsed, int("3")),
