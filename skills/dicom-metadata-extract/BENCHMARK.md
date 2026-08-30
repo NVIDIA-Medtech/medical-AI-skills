@@ -9,7 +9,7 @@ Recommended for publication based on the completed evaluation evidence in this r
 ## Evaluation Metadata
 
 - Skill: `dicom-metadata-extract`
-- Evaluation date: 2026-08-29
+- Evaluation date: 2026-08-30
 - Evaluator version: `1.3.2`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
 - Tasks: 2 evaluation tasks (2 positive)
@@ -45,12 +45,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 51% → 81% (+30 points) | 55% → 78% (+23 points) |
-| Security | 100% → 50% (-50 points) | 100% → 100% (±0 points) |
-| Correctness | 30% → 100% (+70 points) | 50% → 60% (+10 points) |
-| Discoverability | 46% → 84% (+39 points) | 41% → 78% (+38 points) |
-| Effectiveness | 38% → 89% (+51 points) | 36% → 60% (+24 points) |
-| Efficiency | 42% → 82% (+40 points) | 50% → 91% (+41 points) |
+| Overall | 49% → 82% (+34 points) | 55% → 70% (+15 points) |
+| Security | 100% → 100% (±0 points) | 100% → 50% (-50 points) |
+| Correctness | 30% → 70% (+40 points) | 50% → 80% (+30 points) |
+| Discoverability | 44% → 94% (+50 points) | 44% → 78% (+34 points) |
+| Effectiveness | 38% → 55% (+17 points) | 36% → 60% (+24 points) |
+| Efficiency | 32% → 93% (+62 points) | 46% → 82% (+36 points) |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Uplift is `skill score - baseline score`, shown in percentage points.
 

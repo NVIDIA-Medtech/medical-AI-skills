@@ -1,5 +1,5 @@
 ## Description: <br>
-Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. <br>
+Used for converting one CT DICOM series folder to a HU NIfTI volume with affine evidence. Not for multi-frame DICOM or clinical use. <br>
 
 This skill is for research and development only. <br>
 
@@ -7,9 +7,9 @@ This skill is for research and development only. <br>
 NVIDIA <br>
 
 ### License/Terms of Use: <br>
-Apache-2.0 <br>
+Apache 2.0 <br>
 ## Use Case: <br>
-Developers and engineers converting single-series CT DICOM directories to Hounsfield-unit NIfTI volumes with computed affine geometry for medical imaging engineering workflows. <br>
+Developers and engineers use this skill to convert single-series CT DICOM directories into HU-scaled NIfTI volumes with affine geometry for engineering verification and development workflows. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -25,13 +25,14 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
+- [BENCHMARK.md](BENCHMARK.md) <br>
 
 
 ## Skill Output: <br>
 **Output Type(s):** [Files, Analysis] <br>
-**Output Format:** [NIfTI volume (.nii.gz) and JSON summary] <br>
+**Output Format:** [NIfTI volume (.nii.gz) with JSON summary] <br>
 **Output Parameters:** [1D] <br>
-**Other Properties Related to Output:** [None] <br>
+**Other Properties Related to Output:** [Key output fields: n_slices, series_instance_uid, output.path, output.shape, output.spacing, output.axcodes, output.affine, hu_range, runtime.conversion_seconds] <br>
 
 ## Evaluation Agents Used: <br>
 - Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`) <br>
@@ -40,15 +41,15 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-2 evaluation tasks (1 positive, 1 negative) with Tier 3 live agent evaluation against a versioned dataset. <br>
+2 evaluation tasks (1 positive, 1 negative) per agent, each in an isolated sandbox pod. Dataset: skill-evaluator-dataset-snapshot/1. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
-- Security: Whether the skill is safe to use, checking for unsafe operations, secret leakage, and unauthorized access. <br>
-- Correctness: Whether the final answer is correct against the reference answer. <br>
-- Discoverability: Whether the right skill was found and executed when needed. <br>
-- Effectiveness: Whether the skill helped complete the user's goal and expected workflow (equal-weight mean of goal completion and behavior adherence). <br>
-- Efficiency: Whether the skill avoided wasted tool or skill usage, measuring routing quality and productive tool use. <br>
+- Security: Whether the skill is safe to use: checks for unsafe operations, secret leakage, and unauthorized access. <br>
+- Correctness: Whether the answer is correct: final-answer correctness against the reference answer. <br>
+- Discoverability: Whether the right skill was loaded when needed: checks skill execution and routing. <br>
+- Effectiveness: Whether the skill helped complete the task: equal-weight mean of goal completion and expected workflow adherence. <br>
+- Efficiency: Whether wasted tool or skill usage was avoided: routing quality, workspace-aware skill reads, and productive tool use. <br>
 
 Underlying evaluation signals used in this run: <br>
 - `security`: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
@@ -63,12 +64,12 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 66% → 91% (+25 points) | 84% → 82% (-2 points) |
-| Security | 100% → 100% (±0 points) | 50% → 50% (±0 points) |
-| Correctness | 40% → 100% (+60 points) | 100% → 100% (±0 points) |
-| Discoverability | 72% → 97% (+25 points) | 84% → 84% (±0 points) |
-| Effectiveness | 46% → 62% (+16 points) | 92% → 82% (-10 points) |
-| Efficiency | 71% → 97% (+26 points) | 92% → 91% (-0 points) |
+| Overall | 70% → 90% (+20 points) | 83% → 93% (+10 points) |
+| Security | 100% → 100% (±0 points) | 50% → 100% (+50 points) |
+| Correctness | 50% → 80% (+30 points) | 100% → 100% (±0 points) |
+| Discoverability | 75% → 94% (+19 points) | 84% → 84% (±0 points) |
+| Effectiveness | 56% → 79% (+22 points) | 92% → 90% (-2 points) |
+| Efficiency | 70% → 97% (+27 points) | 89% → 90% (+1 points) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
