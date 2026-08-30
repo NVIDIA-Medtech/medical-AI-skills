@@ -1,7 +1,7 @@
 ## Description: <br>
-Used for header-only preflight of one DICOM series folder before conversion or inference. Not for de-identification or clinical clearance. <br>
+Header-only preflight of one DICOM series folder before conversion or inference; not for de-identification or clinical clearance. <br>
 
-This skill is for research and development only. <br>
+This skill is ready for commercial/non-commercial use. <br>
 
 ## Owner
 NVIDIA <br>
@@ -9,7 +9,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache-2.0 <br>
 ## Use Case: <br>
-Developers and engineers use this skill for header-only preflight of DICOM series folders before conversion or model inference, checking orientation, consistency, corruption, and PHI-tag presence. <br>
+Developers and engineers use this skill to perform header-only preflight checks on a DICOM series directory — verifying orientation, spacing consistency, and PHI-tag presence — before running downstream conversion or model inference. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>
@@ -25,8 +25,8 @@ Risk: Review before execution as proposals could introduce incorrect or misleadi
 Mitigation: Review and scan skill before deployment. <br>
 
 ## Reference(s): <br>
-- [Skill Manifest](skill_manifest.yaml) <br>
-- [Output Schema](validators/output_schema.json) <br>
+- [Skill Manifest (I/O contract and dependencies)](skill_manifest.yaml) <br>
+- [Output Validation Schema](validators/output_schema.json) <br>
 
 
 ## Skill Output: <br>
@@ -42,21 +42,21 @@ Mitigation: Review and scan skill before deployment. <br>
 
 
 ## Evaluation Tasks: <br>
-Evaluated against 3 evaluation tasks (3 positive) in isolated k8s-sandbox pods with 1 attempt per task. <br>
+3 evaluation tasks against a versioned fixture battery (dataset digest sha256:62a39511), each run in an isolated k8s-sandbox pod with 1 attempt per task. <br>
 
 ## Evaluation Metrics Used: <br>
 Reported benchmark dimensions: <br>
 - Security: Checks for unsafe operations, secret leakage, and unauthorized access. <br>
-- Correctness: Checks final-answer correctness against the reference answer. <br>
-- Discoverability: Checks whether the expected skill was found and executed. <br>
-- Effectiveness: Equal-weight mean of goal completion and expected workflow adherence. <br>
-- Efficiency: Checks routing quality, workspace-aware skill reads, and productive tool use. <br>
+- Correctness: Final-answer correctness against the reference answer. <br>
+- Discoverability: Whether the expected skill was found and executed when needed. <br>
+- Effectiveness: Whether the skill helped complete the user's goal (goal completion and expected workflow adherence, equally weighted). <br>
+- Efficiency: Routing quality, workspace-aware skill reads, and productive tool use without wasted calls. <br>
 
 Underlying evaluation signals used in this run: <br>
-- `security`: Unsafe operations, secret leakage, and unauthorized access. <br>
+- `security`: Detects unsafe operations, secret leakage, and unauthorized access. <br>
+- `accuracy`: Final-answer correctness against the reference answer. <br>
 - `skill_execution`: Whether the expected skill was found and executed. <br>
 - `skill_efficiency`: Routing quality, workspace-aware skill reads, and productive tool use. <br>
-- `accuracy`: Final-answer correctness against the reference answer. <br>
 - `goal_accuracy`: Whether the user's goal was achieved. <br>
 - `behavior_check`: Whether the expected workflow behavior was followed. <br>
 
@@ -65,12 +65,12 @@ Underlying evaluation signals used in this run: <br>
 ## Evaluation Results: <br>
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 45% → 84% (+39 points) | 44% → 59% (+15 points) |
-| Security | 100% → 100% (±0 points) | 100% → 33% (-67 points) |
-| Correctness | 13% → 73% (+60 points) | 13% → 60% (+47 points) |
-| Discoverability | 45% → 95% (+50 points) | 40% → 73% (+33 points) |
-| Effectiveness | 25% → 56% (+31 points) | 23% → 44% (+21 points) |
-| Efficiency | 42% → 97% (+55 points) | 44% → 86% (+42 points) |
+| Overall | 43% → 84% (+41 points) | 42% → 70% (+28 points) |
+| Security | 100% → 100% (±0 points) | 100% → 67% (-33 points) |
+| Correctness | 7% → 80% (+73 points) | 13% → 73% (+60 points) |
+| Discoverability | 45% → 90% (+45 points) | 42% → 73% (+31 points) |
+| Effectiveness | 14% → 53% (+39 points) | 14% → 52% (+39 points) |
+| Efficiency | 50% → 97% (+47 points) | 43% → 87% (+44 points) |
 
 ## Skill Version(s): <br>
 0.1.0 (source: skill_manifest.yaml) <br>
