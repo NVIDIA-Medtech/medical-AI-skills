@@ -4,7 +4,7 @@ description: Runs standard or fixed-channel softmax finetuning of NV-Segment-CT 
 license: Apache-2.0
 allowed-tools: Bash, Read, Write, WebFetch, Env
 metadata:
-  author: "NVIDIA MedTech <noreply@nvidia.com>"
+  author: 'NVIDIA MedTech <noreply@nvidia.com>'
   tags:
     - MedTech
     - CT
