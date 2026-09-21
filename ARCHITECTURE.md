@@ -97,6 +97,9 @@ interface worth stabilizing.
 
 ## Layering rules
 
+`tools/test_fixtures/` provides CLI/pytest fixtures in temporary directories or
+ignored `runs/`. Skill runtimes do not import this maintainer tooling.
+
 - Skills and verifiers do not import from `eval_engine/`; the eval_engine invokes them
   by subprocess.
 - Verifier-only shared helpers live under `verifiers/_shared/`, not
