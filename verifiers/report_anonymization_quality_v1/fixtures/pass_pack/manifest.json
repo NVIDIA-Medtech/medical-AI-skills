@@ -1,8 +1,0 @@
-{
-  "skill_id": "report-anonymization",
-  "skill_version": "0.1.0",
-  "fixture": {
-    "path": "synthetic/anonymized_sample.csv",
-    "is_dir": false
-  }
-}

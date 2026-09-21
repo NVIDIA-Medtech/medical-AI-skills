@@ -1,8 +1,0 @@
-{
-  "skill_id": "report-pathology-classification",
-  "skill_version": "0.1.0",
-  "fixture": {
-    "path": "synthetic/labels_broken_sample.csv",
-    "is_dir": false
-  }
-}

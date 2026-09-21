@@ -1,8 +1,0 @@
-{
-  "skill_id": "report-translation",
-  "skill_version": "0.1.0",
-  "fixture": {
-    "path": "synthetic/translated_poor_sample.csv",
-    "is_dir": false
-  }
-}

@@ -1,3 +1,0 @@
-record_id,patient_mrn,study_date,note_text
-EHR-001,MRN-99887766,2024-03-15,"Patient Jane A. Smith (DOB 01/02/1975) seen for headache. MRN 99887766. Referred by Dr. Emily Patel at Memorial Hospital."
-EHR-002,MRN-44556677,2024-06-20,"Follow-up for John Doe, age 49, accession ACC-554433. Contact: jane.doe@example.com, phone 555-010-2233."

@@ -72,68 +72,6 @@ def _safe_str(value: Any) -> str | None:
         return repr(value)
 
 
-def _mrrate_field_name(elem: Any) -> str:
-    """Column name for a DICOM element following the MR-RATE metadata convention.
-
-    The MR-RATE metadata CSV names columns after each element's DICOM
-    *description* with spaces removed (e.g. "Patient's Age" -> "Patient'sAge",
-    "Image Orientation (Patient)" -> "ImageOrientation(Patient)"). Private tags
-    known to pydicom's private dictionaries carry bracketed names
-    (e.g. "[Water Fat Shift]" -> "[WaterFatShift]"); anything without a usable
-    description falls back to "Tag_gggg_eeee" (lower-case hex group/element).
-    """
-    # pydicom exposes the DICOM element name via the ``name`` property
-    # (``description()`` was removed in pydicom 3.0). ``name`` returns the
-    # dictionary name for standard tags, a bracketed name for known private
-    # tags (e.g. "[Water Fat Shift]"), or "Private tag data"/"Private Creator"
-    # / "" for unknown private/standard tags.
-    desc = ""
-    try:
-        desc = elem.name or ""
-    except Exception:
-        desc = ""
-    name = desc.replace(" ", "")
-    # Treat pydicom's "unknown" placeholders as no-name so we fall back to a
-    # stable Tag_gggg_eeee identifier instead of a generic label.
-    if not name or name.lower() == "unknown":
-        name = f"Tag_{elem.tag.group:04x}_{elem.tag.element:04x}"
-    return name
-
-
-def _elem_value_str(elem: Any) -> str:
-    """Serialise an element value; multi-valued elements join with backslash."""
-    value = elem.value
-    if value is None:
-        return ""
-    if isinstance(value, (bytes, bytearray)):
-        return value.decode("utf-8", errors="replace")
-    if isinstance(value, (list, tuple)) or type(value).__name__ == "MultiValue":
-        return "\\".join(_safe_str(v) or "" for v in value)
-    return _safe_str(value) or ""
-
-
-def flatten_all_fields(ds: "pydicom.Dataset", prefix: str = "", out: dict | None = None) -> dict:
-    """Recursively flatten every element of a DICOM dataset into a flat dict.
-
-    Sequences are expanded as ``SeqName_<i>_SubName`` to mirror the MR-RATE
-    metadata layout. Pixel data is skipped. On name collisions the first
-    occurrence wins (deterministic).
-    """
-    if out is None:
-        out = {}
-    for elem in ds:
-        if elem.tag == 0x7FE00010:  # PixelData — never emit
-            continue
-        name = _mrrate_field_name(elem)
-        key = f"{prefix}{name}"
-        if elem.VR == "SQ":
-            for i, item in enumerate(elem.value):
-                flatten_all_fields(item, prefix=f"{key}_{i}_", out=out)
-        elif key not in out:
-            out[key] = _elem_value_str(elem)
-    return out
-
-
 def _public_path(path: Path) -> str:
     try:
         return str(path.resolve().relative_to(Path.cwd().resolve()))
@@ -141,13 +79,8 @@ def _public_path(path: Path) -> str:
         return str(path)
 
 
-def extract(path: Path, all_fields: bool = False) -> dict:
-    """Extract metadata from a DICOM file. Returns a JSON-serialisable dict.
-
-    When ``all_fields`` is True, an additional ``all_fields`` key is included: a
-    flat dict of every standard/private DICOM element (pixel data excluded) keyed
-    by MR-RATE-style column names. The default output is unchanged.
-    """
+def extract(path: Path) -> dict:
+    """Extract metadata from a DICOM file. Returns a JSON-serialisable dict."""
     try:
         ds = pydicom.dcmread(str(path), stop_before_pixels=True)
     except Exception as e:
@@ -192,7 +125,7 @@ def extract(path: Path, all_fields: bool = False) -> dict:
             if value_str is not None and value_str.strip() != "":
                 phi_tags_found.append(tag_name)
 
-    result = {
+    return {
         "path": _public_path(path),
         "transfer_syntax": {"uid": ts_uid, "name": ts_name},
         "modality": _safe_str(getattr(ds, "Modality", None)),
@@ -203,22 +136,15 @@ def extract(path: Path, all_fields: bool = False) -> dict:
         "phi_tags_found": phi_tags_found,
         "phi_scope_disclaimer": PHI_SCOPE_DISCLAIMER,
     }
-    if all_fields:
-        result["all_fields"] = flatten_all_fields(ds)
-    return result
 
 
 @app.command()
 def main(
     dicom_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
     output: Path = typer.Option(None, "--output", "-o", help="JSON output path; stdout if omitted"),
-    all_fields: bool = typer.Option(
-        False, "--all-fields", "-a",
-        help="Also emit an 'all_fields' object with every DICOM element (MR-RATE naming)",
-    ),
 ) -> None:
     """Extract metadata from a DICOM file."""
-    result = extract(dicom_path, all_fields=all_fields)
+    result = extract(dicom_path)
     payload = json.dumps(result, indent=2, default=str)
     if output:
         output.write_text(payload)

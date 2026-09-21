@@ -81,21 +81,3 @@ def test_output_validates_against_schema(fixture_path: Path) -> None:
     payload = _run(str(fixture_path))
     schema = json.loads(SCHEMA.read_text())
     jsonschema.validate(payload, schema)
-
-
-def test_all_fields_absent_by_default(fixture_path: Path) -> None:
-    payload = _run(str(fixture_path))
-    assert "all_fields" not in payload
-
-
-def test_all_fields_present_and_valid(fixture_path: Path) -> None:
-    payload = _run(str(fixture_path), "--all-fields")
-    assert isinstance(payload.get("all_fields"), dict)
-    assert payload["all_fields"], "all_fields should be non-empty"
-    # every value serialised as a string (MR-RATE CSV convention)
-    assert all(isinstance(v, str) for v in payload["all_fields"].values())
-    # MR-RATE naming: descriptions with spaces removed (e.g. Modality, no spaces)
-    assert all(" " not in k for k in payload["all_fields"])
-    # schema still validates with the optional all_fields object present
-    schema = json.loads(SCHEMA.read_text())
-    jsonschema.validate(payload, schema)

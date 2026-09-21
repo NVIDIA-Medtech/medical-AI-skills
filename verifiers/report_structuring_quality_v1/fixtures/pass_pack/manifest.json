@@ -1,8 +1,0 @@
-{
-  "skill_id": "report-structuring",
-  "skill_version": "0.1.0",
-  "fixture": {
-    "path": "synthetic/structured_sample.csv",
-    "is_dir": false
-  }
-}

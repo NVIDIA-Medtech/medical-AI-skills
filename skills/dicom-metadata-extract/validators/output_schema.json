@@ -62,11 +62,6 @@
     },
     "phi_present": {"type": "boolean"},
     "phi_tags_found": {"type": "array", "items": {"type": "string"}},
-    "phi_scope_disclaimer": {"type": "string"},
-    "all_fields": {
-      "type": "object",
-      "description": "Optional. Present only when --all-fields is used. Flat map of every DICOM element (pixel data excluded) keyed by MR-RATE-style column names.",
-      "additionalProperties": {"type": "string"}
-    }
+    "phi_scope_disclaimer": {"type": "string"}
   }
 }
