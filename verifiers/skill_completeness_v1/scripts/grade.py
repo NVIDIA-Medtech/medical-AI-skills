@@ -189,6 +189,7 @@ STDLIB_MODULES = frozenset(
         "json",
         "logging",
         "math",
+        "mimetypes",
         "os",
         "pathlib",
         "platform",

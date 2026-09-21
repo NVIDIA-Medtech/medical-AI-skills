@@ -38,6 +38,12 @@ Pack file names: [`docs/replay.md`](../docs/replay.md).
 | `runs/with_vs_without_nv/studies/` | Local generated with-vs-without study records, gitignored |
 | `docs/with-vs-without-skill-experiment.md` | Checked-in compact with-vs-without summary |
 
+## `dependency_locks/` -- tested resolutions
+
+| Lock | Scope |
+|---|---|
+| `model-skills-2026-07-08.json` | Exact tested dependency profiles and end-to-end outcomes for the current 12-skill catalog |
+
 ## `workflows/`
 
 | Workflow | Steps | Teaches |

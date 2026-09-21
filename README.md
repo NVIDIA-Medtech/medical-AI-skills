@@ -280,11 +280,7 @@ make verify
 | [`skills/nv-generate-mr-brain-finetune`](skills/nv-generate-mr-brain-finetune/) | NV-Generate-CTMR rflow-mr-brain diffusion-UNet finetuning from a user datalist |
 | [`skills/nv-generate-vae-finetune`](skills/nv-generate-vae-finetune/) | NV-Generate-CTMR MAISI VAE finetuning from CT/MRI datalists |
 | [`skills/nv-reason-cxr`](skills/nv-reason-cxr/) | NV-Reason-CXR-3B inference on a user-provided chest X-ray PNG/JPEG |
-| [`skills/nv-curate`](skills/nv-curate/) | report-curation orchestrator: plan → de-identify → translate → structure → label → AI-ready datalist, with finetune/analysis hand-off (MR-RATE reports pipeline) |
-| [`skills/report-anonymization`](skills/report-anonymization/) | de-identify Turkish radiology reports with `[entity_N]` tokens (MR-RATE step 01) |
-| [`skills/report-translation`](skills/report-translation/) | Turkish→English report translation + QC and token preservation (MR-RATE steps 02+03) |
-| [`skills/report-structuring`](skills/report-structuring/) | structure English reports into clinical_information/technique/findings/impression + QC (MR-RATE steps 04+05) |
-| [`skills/report-pathology-classification`](skills/report-pathology-classification/) | binary SNOMED-grounded pathology labeling of findings (MR-RATE step 06) |
+| [`skills/medtech-model-evidence-export`](skills/medtech-model-evidence-export/) | Post-hoc MLflow export for sanitized medtech model-inference metadata, metrics, provenance, and approved review artifacts |
 | [`verifiers/skill_completeness_v1`](verifiers/skill_completeness_v1/) | structural and manifest-spec verifier |
 | [`verifiers/dicom_metadata_quality_v1`](verifiers/dicom_metadata_quality_v1/) | paired verifier for DICOM metadata evidence packs and PHI-scope disclosure |
 | [`verifiers/dicom_preflight_quality_v1`](verifiers/dicom_preflight_quality_v1/) | paired verifier for DICOM preflight evidence packs |

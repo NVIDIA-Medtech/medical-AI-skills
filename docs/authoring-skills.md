@@ -52,9 +52,13 @@ skills/<name>/
   validators/output_schema.json   # when output JSON is gated
   fixtures/                # small synthetic/public inputs
   evals/evals.json         # prompt-shaped skill-behavior evals for publication
-  BENCHMARK.md             # with-skill / without-skill results for publication
   tests/                   # optional but encouraged for wrapper internals
 ```
+
+NVSkills CI generates or refreshes the publication artifacts `BENCHMARK.md`,
+`skill-card.md`, and `skill.oms.sig` after the pull-request source is stable.
+Do not create or edit them manually. For an existing skill, leave its current
+generated artifacts unchanged while authoring; managed CI will replace them.
 
 ## Authoring order
 
@@ -84,10 +88,7 @@ skills/<name>/
    prompts, expected skill/script use, and scope assertions. GPU-heavy skills
    may use command-shape or preflight evals when full inference is not suitable
    for an agent harness.
-6. **Benchmark report** — add `BENCHMARK.md` summarizing with-skill and
-   without-skill behavior, agents tested, task completion, token/time cost, and
-   any remaining gaps.
-7. **Evidence** — run locally, render a review packet, then promote a small
+6. **Evidence** — run locally, render a review packet, then promote a small
    pass pack to `examples/` if it should be a regression anchor. Wrapper output
    should include concrete artifact paths, runtime facts, and limitations that
    make the review packet useful without requiring a reviewer to read every JSON
@@ -96,10 +97,13 @@ skills/<name>/
    too large or otherwise prohibited from git, record that as an explicit gap
    rather than promoting the pack as a complete trusted pass.
 
-## Internal NV-BASE profile
+## SkillEvaluator publication preflight
 
-The local/internal validation profile is intentionally stricter than the base
-Agent Skills spec. Before opening a PR, make the skill friendly to that check:
+The public SkillEvaluator `external` profile adds publication checks beyond the
+base Agent Skills spec. Before opening a PR, make the skill friendly to that
+check. Follow the public
+[SkillEvaluator installation guide](https://docs.nvidia.com/skills/skillevaluator/installation)
+when the CLI is not already available:
 
 - Use kebab-case for both `skills/<name>/` and frontmatter `name`.
 - Keep `description` concise, usually under 200 characters. Include both a
@@ -135,7 +139,7 @@ not emit the needed signal.
 ## Check before PR
 
 ```bash
-make nv-base-validate
+make skill-evaluator-validate
 make list-skills
 make verify-skills
 make run-skill SKILL=<name> FIXTURE=<fixture> OUT=runs/<name>_smoke
@@ -144,12 +148,20 @@ make verify
 
 Record intentional gaps under the manifest's `limitations` field.
 
-If `nv-base` is installed in a local virtualenv rather than on `PATH`, pass it
-explicitly:
+If `skillevaluator` is installed in a local environment rather than on `PATH`,
+pass it explicitly:
 
 ```bash
-make nv-base-validate NV_BASE=/path/to/nv-base
+make skill-evaluator-validate \
+  SKILL_EVALUATOR=/path/to/skillevaluator
 ```
+
+This runs the public external preflight with Tier 2 disabled, complete
+collection reporting, a quality threshold of 70, and JSON/Markdown reports in
+`/tmp/medical-AI-skills-skillevaluator`. Override the report directory with
+`SKILL_EVALUATOR_OUT=<path>`. Central NVSkills CI may use a newer managed
+SkillEvaluator build, agent runtimes, and gate policy, so a local pass does not
+replace the managed PR check.
 
 ## Related
 

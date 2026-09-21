@@ -5,6 +5,135 @@ with their own data and environment. It also accepts skill-shaped **verifiers**
 and supporting harness changes. It does not accept generic agent evaluators,
 clinical claims, or homegrown reimplementations of upstream inference.
 
+## Quick contribution workflow
+
+Use these steps to take an agent-assisted change from an idea to a pull
+request. For skill-specific detail, follow
+[`docs/authoring-skills.md`](docs/authoring-skills.md).
+
+### Roles
+
+- An agent may research, author all source-controlled skill components and
+  evals, run local checks, diagnose source failures, and draft the submission.
+- The contributing engineer defines the intended behavior and reviews the
+  actual diff, fixtures, eval expectations, outputs, dependencies, side
+  effects, provenance, and limitations.
+- A maintainer handles repository access, `/nvskills-ci`, managed-service
+  failures, merge approval, and catalog publication.
+
+### 1. Clone and create a source-repository branch
+
+Start from `dev`:
+
+```bash
+git clone https://github.com/NVIDIA-Medtech/medical-AI-skills.git
+cd medical-AI-skills
+git switch dev
+git pull --ff-only origin dev
+git switch -c <github-user>/<short-topic>
+```
+
+In a fresh clone, the source-repository remote is `origin`. For an existing
+checkout, skip the first two commands, use `git remote -v` to identify the
+remote that points to `NVIDIA-Medtech/medical-AI-skills`, and call it
+`<source-remote>` below. Replace `origin` in the pull command when necessary.
+Pushing requires source-repository write access; ask a maintainer if access is
+missing or `git push` is denied.
+
+Changes under `skills/` require NVSkills CI. Its managed signing flow currently
+requires the pull request head to be a source-repository branch, so a fork pull
+request is not a workaround. See the public
+[`NVIDIA/skills` required-status workflow](https://github.com/NVIDIA/skills/blob/main/.github/workflows/require-nvskills-status.yml).
+
+### 2. Define and author the contribution
+
+An agent may write the skill documentation, manifest, wrapper, schema,
+synthetic fixtures, tests, `evals/evals.json`, and scenario YAML. The engineer
+confirms the medtech task, upstream tool and documented entry point, expected
+inputs and outputs, important failure modes, fixture safety and provenance,
+dependencies, side effects, non-goals, and any licensing or IP implications.
+
+Maintainer approval is not required to begin. Ask for early feedback only when
+catalog fit, a clinical boundary, licensing, or a shared schema or
+`eval_engine` change is unclear.
+
+Do not create or edit `BENCHMARK.md`, `skill-card.md`, or `skill.oms.sig`;
+NVSkills CI generates or refreshes these publication artifacts.
+
+### 3. Validate locally and review the result
+
+Run the exact command in `SKILL.md` against the smallest safe fixture. Then use
+the applicable focused checks:
+
+```bash
+make run-skill SKILL=<name> FIXTURE=<fixture> OUT=runs/<name>_smoke
+make validate-skill SCENARIO=skills/<name>/evals/<scenario>.yaml
+make audit-skill SKILL=<name>
+make skill-evaluator-validate
+```
+
+Keep generated output under `runs/`. Finish with the repository checks in
+[Run before submitting](#run-before-submitting).
+
+The engineer reviews the actual code, input, and output—not only an agent
+summary—and confirms:
+
+- the documented upstream interface is used and failure cases fail clearly
+- output matches its schema, artifacts exist, and eval expectations are sound
+- fixtures contain no patient data, secrets, local paths, weights, or large
+  medical volumes
+- `SKILL.md`, the manifest, runtime behavior, dependencies, side effects,
+  provenance, claims, and limitations agree
+
+For GPU, model, Docker, dataset, or external-service requirements, the engineer
+arranges or supervises an approved integration smoke test and records what was
+and was not tested in the pull request.
+
+### 4. Sign off, push, and open the pull request
+
+An agent may prepare these commands when requested, but the engineer must
+inspect the staged diff and authorize the DCO sign-off:
+
+```bash
+git add <intended-files>
+git diff --cached
+git commit -s -m "Add <skill or change>"
+git push -u <source-remote> <github-user>/<short-topic>
+```
+
+Open the pull request against `dev`. State the purpose and upstream tool,
+fixture provenance, dependency or licensing changes, commands and results,
+unavailable checks, and known limitations. See [Signing your work](#signing-your-work)
+for the DCO policy.
+
+### 5. Let the maintainer run NVSkills CI
+
+After review feedback is resolved and skill content is stable, a maintainer or
+administrator comments:
+
+```text
+/nvskills-ci
+```
+
+`make skill-evaluator-validate` is a local preflight; it does not reproduce or
+replace the managed evaluation and signing service. When NVSkills CI finishes,
+the engineer reviews `BENCHMARK.md` and `skill-card.md`, and the maintainer
+confirms the generated-only diff, successful status, and `skill.oms.sig`.
+Neither edits the generated artifacts directly.
+
+If a failure points to source, manifests, evals, or fixtures, reproduce and fix
+it locally before a maintainer reruns `/nvskills-ci`. The maintainer handles
+dispatch, permission, service, signing, or non-reproducible failures. Rerun
+managed CI after any later skill-content change.
+
+### 6. Merge and publish
+
+The maintainer merges after engineer review, repository checks, and managed
+validation pass. A new skill also needs an explicit entry in
+[`NVIDIA/skills`' Medical AI component](https://github.com/NVIDIA/skills/blob/main/components.d/medical-ai-skills.yml),
+which the maintainer owns. Adding the source directory alone does not publish
+the skill in the catalog.
+
 ## Where to put work
 
 ```text
