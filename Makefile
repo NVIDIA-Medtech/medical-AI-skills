@@ -163,7 +163,7 @@ help-study:
 	@echo "  verify-with-vs-without                                  test prompt protocol, audit guard, and harness checks"
 
 test:
-	$(PYTHON) -m pytest eval_engine/tests skills verifiers tools/with_vs_without/tests tools/goal_readiness/tests tools/contract_summary/tests tools/review_packet/tests tools/trace_inventory/tests tools/validate_skill/tests -q --tb=short --import-mode=importlib
+	$(PYTHON) -m pytest -p tools.test_fixtures.pytest_plugin eval_engine/tests skills verifiers tools/with_vs_without/tests tools/goal_readiness/tests tools/contract_summary/tests tools/review_packet/tests tools/trace_inventory/tests tools/validate_skill/tests tools/test_fixtures/tests -q --tb=short --import-mode=importlib
 
 lint:
 	$(PYTHON) -m eval_engine.lint_repo

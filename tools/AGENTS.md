@@ -19,6 +19,12 @@ Move generic, tested logic to `eval_engine/`, `spec/`, or `docs/` only when it
 is no longer an experiment. Update `ARCHITECTURE.md` when adding a new top-level
 tool directory.
 
+## Maintained test utilities
+
+| Directory | Purpose |
+|---|---|
+| `test_fixtures/` | Small deterministic NIfTI generator and optional pytest fixture provider; no model or runtime dependencies for skills. |
+
 ## Extend
 
 Add `tools/<name>/` with `README.md`. Link from this file's layout table when
