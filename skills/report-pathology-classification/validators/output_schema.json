@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReportPathologyClassificationOutput",
+  "type": "object",
+  "required": ["skill", "model", "n_reports", "pathologies", "labels", "validation", "runtime"],
+  "additionalProperties": true,
+  "properties": {
+    "skill": {"type": "string"},
+    "model": {"type": "string"},
+    "n_reports": {"type": "integer", "minimum": 0},
+    "pathologies": {
+      "type": "object",
+      "required": ["n_labels", "source"],
+      "properties": {
+        "n_labels": {"type": "integer", "minimum": 0},
+        "source": {"type": "string"}
+      }
+    },
+    "labels": {
+      "type": "object",
+      "required": ["n_reports_labeled", "n_present_total", "label_coverage_rate"],
+      "properties": {
+        "n_reports_labeled": {"type": "integer", "minimum": 0},
+        "n_present_total": {"type": "integer", "minimum": 0},
+        "label_coverage_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["method", "n_json_parse_failures", "json_parse_success_rate", "n_invalid_labels"],
+      "properties": {
+        "method": {"type": "string"},
+        "n_json_parse_failures": {"type": "integer", "minimum": 0},
+        "json_parse_success_rate": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "n_invalid_labels": {"type": "integer", "minimum": 0}
+      }
+    },
+    "runtime": {"type": "object"},
+    "artifacts": {"type": "object"}
+  }
+}

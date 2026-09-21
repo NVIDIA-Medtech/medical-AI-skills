@@ -1,0 +1,24 @@
+[
+  {
+    "id": "zip-positive",
+    "question": "Run the MR-RATE zip preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "mri-zip-upload",
+    "ground_truth": "The mri-zip-upload skill wraps the real upstream MR-RATE zip step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_zip_upload.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream zip step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "zip-negative",
+    "question": "Classify the MRI modality of this series.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE zip step, so mri-zip-upload should not be used.",
+    "expected_behavior": [
+      "does not invoke mri-zip-upload",
+      "no upstream execution"
+    ]
+  }
+]

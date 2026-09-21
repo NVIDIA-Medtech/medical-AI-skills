@@ -1,0 +1,24 @@
+[
+  {
+    "id": "orchestrator-positive",
+    "question": "Run the MR-RATE orchestrator preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "nv-curate-mri",
+    "ground_truth": "The nv-curate-mri skill wraps the real upstream MR-RATE orchestrator step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_mri_pipeline.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream orchestrator step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "orchestrator-negative",
+    "question": "Write a SQL query for the hospital billing database.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE orchestrator step, so nv-curate-mri should not be used.",
+    "expected_behavior": [
+      "does not invoke nv-curate-mri",
+      "no upstream execution"
+    ]
+  }
+]

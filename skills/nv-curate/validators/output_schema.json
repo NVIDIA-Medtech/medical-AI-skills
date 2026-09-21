@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NvCurateOutput",
+  "description": "Curation summary emitted by nv-curate. The plan/curate/finetune actions share the common head; curate/finetune add stages + ai_ready.",
+  "type": "object",
+  "required": ["skill", "action"],
+  "additionalProperties": true,
+  "properties": {
+    "skill": {"type": "string"},
+    "action": {"type": "string", "enum": ["plan", "curate", "finetune"]},
+    "datasource": {"type": "string"},
+    "mode": {"type": "string"},
+    "n_studies": {"type": "integer", "minimum": 0},
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step": {"type": "string"},
+          "skill": {"type": "string"},
+          "status": {"type": "string"},
+          "metric": {"type": "string"},
+          "value": {}
+        }
+      }
+    },
+    "ai_ready": {
+      "type": "object",
+      "properties": {
+        "datalist": {"type": "string"},
+        "n_records": {"type": "integer", "minimum": 0},
+        "has_labels": {"type": "boolean"},
+        "has_images": {"type": "boolean"}
+      }
+    },
+    "pipeline_status": {"type": "string", "enum": ["complete", "partial"]},
+    "task": {"type": "object"},
+    "inventory": {"type": "object"},
+    "plan": {"type": "object"},
+    "finetune_handoff": {"type": "object"},
+    "runtime": {"type": "object"}
+  }
+}

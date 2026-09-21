@@ -1,0 +1,24 @@
+[
+  {
+    "id": "pacs-positive",
+    "question": "Run the MR-RATE pacs preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "mri-pacs-metadata-filter",
+    "ground_truth": "The mri-pacs-metadata-filter skill wraps the real upstream MR-RATE pacs step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_pacs_metadata_filter.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream pacs step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "pacs-negative",
+    "question": "Translate this Turkish radiology report to English.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE pacs step, so mri-pacs-metadata-filter should not be used.",
+    "expected_behavior": [
+      "does not invoke mri-pacs-metadata-filter",
+      "no upstream execution"
+    ]
+  }
+]

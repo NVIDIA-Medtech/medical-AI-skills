@@ -30,6 +30,21 @@ MVP scaffolding; `spec/` is draft, not a released package API.
 - `ARCHITECTURE.md`: object model, gate ladder, directory boundaries.
 - `CONTRIBUTING.md`: authoring lanes and review rules.
 - `docs/using-skills.md`: discover and run skills with local data.
+- `docs/prompts/mr-rate-ingest.md`: copy-paste prompts for `nv-curate-study` / `nv-curate-batch`.
+- `docs/mr-rate-ingest-ops.md`: live gates, MRI fixtures, required status language.
+
+## MR-RATE ingest
+
+When the user asks to curate real studies, run `--mode live` only. Do not run
+`--mode mock`, and do not switch the report track to mock when the LLM or a
+stage fails. Mock mode is for CI fixtures, not for a data tranche.
+
+On a real-data error, fix the skill or MR-RATE code in a general way (config
+and paths, not one `study_uid`) and record the failure. Leave
+`reports.status=not_run` or `live_failed` with `blocker` set. A live MRI plus
+mock reports is not a finished ingest.
+- `skills/nv-curate-study/`: curate one MRI + report for MR-RATE.
+- `skills/nv-curate-batch/`: curate a tranche by calling `nv-curate-study` per study.
 - `docs/authoring-skills.md`: add a publishable wrapper skill.
 - `docs/skill-scope.md`: what belongs in the public skill catalog.
 - `docs/trust-and-evidence.md`: manifests, packs, replay, verifiers.

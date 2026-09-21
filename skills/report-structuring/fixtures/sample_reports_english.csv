@@ -1,0 +1,26 @@
+﻿UID,report
+STUDY-0001,"BRAIN MRI REPORT
+Clinical Information: Headache and intermittent dizziness for three weeks.
+Technique: Axial and sagittal sequences were obtained without contrast.
+Findings: The cerebral hemispheres show normal gray-white differentiation. A few scattered foci of signal change are seen in the periventricular white matter. Midline structures are in normal position and the ventricular system is normal in size.
+Impression: Mild nonspecific white matter signal changes. No acute intracranial abnormality."
+STUDY-0002,"CRANIAL MRI REPORT
+Clinical Information: Follow-up of a previously noted arachnoid cyst.
+Technique: Multiplanar sequences were acquired before and after contrast.
+Findings: A well-defined extra-axial lesion in the right frontal region is consistent with an arachnoid cyst and is stable in size. The remaining brain parenchyma is unremarkable. There is no mass effect and the ventricles are of normal width.
+Impression: Stable right frontal arachnoid cyst. No new intracranial lesion."
+STUDY-0003,"BRAIN MRI REPORT
+Clinical Information: Prior cerebellar infarct, now with balance complaints.
+Technique: Standard sequences were performed without contrast.
+Findings: There is an area of encephalomalacia in the left cerebellar hemisphere compatible with a chronic infarct sequela. No restricted diffusion is identified to suggest an acute event. The brainstem and fourth ventricle appear normal.
+Impression: Chronic left cerebellar infarct sequela. No acute ischemic change."
+STUDY-0004,"CRANIAL MRI REPORT
+Clinical Information: Screening study in a patient with chronic sinus symptoms.
+Technique: Axial and coronal sequences were obtained without contrast.
+Findings: No intracranial pathologic signal change is detected. The paranasal sinuses are clear and well aerated. The orbits and the visualized skull base are unremarkable.
+Impression: Normal brain study. No significant abnormality."
+STUDY-0005,"BRAIN MRI REPORT
+Clinical Information: Evaluation of the pituitary region for hormonal imbalance.
+Technique: Dedicated thin-section sequences were acquired before and after contrast.
+Findings: The pituitary gland is normal in height and shows homogeneous enhancement. The optic chiasm and cavernous sinuses are unremarkable. There is no empty sella appearance and no evidence of a focal adenoma.
+Impression: Normal pituitary appearance. No focal lesion identified."

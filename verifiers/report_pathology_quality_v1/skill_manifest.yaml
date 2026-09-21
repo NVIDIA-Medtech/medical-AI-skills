@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+id: medagent.verifiers.report_pathology_quality_v1
+version: 0.1.0
+upstream_refs:
+  - kind: workbench_verifier
+    name: report_pathology_quality_v1
+    version: 0.1.0
+    notes: Deterministic verifier script and schema version tracked in this repo.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Deterministic verifier for radiology-report pathology-classification
+    evidence packs. Audits source-pack success, label coverage, JSON-extraction
+    success rate, and the absence of out-of-taxonomy labels.
+  scope: development
+  not_for:
+    - clinical deployment
+    - autonomous diagnosis
+    - regulatory submission
+inputs:
+  - name: report_pathology_evidence_pack
+    type: directory_path
+    description: >
+      Evidence pack directory built from a pathology-classification run
+      (output.json, manifest.json, validation_summary.json).
+outputs:
+  - name: report_pathology_quality_report
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/grade.py
+  env_required: []
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes: []
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+limitations:
+  - Label correctness is not re-derived; the verifier grades recorded coverage,
+    JSON-parse, and taxonomy-validity metrics, not per-label accuracy.
+  - A passing verdict is an engineering signal, not a clinical diagnostic claim.
+validation:
+  expected_runtime_seconds:
+    max: 10.0
+  sanity_checks:
+    - {path: verifier.id, eq: medagent.verifiers.report_pathology_quality_v1}
+    - {path: target.skill_id, matches: "pathology"}
+    - {path: pathology_quality.n_fail, eq: 0}
+    - {path: pathology_quality.acceptable, eq: true}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/pass_pack
+    runs: 2

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "metadata-positive",
+    "question": "Run the MR-RATE metadata preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "mri-metadata-prepare",
+    "ground_truth": "The mri-metadata-prepare skill wraps the real upstream MR-RATE metadata step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_metadata_prepare.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream metadata step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "metadata-negative",
+    "question": "Run brain segmentation on this volume.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE metadata step, so mri-metadata-prepare should not be used.",
+    "expected_behavior": [
+      "does not invoke mri-metadata-prepare",
+      "no upstream execution"
+    ]
+  }
+]

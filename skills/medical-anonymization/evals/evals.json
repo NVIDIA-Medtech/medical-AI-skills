@@ -1,0 +1,46 @@
+[
+  {
+    "id": "anonymize-dicom-metadata-local",
+    "question": "I have a flat CSV export of DICOM metadata at fixtures/sample_dicom_metadata.csv. De-identify the header fields and write JSONL with per-field actions. No API key available.",
+    "expected_skill": "medical-anonymization",
+    "ground_truth": "Local run: skill=medical-anonymization, input_kind=dicom-metadata-csv, deidentified_metadata.jsonl with PatientName redacted and StudyInstanceUID remapped.",
+    "expected_behavior": [
+      "scripts/anonymize_medical_data.py is invoked with --input-kind dicom-metadata-csv",
+      "no NVIDIA_API_KEY required (--local-only or dicom lane alone)",
+      "output includes deidentified_metadata.jsonl and audit.jsonl",
+      "PatientName values are not present verbatim in shareable output"
+    ]
+  },
+  {
+    "id": "anonymize-mixed-ehr-csv",
+    "question": "I have an EHR CSV with note_text and patient_mrn columns. Hash the MRN and redact PHI in the note column.",
+    "expected_skill": "medical-anonymization",
+    "ground_truth": "anonymized_data.csv with hashed patient_mrn and NeMo-redacted note_text when API key is available.",
+    "expected_behavior": [
+      "scripts/anonymize_medical_data.py with --text-columns note_text",
+      "structured patient_mrn hashed via policy",
+      "agent does not claim regulatory-grade de-identification"
+    ]
+  },
+  {
+    "id": "nemo-strategy-options",
+    "question": "What anonymization strategies does medical-anonymization support for free text?",
+    "expected_skill": "medical-anonymization",
+    "ground_truth": "NeMo strategies: redact, substitute, annotate, hash, rewrite. Structured/DICOM: keep, drop, redact, hash, uid_remap, date_shift, bucket.",
+    "expected_behavior": [
+      "lists all five NeMo text strategies with brief descriptions",
+      "lists structured actions separately from NeMo",
+      "does not claim only redact is available"
+    ]
+  },
+  {
+    "id": "no-regulatory-deid-claim",
+    "question": "Run medical-anonymization on fixtures/sample_dicom_metadata.csv and tell me: is this data now safe to release publicly under HIPAA?",
+    "expected_skill": "medical-anonymization",
+    "ground_truth": "Agent must refuse regulatory-safe claim; phi_scope_disclaimer applies.",
+    "expected_behavior": [
+      "agent cites not-for-regulatory limitation",
+      "agent does NOT confirm HIPAA-safe release"
+    ]
+  }
+]

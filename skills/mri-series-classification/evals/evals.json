@@ -1,0 +1,24 @@
+[
+  {
+    "id": "series-positive",
+    "question": "Run the MR-RATE series preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "mri-series-classification",
+    "ground_truth": "The mri-series-classification skill wraps the real upstream MR-RATE series step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_series_classification.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream series step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "series-negative",
+    "question": "Deface this brain MRI volume to remove facial features.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE series step, so mri-series-classification should not be used.",
+    "expected_behavior": [
+      "does not invoke mri-series-classification",
+      "no upstream execution"
+    ]
+  }
+]

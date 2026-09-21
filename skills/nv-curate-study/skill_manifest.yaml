@@ -1,0 +1,91 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+id: medagent.nv_curate_study
+version: 0.1.0
+upstream_refs:
+  - kind: skill_pack
+    name: nv-curate-mri
+    revision: monorepo-local
+    notes: MRI track for one study (live) or stubbed (mock).
+  - kind: skill_pack
+    name: nv-curate
+    revision: monorepo-local
+    notes: Report track (anonymize → translate → structure → classify).
+license: Apache-2.0
+intended_use:
+  summary: >
+    Curate one MRI study and its associated radiology report for MR-RATE by
+    composing nv-curate-mri and nv-curate, then joining on study_uid.
+  scope: development
+  not_for:
+    - clinical deployment
+    - regulatory de-identification
+    - autonomous diagnosis
+    - patient-facing use
+inputs:
+  - name: study_json
+    type: file_path
+    formats: [json]
+    description: >
+      study.json describing one study (schema in schemas/study.schema.json).
+outputs:
+  - name: study_curation_summary
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_curate_study.py
+  args:
+    - "${python}"
+    - "${script}"
+    - "${fixture}"
+    - "--out"
+    - "${out}"
+    - "--mode"
+    - "mock"
+  env_optional: [MR_RATE_ROOT, MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes:
+      - {path: "<out>/mri", approx_mb_max: 500, optional: true}
+      - {path: "<out>/reports", approx_mb_max: 500, optional: false}
+      - {path: "<out>/summary.json", approx_mb_max: 5, optional: false}
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    gpu_fallback: mock
+    env_optional: [MR_RATE_ROOT, MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+paired_verifiers: []
+limitations:
+  - Mock mode stubs the MRI track; live MRI requires GPU and MR-RATE checkout.
+  - Publish/upload is blocked while publish.skip_upload is true.
+  - Join fails closed on mismatched or missing study_uid.
+phi_scope_disclaimer: >
+  Chains de-identification and MRI preprocessing wrappers. Mock mode is not a
+  regulatory de-identifier. Review outputs before sharing.
+validation:
+  expected_runtime_seconds:
+    max: 300.0
+    inference_path: runtime.elapsed_seconds
+  sanity_checks:
+    - {path: skill, eq: nv-curate-study}
+    - {path: mode, eq: mock}
+    - {path: join.status, eq: matched}
+    - {path: publish.blocked, eq: true}
+  expected_cost:
+    wall_seconds: {max: 300}
+    gpu_seconds: {max: 0}
+    gpu_memory_mb_peak: {max: 0}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/study.json
+    runs: 2
+    ignore_paths:
+      - "runtime\\.elapsed_seconds"
+      - "mri\\.out_dir"
+      - "reports\\.out_dir"
+      - "reports\\.summary"

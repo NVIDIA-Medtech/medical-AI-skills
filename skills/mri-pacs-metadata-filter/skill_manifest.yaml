@@ -1,0 +1,52 @@
+id: medagent.mri_pacs_metadata_filter
+version: "0.1.0"
+upstream_refs:
+  - kind: github_repo
+    name: Forithmus/MR-RATE
+    repo_url: https://github.com/Forithmus/MR-RATE
+    revision: main
+    notes: wraps mr_rate_preprocessing MRI pacs
+license: Apache-2.0
+intended_use:
+  summary: >
+    cleans a raw PACS DICOM-metadata CSV: enforces required columns, drops rows with missing critical identifiers, and de-duplicates series (MR-RATE MRI step 2).
+  scope: development
+  not_for:
+    - clinical deployment
+    - regulatory de-identification
+    - autonomous diagnosis
+    - patient-facing use
+inputs:
+  - name: fixtures_dir
+    type: directory
+  - name: mr_rate_root
+    type: directory
+outputs:
+  - name: result_json
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/run_pacs_metadata_filter.py
+  side_effects:
+    requires_gpu: none
+    pip_packages:
+      - pandas
+limitations:
+  - Upstream accession_to_uid anonymization is currently an identity pass-through, so study-ID de-identification is a no-op unless inputs are pre-anonymized.
+  - Ships with small synthetic PHI-free fixtures; not clinically representative.
+phi_scope_disclaimer: >
+  Not a regulatory de-identifier; review output before sharing. Not for clinical use.
+validation:
+  expected_runtime_seconds:
+    max: 300
+    inference_path: telemetry.wall_seconds
+  sanity_checks:
+    - {path: skill, eq: mri-pacs-metadata-filter}
+    - {path: status, eq: ok}
+    - {path: preflight.aligned, eq: true}
+    - {path: telemetry.wall_seconds, gte: 0}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures

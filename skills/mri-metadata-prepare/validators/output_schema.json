@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mri-metadata-prepare output",
+  "type": "object",
+  "required": [
+    "skill",
+    "step",
+    "status"
+  ],
+  "properties": {
+    "skill": {
+      "type": "string"
+    },
+    "step": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "preflight",
+        "real"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "failed"
+      ]
+    },
+    "outputs": {
+      "type": "object"
+    },
+    "preflight": {
+      "type": "object",
+      "properties": {
+        "aligned": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "array"
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "wall_seconds": {
+          "type": "number"
+        },
+        "phases": {
+          "type": "object"
+        },
+        "environment": {
+          "type": "object"
+        }
+      }
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

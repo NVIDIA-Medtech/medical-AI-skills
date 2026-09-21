@@ -1,0 +1,24 @@
+[
+  {
+    "id": "modality-positive",
+    "question": "Run the MR-RATE modality preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "mri-modality-filter",
+    "ground_truth": "The mri-modality-filter skill wraps the real upstream MR-RATE modality step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_modality_filter.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream modality step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "modality-negative",
+    "question": "Upload these studies to Hugging Face.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE modality step, so mri-modality-filter should not be used.",
+    "expected_behavior": [
+      "does not invoke mri-modality-filter",
+      "no upstream execution"
+    ]
+  }
+]

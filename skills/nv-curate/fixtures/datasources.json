@@ -1,0 +1,30 @@
+{
+  "name": "mrbrain",
+  "site": "synthetic-demo",
+  "raw_data": {
+    "path": "raw_data",
+    "reports_glob": "*_reports*.csv",
+    "images_glob": "**/*.nii.gz"
+  },
+  "target": {
+    "ai_ready": true
+  },
+  "pipeline": {
+    "steps": [
+      "anonymize",
+      "translate",
+      "structure",
+      "classify"
+    ],
+    "mode": "mock",
+    "model": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4",
+    "id_col": "UID",
+    "text_col": "report"
+  },
+  "task": {
+    "type": "analysis",
+    "model": "nv-generate-mr-brain",
+    "modality": "mri_t1"
+  },
+  "join_key": "study_uid"
+}

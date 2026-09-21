@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medical Anonymization — With-vs-Without Dashboard</title>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--muted:#94a3b8;--fg:#e2e8f0;--line:#334155;
+--good:#22c55e;--good-bg:#052e16;--bad:#ef4444;--bad-bg:#450a0a;--warn:#f59e0b;--accent:#38bdf8;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+header.top{padding:24px 32px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#111827,#0f172a);}
+header.top h1{margin:0 0 6px;font-size:22px;}
+header.top .sub{color:var(--muted);font-size:13px;}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 32px 64px;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:8px 0 28px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+.card .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;}
+.card .value{font-size:30px;font-weight:700;margin:6px 0 2px;}
+.card .foot{color:var(--muted);font-size:12px;}
+.card.good{border-color:#14532d}.card.good .value{color:var(--good)}
+.card.bad{border-color:#7f1d1d}.card.bad .value{color:var(--bad)}
+.card.accent .value{color:var(--accent)}
+h2{margin:32px 0 12px;font-size:18px;border-bottom:1px solid var(--line);padding-bottom:6px;}
+h3{margin:22px 0 10px;font-size:15px;color:#cbd5e1;}
+h4{margin:16px 0 8px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+table{border-collapse:collapse;width:100%;margin:8px 0 18px;font-size:13px;}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;}
+th{background:#0b1220;color:#cbd5e1;position:sticky;top:0;}
+tbody tr:nth-child(even){background:rgba(148,163,184,.05);}
+td code,p code,li code{background:#0b1220;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px;}
+pre{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;}
+pre code{background:none;border:none;padding:0;font-size:12.5px;color:#e2e8f0;}
+a{color:var(--accent);} hr{border:none;border-top:1px solid var(--line);margin:24px 0;}
+blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:4px 14px;color:var(--muted);}
+.badge{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;font-weight:600;}
+.badge.pass{background:var(--good-bg);color:var(--good);}
+.badge.fail{background:var(--bad-bg);color:var(--bad);}
+.body table td:first-child{white-space:nowrap;}
+details.rowtable{border:1px solid var(--line);border-radius:10px;padding:4px 14px;margin:12px 0;background:#0b1220;}
+details.rowtable>summary{cursor:pointer;color:var(--accent);font-weight:600;padding:8px 0;list-style:none;}
+details.rowtable>summary::-webkit-details-marker{display:none;}
+details.rowtable>summary::before{content:"\25B6\00a0\00a0";font-size:11px;}
+details.rowtable[open]>summary::before{content:"\25BC\00a0\00a0";}
+details.rowtable td:last-child{color:var(--warn);}
+footer{color:var(--muted);font-size:12px;padding:24px 32px;border-top:1px solid var(--line);}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Medical Anonymization — With-vs-Without Skill Dashboard</h1>
+  <div class="sub">2026-07-11 13:40 (local) · scripted pipeline comparison (not agent command generation). NeMo inner anonymizer: local GLiNER + `medgemma:27b`. Judge: local `medgemma:27b` · pass = zero PHI escapes</div>
+</header>
+<div class="wrap">
+  <section class="kpis"><div class="card good"><div class="label">With skill · residual PHI items</div><div class="value">1</div><div class="foot">19/20 report-runs fully redacted</div></div><div class="card bad"><div class="label">Without skill · residual PHI items</div><div class="value">10</div><div class="foot">13/20 report-runs fully redacted</div></div><div class="card accent"><div class="label">Escape reduction with skill</div><div class="value">~10x</div><div class="foot">fewer residual PHI escapes</div></div><div class="card accent"><div class="label">With skill · avg tier-5 sec/report</div><div class="value">16.4</div><div class="foot">327.9 sec total tier-5</div></div><div class="card "><div class="label">Dataset</div><div class="value">20</div><div class="foot">reports</div></div></section>
+  <div class="body">
+  <h1>Medical Anonymization — With-vs-Without Skill Experiment</h1>
+<p>Generated: 2026-07-11 13:40 (local). Protocol: scripted pipeline comparison (not agent command generation). NeMo inner anonymizer: local GLiNER + <code>medgemma:27b</code>. Judge: local <code>medgemma:27b</code>.</p>
+<p>This report evaluates the <strong>medical-anonymization</strong> skill on the radiology-reports lane: <code>anonymize_medical_data.py</code> + <code>SKILL.md</code> vs upstream NeMo README baseline (<code>without_skill_baseline.py</code>). Both arms execute the real NeMo pipeline on the same staged CSV; they differ in policy (strict entity labels, redact template) and output contract.</p>
+<p><strong>Pass criterion: an arm passes only if it produced anonymized output AND an LLM judge found ZERO residual PHI escapes across all rows — any single escape is a fail.</strong></p>
+<p>This is an engineering reproducibility protocol. It is not a clinical, diagnostic, or regulatory claim.</p>
+<h2>Evaluation task</h2>
+<ul><li><strong>Dataset:</strong> 20 radiology reports from <code>skills/medical-anonymization/fixtures/batch00_reports_w_PHI.csv</code>. Reports: <strong>20</strong>.</li><li><strong>Backend:</strong> 1 (<code>local-phi</code>: local GLiNER @ 172.20.0.1:8001, Ollama medgemma:27b).</li><li><strong>With-skill entrypoint:</strong> <code>skills/medical-anonymization/scripts/anonymize_medical_data.py</code></li><li><strong>Without-skill entrypoint:</strong> <code>skills/medical-anonymization/scripts/without_skill_baseline.py</code></li><li><strong>Judge reachable:</strong> yes (<code>medgemma:27b</code>)</li></ul>
+<h2>Current aggregate result</h2>
+<h3>Result by arm — redaction quality, pass rate, and timing</h3>
+<p>One row per <strong>arm</strong>. <strong>Pass = produced output AND zero residual PHI escapes across all reports (any escape is a fail).</strong> Judge: <code>medgemma:27b</code>.</p>
+<table><thead><tr><th>Arm</th><th>Backend-runs producing output</th><th>Passes with 0 PHI escapes</th><th>Residual PHI escapes (items)</th><th>Report-runs fully redacted (report x backend)</th><th>Total exec (s)</th><th>Avg s/report</th></tr></thead><tbody><tr><td><strong>With skill (SKILL.md)</strong></td><td>1/1</td><td><strong>0/1 (0%)</strong></td><td><strong>1</strong></td><td><strong>19/20</strong></td><td>327.9</td><td>16.4</td></tr><tr><td>Without skill (upstream README)</td><td>1/1</td><td>0/1 (0%)</td><td>10</td><td>13/20</td><td>453.0</td><td>22.6</td></tr></tbody></table>
+<h3>Headline — PHI redaction result by arm</h3>
+<table><thead><tr><th>Arm</th><th>Backend-runs producing output</th><th>Residual PHI escapes (items)</th><th>Report-runs fully redacted (report x backend)</th><th>Backend-runs with 0 escapes</th></tr></thead><tbody><tr><td><strong>With skill (SKILL.md)</strong></td><td>1/1</td><td><strong>1</strong></td><td><strong>19/20</strong></td><td><strong>0/1</strong></td></tr><tr><td>Without skill (upstream README)</td><td>1/1</td><td>10</td><td>13/20</td><td>0/1</td></tr></tbody></table>
+<h3>Overall result (dataset level) — pass = produced output with zero PHI escapes</h3>
+<table><thead><tr><th>Arm</th><th>Passes with 0 PHI escapes</th></tr></thead><tbody><tr><td>With skill (SKILL.md)</td><td>0/1 (0%)</td></tr><tr><td>Without skill (upstream README)</td><td>0/1 (0%)</td></tr></tbody></table>
+<h3>Paired with-vs-without (exact one-sided sign test, report-row level)</h3>
+<p>Each <strong>pair</strong> is one report row (<code>study_uid</code>). <strong>Skill wins</strong> if with-skill had strictly fewer residual PHI escapes; <strong>Without wins</strong> if without-skill had fewer; <strong>Tie</strong> if equal.</p>
+<table><thead><tr><th>Scope</th><th>Report pairs</th><th>Skill wins</th><th>Without wins</th><th>Ties</th><th>Sign-test p</th></tr></thead><tbody><tr><td>local-phi</td><td>20</td><td>7</td><td>1</td><td>12</td><td>0.035156</td></tr><tr><td><strong>overall</strong></td><td>20</td><td>7</td><td>1</td><td>12</td><td>0.035156</td></tr></tbody></table>
+<h3>Per-backend, per-arm report-row pass counts</h3>
+<table><thead><tr><th>Backend/arm</th><th>Report-rows fully redacted</th><th>Mean exec s</th></tr></thead><tbody><tr><td>local-phi/with</td><td>19/20</td><td>327.9</td></tr><tr><td>local-phi/without</td><td>13/20</td><td>453.0</td></tr></tbody></table>
+<h2>PHI redaction (row-level)</h2>
+<h3>LLM-as-judge residual escapes (primary) — judge model <code>medgemma:27b</code></h3>
+<p>An independent model re-read each anonymized report and flagged residual PHI — real identifying values still present as plain text rather than a <code>[bracketed]</code> placeholder.</p>
+<table><thead><tr><th>Backend / arm</th><th>Reports fully redacted</th><th>Residual PHI escapes (items)</th><th>Example escaped values</th></tr></thead><tbody><tr><td>local-phi/with</td><td>19/20</td><td>1</td><td>[DOCTOR]</td></tr><tr><td>local-phi/without</td><td>13/20</td><td>10</td><td>[REDACTED_DATE_OF_BIRTH], K., MRI20250924-0158, L., L. , 20240920-00123</td></tr></tbody></table>
+<details class="rowtable"><summary>Per-report residual PHI escape counts — one row per dataset report (0 = fully redacted) — click to expand</summary>
+<p>Each cell is the number of residual PHI items the judge found in that report.</p><table><thead><tr><th>study_uid (report)</th><th>local-phi/with (items)</th><th>local-phi/without (items)</th><th>Escaped PHI values</th></tr></thead><tbody><tr><td><code>LEDW5KEMKI</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>K67NPC32IW</code></td><td>1</td><td>0</td><td>[DOCTOR]</td></tr><tr><td><code>FMH275ZEBD</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>436G6LTU2V</code></td><td>0</td><td>2</td><td>[REDACTED_DATE_OF_BIRTH]</td></tr><tr><td><code>CU6OXMT22Y</code></td><td>0</td><td>1</td><td>K.</td></tr><tr><td><code>7EKH3TEF3P</code></td><td>0</td><td>1</td><td>MRI20250924-0158</td></tr><tr><td><code>ACHZXGZU77</code></td><td>0</td><td>1</td><td>K.</td></tr><tr><td><code>AU2GAYT5JW</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>OEUY6K2K77</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>IK2WYQBYPT</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>SJ37X6XW72</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>XDJXLUHDQG</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>QNUTQMIU2B</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>22FM453NW2</code></td><td>0</td><td>2</td><td>L., L.</td></tr><tr><td><code>WFYMA52DCS</code></td><td>0</td><td>1</td><td>K.</td></tr><tr><td><code>6S4NVLDXOZ</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>7GGZEIB4QU</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>AMIPG5YJF3</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>6A4V2YI2E2</code></td><td>0</td><td>0</td><td>—</td></tr><tr><td><code>ZNTAUPKWB6</code></td><td>0</td><td>2</td><td>20240920-00123, R.</td></tr></tbody></table></details>
+<h3>Deterministic scan (cross-check)</h3>
+<p>Conservative regex scan for residual PHI signals (dates, long IDs, titled names, phones), excluding <code>[PLACEHOLDER]</code> tokens.</p>
+<table><thead><tr><th>Backend/arm</th><th>Rows fully redacted</th><th>Residual PHI escapes</th><th>Baseline PHI in input</th></tr></thead><tbody><tr><td>local-phi/with</td><td>20/20</td><td>0</td><td>133</td></tr><tr><td>local-phi/without</td><td>18/20</td><td>5</td><td>133</td></tr></tbody></table>
+<h2>Structured + DICOM capability (medical-anonymization only)</h2>
+<p>The rad-reports experiment above isolates <strong>text redaction quality</strong>. The medical-anonymization skill additionally provides deterministic structured-field policy and DICOM metadata JSONL — gaps the without-skill baseline cannot cover.</p>
+<table><thead><tr><th>Lane</th><th>With skill (s)</th><th>Without skill (s)</th><th>Expected without gap</th></tr></thead><tbody><tr><td>dicom-metadata</td><td>3.15</td><td>1.27</td><td>no_structured_policy_applied</td></tr><tr><td>ehr</td><td>54.74</td><td>33.81</td><td>structured_id_not_hashed</td></tr><tr><td>reports</td><td>34.8</td><td>42.51</td><td>—</td></tr></tbody></table>
+<h2>Timing</h2>
+<ul><li>With-skill pipeline: <strong>327.9s</strong> (16.4s/report)</li><li>Without-skill pipeline: <strong>453.0s</strong> (22.6s/report)</li><li>Judge calls: 40 (29484 tokens)</li></ul>
+<h2>Findings</h2>
+<ul><li><strong>Redaction quality (reports lane):</strong> with-skill left <strong>1</strong> residual PHI items and fully redacted <strong>19/20</strong> report-runs; without-skill left <strong>10</strong> items and fully redacted <strong>13/20</strong> report-runs (~10x fewer items with the skill).</li><li><strong>Paired sign test:</strong> 7 skill-wins, 1 without-wins, 12 ties (p = 0.035156).</li><li><strong>Capability gap:</strong> without-skill has no DICOM policy, no structured MRN hashing, no nested/KV JSONL or audit trail (see structured + DICOM section).</li><li><code>Pass</code> = produced output AND zero LLM-judged residual PHI escapes (any escape is a fail).</li></ul>
+<h2>Reproduce</h2>
+<pre><code>~/.conda/envs/reports-openai/bin/python skills/medical-anonymization/scripts/generate_with_vs_without_judge_report.py \
+  --output-md docs/anonymization-with-vs-without-medical-local.md</code></pre>
+  </div>
+</div>
+<footer>Generated from docs/anonymization-with-vs-without-experiment.md by
+tools/curation_eval/anon_experiment.py. Engineering reproducibility artifact; not a clinical or regulatory claim.</footer>
+</body>
+</html>

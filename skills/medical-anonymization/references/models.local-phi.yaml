@@ -1,0 +1,26 @@
+# On-box model pool for PHI workloads (detection + LLM on local endpoints).
+selected_models:
+  detection:
+    entity_detector: gliner-pii-detector
+    entity_validator: medgemma-local
+    entity_augmenter: medgemma-local
+  replace:
+    replacement_generator: medgemma-local
+
+model_configs:
+  - alias: gliner-pii-detector
+    model: nvidia/gliner-pii
+    provider: local-gliner
+    skip_health_check: true
+    inference_parameters:
+      max_parallel_requests: 1
+      timeout: 120
+
+  - alias: medgemma-local
+    model: medgemma:27b
+    provider: local-ollama
+    inference_parameters:
+      max_parallel_requests: 1
+      max_tokens: 2000
+      temperature: 0.3
+      timeout: 600

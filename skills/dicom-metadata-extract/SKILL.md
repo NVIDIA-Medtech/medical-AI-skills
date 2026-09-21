@@ -28,7 +28,7 @@ metadata:
 ## Available Scripts
 | Script | Purpose | Arguments |
 |---|---|---|
-| `scripts/extract_metadata.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_DICOM [--output OUT.json]` |
+| `scripts/extract_metadata.py` | Primary entrypoint declared by skill_manifest.yaml. | `PATH_TO_DICOM [--output OUT.json] [--all-fields]` |
 
 ## Prerequisites
 - Runtime requirements: Python packages listed in `runtime.side_effects.pip_packages`.
@@ -53,10 +53,18 @@ Reads one DICOM file with pydicom and emits JSON on stdout.
 ```bash
 python scripts/extract_metadata.py PATH_TO_DICOM
 python scripts/extract_metadata.py PATH_TO_DICOM --output result.json
+python scripts/extract_metadata.py PATH_TO_DICOM --all-fields   # every element
 ```
 
 Output includes `transfer_syntax`, `modality`, grouped study/series/image
 metadata, `phi_present`, and `phi_tags_found`.
+
+With `--all-fields`, the output also includes an optional `all_fields` object:
+a flat map of **every** standard/private DICOM element (pixel data excluded),
+keyed by the element's DICOM name with spaces removed (e.g. `Patient'sAge`,
+`ImageOrientation(Patient)`), sequences flattened as `SeqName_<i>_SubName`, and
+tags with no dictionary name as `Tag_gggg_eeee`. Multi-valued elements are
+backslash-joined. Default output is unchanged when the flag is omitted.
 
 Use this as the smallest end-to-end example of a Medical AI Skills skill. Do not use
 it for anonymization, private-tag review, pixel PHI detection, or clinical

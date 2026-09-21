@@ -1,0 +1,123 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+id: medagent.nv_curate
+version: 0.1.0
+upstream_refs:
+  - kind: skill_pack
+    name: mr-rate-report-curation-skills
+    revision: monorepo-local
+    notes: >
+      Orchestrates sibling skills report-anonymization, report-translation,
+      report-structuring, report-pathology-classification, and hands off to
+      nv-generate-mr-brain-finetune.
+license: Apache-2.0
+intended_use:
+  summary: >
+    Orchestrate the MR-RATE report-curation pipeline (de-identify, translate,
+    structure, label) from a datasources.json plan into an AI-ready dataset, and
+    hand the datalist to a training or analysis task.
+  scope: development
+  not_for:
+    - clinical deployment
+    - regulatory de-identification
+    - autonomous diagnosis
+    - patient-facing use
+inputs:
+  - name: datasources_json
+    type: file_path
+    formats: [json]
+    description: >
+      datasources.json curation plan (schema in schemas/datasources.schema.json).
+      For --action plan, a raw-data directory path is also accepted.
+outputs:
+  - name: curation_summary
+    type: json
+    schema: validators/output_schema.json
+runtime:
+  language: python
+  python: ">=3.10"
+  entrypoint: scripts/nv_curate.py
+  args:
+    - "${python}"
+    - "${script}"
+    - "${fixture}"
+    - "--out"
+    - "${out}"
+  env_optional: [MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+  dependencies: {}
+  side_effects:
+    pip_packages: []
+    local_writes:
+      - {path: "<out>/stages", approx_mb_max: 500, optional: false}
+      - {path: "<out>/ai_ready", approx_mb_max: 500, optional: false}
+    home_writes: []
+    network_endpoints: []
+    requires_docker: false
+    requires_gpu: none
+    gpu_fallback: mock
+    env_optional: [MR_RATE_REPORTS_ROOT, CUDA_VISIBLE_DEVICES]
+paired_verifiers:
+  - id: medagent.verifiers.report_anonymization_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+    notes: Run per-stage verifiers on the stage evidence packs under <out>/stages.
+  - id: medagent.verifiers.report_translation_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+  - id: medagent.verifiers.report_structuring_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+  - id: medagent.verifiers.report_pathology_quality_v1
+    status: implemented
+    consumes: evidence_pack_dir
+limitations:
+  - The orchestrator never loads a model or GPU; stage skills run in mock
+    (deterministic, GPU-free) or live (upstream vLLM) mode.
+  - Default mock mode is for CI/verification, not clinical de-identification.
+  - The image track (study_uid -> NIfTI) requires image volumes present in
+    raw_data; without them the finetune hand-off is reported not-ready and the
+    curated dataset is the analysis (reports + labels) track only.
+  - Per-stage quality is gated by each stage's own paired verifier on its pack
+    under <out>/stages; nv-curate gates orchestration completeness, not per-stage quality.
+phi_scope_disclaimer: >
+  nv-curate chains de-identification, translation, structuring, and labeling.
+  Mock mode is not a regulatory de-identifier. Review output before sharing data.
+validation:
+  expected_runtime_seconds:
+    max: 180.0
+    inference_path: runtime.elapsed_seconds
+  sanity_checks:
+    - {path: skill, eq: nv-curate}
+    - {path: action, eq: curate}
+    - {path: pipeline_status, eq: complete}
+    - {path: n_studies, gt: 0}
+    - {path: ai_ready.n_records, gt: 0}
+    - {path: ai_ready.has_labels, eq: true}
+  expected_cost:
+    wall_seconds: {max: 180}
+    gpu_seconds: {max: 0}
+    gpu_memory_mb_peak: {max: 0}
+  reproducibility:
+    mode: repeat
+    fixture: fixtures/datasources.json
+    fixture_builder: fixtures/generate_sample.py
+    runs: 2
+    ignore_paths:
+      - "runtime\\.elapsed_seconds"
+      - "ai_ready\\.datalist"
+      - "ai_ready\\.curated_records"
+      - "stages\\.[0-9]+\\.output"
+      - "inventory\\.raw_dir"

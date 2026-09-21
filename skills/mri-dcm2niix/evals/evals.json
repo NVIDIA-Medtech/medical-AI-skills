@@ -1,0 +1,24 @@
+[
+  {
+    "id": "dcm2niix-positive",
+    "question": "Run the MR-RATE dcm2niix preprocessing step on my inputs and produce the expected artifacts.",
+    "expected_skill": "mri-dcm2niix",
+    "ground_truth": "The mri-dcm2niix skill wraps the real upstream MR-RATE dcm2niix step: it runs a preflight environment-alignment check, executes the genuine upstream code, and emits a telemetry summary plus the produced artifacts.",
+    "expected_behavior": [
+      "invokes scripts/run_dcm2niix.py",
+      "runs a preflight environment-alignment check first",
+      "executes the real upstream dcm2niix step (no mock)",
+      "emits a telemetry block (timings, environment, io)"
+    ]
+  },
+  {
+    "id": "dcm2niix-negative",
+    "question": "Summarize the patient's diagnosis from this radiology report.",
+    "expected_skill": null,
+    "ground_truth": "This request is unrelated to the MR-RATE dcm2niix step, so mri-dcm2niix should not be used.",
+    "expected_behavior": [
+      "does not invoke mri-dcm2niix",
+      "no upstream execution"
+    ]
+  }
+]

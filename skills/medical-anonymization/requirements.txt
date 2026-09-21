@@ -1,0 +1,7 @@
+# NeMo Anonymizer medical data anonymization skill.
+# Requires Python >= 3.11.
+nemo-anonymizer>=0.2.1,<0.3
+pandas>=2.0.0
+pyarrow>=14.0.0
+tiktoken>=0.5
+pyyaml>=6.0

@@ -1,0 +1,3 @@
+study_uid,PatientID,PatientName,StudyInstanceUID,StudyDate,StudyDescription,PatientAge,Modality,AccessionNumber,ReferringPhysicianName
+LEDW5KEMKI,PT-12345,Doe^John A,1.2.840.113619.2.5.1762583153.215519.978907063.78,20240315,Brain MRI without contrast,045Y,MR,ACC-998877,Patel^Emily
+VS-MC-RC-001,PT-67890,Smith^Jane,1.2.840.113619.2.55.3.604688844.289.117948094.123,20240102,CT Head trauma,032Y,CT,ACC-112233,Chen^Michael
