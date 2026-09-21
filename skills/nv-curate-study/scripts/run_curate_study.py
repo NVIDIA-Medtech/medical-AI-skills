@@ -90,6 +90,33 @@ def resolve(cfg: dict, rel: str | None) -> Path | None:
     return p
 
 
+def last_json_object(text: str) -> dict:
+    """Parse the last JSON object in text.
+
+    Child skills pretty-print their summary, so the last line is often ``}``
+    and is not itself valid JSON.
+    """
+    decoder = json.JSONDecoder()
+    idx = 0
+    last: dict | None = None
+    length = len(text)
+    while idx < length:
+        if text[idx] != "{":
+            idx += 1
+            continue
+        try:
+            obj, end = decoder.raw_decode(text, idx)
+        except json.JSONDecodeError:
+            idx += 1
+            continue
+        if isinstance(obj, dict):
+            last = obj
+        idx = max(end, idx + 1)
+    if last is None:
+        raise json.JSONDecodeError("no JSON object", text, 0)
+    return last
+
+
 def run_json(cmd: list[str], env: dict | None = None) -> dict:
     log(" ".join(cmd))
     proc = subprocess.run(
@@ -105,11 +132,12 @@ def run_json(cmd: list[str], env: dict | None = None) -> dict:
         raise RuntimeError(
             f"command failed ({proc.returncode}): {' '.join(cmd)}\n{proc.stderr[-2000:]}"
         )
-    # Last JSON object on stdout
-    lines = [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]
-    if not lines:
+    if not proc.stdout.strip():
         raise RuntimeError(f"no JSON on stdout from: {' '.join(cmd)}")
-    return json.loads(lines[-1])
+    try:
+        return last_json_object(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"unparseable JSON from: {' '.join(cmd)}") from exc
 
 
 def run_mri(cfg: dict, out_dir: Path, mode: str, device: str, preflight: bool, mr_rate_root: str | None) -> dict:
@@ -236,6 +264,32 @@ def run_reports_mock(cfg: dict, out_dir: Path) -> dict:
     return summary
 
 
+def assert_llm_serving(llm: dict) -> None:
+    """Live reports require the configured model. Never substitute mock."""
+    import urllib.error
+    import urllib.request
+
+    url = str(llm["base_url"]).rstrip("/") + "/v1/models"
+    try:
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+        raise RuntimeError(
+            f"blocker=llm_unreachable (GET {url} failed: {exc}). "
+            "Do not fall back to --mode mock."
+        ) from exc
+    ids = [
+        str(item.get("id"))
+        for item in (body.get("data") or [])
+        if isinstance(item, dict) and item.get("id")
+    ]
+    if llm["model"] not in ids:
+        raise RuntimeError(
+            f"blocker=llm_model_mismatch (GET {url} served {ids}, want {llm['model']}). "
+            "Do not fall back to --mode mock."
+        )
+
+
 def run_reports(cfg: dict, out_dir: Path, mode: str, llm: dict | None = None) -> dict:
     if mode == "mock":
         # Prefer real nv-curate when its stage entrypoints exist; else local stub.
@@ -284,6 +338,8 @@ def run_reports(cfg: dict, out_dir: Path, mode: str, llm: dict | None = None) ->
         env.setdefault("OPENAI_API_KEY", str(llm["api_key"]))
 
     log(f"report LLM: model={llm['model']} base_url={llm['base_url']}")
+    if mode == "live":
+        assert_llm_serving(llm)
     result = run_json(cmd, env=env)
     result["out_dir"] = str(reports_out)
     result["llm"] = {"model": llm["model"], "base_url": llm["base_url"], "backend": llm["backend"]}
@@ -359,6 +415,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         cfg = load_study(args.study_json)
         llm = resolve_llm(cfg, model_cli=args.model, base_url_cli=args.base_url)
+        if args.mode == "live" and not args.preflight:
+            assert_llm_serving(llm)
         mri = run_mri(cfg, out_dir, args.mode, args.device, args.preflight, args.mr_rate_root)
         if args.preflight and args.mode == "live":
             summary = {

@@ -136,5 +136,6 @@ python -m eval_engine.run skills/nv-curate \
 |---|---|---|
 | `raw_data.path does not exist` | Wrong `raw_data.path` in the config. | Fix the path (relative paths resolve against the datasources.json location). |
 | `no report CSVs matching ...` | `reports_glob` does not match the raw files. | Adjust `raw_data.reports_glob`. |
-| `stage <step> failed` | A stage skill errored (live: vLLM/model/GPU). | Run that stage skill directly to see its stderr; check the model/GPU/env. |
+| `stage <step> failed` | A stage skill errored (live: vLLM/model/GPU). | Run that stage skill directly to see its stderr; check the model/GPU/env. Probe `{base_url}/v1/models` before live. |
+| `stage skill entrypoint missing: .../run_anonymization.py` | Orchestrator still names a deleted wrapper; current skill is `anonymize_reports.py`. | Do not write a replacement. PR `nv-curate` STAGES to the current entrypoint (see `docs/mr-rate-ingest-ops.md`). |
 | `finetune_handoff.ready` is false | No image volumes joined by study_uid. | Add NIfTI volumes to `raw_data` (image track) before finetuning. |

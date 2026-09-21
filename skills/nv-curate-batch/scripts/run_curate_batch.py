@@ -24,6 +24,29 @@ def log(msg: str) -> None:
     print(f"[{SKILL_NAME}] {msg}", file=sys.stderr, flush=True)
 
 
+def last_json_object(text: str) -> dict:
+    """Parse the last JSON object. Pretty-printed summaries end on ``}``."""
+    decoder = json.JSONDecoder()
+    idx = 0
+    last: dict | None = None
+    length = len(text)
+    while idx < length:
+        if text[idx] != "{":
+            idx += 1
+            continue
+        try:
+            obj, end = decoder.raw_decode(text, idx)
+        except json.JSONDecodeError:
+            idx += 1
+            continue
+        if isinstance(obj, dict):
+            last = obj
+        idx = max(end, idx + 1)
+    if last is None:
+        raise json.JSONDecodeError("no JSON object", text, 0)
+    return last
+
+
 def load_batch(path: Path) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"batch config not found: {path}")
@@ -145,8 +168,7 @@ def run_one_study(
     proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if proc.stderr:
         sys.stderr.write(proc.stderr)
-    lines = [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]
-    if not lines:
+    if not proc.stdout.strip():
         return {
             "skill": "nv-curate-study",
             "status": "error",
@@ -154,7 +176,7 @@ def run_one_study(
             "join": {"status": "rejected", "reason": "no_output"},
         }
     try:
-        result = json.loads(lines[-1])
+        result = last_json_object(proc.stdout)
     except json.JSONDecodeError:
         return {
             "skill": "nv-curate-study",

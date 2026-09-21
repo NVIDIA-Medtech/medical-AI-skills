@@ -91,6 +91,8 @@ Use the two composing skills (not ad-hoc stage wiring):
 | Batch / tranche | [`nv-curate-batch`](../skills/nv-curate-batch/SKILL.md) (calls study skill per study) |
 
 Ready-to-paste prompts: [`prompts/mr-rate-ingest.md`](prompts/mr-rate-ingest.md).
+Live gates, fixture contract, and required status language (do not call mock
+reports + live MRI a matched pair): [`mr-rate-ingest-ops.md`](mr-rate-ingest-ops.md).
 
 ## Safety
 

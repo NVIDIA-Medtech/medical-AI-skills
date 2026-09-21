@@ -22,9 +22,10 @@ Report **tracks separately**. Never collapse mock reports + live MRI into
 **Say this:**
 
 ```text
-MRI: 20/20 live_ok (nv-curate-mri). Reports: 20/20 mock_ok (nv-curate --mode mock).
+MRI: 20/20 live_ok (nv-curate-mri). Reports: 20/20 not_run.
 join.status=rejected. blocker=llm_unreachable (GET http://127.0.0.1:8080/v1/models failed).
 publish.skip_upload=true. Do not treat this as a live matched pair.
+Do not fill the report track with --mode mock.
 ```
 
 **Do not say this:**
@@ -42,9 +43,13 @@ A study with live defaced NIfTI and failed reports is still `rejected`.
 1. **Do not write new `.py` helpers.** Invoke `skills/*/scripts/` and
    `fixtures/generate_fixtures.py`. If a wrapper is missing, stop and open a
    skill-gap PR — do not reconstruct deleted scripts.
-2. **Do not invent a local LLM server** (custom proxy, OpenAI shim, dummy
-   FastAPI). Live reports require an already-running OpenAI-compatible server
-   at `llm.base_url` with the **same model id** as `llm.model`.
+2. **Do not run `--mode mock` on a real tranche, and do not fall back to it.**
+   Mock is for CI fixtures only. If the LLM or a stage fails, set
+   `reports.status=not_run` or `live_failed` and `blocker`, then fix the
+   skill or MR-RATE code in a general way. Do not invent a local LLM server
+   (custom proxy, OpenAI shim, dummy FastAPI). Live reports require an
+   already-running OpenAI-compatible server at `llm.base_url` with the
+   **same model id** as `llm.model`.
 3. **Do not QC voxels or “validate images”** unless the user asked. That is
    `nv-curate-mri` / MR-RATE.
 4. **Do not pip-install into the live venv while a GPU pipeline is running.**
@@ -130,8 +135,10 @@ Then:
 | `mock` | stubbed | sibling mock CLIs (or study stub) | wiring only |
 | `live` | real MR-RATE + GPU | real stage skills + LLM | ingest |
 
-`--mode live` with reports falling back to mock is **not** live join. If you
-ran `nv-curate --mode mock` after a live MRI loop, say so explicitly.
+`--mode live` with reports falling back to mock is **not** live join. Do not
+run that fallback. If the LLM is down, stop with `reports.status=not_run` and
+`blocker=llm_unreachable`. Fix the failure in the skill or in MR-RATE; do not
+paper over it with `--mode mock`.
 
 ## Skill-gap PRs (do not local-patch and move on)
 

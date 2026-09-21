@@ -9,6 +9,117 @@ These skills **wrap** the existing MR-RATE
 [data-preprocessing](https://github.com/forithmus/MR-RATE/tree/main/data-preprocessing)
 code. They do not replace it.
 
+## For agents: use Medical AI Skills whenever possible
+
+Agents working on MR-RATE ingest (or any other medtech task this catalog
+covers) must follow the committed skills, not invent a parallel pipeline.
+
+1. **Discover, then read the skill.** Start from
+   [`SKILL_INDEX.md`](SKILL_INDEX.md) (`make list-skills`) and
+   [`docs/using-skills.md`](docs/using-skills.md). Open the matching
+   `skills/<name>/SKILL.md` and run its documented `scripts/` entrypoint with
+   your paths. For this ingest, that means
+   [`nv-curate-study`](skills/nv-curate-study/SKILL.md) or
+   [`nv-curate-batch`](skills/nv-curate-batch/SKILL.md) — not ad-hoc wiring of
+   the stage skills underneath.
+2. **Follow the skill's instructions.** Prerequisites, flags, fixtures, live
+   gates, and status language in this guide and in each `SKILL.md` are the
+   contract. For a real tranche, run `--mode live` only. Do not run `--mode mock`
+   and do not fall back to it when a stage fails. Do not skip preflight or
+   `skip_upload: true`.
+3. **Do not drop one-off helper scripts.** Do not write a throwaway `.py` in
+   the work directory, `runs/`, or a personal toolbox to paper over a missing
+   flag, fixture generator, join, or wrapper. Do not reimplement upstream
+   inference.
+4. **If a helper is actually needed, generalize it into the catalog, then
+   open a PR.** Prefer extending the skill that already owns the step
+   (`scripts/`, `SKILL.md`, schema, fixtures). If the work is a new reusable
+   medtech task, add `skills/<name>/` per
+   [`docs/authoring-skills.md`](docs/authoring-skills.md) and
+   [`docs/skill-scope.md`](docs/skill-scope.md). The helper must be generic
+   (config and paths, not a single `batchNN` or `study_uid`), documented, and
+   callable the same way as other skills.
+5. **Ship the change as a PR**, not as a local-only script. Target
+   <https://github.com/medatasci/medical-AI-skills> on base branch
+   `draft/report-anonymization-skill-testing` while this ingest is in testing.
+   Preprocessing bugs that belong in MR-RATE go to
+   <https://github.com/forithmus/MR-RATE>. **Do not attach PHI.**
+6. **Say what finished and what did not, then stop only if nothing required
+   is still open.** Follow
+   [When the task is done](#for-agents-when-the-task-is-done). A green process,
+   files on disk, or a mock run do not close the task.
+
+Copy-paste ingest prompts:
+[`docs/prompts/mr-rate-ingest.md`](docs/prompts/mr-rate-ingest.md).
+Agent task map: [`docs/agent-tasks.md`](docs/agent-tasks.md). Repo rules:
+[`AGENTS.md`](AGENTS.md).
+
+## For agents: when the task is done
+
+A run is finished only when every item the user asked for is in **Completed**
+and **Not completed** is empty for that scope. Lead the final report with
+**Not completed**. If that list has any row, the task is still open. Do not
+end with "done", "complete", "succeeded", or "curated" while it does.
+
+Write both lists every time, including partial stops (LLM down, smoke only,
+one rejected study, publish still blocked). Counts, skill name, mode, and an
+output path belong on each row.
+
+```text
+Not completed (task still open):
+- Reports: 20/20 not_run. Live reports not run.
+  blocker=llm_unreachable (GET http://127.0.0.1:8080/v1/models failed).
+  Do not fill this with --mode mock.
+- join.status=rejected (0 matched / 20 rejected).
+- publish.skip_upload=true. No human QC. Not published to Hugging Face.
+
+Completed:
+- MRI: 20/20 live_ok (nv-curate-mri, --device 0).
+  Evidence: <out>/studies/<study_uid>/mri/
+- MRI preflight passed (dcm2niix, CUDA, $MR_RATE_ROOT).
+- Report entrypoint present: skills/report-anonymization/scripts/run_anonymization.py
+```
+
+**Done** for a study or tranche means all of the following, for every
+`study_uid` in the requested scope:
+
+| Gate | Required value |
+|---|---|
+| `mri.status` | `live_ok` (not `stubbed_mock`, `live_failed`, or `not_run`) |
+| `reports.status` | `live_ok` (not `mock_ok`, `live_failed`, or `not_run`) |
+| `join.status` | `matched` |
+| `blocker` | `none` |
+| `publish.skip_upload` | `true` until a person approves QC |
+
+Publishing is a separate task. It is done only after matched studies, a
+recorded human spot-check, and an explicit approval to upload. Until then
+leave `skip_upload: true` and list publish, Hugging Face merge, and the
+dataset-guide update under **Not completed**.
+
+These signals leave the task open. Record them under **Completed** only for
+the step they actually finished, and under **Not completed** for everything
+still required:
+
+| What you have | What it finished | What is still open |
+|---|---|---|
+| Process exit 0 | The process returned | Match, live reports, publish. `n_matched=0` with `n_rejected=20` is a finished process and an open ingest |
+| Defaced NIfTI / zip on disk | MRI track for those studies | Reports and `join.status` |
+| `reports.status=mock_ok` | Wiring of the report track | Live LLM reports and join |
+| Preflight pass | Environment check | The pipeline itself |
+| `--smoke N` clean | The first N studies | The rest of the tranche |
+| `publish.skip_upload=true` | Upload stayed blocked, as required | Human QC and publish |
+| Local helper script, no PR | Nothing in the catalog | Generalized skill change submitted as a PR |
+
+If the user scoped the ask (MRI only, mock smoke, one `study_uid`), mark that
+slice complete only when its own gates passed, and still list every ingest
+step that did not run under **Not completed**. The headline states the scoped
+result and that the full ingest is still open when `join.status` is not
+`matched`.
+
+Field values and the forbidden one-line summaries are in
+[Status language](#status-language-required-for-humans-and-agents) and
+[`docs/mr-rate-ingest-ops.md`](docs/mr-rate-ingest-ops.md).
+
 ## Which skill do I use?
 
 | Goal | Skill | Where it lives |
@@ -60,7 +171,7 @@ Read first:
 Fill in a `study.json` for the one MRI + report: paths, `study_uid`, the report
 `datasources.json`, and `publish.skip_upload: true`.
 
-Then run it. Start in mock mode to check your wiring, and only then go live:
+Then run it live. `--mode mock` is for CI fixtures, not for a real study:
 
 ```bash
 # Wiring / CI (no GPU; MRI stubbed)
@@ -185,7 +296,10 @@ Two content rules that cause most fixture failures:
 
 And a few things not to do:
 
-- Do not write new `.py` tools.
+- Do not write one-off `.py` helpers next to the data. If a reusable tool is
+  missing, improve the owning skill or add a new skill and submit a PR (see
+  [For agents](#for-agents-use-medical-ai-skills-whenever-possible) and
+  [section 9](#9-bugs-and-improvements)).
 - Do not QC/validate voxels — the MRI skill does that.
 - Do not pip-install while a GPU run is in progress.
 - Do not reuse `--out` if the logs say the output CSV already exists; use a new
@@ -193,16 +307,31 @@ And a few things not to do:
 
 ### Status language (required for humans and agents)
 
-Report MRI and reports as **separate tracks**. A process exit code of 0 is not a
-match. Here is a correctly reported incomplete run:
+Put this block inside the completion report from
+[When the task is done](#for-agents-when-the-task-is-done). Report MRI and
+reports as **separate tracks**. A process exit code of 0 is not a match.
+`mock_ok` on reports with `live_ok` on MRI is an open task: list live reports,
+join, and publish under **Not completed**.
+
+Allowed values (from [`docs/mr-rate-ingest-ops.md`](docs/mr-rate-ingest-ops.md)):
+
+| Field | Allowed values |
+|---|---|
+| `mri.status` | `live_ok` \| `live_failed` \| `stubbed_mock` \| `not_run` |
+| `reports.status` | `live_ok` \| `live_failed` \| `mock_ok` \| `not_run` |
+| `join.status` | `matched` \| `rejected` |
+| `blocker` | short machine token, or `none` |
+| `publish.skip_upload` | `true` \| `false` (`true` until human QC) |
+
+Here is a correctly reported incomplete run:
 
 ```text
 MRI: 20/20 live_ok (nv-curate-mri).
-Reports: 20/20 mock_ok (nv-curate --mode mock).
+Reports: 20/20 not_run.
 join.status=rejected.
 blocker=llm_unreachable (GET http://127.0.0.1:8080/v1/models failed).
 publish.skip_upload=true.
-Do not treat this as a live matched pair.
+Do not treat this as a live matched pair. Do not fill reports with --mode mock.
 ```
 
 Avoid both of these failure modes:
@@ -283,30 +412,49 @@ schema and examples, see
 
 ## 8. Recommended operating sequence
 
+Agents: use the composing skills in every step below. If you hit a gap that
+needs a script, generalize it into a skill change and open a PR
+([For agents](#for-agents-use-medical-ai-skills-whenever-possible)) instead of
+keeping a local helper.
+
 1. Stage raw DICOM paths, PACS CSV, mappings, and the report CSV for `batchNN`.
 2. Write the per-study `study.json` files plus one `batch.json`.
-3. Run a mock smoke on fixtures to validate wiring. This does **not** prove
-   defacing or a live LLM.
-4. Clear the live gates from [section 4b](#4b-live-gates-fixtures-and-how-to-report-status):
+3. Clear the live gates from [section 4b](#4b-live-gates-fixtures-and-how-to-report-status):
    `curl …/v1/models`, MRI `--preflight`, and confirm the report entrypoints.
-   Then run `nv-curate-batch --smoke N`, fix any single failing `study_uid` with
-   `nv-curate-study`, and run the full batch with `skip_upload: true`. Report
-   `mri.status`, `reports.status`, and `join.status` separately.
-5. Run the join / completeness audit plus human QC.
-6. Enable upload and merge into the published MR-RATE database.
+   Then run `nv-curate-batch --mode live --smoke N`, fix any single failing
+   `study_uid` with `nv-curate-study --mode live`, and run the full batch with
+   `skip_upload: true`. Do not pass `--mode mock`. Report `mri.status`,
+   `reports.status`, and `join.status` separately.
+4. Run the join / completeness audit plus human QC.
+5. Enable upload and merge into the published MR-RATE database.
+6. Write the completion report: **Not completed** first, then **Completed**.
+   Stop calling the task done only when **Not completed** is empty for the
+   scope you were given
+   ([When the task is done](#for-agents-when-the-task-is-done)).
 
 ---
 
 ## 9. Bugs and improvements
 
-While we are in testing, open PRs for verified bugs and skill / code
-improvements against <https://github.com/medatasci/medical-AI-skills>, base
-branch `draft/report-anonymization-skill-testing`
+While we are in testing, open PRs for verified bugs, skill / code
+improvements, **generalized helpers**, and **new skills** against
+<https://github.com/medatasci/medical-AI-skills>, base branch
+`draft/report-anonymization-skill-testing`
 (skills live under
 <https://github.com/medatasci/medical-AI-skills/tree/draft/report-anonymization-skill-testing/skills>).
 
-For real preprocessing bugs inside MR-RATE, open a PR against
-<https://github.com/forithmus/MR-RATE>.
+Put the change where the catalog expects it:
+
+| Need | Where | How |
+|---|---|---|
+| Gap in an existing step (flag, fixture, entrypoint, status) | `skills/<existing>/` | Extend `scripts/`, `SKILL.md`, schema, and fixtures. Follow [`docs/authoring-skills.md`](docs/authoring-skills.md). |
+| New reusable medtech task | `skills/<new-name>/` | New skill with `SKILL.md`, `skill_manifest.yaml`, `scripts/`, and safe fixtures. See [`docs/skill-scope.md`](docs/skill-scope.md). |
+| Real preprocessing bug in MR-RATE | upstream | PR <https://github.com/forithmus/MR-RATE> |
+
+Do not leave dataset-specific glue in the ingest working tree. If you wrote a
+helper to unblock a run, generalize it (inputs via config/paths, no hardcoded
+`batchNN` / PHI paths), land it in a skill, and open the PR before treating
+the ingest as done.
 
 **Do not attach PHI.**
 
@@ -317,6 +465,8 @@ For real preprocessing bugs inside MR-RATE, open a PR against
 - [`nv-curate-study`](skills/nv-curate-study/) — one MRI + report
 - [`nv-curate-batch`](skills/nv-curate-batch/) — tranche (calls the study skill)
 - [Ingest prompts](docs/prompts/mr-rate-ingest.md)
+- [`AGENTS.md`](AGENTS.md) / [`docs/agent-tasks.md`](docs/agent-tasks.md) / [`docs/using-skills.md`](docs/using-skills.md)
+- [`docs/authoring-skills.md`](docs/authoring-skills.md) — improve a skill or add a new one, then PR
 - [`nv-curate`](skills/nv-curate/SKILL.md) / [`nv-curate-mri`](skills/nv-curate-mri/SKILL.md) — the underlying tracks
 - [MR-RATE data-preprocessing README](https://github.com/forithmus/MR-RATE/blob/main/data-preprocessing/README.md)
 - [MR-RATE dataset guide](https://github.com/forithmus/MR-RATE/blob/main/data-preprocessing/docs/dataset_guide.md)

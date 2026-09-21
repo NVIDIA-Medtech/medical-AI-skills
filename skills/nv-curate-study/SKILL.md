@@ -24,11 +24,19 @@ metadata:
 
 ## Instructions
 
-1. Read `skill_manifest.yaml` and `schemas/study.schema.json` before changing the config contract.
+1. Read `skill_manifest.yaml`, `schemas/study.schema.json`, and
+   [`docs/mr-rate-ingest-ops.md`](../../docs/mr-rate-ingest-ops.md) — the ops doc is
+   mandatory before `--mode live`. It defines the live gate, the `mri_fixtures`
+   contract, and the status vocabulary you must report in.
 2. Fill a `study.json` (see `fixtures/study.json`) with paths for this one study.
-3. Run `scripts/run_curate_study.py`. Prefer `--mode mock` for wiring/CI; use `--mode live` only with a real MR-RATE checkout, GPU, and a **local** OpenAI-compatible LLM server (default model: Nemotron 3 Super 120B).
+   Build `mri_fixtures` from `nv-curate-mri/fixtures/generate_fixtures.py --step orchestrator`;
+   never hand-roll `.py` helpers, LLM proxies, or image-QC scripts.
+3. For a real study, run `scripts/run_curate_study.py --mode live` after the ops live gate passes (real MR-RATE checkout, GPU, and an **already-running** OpenAI-compatible LLM whose served model id matches `llm.model`). Do not run `--mode mock` and do not switch to mock when live fails. `--mode mock` is for CI fixtures only.
 4. Keep `publish.skip_upload: true` until a human approves QC. This skill never uploads on its own when skip is true.
 5. For a full tranche, use `nv-curate-batch` (which invokes this skill per study).
+6. Report `mri.status`, `reports.status`, `join.status`, `blocker`, and
+   `publish.skip_upload` separately — never collapse a live MRI plus mock reports into
+   "curated".
 
 | User prompt | What to run |
 |---|---|
@@ -134,9 +142,11 @@ python skills/nv-curate-study/scripts/run_curate_study.py /path/to/study.json \
 
 - Mock mode stubs the MRI track; it does not prove defacing or DICOM conversion.
 - Live MRI always runs real upstream MR-RATE code (no MRI mock in `nv-curate-mri`).
-- Live reports require a reachable `llm.base_url`; the default model id must match what the server registered.
-- Join fails closed: if report or MRI side is missing/failed, `join.status` is `rejected` and publish remains blocked.
+- Join fails closed: if report or MRI side is missing/failed, `join.status` is `rejected` and publish remains blocked. Live MRI artifacts may still exist; say `mri.status=live_ok` and `reports.status=live_failed` instead of “curation complete.”
+- Live reports require a reachable `llm.base_url`; probe `GET {base_url}/v1/models` before `--mode live`. Do not stand up a custom LLM proxy.
 - Not a regulatory de-identifier; human QC required before any HF upload.
+
+Ops details: [`docs/mr-rate-ingest-ops.md`](../../docs/mr-rate-ingest-ops.md).
 
 ## Contributing fixes upstream
 
@@ -164,6 +174,9 @@ is mock-only or live. Do not attach PHI or patient data to the PR.
 |---|---|
 | `nv-curate` / `nv-curate-mri` not found | Run from the medical-AI-skills repo root; keep sibling skills installed |
 | Live MRI preflight fails | Check `$MR_RATE_ROOT`, `dcm2niix` on PATH, CUDA visibility |
-| Report LLM connection errors | Confirm server is up at `llm.base_url` and `llm.model` matches the served name |
-| `join.status=rejected` | Compare `study_uid` on both sides; rerun the failing stage skill only |
+| Report LLM connection errors | `curl {llm.base_url}/v1/models`; model id must match the served name. Token `blocker=llm_unreachable` |
+| `join.status=rejected` after MRI files exist | Reports failed or mock-only; rerun reports/`nv-curate` for that uid — do not re-deface |
+| `stage skill entrypoint missing: run_anonymization.py` | Known gap vs `anonymize_reports.py`. Do not write a wrapper; PR `nv-curate` |
+| `Missing NIfTI` / colon in predicted filename | Spaces-only `SeriesDescription` in `pacs_metadata.csv` (see ops doc) |
+| dcm2niix SKIPPED empty AccessionNumber | Stamp a non-empty accession matching mapping xlsx |
 | Agent wants a full batch | Switch to `nv-curate-batch` |

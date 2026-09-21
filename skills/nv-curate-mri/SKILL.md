@@ -118,6 +118,17 @@ Those compose this skill with `nv-curate`. Copy-paste prompts:
 - **`dcm2niix_on_path` false**: install `dcm2niix` and ensure it is on `PATH`.
 - **Pipeline runner exited non-zero**: inspect the `error` field and
   `<out>/logs`; the `telemetry.phases` timings show which runner stage ran.
+- **`Missing NIfTI file: N_desc:_foo.nii.gz`**: PACS `SeriesDescription`
+  contains punctuation (often `:`) that dcm2niix strips. Use spaces only, as
+  in `fixtures/generate_fixtures.py`. Do not write a custom rename script.
+- **`Output CSV already exists`**: choose a new `--out`; do not reuse a failed
+  run directory.
+- **`No valid modalities found`**: usually empty `mod_meta.csv` after the
+  filename mismatch or QC drop — read `logs/modality_filtering_*.log`.
+- **dcm2niix SKIPPED**: empty `AccessionNumber` in DICOM.
+- Generate fixture *shape* with `fixtures/generate_fixtures.py --step orchestrator`
+  (`dicom_folder_paths.csv`, `pacs_metadata.csv`, `patient_mapping.xlsx`,
+  `study_date_mapping.xlsx`). Mapping `Accession` must match DICOM accession.
 
 ## Examples
 

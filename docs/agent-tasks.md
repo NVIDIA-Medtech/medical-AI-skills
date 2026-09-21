@@ -31,8 +31,8 @@ evidence pack + verifier       -> verifier evidence pack
 | **Discover a skill** | `SKILL_INDEX.md` | `skills/<name>/SKILL.md`, `skill_manifest.yaml` | `make list-skills` |
 | **Inspect a contract** | `python tools/render_contract_summary.py skills/<name>` | `SKILL.md`, `skill_manifest.yaml` | `python tools/render_contract_summary.py skills/<name>` |
 | **Run a skill (user data)** | `skills/<name>/SKILL.md` | `runtime.side_effects`, `limitations` | Script in `SKILL.md` (not eval_engine) |
-| **Ingest one MR-RATE study (MRI + report)** | [`nv-curate-study`](../skills/nv-curate-study/SKILL.md) + [`docs/prompts/mr-rate-ingest.md`](prompts/mr-rate-ingest.md) Prompt A | `study.json` | `python skills/nv-curate-study/scripts/run_curate_study.py …` |
-| **Ingest an MR-RATE tranche (batch)** | [`nv-curate-batch`](../skills/nv-curate-batch/SKILL.md) + Prompt B | calls `nv-curate-study` per study | `python skills/nv-curate-batch/scripts/run_curate_batch.py …` |
+| **Ingest one MR-RATE study (MRI + report)** | [`nv-curate-study`](../skills/nv-curate-study/SKILL.md) + [`docs/prompts/mr-rate-ingest.md`](prompts/mr-rate-ingest.md) Prompt A + [`docs/mr-rate-ingest-ops.md`](mr-rate-ingest-ops.md) | `study.json`; `--mode live` only. Prove LLM + MRI preflight. Do not run mock and do not fall back to mock | `python skills/nv-curate-study/scripts/run_curate_study.py … --mode live` |
+| **Ingest an MR-RATE tranche (batch)** | [`nv-curate-batch`](../skills/nv-curate-batch/SKILL.md) + Prompt B + ops doc | calls `nv-curate-study` per study in `--mode live`; report tracks separately; fix a general skill bug instead of mocking the failure | `python skills/nv-curate-batch/scripts/run_curate_batch.py … --mode live` |
 | **Generate evidence pack** | `docs/trust-and-evidence.md` | Target manifest `validation.*` | `make run-skill SKILL=<name> FIXTURE=<path> OUT=runs/<id>` |
 | **Inspect a pack** | `docs/trust-and-evidence.md` | `workflow_run_record.md`, `validation_summary.json`, `output.json`, `trust_summary.json` if present | `make review-packet PACK=<pack>` |
 | **Compare runs** | `docs/replay.md` | Both pack dirs | `make diff RUN_A=… RUN_B=…` |

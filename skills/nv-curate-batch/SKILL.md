@@ -24,11 +24,21 @@ metadata:
 
 ## Instructions
 
-1. Read `skill_manifest.yaml` and `schemas/batch.schema.json`.
+1. Read `skill_manifest.yaml`, `schemas/batch.schema.json`, and
+   [`docs/mr-rate-ingest-ops.md`](../../docs/mr-rate-ingest-ops.md) — the ops doc is
+   mandatory before `--mode live`. It defines the live gate, the per-study MRI
+   fixture contract, and the status vocabulary you must report in.
 2. Build a `batch.json` that lists per-study `study.json` paths (or embeds study configs). See `fixtures/batch.json`.
 3. Ensure `nv-curate-study` is present — this skill shells out to its entrypoint; it does not reimplement MRI/report stages.
-4. Run with `--mode mock` for wiring; `--mode live` for production (requires MR-RATE + GPU + **local** Nemotron 3 Super 120B server by default).
+   Never write your own `.py` helpers, LLM proxies, or image-QC scripts; if a wrapper is missing, stop and file a skill-gap PR.
+4. For a real tranche, run `--mode live` only after the ops live gate passes
+   (LLM answering at `llm.base_url` with the configured model id, MRI `--preflight` clean,
+   report stage entrypoints present). Do not run `--mode mock` and do not fall
+   back to mock when a study fails. `--mode mock` is for CI fixtures only.
 5. Do not set `publish.skip_upload: false` until QC of the matched set is complete.
+6. Report `mri.status`, `reports.status`, `join.status`, `blocker`, and
+   `publish.skip_upload` separately. Exit code 0 with `n_matched=0` is not success, and
+   live MRI plus mock reports is not a matched pair.
 
 | User prompt | Skill |
 |---|---|
@@ -132,4 +142,6 @@ live. Do not attach PHI or patient data to the PR.
 |---|---|
 | `nv-curate-study` missing | Install/checkout sibling skill under `skills/nv-curate-study/` |
 | Many rejects | Inspect `<out>/studies/<id>/summary.json`; rerun that study only |
+| `n_matched=0` but process exit 0 | Not a matched tranche. Split MRI vs reports status; see [`docs/mr-rate-ingest-ops.md`](../../docs/mr-rate-ingest-ops.md) |
+| Smoke all-reject + no LLM | Probe `{base_url}/v1/models` before live; do not invent a server |
 | Need a single study | Use `nv-curate-study` directly |
