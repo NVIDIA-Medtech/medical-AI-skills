@@ -79,6 +79,8 @@ python -m pytest skills/nv-reason-ct/tests \
 
 Without these options only the three real-volume and two GPU integration cases skip; every offline contract test runs. When requested, missing examples, invalid revisions, or unavailable model assets fail rather than silently skipping or substituting test data. Offline test doubles do not establish live inference success. The local-export loading contract has offline regression coverage; the recorded live baseline in `SKILL.md` used the released-model snapshot, not a newly trained checkpoint.
 
+Passing local tests or reproducing the historical GPU baseline does not establish managed evaluation or signing status. A signed-skill claim requires verification of `skill.oms.sig` against the exact skill contents and the catalog's trusted certificate. That signature covers the skill, not separately downloaded model code or weights, and does not replace the caller's explicit `--trust-model-code` authorization.
+
 ## Cleanup
 
 After inference and when cleanup is authorized, remove only the task-created checkout, environment, and caches. Preserve result JSON, source/content hashes, and setup versions separately; do not purge shared caches or delete a caller-owned input scan.
