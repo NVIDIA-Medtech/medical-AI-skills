@@ -66,7 +66,7 @@ Each invocation loads the model and starts a new single-turn conversation. The u
 
 | Script | Purpose | Arguments |
 |---|---|---|
-| `scripts/run_nv_reason_ct.py` | Read-only setup checks and inference on an existing NIfTI volume. | `CT_OR_REQUEST --trust-model-code [--anatomy-region chest|abdomen|none] [--prompt TEXT] [--thinking|--no-thinking] [--out-dir OUT_DIR]`; `--check-setup` needs neither CT input nor code-execution consent. |
+| `scripts/run_nv_reason_ct.py` | Read-only setup checks and inference on an existing NIfTI volume. | `CT_OR_REQUEST --trust-model-code [--anatomy-region chest\|abdomen\|none] [--prompt TEXT] [--thinking\|--no-thinking] [--out-dir OUT_DIR]`; `--check-setup` needs neither CT input nor code-execution consent. |
 
 ## Prerequisites
 
