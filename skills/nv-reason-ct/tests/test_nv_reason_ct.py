@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# License: OpenMDW-1.1; see ../LICENSE.
+# SPDX-License-Identifier: Apache-2.0
 
 """Self-contained offline contract tests; no CT generator, model, or downloads.
 

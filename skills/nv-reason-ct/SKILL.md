@@ -1,7 +1,7 @@
 ---
 name: nv-reason-ct
 description: Run NV-Reason-CT inference on user-provided 3D NIfTI chest or abdominal CT volumes for engineering and research workflows. Not for diagnosis, treatment, or clinical reporting.
-license: OpenMDW-1.1
+license: Apache-2.0
 allowed-tools: Bash, Read, Write, Env
 metadata:
   author: "NVIDIA MedTech <noreply@nvidia.com>"
@@ -158,4 +158,6 @@ Inference uses the upstream contract: `AutoModelForImageTextToText` and `AutoPro
 
 ## License
 
-This skill, including its wrapper, uses OpenMDW-1.1, the same license as the upstream NV-Reason-CT model repository and weights. See [LICENSE](LICENSE) for the full terms. Retain the license and applicable notices when redistributing these materials.
+This skill's documentation, wrapper, and tests are licensed under Apache-2.0. See [LICENSE](LICENSE) for the full terms.
+
+The separately obtained upstream NV-Reason-CT model code, weights, and example data retain their upstream terms, including [OpenMDW-1.1](https://github.com/NVIDIA-Medtech/NV-Reason-CT/blob/main/LICENSE). The skill's Apache-2.0 license does not relicense those assets. Retain the applicable licenses and notices when redistributing either the skill or upstream materials.

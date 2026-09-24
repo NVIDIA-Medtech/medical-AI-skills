@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# License: OpenMDW-1.1; see ../LICENSE.
+# SPDX-License-Identifier: Apache-2.0
 
 """Run NV-Reason-CT inference on one existing NIfTI CT volume."""
 
