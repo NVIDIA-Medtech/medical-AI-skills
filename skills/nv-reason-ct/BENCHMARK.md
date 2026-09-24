@@ -9,7 +9,7 @@ Recommended for publication based on the completed evaluation evidence in this r
 ## Evaluation Metadata
 
 - Skill: `nv-reason-ct`
-- Evaluation date: 2026-09-23
+- Evaluation date: 2026-09-24
 - Evaluator version: `1.5.6`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-4-8`), Codex (`openai/openai/gpt-5.5`)
 - Tasks: 9 evaluation tasks (9 positive)
@@ -35,12 +35,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 90.9% — baseline ran, but no comparable score was available; uplift unavailable | 79.3% — baseline ran, but no comparable score was available; uplift unavailable |
-| Security | 83.3% → 100.0% (+16.7 points) | 63.3% → 72.7% (+9.4 points) |
-| Correctness | 61.7% → 97.8% (+36.1 points) | 41.3% → 83.6% (+42.3 points) |
-| Discoverability | 86.1% — baseline ran, but no comparable score was available; uplift unavailable | 84.6% — baseline ran, but no comparable score was available; uplift unavailable |
-| Effectiveness | 62.2% → 87.4% (+25.2 points) | 47.8% → 75.0% (+27.2 points) |
-| Efficiency | 83.1% — baseline ran, but no comparable score was available; uplift unavailable | 80.6% — baseline ran, but no comparable score was available; uplift unavailable |
+| Overall | 89.1% — baseline ran, but no comparable score was available; uplift unavailable | 86.8% — baseline ran, but no comparable score was available; uplift unavailable |
+| Security | 76.7% → 90.0% (+13.3 points) | 76.9% → 88.9% (+12.0 points) |
+| Correctness | 41.3% → 96.0% (+54.7 points) | 52.3% → 95.6% (+43.3 points) |
+| Discoverability | 85.8% — baseline ran, but no comparable score was available; uplift unavailable | 83.9% — baseline ran, but no comparable score was available; uplift unavailable |
+| Effectiveness | 52.6% → 87.0% (+34.4 points) | 51.7% → 83.2% (+31.5 points) |
+| Efficiency | 86.8% — baseline ran, but no comparable score was available; uplift unavailable | 82.3% — baseline ran, but no comparable score was available; uplift unavailable |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Scores are rounded to one decimal; threshold-adjacent values use additional precision so their displayed band matches the verdict. Uplift is derived from those displayed scores and shown in percentage points.
 
@@ -54,27 +54,27 @@ Actual Tier 3 execution usage is reported for every observed agent/case pair and
 
 | Agent | Dataset case | With skill | Without skill | Delta | Change | Coverage |
 |---|---|---:|---:|---:|---:|---|
-| claude-code | All cases | 2,732,689 | 3,984,895 | N/A | N/A | skill 9/9; base 12/12 |
-| claude-code | diagnosis-treatment-refusal | 29,965 | 188,796 | -158,831 | -84.13% | skill 1/1; base 1/1 |
-| claude-code | git-lfs-pointer-is-not-volume | 280,162 | 765,739 | -485,577 | -63.41% | skill 1/1; base 1/1 |
-| claude-code | live-abdominal-nifti-routing | 730,528 | 310,202 | +420,326 | +135.50% | skill 1/1; base 1/1 |
-| claude-code | local-trained-export-routing | 340,050 | 192,051 | +147,999 | +77.06% | skill 1/1; base 1/1 |
-| claude-code | model-code-consent-withheld | 364,312 | 534,456 | -170,144 | -31.83% | skill 1/1; base 1/1 |
-| claude-code | no-silent-history-loss | 66,543 | 122,197 | -55,654 | -45.54% | skill 1/1; base 1/1 |
-| claude-code | read-only-setup-check | 337,869 | 289,763 | +48,106 | +16.60% | skill 1/1; base 1/1 |
-| claude-code | training-records-are-not-demo-volumes | 108,138 | 574,305 | N/A | N/A | skill 1/1; base 2/2 |
-| claude-code | upstream-example-end-to-end | 475,122 | 1,007,386 | N/A | N/A | skill 1/1; base 3/3 |
-| codex | All cases | 5,769,477 | 5,913,667 | N/A | N/A | skill 11/11; base 15/15 |
-| codex | diagnosis-treatment-refusal | 29,793 | 17,851 | +11,942 | +66.90% | skill 1/1; base 1/1 |
-| codex | git-lfs-pointer-is-not-volume | 203,536 | 526,324 | -322,788 | -61.33% | skill 1/1; base 1/1 |
-| codex | live-abdominal-nifti-routing | 129,524 | 482,417 | N/A | N/A | skill 1/1; base 3/3 |
-| codex | local-trained-export-routing | 110,176 | 118,719 | -8,543 | -7.20% | skill 1/1; base 1/1 |
-| codex | model-code-consent-withheld | 161,931 | 275,905 | -113,974 | -41.31% | skill 1/1; base 1/1 |
-| codex | no-silent-history-loss | 104,700 | 41,568 | +63,132 | +151.88% | skill 1/1; base 1/1 |
-| codex | read-only-setup-check | 89,420 | 185,848 | -96,428 | -51.89% | skill 1/1; base 1/1 |
-| codex | training-records-are-not-demo-volumes | 4,694,337 | 3,773,895 | +920,442 | +24.39% | skill 3/3; base 3/3 |
-| codex | upstream-example-end-to-end | 246,060 | 491,140 | N/A | N/A | skill 1/1; base 3/3 |
-| ALL AGENTS | Dataset aggregate | 8,502,166 | 9,898,562 | N/A | N/A | skill 20/20; base 27/27 |
+| claude-code | All cases | 3,128,510 | 5,636,512 | N/A | N/A | skill 10/10; base 15/15 |
+| claude-code | diagnosis-treatment-refusal | 30,049 | 627,178 | -597,129 | -95.21% | skill 1/1; base 1/1 |
+| claude-code | git-lfs-pointer-is-not-volume | 188,851 | 377,458 | -188,607 | -49.97% | skill 1/1; base 1/1 |
+| claude-code | live-abdominal-nifti-routing | 531,462 | 1,310,164 | N/A | N/A | skill 1/1; base 3/3 |
+| claude-code | local-trained-export-routing | 402,655 | 236,874 | +165,781 | +69.99% | skill 1/1; base 1/1 |
+| claude-code | model-code-consent-withheld | 220,976 | 329,630 | -108,654 | -32.96% | skill 1/1; base 1/1 |
+| claude-code | no-silent-history-loss | 144,588 | 120,642 | +23,946 | +19.85% | skill 1/1; base 1/1 |
+| claude-code | read-only-setup-check | 313,985 | 548,533 | N/A | N/A | skill 1/1; base 2/2 |
+| claude-code | training-records-are-not-demo-volumes | 186,557 | 488,162 | N/A | N/A | skill 1/1; base 2/2 |
+| claude-code | upstream-example-end-to-end | 1,109,387 | 1,597,871 | N/A | N/A | skill 2/2; base 3/3 |
+| codex | All cases | 3,508,316 | 3,764,003 | N/A | N/A | skill 9/9; base 13/13 |
+| codex | diagnosis-treatment-refusal | 29,706 | 17,937 | +11,769 | +65.61% | skill 1/1; base 1/1 |
+| codex | git-lfs-pointer-is-not-volume | 687,425 | 113,486 | +573,939 | +505.74% | skill 1/1; base 1/1 |
+| codex | live-abdominal-nifti-routing | 126,160 | 271,104 | -144,944 | -53.46% | skill 1/1; base 1/1 |
+| codex | local-trained-export-routing | 145,555 | 98,687 | +46,868 | +47.49% | skill 1/1; base 1/1 |
+| codex | model-code-consent-withheld | 132,156 | 219,957 | -87,801 | -39.92% | skill 1/1; base 1/1 |
+| codex | no-silent-history-loss | 48,420 | 41,299 | +7,121 | +17.24% | skill 1/1; base 1/1 |
+| codex | read-only-setup-check | 193,367 | 189,131 | +4,236 | +2.24% | skill 1/1; base 1/1 |
+| codex | training-records-are-not-demo-volumes | 1,870,859 | 1,781,574 | N/A | N/A | skill 1/1; base 3/3 |
+| codex | upstream-example-end-to-end | 274,668 | 1,030,828 | N/A | N/A | skill 1/1; base 3/3 |
+| ALL AGENTS | Dataset aggregate | 6,636,826 | 9,400,515 | N/A | N/A | skill 19/19; base 28/28 |
 
 Prompt tokens include cached reads, so total tokens are `prompt + completion` (cached is not added twice). The Efficiency score uses `(prompt - cached) + completion`. N/A means the relevant trajectory counters were not available; coverage is never estimated.
 
@@ -82,7 +82,7 @@ Prompt tokens include cached reads, so total tokens are `prompt + completion` (c
 
 | Tier | Purpose | Status | Evidence |
 |---|---|---|---|
-| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 11 validator(s); 14 finding(s) |
+| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 11 validator(s); 16 finding(s) |
 | Tier 2 | Semantic deduplication | **PASSED** | 2 validator(s); 0 finding(s) |
 | Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 9 task(s) |
 
@@ -91,6 +91,8 @@ Prompt tokens include cached reads, so total tokens are `prompt + completion` (c
 <details>
 <summary>Show detailed findings and successful checks</summary>
 
+- **MEDIUM** SECURITY/Skill Enumeration (AS3): Agent Snooping: skills/nv-reason-ct/SKILL.md (`BENCHMARK.md:116`)
+- **MEDIUM** SECURITY/Skill Enumeration (AS3): Agent Snooping: skills/nv-reason-ct/SKILL.md (`BENCHMARK.md:117`)
 - **MEDIUM** SECURITY/subprocess module call (AST4): Dangerous Code Execution:     return subprocess.run(
         [sys.executable, str(SCRIPT), *map(str, args)],
         capture_output=True,
@@ -113,9 +115,7 @@ Prompt tokens include cached reads, so total tokens are `prompt + completion` (c
         text=True,
         timeout=600,
     ) (`tests/test_upstream_examples.py:74`)
-- **LOW** QUALITY/quality_reliability: Inputs are used but no dedicated Inputs section is documented (`skills/nv-reason-ct/SKILL.md`)
-- **LOW** QUALITY/quality_reliability: Structured output is used but no dedicated Output Format section is documented (`skills/nv-reason-ct/SKILL.md`)
-- 9 additional finding(s) are available in the full evaluation artifacts.
+- 11 additional finding(s) are available in the full evaluation artifacts.
 
 </details>
 
