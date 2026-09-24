@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# License: OpenMDW-1.1; see LICENSE in this directory.
+# SPDX-License-Identifier: Apache-2.0
 
 id: medagent.nv_reason_ct
 version: 0.3.1
-license: OpenMDW-1.1
+license: Apache-2.0
 upstream_refs:
   - kind: huggingface_repo
     name: nvidia/NV-Reason-CT
@@ -16,7 +16,7 @@ upstream_refs:
     revision: main
     notes: README.md, inference.py, and requirements.txt define the upstream single-turn contract. The public examples/ directory provides three Git LFS CT volumes; example_1 supports the documented chest and abdomen end-to-end checks. Record the inspected Git commit and LFS content hashes with run evidence.
 license_restrictions:
-  wrapper: OpenMDW-1.1
+  wrapper: Apache-2.0
   upstream_model_and_code: OpenMDW-1.1
   redistribution: retain_license_and_applicable_notices
 intended_use:
