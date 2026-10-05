@@ -1,6 +1,6 @@
 # MONAI Bundle Notes
 
-Authoritative source: <https://docs.monai.io/en/stable/bundle.html>.
+Authoritative source: <https://monai.readthedocs.io/en/latest/bundle.html>.
 
 ## Bundle shape
 
