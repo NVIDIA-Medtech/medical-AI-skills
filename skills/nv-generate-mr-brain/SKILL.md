@@ -2,7 +2,7 @@
 name: nv-generate-mr-brain
 description: Used for generating synthetic T1, T2, FLAIR, SWI, or MRA brain MRI volumes with NV-Generate-CTMR MR-Brain v1. Not for production training data.
 license: Apache-2.0
-allowed-tools: Bash, Read, Write, WebFetch, Env
+allowed-tools: Bash Read Write WebFetch Env
 permissions: [env, file_read, file_write, network, shell]
 metadata:
   author: 'NVIDIA MedTech Team'
