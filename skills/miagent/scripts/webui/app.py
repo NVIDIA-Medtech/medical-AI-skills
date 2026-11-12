@@ -70,7 +70,11 @@ class WebUIHandler(BaseHTTPRequestHandler):
             self.serve_file(STATIC_DIR / "index.html")
             return
         if route.startswith("/static/"):
-            self.serve_file(STATIC_DIR / route.removeprefix("/static/"))
+            target = safe_join(STATIC_DIR, route.removeprefix("/static/"))
+            if target is None:
+                self.send_error(404, "File not found")
+                return
+            self.serve_file(target)
             return
         if route == "/api/tree":
             self.send_json(build_file_tree(self.challenge_dir))
