@@ -1,5 +1,7 @@
 # miagent-template-source: assets/challenge_template/shared/visualization/visualizer.py
 # miagent-template-contract: active; keep the miagent-template-source loaded for creation/material updates; reload after resume or compaction
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 """Stable shared-visualization API to implement for this challenge."""
 
 from __future__ import annotations
