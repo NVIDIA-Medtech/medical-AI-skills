@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 """Initialize MIAgent's task, dashboard, and trajectory before discovery."""
 
@@ -6,11 +7,10 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import re
 import shutil
 import tempfile
-
+from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_ROOT = SKILL_ROOT / "assets" / "challenge_template"
@@ -115,7 +115,16 @@ def main() -> None:
     try:
         result = initialize(args.request, args.output_dir)
     except (OSError, ValueError) as error:
-        print(json.dumps({"skill": "miagent", "operation": "initialize", "status": "error", "error": str(error)}))
+        print(
+            json.dumps(
+                {
+                    "skill": "miagent",
+                    "operation": "initialize",
+                    "status": "error",
+                    "error": str(error),
+                }
+            )
+        )
         raise SystemExit(1) from error
     print(json.dumps(result, indent=2))
 

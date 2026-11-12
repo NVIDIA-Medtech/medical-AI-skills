@@ -4,7 +4,7 @@ description: Used for MIAgent medical-imaging research, experiment planning, dia
 license: Apache-2.0
 allowed-tools: Read Write Edit Bash WebSearch WebFetch
 metadata:
-  author: "heyufan <heyufan1995@gmail.com>"
+  author: "NVIDIA MedTech <noreply@nvidia.com>"
   version: "0.1.0"
   tags: [medical-imaging, research, experiments]
 ---

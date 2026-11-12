@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 """Export only the portable MIAgent skill, excluding local data and archives."""
 
@@ -6,13 +7,20 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import shutil
-
+from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_FILES = ("SKILL.md", "LICENSE", "skill_manifest.yaml")
-PACKAGE_DIRECTORIES = ("assets", "references", "scripts", "validators", "fixtures", "evals", "tests")
+PACKAGE_DIRECTORIES = (
+    "assets",
+    "references",
+    "scripts",
+    "validators",
+    "fixtures",
+    "evals",
+    "tests",
+)
 EXCLUDED_NAMES = {"__pycache__", ".pytest_cache", ".DS_Store"}
 
 
@@ -27,7 +35,11 @@ def export(output_dir: Path) -> dict:
     sources = [SKILL_ROOT / name for name in PACKAGE_FILES]
     for name in PACKAGE_DIRECTORIES:
         directory = SKILL_ROOT / name
-        sources.extend(p for p in directory.rglob("*") if p.is_file() and not EXCLUDED_NAMES.intersection(p.parts))
+        sources.extend(
+            p
+            for p in directory.rglob("*")
+            if p.is_file() and not EXCLUDED_NAMES.intersection(p.parts)
+        )
     for source in sources:
         if source.is_symlink() or SKILL_ROOT not in source.resolve().parents:
             raise ValueError(f"package source must be a regular in-tree file: {source.name}")
@@ -38,7 +50,12 @@ def export(output_dir: Path) -> dict:
         target = destination / source.relative_to(SKILL_ROOT)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
-    return {"skill": "miagent", "operation": "export", "destination": str(destination), "files": len(sources)}
+    return {
+        "skill": "miagent",
+        "operation": "export",
+        "destination": str(destination),
+        "files": len(sources),
+    }
 
 
 def main() -> None:

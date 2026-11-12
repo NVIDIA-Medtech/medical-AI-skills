@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
 import argparse
@@ -10,7 +12,6 @@ import socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlparse
-
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 SKIP_TREE_NAMES = {
@@ -70,7 +71,11 @@ class WebUIHandler(BaseHTTPRequestHandler):
             self.serve_file(STATIC_DIR / "index.html")
             return
         if route.startswith("/static/"):
-            self.serve_file(STATIC_DIR / route.removeprefix("/static/"))
+            target = safe_join(STATIC_DIR, route.removeprefix("/static/"))
+            if target is None:
+                self.send_error(404, "File not found")
+                return
+            self.serve_file(target)
             return
         if route == "/api/tree":
             self.send_json(build_file_tree(self.challenge_dir))
@@ -91,7 +96,9 @@ class WebUIHandler(BaseHTTPRequestHandler):
             if target is None or not target.exists() or target.suffix.lower() != ".md":
                 self.send_error(404, "Markdown file not found")
                 return
-            self.send_text(render_markdown_page(target, self.challenge_dir), "text/html; charset=utf-8")
+            self.send_text(
+                render_markdown_page(target, self.challenge_dir), "text/html; charset=utf-8"
+            )
             return
         if route == "/view":
             query = parse_qs(parsed.query)
@@ -434,7 +441,11 @@ def render_markdown(text: str, base_dir: Path, root: Path) -> str:
         bullet = collect_bullets(lines, i)
         if bullet:
             flush_paragraph()
-            out.append("<ul>" + "".join(f"<li>{inline_markdown(item, base_dir, root)}</li>" for item in bullet) + "</ul>")
+            out.append(
+                "<ul>"
+                + "".join(f"<li>{inline_markdown(item, base_dir, root)}</li>" for item in bullet)
+                + "</ul>"
+            )
             i += len(bullet)
             continue
         paragraph.append(stripped)
@@ -469,7 +480,13 @@ def render_table(lines: list[str], base_dir: Path, root: Path) -> str:
             value = row[idx] if idx < len(row) else ""
             cells.append(f"<td>{inline_markdown(value, base_dir, root)}</td>")
         rows_html.append("<tr>" + "".join(cells) + "</tr>")
-    return "<table><thead><tr>" + header_html + "</tr></thead><tbody>" + "".join(rows_html) + "</tbody></table>"
+    return (
+        "<table><thead><tr>"
+        + header_html
+        + "</tr></thead><tbody>"
+        + "".join(rows_html)
+        + "</tbody></table>"
+    )
 
 
 def collect_bullets(lines: list[str], start: int) -> list[str]:
@@ -577,9 +594,13 @@ def choose_port(host: str, requested: int) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Read-only MIAgent challenge file browser.")
-    parser.add_argument("--challenge", default="challenge/challenge_template", help="Challenge folder.")
+    parser.add_argument(
+        "--challenge", default="challenge/challenge_template", help="Challenge folder."
+    )
     parser.add_argument("--host", default="127.0.0.1", help="Bind host.")
-    parser.add_argument("--port", type=int, default=8765, help="Bind port. Use 0 for any free port.")
+    parser.add_argument(
+        "--port", type=int, default=8765, help="Bind port. Use 0 for any free port."
+    )
     args = parser.parse_args()
 
     challenge_dir = Path(args.challenge).expanduser()

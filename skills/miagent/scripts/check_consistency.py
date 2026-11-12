@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 """Check a MIAgent challenge folder for common traceability drift."""
 
 from __future__ import annotations
@@ -13,7 +15,6 @@ import re
 import urllib.parse
 from dataclasses import dataclass
 from typing import Optional
-
 
 EXP_ID_RE = re.compile(r"\bexp\d{3}_[A-Za-z0-9_-]+\b")
 FOCUS_ID_RE = re.compile(r"\bF\d{4,}\b")
@@ -94,7 +95,9 @@ class Finding:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("challenge_dir", help="Path to challenge/<name>.")
-    parser.add_argument("--json", action="store_true", help="Emit a structured consistency report on stdout.")
+    parser.add_argument(
+        "--json", action="store_true", help="Emit a structured consistency report on stdout."
+    )
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -125,14 +128,21 @@ def main() -> None:
     if args.seal and not any(f.level in {"WARN", "ERROR"} for f in findings):
         findings.extend(seal_discovery(challenge_dir))
     if args.json:
-        print(json.dumps({
-            "skill": "miagent",
-            "operation": "check",
-            "phase": args.phase,
-            "strict": args.strict,
-            "passed": not any(f.level == "ERROR" or (args.strict and f.level == "WARN") for f in findings),
-            "findings": [{"level": f.level, "message": f.message} for f in findings],
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "skill": "miagent",
+                    "operation": "check",
+                    "phase": args.phase,
+                    "strict": args.strict,
+                    "passed": not any(
+                        f.level == "ERROR" or (args.strict and f.level == "WARN") for f in findings
+                    ),
+                    "findings": [{"level": f.level, "message": f.message} for f in findings],
+                },
+                indent=2,
+            )
+        )
     else:
         for finding in findings:
             print(f"[{finding.level}] {finding.message}")
@@ -341,7 +351,9 @@ def check_challenge(challenge_dir: pathlib.Path) -> list[Finding]:
         elif challenge_dir.name != "challenge_template" and not meaningful_value(
             read_field(challenge_text, "MIAgent harness version")
         ):
-            findings.append(Finding("WARN", "challenge.md has no concrete MIAgent version/revision"))
+            findings.append(
+                Finding("WARN", "challenge.md has no concrete MIAgent version/revision")
+            )
         if challenge_dir.name != "challenge_template":
             for field in (
                 "objective/core problem class",
@@ -350,7 +362,9 @@ def check_challenge(challenge_dir: pathlib.Path) -> list[Finding]:
                 "metrics, metric meaning, and aggregation",
             ):
                 if not meaningful_value(read_field(challenge_text, field)):
-                    findings.append(Finding("WARN", f"challenge.md missing challenge-contract field: {field}"))
+                    findings.append(
+                        Finding("WARN", f"challenge.md missing challenge-contract field: {field}")
+                    )
     if modern_template_contract and challenge_dir.name != "challenge_template":
         check_filled_template_contracts(challenge_dir, findings)
     dashboard_path = challenge_dir / "dashboard.md"
@@ -366,7 +380,9 @@ def check_challenge(challenge_dir: pathlib.Path) -> list[Finding]:
                 "## Harness Checklist",
             )
         ):
-            findings.append(Finding("WARN", "dashboard.md has no Challenge Readiness Checklist section"))
+            findings.append(
+                Finding("WARN", "dashboard.md has no Challenge Readiness Checklist section")
+            )
         else:
             check_dashboard_readiness(
                 dashboard_text,
@@ -382,13 +398,12 @@ def check_challenge(challenge_dir: pathlib.Path) -> list[Finding]:
             result_header = set(first_markdown_table_header(result_section))
             for column in ("model / checkpoint", "training data", "evaluation data", "result"):
                 if column not in result_header:
-                    findings.append(Finding("WARN", f"dashboard.md Result Table is missing column: {column}"))
-            if (
-                challenge_dir.name != "challenge_template"
-                and (
-                    has_template_schema(dashboard_text, DASHBOARD_SCHEMA)
-                    or has_template_schema(dashboard_text, DASHBOARD_SCHEMA_V5)
-                )
+                    findings.append(
+                        Finding("WARN", f"dashboard.md Result Table is missing column: {column}")
+                    )
+            if challenge_dir.name != "challenge_template" and (
+                has_template_schema(dashboard_text, DASHBOARD_SCHEMA)
+                or has_template_schema(dashboard_text, DASHBOARD_SCHEMA_V5)
             ):
                 for row in first_markdown_table_rows(result_section):
                     result_type = clean_markdown_cell(row.get("result type", "")).lower()
@@ -426,8 +441,12 @@ def check_challenge(challenge_dir: pathlib.Path) -> list[Finding]:
                 dashboard_fields.append("Final freeze readiness")
             for field in dashboard_fields:
                 if not meaningful_value(read_field(dashboard_text, field)):
-                    findings.append(Finding("WARN", f"dashboard.md Snapshot missing long-run field: {field}"))
-        if (challenge_dir / "baselines").exists() and not dashboard_baseline_sections(dashboard_text):
+                    findings.append(
+                        Finding("WARN", f"dashboard.md Snapshot missing long-run field: {field}")
+                    )
+        if (challenge_dir / "baselines").exists() and not dashboard_baseline_sections(
+            dashboard_text
+        ):
             findings.append(Finding("WARN", "dashboard.md has no baseline sections"))
         check_dashboard_readability(dashboard_path, dashboard_text, findings)
         check_dashboard_baseline_sections(dashboard_text, findings)
@@ -455,17 +474,29 @@ def check_challenge(challenge_dir: pathlib.Path) -> list[Finding]:
 
     check_shared_visualization(challenge_dir, findings)
 
-    has_legacy_state = (challenge_dir / "status.md").exists() or (challenge_dir / "ideas.md").exists()
+    has_legacy_state = (challenge_dir / "status.md").exists() or (
+        challenge_dir / "ideas.md"
+    ).exists()
     if not (challenge_dir / "candidates.md").exists():
         if has_legacy_state:
-            findings.append(Finding("WARN", "legacy challenge is missing candidates.md; new workflow uses candidates.md, state.md, and baseline.md"))
+            findings.append(
+                Finding(
+                    "WARN",
+                    "legacy challenge is missing candidates.md; new workflow uses candidates.md, state.md, and baseline.md",
+                )
+            )
         else:
             findings.append(Finding("ERROR", "missing required file: candidates.md"))
     else:
         check_candidates(challenge_dir / "candidates.md", findings)
         check_human_steering(challenge_dir / "candidates.md", "candidates.md", findings)
         if has_legacy_state:
-            findings.append(Finding("INFO", "legacy status.md or ideas.md exists; new workflow uses candidates.md, state.md, and baseline.md"))
+            findings.append(
+                Finding(
+                    "INFO",
+                    "legacy status.md or ideas.md exists; new workflow uses candidates.md, state.md, and baseline.md",
+                )
+            )
 
     literature_path = challenge_dir / "literature.md"
     if not literature_path.exists():
@@ -517,7 +548,10 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
     text = read_text(candidates_path)
     lower = text.lower()
     active_contract = uses_active_template_contract(text)
-    latest_schema = has_template_schema(text, CANDIDATE_SCHEMA) or candidates_path.parent.name == "challenge_template"
+    latest_schema = (
+        has_template_schema(text, CANDIDATE_SCHEMA)
+        or candidates_path.parent.name == "challenge_template"
+    )
     prior_vanilla_first_schema = has_template_schema(text, CANDIDATE_SCHEMA_V9)
     prior_judgment_schema = prior_vanilla_first_schema or has_template_schema(
         text, CANDIDATE_SCHEMA_V8
@@ -533,8 +567,10 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
     ranked_schema = detail_schema or has_template_schema(text, CANDIDATE_SCHEMA_V4)
     evidence_id_schema = ranked_schema or has_template_schema(text, CANDIDATE_SCHEMA_V3)
     current_schema = evidence_id_schema or has_template_schema(text, CANDIDATE_SCHEMA_V2)
-    if active_contract and candidates_path.parent.name != "challenge_template" and not (
-        latest_schema or prior_judgment_schema or scored_comparison_schema
+    if (
+        active_contract
+        and candidates_path.parent.name != "challenge_template"
+        and not (latest_schema or prior_judgment_schema or scored_comparison_schema)
     ):
         findings.append(
             Finding(
@@ -555,7 +591,11 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
         return
     if has_candidate_detail_blocks(text):
         if "## selected workflow" not in lower:
-            findings.append(Finding("WARN", "candidates.md has candidate blocks but no Selected Workflow section"))
+            findings.append(
+                Finding(
+                    "WARN", "candidates.md has candidate blocks but no Selected Workflow section"
+                )
+            )
         required_fields: list[str] = []
         if active_contract:
             if detail_schema:
@@ -572,16 +612,18 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
                 )
             else:
                 required_fields.extend(("why it fits the challenge", "why it can reach the target"))
-                required_fields.extend((
-                    "direction summary",
-                    "key insight / novelty",
-                    "component composition / evidence",
-                    "changes needed for the challenge",
-                    "papers / evidence",
-                    "code / checkpoint",
-                    "risks",
-                    "external critic",
-                ))
+                required_fields.extend(
+                    (
+                        "direction summary",
+                        "key insight / novelty",
+                        "component composition / evidence",
+                        "changes needed for the challenge",
+                        "papers / evidence",
+                        "code / checkpoint",
+                        "risks",
+                        "external critic",
+                    )
+                )
                 if current_schema:
                     required_fields.extend(("alternative comparison", "promotion / kill criteria"))
             if not current_schema and (
@@ -599,7 +641,11 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
             required_fields.append("method summary")
         for required_field in required_fields:
             if required_field not in lower:
-                findings.append(Finding("WARN", f"candidates.md candidate blocks missing field: {required_field}"))
+                findings.append(
+                    Finding(
+                        "WARN", f"candidates.md candidate blocks missing field: {required_field}"
+                    )
+                )
         candidate_blocks = {
             normalize_baseline_title(title): body
             for title, body in markdown_subsections(text, "## ")
@@ -608,7 +654,11 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
         candidate_ranks: dict[str, int] = {}
         if active_contract and candidates_path.parent.name != "challenge_template":
             for title, body in candidate_blocks.items():
-                missing = [field for field in required_fields if not meaningful_value(read_field(body, field))]
+                missing = [
+                    field
+                    for field in required_fields
+                    if not meaningful_value(read_field(body, field))
+                ]
                 if missing:
                     findings.append(
                         Finding(
@@ -617,10 +667,15 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
                         )
                     )
                 if ranked_schema:
-                    rank = candidate_scientific_rank(read_field(body, "scientific rank / rationale"))
+                    rank = candidate_scientific_rank(
+                        read_field(body, "scientific rank / rationale")
+                    )
                     if rank is None:
                         findings.append(
-                            Finding("WARN", f"{title} scientific rank must start with a positive integer and give a rationale")
+                            Finding(
+                                "WARN",
+                                f"{title} scientific rank must start with a positive integer and give a rationale",
+                            )
                         )
                     else:
                         candidate_ranks[title] = rank
@@ -629,14 +684,22 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
                     alternatives = read_field(body, "alternative comparison")
                     if not LITERATURE_EVIDENCE_ID_RE.search(clean_markdown_cell(composition)):
                         findings.append(
-                            Finding("WARN", f"{title} component composition does not cite an L001-style literature Evidence ID")
+                            Finding(
+                                "WARN",
+                                f"{title} component composition does not cite an L001-style literature Evidence ID",
+                            )
                         )
                     if not LITERATURE_EVIDENCE_ID_RE.search(clean_markdown_cell(alternatives)):
                         findings.append(
-                            Finding("WARN", f"{title} alternative comparison does not cite an L001-style literature Evidence ID")
+                            Finding(
+                                "WARN",
+                                f"{title} alternative comparison does not cite an L001-style literature Evidence ID",
+                            )
                         )
                     feasibility_field = (
-                        "implementation feasibility / changes" if detail_schema else "code / checkpoint"
+                        "implementation feasibility / changes"
+                        if detail_schema
+                        else "code / checkpoint"
                     )
                     code_status = clean_markdown_cell(candidate_feasibility_value(body)).lower()
                     if not candidate_feasibility_status_is_valid(
@@ -651,11 +714,16 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
                         )
             if ranked_schema and candidate_ranks:
                 duplicate_ranks = sorted(
-                    rank for rank in set(candidate_ranks.values()) if list(candidate_ranks.values()).count(rank) > 1
+                    rank
+                    for rank in set(candidate_ranks.values())
+                    if list(candidate_ranks.values()).count(rank) > 1
                 )
                 if duplicate_ranks:
                     findings.append(
-                        Finding("WARN", f"candidates.md scientific ranks are not unique: {duplicate_ranks}")
+                        Finding(
+                            "WARN",
+                            f"candidates.md scientific ranks are not unique: {duplicate_ranks}",
+                        )
                     )
                 expected_ranks = set(range(1, len(candidate_blocks) + 1))
                 if set(candidate_ranks.values()) != expected_ranks:
@@ -663,38 +731,86 @@ def check_candidates(candidates_path: pathlib.Path, findings: list[Finding]) -> 
                         Finding("WARN", "candidates.md scientific ranks must be contiguous from 1")
                     )
         if active_contract and "trajectory id" not in lower:
-            findings.append(Finding("WARN", "candidates.md Selected Workflow missing trajectory ID"))
+            findings.append(
+                Finding("WARN", "candidates.md Selected Workflow missing trajectory ID")
+            )
         if active_contract and candidates_path.parent.name != "challenge_template":
             selected = markdown_section(text, "Selected Workflow")
             selected_baseline = read_field(selected, "selected baseline")
-            preferred_baseline = read_field(selected, "scientifically preferred direction before feasibility")
+            preferred_baseline = read_field(
+                selected, "scientifically preferred direction before feasibility"
+            )
             trajectory_id = read_field(selected, "trajectory ID")
             alternative_decision = read_field(selected, "alternative coverage decision")
             approval_status = clean_markdown_cell(read_field(selected, "approval status")).lower()
             proposal_only = approval_status.startswith("proposed")
-            if current_schema and meaningful_value(selected_baseline) and not meaningful_value(alternative_decision):
-                findings.append(Finding("WARN", "selected baseline has no alternative coverage decision"))
-            if evidence_id_schema and meaningful_value(selected_baseline) and not meaningful_value(preferred_baseline):
-                findings.append(Finding("WARN", "selected baseline has no scientific preference recorded before feasibility"))
-            if meaningful_value(selected_baseline) and not proposal_only and not meaningful_value(trajectory_id):
+            if (
+                current_schema
+                and meaningful_value(selected_baseline)
+                and not meaningful_value(alternative_decision)
+            ):
+                findings.append(
+                    Finding("WARN", "selected baseline has no alternative coverage decision")
+                )
+            if (
+                evidence_id_schema
+                and meaningful_value(selected_baseline)
+                and not meaningful_value(preferred_baseline)
+            ):
+                findings.append(
+                    Finding(
+                        "WARN",
+                        "selected baseline has no scientific preference recorded before feasibility",
+                    )
+                )
+            if (
+                meaningful_value(selected_baseline)
+                and not proposal_only
+                and not meaningful_value(trajectory_id)
+            ):
                 findings.append(Finding("WARN", "selected baseline has no trajectory decision"))
-            elif not proposal_only and meaningful_value(trajectory_id) and not TRAJECTORY_ID_RE.search(trajectory_id):
+            elif (
+                not proposal_only
+                and meaningful_value(trajectory_id)
+                and not TRAJECTORY_ID_RE.search(trajectory_id)
+            ):
                 findings.append(Finding("WARN", "candidates.md trajectory ID is not T0001-style"))
             selected_id = first_baseline_id(selected_baseline)
             preferred_id = first_baseline_id(preferred_baseline)
-            if evidence_id_schema and meaningful_value(selected_baseline) and meaningful_value(preferred_baseline):
-                for label, baseline_id in (("selected", selected_id), ("scientifically preferred", preferred_id)):
+            if (
+                evidence_id_schema
+                and meaningful_value(selected_baseline)
+                and meaningful_value(preferred_baseline)
+            ):
+                for label, baseline_id in (
+                    ("selected", selected_id),
+                    ("scientifically preferred", preferred_id),
+                ):
                     if not baseline_id or baseline_id not in candidate_blocks:
-                        findings.append(Finding("WARN", f"{label} direction does not name one candidate baseline"))
+                        findings.append(
+                            Finding(
+                                "WARN", f"{label} direction does not name one candidate baseline"
+                            )
+                        )
                 if not proposal_only and selected_id in candidate_blocks:
                     selected_code = candidate_feasibility_value(candidate_blocks[selected_id])
                     if not candidate_feasibility_is_verified(selected_code):
                         findings.append(
-                            Finding("WARN", f"selected direction {selected_id} lacks verified implementation/checkpoint probe evidence")
+                            Finding(
+                                "WARN",
+                                f"selected direction {selected_id} lacks verified implementation/checkpoint probe evidence",
+                            )
                         )
-                if ranked_schema and preferred_id in candidate_ranks and candidate_ranks[preferred_id] != 1:
+                if (
+                    ranked_schema
+                    and preferred_id in candidate_ranks
+                    and candidate_ranks[preferred_id] != 1
+                ):
                     findings.append(
-                        Finding("WARN", "scientifically preferred direction must be the rank-1 candidate")
+                        Finding(
+                            "WARN",
+                            "scientifically preferred direction must be the rank-1 candidate",
+                        )
                     )
                 if not ranked_schema and (
                     not proposal_only
@@ -753,33 +869,36 @@ def check_candidate_comparison(
             "status / evidence",
         ]
         if vanilla_first_schema
-        else
-        [
-            "candidate / direction",
-            "committed end-to-end composition / evidence ids",
-            "expected scientific advantage",
-            "main uncertainty",
-            "next decisive evidence",
-            "status / evidence",
-        ]
-        if judgment_schema
-        else [
-            "candidate / direction",
-            "component composition / evidence ids",
-            "expected target performance (1-5)",
-            "evidence strength (1-5)",
-            "bottleneck coverage (1-5)",
-            "novelty / complementarity (1-5)",
-            "scientific score / rank",
-            "status / evidence",
-        ]
+        else (
+            [
+                "candidate / direction",
+                "committed end-to-end composition / evidence ids",
+                "expected scientific advantage",
+                "main uncertainty",
+                "next decisive evidence",
+                "status / evidence",
+            ]
+            if judgment_schema
+            else [
+                "candidate / direction",
+                "component composition / evidence ids",
+                "expected target performance (1-5)",
+                "evidence strength (1-5)",
+                "bottleneck coverage (1-5)",
+                "novelty / complementarity (1-5)",
+                "scientific score / rank",
+                "status / evidence",
+            ]
+        )
     )
     if require_queue and "next decisive evidence" not in required_columns:
         required_columns.insert(-1, "next decisive evidence")
     header = first_markdown_table_header(section)
     for column in required_columns:
         if column not in header:
-            findings.append(Finding("WARN", f"candidates.md Candidate Comparison missing column: {column}"))
+            findings.append(
+                Finding("WARN", f"candidates.md Candidate Comparison missing column: {column}")
+            )
 
     if candidates_path.parent.name == "challenge_template":
         return
@@ -790,16 +909,32 @@ def check_candidate_comparison(
         if meaningful_value(row.get("candidate / direction", ""))
     ]
     if vanilla_first_schema and not rows:
-        findings.append(Finding("WARN", "candidates.md Candidate Comparison has no serious direction"))
+        findings.append(
+            Finding("WARN", "candidates.md Candidate Comparison has no serious direction")
+        )
     elif not vanilla_first_schema and not 3 <= len(rows) <= 6:
-        findings.append(Finding("WARN", "candidates.md Candidate Comparison needs 3-6 serious directions"))
+        findings.append(
+            Finding("WARN", "candidates.md Candidate Comparison needs 3-6 serious directions")
+        )
 
     candidates: dict[str, dict[str, object]] = {}
-    allowed_statuses = ("open", "required", "selected", "active", "supported", "rejected", "blocked")
+    allowed_statuses = (
+        "open",
+        "required",
+        "selected",
+        "active",
+        "supported",
+        "rejected",
+        "blocked",
+    )
     for row_number, row in enumerate(rows, start=1):
         candidate_id = first_baseline_id(row.get("candidate / direction", ""))
         if not candidate_id:
-            findings.append(Finding("WARN", f"Candidate Comparison row {row_number} lacks a baselineXXX direction"))
+            findings.append(
+                Finding(
+                    "WARN", f"Candidate Comparison row {row_number} lacks a baselineXXX direction"
+                )
+            )
             continue
         if candidate_id in candidates:
             findings.append(Finding("WARN", f"Candidate Comparison repeats {candidate_id}"))
@@ -808,16 +943,22 @@ def check_candidate_comparison(
         composition_field = (
             "committed end-to-end composition"
             if vanilla_first_schema
-            else "committed end-to-end composition / evidence ids"
-            if judgment_schema
-            else "component composition / evidence ids"
+            else (
+                "committed end-to-end composition / evidence ids"
+                if judgment_schema
+                else "component composition / evidence ids"
+            )
         )
         composition = row.get(composition_field, "")
         evidence_ids = set(LITERATURE_EVIDENCE_ID_RE.findall(clean_markdown_cell(composition)))
         if not meaningful_value(composition):
-            findings.append(Finding("WARN", f"{candidate_id} lacks a committed end-to-end composition"))
+            findings.append(
+                Finding("WARN", f"{candidate_id} lacks a committed end-to-end composition")
+            )
         elif not vanilla_first_schema and not evidence_ids:
-            findings.append(Finding("WARN", f"{candidate_id} composition needs L001-style literature evidence"))
+            findings.append(
+                Finding("WARN", f"{candidate_id} composition needs L001-style literature evidence")
+            )
         total: Optional[int] = None
         rank: Optional[int] = None
         if judgment_schema:
@@ -851,13 +992,19 @@ def check_candidate_comparison(
             for field in score_fields:
                 score = candidate_rating(row.get(field, ""))
                 if score is None:
-                    findings.append(Finding("WARN", f"{candidate_id} {field} must be an integer from 1 to 5"))
+                    findings.append(
+                        Finding("WARN", f"{candidate_id} {field} must be an integer from 1 to 5")
+                    )
                 else:
                     scores.append(score)
 
             total, rank = candidate_score_and_rank(row.get("scientific score / rank", ""))
             if total is None or rank is None:
-                findings.append(Finding("WARN", f"{candidate_id} scientific score / rank must be '<score> / <rank>'"))
+                findings.append(
+                    Finding(
+                        "WARN", f"{candidate_id} scientific score / rank must be '<score> / <rank>'"
+                    )
+                )
             elif len(scores) == 4:
                 expected_total = 2 * scores[0] + sum(scores[1:])
                 if total != expected_total:
@@ -870,12 +1017,24 @@ def check_candidate_comparison(
 
         status = clean_markdown_cell(row.get("status / evidence", "")).lower()
         if not status.startswith(allowed_statuses):
-            findings.append(Finding("WARN", f"{candidate_id} has unknown Candidate Comparison status: {status}"))
-        elif status.startswith(("supported", "rejected")) and not has_experiment_evidence_link(row.get("status / evidence", "")):
-            findings.append(Finding("WARN", f"{candidate_id} resolved status lacks comparable experiment evidence"))
-        elif judgment_schema and status.startswith(("supported", "rejected")) and not any(
-            candidate_id.lower() in href.lower() and "experiment.md" in href.lower()
-            for href in markdown_links(row.get("status / evidence", ""))
+            findings.append(
+                Finding("WARN", f"{candidate_id} has unknown Candidate Comparison status: {status}")
+            )
+        elif status.startswith(("supported", "rejected")) and not has_experiment_evidence_link(
+            row.get("status / evidence", "")
+        ):
+            findings.append(
+                Finding(
+                    "WARN", f"{candidate_id} resolved status lacks comparable experiment evidence"
+                )
+            )
+        elif (
+            judgment_schema
+            and status.startswith(("supported", "rejected"))
+            and not any(
+                candidate_id.lower() in href.lower() and "experiment.md" in href.lower()
+                for href in markdown_links(row.get("status / evidence", ""))
+            )
         ):
             findings.append(
                 Finding(
@@ -883,7 +1042,9 @@ def check_candidate_comparison(
                     f"{candidate_id} resolved status must link a comparable experiment under that candidate's baseline",
                 )
             )
-        elif status.startswith("blocked") and not verified_hard_blocker(row.get("status / evidence", "")):
+        elif status.startswith("blocked") and not verified_hard_blocker(
+            row.get("status / evidence", "")
+        ):
             findings.append(Finding("WARN", f"{candidate_id} lacks verified hard-blocker evidence"))
 
         if require_queue:
@@ -926,7 +1087,9 @@ def check_candidate_comparison(
             key=lambda item: item[0],
         )
         if any(left[1] < right[1] for left, right in zip(ordered, ordered[1:])):
-            findings.append(Finding("WARN", "Candidate Comparison rank contradicts the scientific scores"))
+            findings.append(
+                Finding("WARN", "Candidate Comparison rank contradicts the scientific scores")
+            )
 
     selected = markdown_section(text, "Selected Workflow")
     required_selection_fields = (
@@ -944,26 +1107,33 @@ def check_candidate_comparison(
             "approval status",
         )
         if vanilla_first_schema
-        else
-        (
-            "strongest unblocked direction",
-            "selected baseline",
-            "selection reason / anchor comparison",
-            "trajectory ID",
-            "approval status",
-        )
-        if judgment_schema
         else (
-            "highest-scoring unblocked direction",
-            "selected baseline",
-            "hard-blocker exception",
-            "trajectory ID",
-            "approval status",
+            (
+                "strongest unblocked direction",
+                "selected baseline",
+                "selection reason / anchor comparison",
+                "trajectory ID",
+                "approval status",
+            )
+            if judgment_schema
+            else (
+                "highest-scoring unblocked direction",
+                "selected baseline",
+                "hard-blocker exception",
+                "trajectory ID",
+                "approval status",
+            )
         )
     )
-    missing = [field for field in required_selection_fields if not meaningful_value(read_field(selected, field))]
+    missing = [
+        field
+        for field in required_selection_fields
+        if not meaningful_value(read_field(selected, field))
+    ]
     if missing:
-        findings.append(Finding("WARN", f"candidates.md Selected Workflow is incomplete: {', '.join(missing)}"))
+        findings.append(
+            Finding("WARN", f"candidates.md Selected Workflow is incomplete: {', '.join(missing)}")
+        )
         return
 
     approval_status = clean_markdown_cell(read_field(selected, "approval status")).lower()
@@ -972,9 +1142,11 @@ def check_candidate_comparison(
     preferred_field = (
         "scientifically strongest direction before feasibility"
         if scientific_selection_schema
-        else "strongest unblocked direction"
-        if judgment_schema
-        else "highest-scoring unblocked direction"
+        else (
+            "strongest unblocked direction"
+            if judgment_schema
+            else "highest-scoring unblocked direction"
+        )
     )
     preferred_id = first_baseline_id(read_field(selected, preferred_field))
 
@@ -994,9 +1166,7 @@ def check_candidate_comparison(
             findings.append(Finding("WARN", "selected baseline does not name a candidate"))
         elif not proposal_only and selected_id != preferred_id:
             preferred_status = (
-                str(candidates[preferred_id]["status"])
-                if preferred_id in candidates
-                else ""
+                str(candidates[preferred_id]["status"]) if preferred_id in candidates else ""
             )
             if not (
                 scientific_selection_schema
@@ -1008,15 +1178,22 @@ def check_candidate_comparison(
                 findings.append(
                     Finding(
                         "WARN",
-                        "selected baseline differs from the scientifically strongest direction without a verified hard blocker"
-                        if scientific_selection_schema
-                        else "selected baseline must be the strongest unblocked direction",
+                        (
+                            "selected baseline differs from the scientifically strongest direction without a verified hard blocker"
+                            if scientific_selection_schema
+                            else "selected baseline must be the strongest unblocked direction"
+                        ),
                     )
                 )
         elif not proposal_only:
             selected_status = str(candidates[selected_id]["status"])
             if not selected_status.startswith(("selected", "active", "supported")):
-                findings.append(Finding("WARN", f"selected baseline {selected_id} has unresolved status: {selected_status}"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"selected baseline {selected_id} has unresolved status: {selected_status}",
+                    )
+                )
 
         selection_reason_field = (
             "selection reason" if vanilla_first_schema else "selection reason / anchor comparison"
@@ -1024,14 +1201,14 @@ def check_candidate_comparison(
         selection_reason = read_field(selected, selection_reason_field)
         reason_ids = {
             normalize_baseline_title(candidate_id)
-            for candidate_id in BASELINE_REFERENCE_RE.findall(
-                clean_markdown_cell(selection_reason)
-            )
+            for candidate_id in BASELINE_REFERENCE_RE.findall(clean_markdown_cell(selection_reason))
         }
         if not proposal_only and selected_id and selected_id not in reason_ids:
             findings.append(Finding("WARN", "selection reason must name the selected direction"))
         if not proposal_only and len(candidates) > 1 and len(reason_ids) < 2:
-            findings.append(Finding("WARN", "selection reason must compare the strongest alternative"))
+            findings.append(
+                Finding("WARN", "selection reason must compare the strongest alternative")
+            )
         if scientific_selection_schema and not proposal_only:
             if convenience_selection_language(selection_reason):
                 findings.append(
@@ -1061,7 +1238,9 @@ def check_candidate_comparison(
             and not proposal_only
             and not LITERATURE_EVIDENCE_ID_RE.search(selection_reason)
         ):
-            findings.append(Finding("WARN", "selection reason must cite decisive literature Evidence IDs"))
+            findings.append(
+                Finding("WARN", "selection reason must cite decisive literature Evidence IDs")
+            )
         if vanilla_first_schema:
             thesis_direction = first_baseline_id(
                 read_field(selected, "pre-search thesis direction")
@@ -1073,9 +1252,7 @@ def check_candidate_comparison(
             thesis_disposition = clean_markdown_cell(
                 read_field(selected, "pre-search thesis disposition")
             ).lower()
-            if not thesis_disposition.startswith(
-                ("verify:", "refine:", "replace:", "reject:")
-            ):
+            if not thesis_disposition.startswith(("verify:", "refine:", "replace:", "reject:")):
                 findings.append(
                     Finding(
                         "WARN",
@@ -1089,32 +1266,67 @@ def check_candidate_comparison(
             if str(value["status"]).startswith(("open", "required", "selected", "active"))
             and isinstance(value["rank"], int)
         ]
-        expected_id = min(actionable, key=lambda item: int(item[1]["rank"]))[0] if actionable else ""
+        expected_id = (
+            min(actionable, key=lambda item: int(item[1]["rank"]))[0] if actionable else ""
+        )
 
         if preferred_id not in candidates:
-            findings.append(Finding("WARN", "highest-scoring unblocked direction does not name a candidate"))
+            findings.append(
+                Finding("WARN", "highest-scoring unblocked direction does not name a candidate")
+            )
         elif expected_id and preferred_id != expected_id:
-            findings.append(Finding("WARN", "highest-scoring unblocked direction contradicts Candidate Comparison rank/status"))
+            findings.append(
+                Finding(
+                    "WARN",
+                    "highest-scoring unblocked direction contradicts Candidate Comparison rank/status",
+                )
+            )
         if selected_id not in candidates:
             findings.append(Finding("WARN", "selected baseline does not name a candidate"))
         elif not proposal_only and expected_id and preferred_id and selected_id != preferred_id:
-            findings.append(Finding("WARN", "selected baseline must be the highest-scoring unblocked direction"))
+            findings.append(
+                Finding("WARN", "selected baseline must be the highest-scoring unblocked direction")
+            )
         elif not proposal_only and expected_id:
             selected_status = str(candidates[selected_id]["status"])
             if not selected_status.startswith(("selected", "active", "supported")):
-                findings.append(Finding("WARN", f"selected baseline {selected_id} has unresolved status: {selected_status}"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"selected baseline {selected_id} has unresolved status: {selected_status}",
+                    )
+                )
 
-        if expected_id and selected_id in candidates and isinstance(candidates[selected_id]["rank"], int):
+        if (
+            expected_id
+            and selected_id in candidates
+            and isinstance(candidates[selected_id]["rank"], int)
+        ):
             selected_rank = int(candidates[selected_id]["rank"])
             blocker_exception = read_field(selected, "hard-blocker exception")
-            if selected_rank == 1 and not clean_markdown_cell(blocker_exception).lower().startswith("not applicable:"):
-                findings.append(Finding("WARN", "rank-1 selection should mark the hard-blocker exception not applicable"))
+            if selected_rank == 1 and not clean_markdown_cell(blocker_exception).lower().startswith(
+                "not applicable:"
+            ):
+                findings.append(
+                    Finding(
+                        "WARN",
+                        "rank-1 selection should mark the hard-blocker exception not applicable",
+                    )
+                )
             if selected_rank > 1 and not markdown_links(blocker_exception):
-                findings.append(Finding("WARN", "selection below rank 1 must link verified hard-blocker evidence"))
+                findings.append(
+                    Finding(
+                        "WARN", "selection below rank 1 must link verified hard-blocker evidence"
+                    )
+                )
             for candidate_id, value in candidates.items():
                 rank = value["rank"]
                 status = str(value["status"])
-                if isinstance(rank, int) and rank < selected_rank and not status.startswith("blocked"):
+                if (
+                    isinstance(rank, int)
+                    and rank < selected_rank
+                    and not status.startswith("blocked")
+                ):
                     findings.append(
                         Finding(
                             "WARN",
@@ -1125,7 +1337,6 @@ def check_candidate_comparison(
     trajectory_id = read_field(selected, "trajectory ID")
     if not proposal_only and not TRAJECTORY_ID_RE.search(trajectory_id):
         findings.append(Finding("WARN", "candidates.md trajectory ID is not T0001-style"))
-
 
 
 def has_candidate_detail_blocks(text: str) -> bool:
@@ -1169,7 +1380,9 @@ def check_vanilla_first_literature(
         "memory / uncertainty boundary",
     ):
         if not meaningful_literature_evidence(read_field(thesis, field)):
-            findings.append(Finding("WARN", f"literature.md Independent Scientific Thesis is missing: {field}"))
+            findings.append(
+                Finding("WARN", f"literature.md Independent Scientific Thesis is missing: {field}")
+            )
 
     research = markdown_section(text, "Open Research Findings")
     rows = [
@@ -1178,12 +1391,19 @@ def check_vanilla_first_literature(
         if meaningful_value(row.get("evidence id", ""))
     ]
     if not rows:
-        findings.append(Finding("WARN", "literature.md has no decision-changing Open Research Findings"))
+        findings.append(
+            Finding("WARN", "literature.md has no decision-changing Open Research Findings")
+        )
     evidence_ids: set[str] = set()
     for row_number, row in enumerate(rows, start=1):
         evidence_id = clean_markdown_cell(row.get("evidence id", ""))
         if not LITERATURE_EVIDENCE_ID_RE.fullmatch(evidence_id):
-            findings.append(Finding("WARN", f"literature.md research row {row_number} lacks one L001-style Evidence ID"))
+            findings.append(
+                Finding(
+                    "WARN",
+                    f"literature.md research row {row_number} lacks one L001-style Evidence ID",
+                )
+            )
         elif evidence_id in evidence_ids:
             findings.append(Finding("WARN", f"literature.md repeats Evidence ID {evidence_id}"))
         else:
@@ -1204,7 +1424,12 @@ def check_vanilla_first_literature(
                 )
         primary_source = row.get("primary source", "")
         if meaningful_literature_evidence(primary_source) and not markdown_links(primary_source):
-            findings.append(Finding("WARN", f"literature.md {evidence_id or row_number} primary source needs an inspectable link"))
+            findings.append(
+                Finding(
+                    "WARN",
+                    f"literature.md {evidence_id or row_number} primary source needs an inspectable link",
+                )
+            )
         effect = clean_markdown_cell(row.get("effect on thesis", "")).lower().lstrip("*_")
         if meaningful_literature_evidence(effect) and not effect.startswith(
             ("verify:", "refine:", "replace:", "reject:", "uncertain:")
@@ -1225,7 +1450,9 @@ def check_vanilla_first_literature(
         "remaining scientific uncertainty",
     ):
         if not meaningful_literature_evidence(read_field(revised, field)):
-            findings.append(Finding("WARN", f"literature.md Revised Scientific Direction is missing: {field}"))
+            findings.append(
+                Finding("WARN", f"literature.md Revised Scientific Direction is missing: {field}")
+            )
     if convenience_selection_language(read_field(revised, "why this is now strongest")):
         findings.append(
             Finding(
@@ -1258,7 +1485,9 @@ def check_vanilla_first_literature(
             continue
         for field in ("evidence ids / concrete findings", "decision / remaining gap"):
             if not meaningful_literature_evidence(row.get(field, "")):
-                findings.append(Finding("WARN", f"literature.md post-search audit {area} lacks {field}"))
+                findings.append(
+                    Finding("WARN", f"literature.md post-search audit {area} lacks {field}")
+                )
 
     critic = markdown_section(text, "External Critic Summary")
     for field in (
@@ -1269,11 +1498,17 @@ def check_vanilla_first_literature(
         "rejected or deferred objections",
     ):
         if not meaningful_literature_evidence(read_field(critic, field)):
-            findings.append(Finding("WARN", f"literature.md External Critic Summary is missing: {field}"))
+            findings.append(
+                Finding("WARN", f"literature.md External Critic Summary is missing: {field}")
+            )
     critic_report = clean_markdown_cell(read_field(critic, "critic report"))
     if meaningful_value(critic_report):
         if "anticipated" in critic_report.lower() or "not run yet" in critic_report.lower():
-            findings.append(Finding("WARN", "literature.md records an anticipated rather than completed critic pass"))
+            findings.append(
+                Finding(
+                    "WARN", "literature.md records an anticipated rather than completed critic pass"
+                )
+            )
         elif critic_report.lower().startswith("blocked:"):
             findings.append(
                 Finding(
@@ -1282,7 +1517,9 @@ def check_vanilla_first_literature(
                 )
             )
         elif not markdown_links(critic_report):
-            findings.append(Finding("WARN", "literature.md critic report must link the completed critic report"))
+            findings.append(
+                Finding("WARN", "literature.md critic report must link the completed critic report")
+            )
         for href in markdown_links(critic_report):
             check_local_link(literature_path, href, findings, "literature.md critic report")
 
@@ -1299,16 +1536,17 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
             if section not in text:
                 findings.append(Finding("WARN", f"literature.md missing section: {section[3:]}"))
         return
-    latest_schema = has_template_schema(text, LITERATURE_SCHEMA) or literature_path.parent.name == "challenge_template"
+    latest_schema = (
+        has_template_schema(text, LITERATURE_SCHEMA)
+        or literature_path.parent.name == "challenge_template"
+    )
     if latest_schema:
         check_vanilla_first_literature(literature_path, text, findings)
         return
     prior_latest_schema = has_template_schema(text, LITERATURE_SCHEMA_V6)
     prior_current_schema = prior_latest_schema or has_template_schema(text, LITERATURE_SCHEMA_V5)
     evidence_id_schema = (
-        latest_schema
-        or prior_current_schema
-        or has_template_schema(text, LITERATURE_SCHEMA_V4)
+        latest_schema or prior_current_schema or has_template_schema(text, LITERATURE_SCHEMA_V4)
     )
     current_schema = evidence_id_schema or has_template_schema(text, LITERATURE_SCHEMA_V3)
     v2_schema = has_template_schema(text, LITERATURE_SCHEMA_V2)
@@ -1356,9 +1594,11 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
     required_anchors = (
         "organizer baselines and model/data assumptions",
         "strongest reproducible exact/close-task pipelines",
-        "applicable miagent methods, pretrained assets, and prior-run evidence"
-        if latest_schema or prior_current_schema
-        else "task-specific miagent skill and prior-run evidence",
+        (
+            "applicable miagent methods, pretrained assets, and prior-run evidence"
+            if latest_schema or prior_current_schema
+            else "task-specific miagent skill and prior-run evidence"
+        ),
     )
     required_search_lenses = (
         "exact-task / domain anchor",
@@ -1383,11 +1623,15 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
     if current_schema:
         for anchor in required_anchors:
             if anchor not in lower:
-                findings.append(Finding("WARN", f"literature.md missing challenge anchor area: {anchor}"))
+                findings.append(
+                    Finding("WARN", f"literature.md missing challenge anchor area: {anchor}")
+                )
     elif v2_schema:
         for area in v2_required_coverage:
             if area not in lower:
-                findings.append(Finding("WARN", f"literature.md missing search coverage area: {area}"))
+                findings.append(
+                    Finding("WARN", f"literature.md missing search coverage area: {area}")
+                )
     elif "## Search Coverage Evidence" not in text:
         findings.append(
             Finding(
@@ -1408,10 +1652,7 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
         for row in first_markdown_table_rows(decomposition)
         if meaningful_value(row.get(component_field, ""))
     ]
-    components = [
-        clean_markdown_cell(row.get(component_field, ""))
-        for row in decomposition_rows
-    ]
+    components = [clean_markdown_cell(row.get(component_field, "")) for row in decomposition_rows]
     if not components:
         findings.append(Finding("WARN", "literature.md has no decomposed challenge problems"))
         return
@@ -1443,9 +1684,7 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
             )
         )
         missing = [
-            field
-            for field in decomposition_fields
-            if not meaningful_value(row.get(field, ""))
+            field for field in decomposition_fields if not meaningful_value(row.get(field, ""))
         ]
         if missing:
             findings.append(
@@ -1471,7 +1710,9 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
         for anchor in required_anchors:
             row = anchor_rows.get(anchor)
             if row is None:
-                findings.append(Finding("WARN", f"literature.md missing challenge anchor evidence: {anchor}"))
+                findings.append(
+                    Finding("WARN", f"literature.md missing challenge anchor evidence: {anchor}")
+                )
                 continue
             missing = [
                 field
@@ -1508,7 +1749,9 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
         for area in v2_required_coverage:
             row = coverage_rows.get(area)
             if row is None:
-                findings.append(Finding("WARN", f"literature.md missing search coverage evidence: {area}"))
+                findings.append(
+                    Finding("WARN", f"literature.md missing search coverage evidence: {area}")
+                )
                 continue
             missing = [
                 field
@@ -1539,7 +1782,9 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
         body = component_blocks.get(component.lower())
         if body is None:
             findings.append(
-                Finding("WARN", f"literature.md has no search evidence block for component: {component}")
+                Finding(
+                    "WARN", f"literature.md has no search evidence block for component: {component}"
+                )
             )
             continue
         initial_analysis_header = (
@@ -1578,13 +1823,13 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
             for lens, lens_rows in rows_by_lens.items():
                 for row_number, row in enumerate(lens_rows, start=1):
                     evidence_fields = [
-                            "component-specific abstract search target",
-                            "method / family",
-                            "year / venue",
-                            "concrete primary evidence",
-                            "paper / primary source",
-                            "official implementation + weights / pretraining / license",
-                            "transfer fit / component decision",
+                        "component-specific abstract search target",
+                        "method / family",
+                        "year / venue",
+                        "concrete primary evidence",
+                        "paper / primary source",
+                        "official implementation + weights / pretraining / license",
+                        "transfer fit / component decision",
                     ]
                     if evidence_id_schema:
                         evidence_fields.insert(0, "evidence id")
@@ -1611,13 +1856,19 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                                 )
                             )
                         elif evidence_id_text in evidence_ids:
-                            findings.append(Finding("WARN", f"literature.md repeats Evidence ID {evidence_id_text}"))
+                            findings.append(
+                                Finding(
+                                    "WARN", f"literature.md repeats Evidence ID {evidence_id_text}"
+                                )
+                            )
                         else:
                             evidence_ids.add(evidence_id_text)
                         disposition = clean_markdown_cell(
                             row.get("transfer fit / component decision", "")
                         ).lower()
-                        if meaningful_literature_evidence(disposition) and not disposition.startswith(
+                        if meaningful_literature_evidence(
+                            disposition
+                        ) and not disposition.startswith(
                             ("candidate:", "control:", "support:", "reject:")
                         ):
                             findings.append(
@@ -1626,9 +1877,11 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                                     f"literature.md {evidence_id_text or component} needs candidate/control/support/reject disposition",
                                 )
                             )
-                        if "foundation / pretraining" in lens and disposition.startswith(
-                            ("candidate:", "control:")
-                        ) and not actionable_pretraining_row(row):
+                        if (
+                            "foundation / pretraining" in lens
+                            and disposition.startswith(("candidate:", "control:"))
+                            and not actionable_pretraining_row(row)
+                        ):
                             findings.append(
                                 Finding(
                                     "WARN",
@@ -1636,7 +1889,8 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                                 )
                             )
                     if (
-                        lens in {
+                        lens
+                        in {
                             "general cv abstract-task frontier",
                             "general vision foundation / pretraining",
                             "medical or task-family foundation / pretraining",
@@ -1650,12 +1904,17 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                                 f"literature.md {component} {lens} row {row_number} does not cite a consulted skills/vision-foundation index",
                             )
                         )
-                    if not missing and lens in {
-                        "general cv abstract-task frontier",
-                        "general vision foundation / pretraining",
-                        "medical or task-family foundation / pretraining",
-                        "citation / related-work expansion",
-                    } and weak_frontier_search_row(row):
+                    if (
+                        not missing
+                        and lens
+                        in {
+                            "general cv abstract-task frontier",
+                            "general vision foundation / pretraining",
+                            "medical or task-family foundation / pretraining",
+                            "citation / related-work expansion",
+                        }
+                        and weak_frontier_search_row(row)
+                    ):
                         findings.append(
                             Finding(
                                 "WARN",
@@ -1701,7 +1960,9 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                 if meaningful_value(row.get("concrete method / finding", ""))
             ]
             if not rows:
-                findings.append(Finding("WARN", f"literature.md {component} has no concrete search findings"))
+                findings.append(
+                    Finding("WARN", f"literature.md {component} has no concrete search findings")
+                )
                 continue
             for row_number, row in enumerate(rows, start=1):
                 missing = [
@@ -1731,7 +1992,9 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                 row = rows.get(category)
                 if row is None:
                     findings.append(
-                        Finding("WARN", f"literature.md {component} missing search category: {category}")
+                        Finding(
+                            "WARN", f"literature.md {component} missing search category: {category}"
+                        )
                     )
                     continue
                 missing = [
@@ -1750,7 +2013,7 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
                             "WARN",
                             f"literature.md {component} has incomplete {category}; missing: {', '.join(missing)}",
                         )
-                        )
+                    )
 
     if current_schema:
         covered_lenses = {
@@ -1761,7 +2024,9 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
         for lens in required_search_lenses:
             if lens not in covered_lenses:
                 findings.append(
-                    Finding("WARN", f"literature.md has no component evidence for search lens: {lens}")
+                    Finding(
+                        "WARN", f"literature.md has no component evidence for search lens: {lens}"
+                    )
                 )
         check_current_method_evidence(current_method_rows, components, findings)
         if prior_latest_schema:
@@ -1808,13 +2073,13 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
             )
         if evidence_id_schema:
             referenced_ids = set(
-                LITERATURE_EVIDENCE_ID_RE.findall(
-                    clean_markdown_cell(row.get("evidence ids", ""))
-                )
+                LITERATURE_EVIDENCE_ID_RE.findall(clean_markdown_cell(row.get("evidence ids", "")))
             )
             if not referenced_ids:
                 findings.append(
-                    Finding("WARN", f"literature.md Unified Direction {component} cites no Evidence IDs")
+                    Finding(
+                        "WARN", f"literature.md Unified Direction {component} cites no Evidence IDs"
+                    )
                 )
             for evidence_id in sorted(referenced_ids - evidence_ids):
                 findings.append(
@@ -1839,12 +2104,18 @@ def check_literature(literature_path: pathlib.Path, findings: list[Finding]) -> 
     )
     for field in critic_fields:
         if not meaningful_literature_evidence(read_field(critic, field)):
-            findings.append(Finding("WARN", f"literature.md External Critic Summary is missing: {field}"))
+            findings.append(
+                Finding("WARN", f"literature.md External Critic Summary is missing: {field}")
+            )
     critic_report = clean_markdown_cell(read_field(critic, "critic report"))
     critic_lower = critic_report.lower()
     if meaningful_value(critic_report):
         if "anticipated" in critic_lower or "not run yet" in critic_lower:
-            findings.append(Finding("WARN", "literature.md records an anticipated rather than completed critic pass"))
+            findings.append(
+                Finding(
+                    "WARN", "literature.md records an anticipated rather than completed critic pass"
+                )
+            )
         elif not markdown_links(critic_report) and not critic_lower.startswith("blocked:"):
             findings.append(
                 Finding(
@@ -1871,9 +2142,7 @@ def check_literature_candidate_composition(
             for row in first_markdown_table_rows(
                 markdown_section(literature_text, "Open Research Findings")
             )
-            if LITERATURE_EVIDENCE_ID_RE.fullmatch(
-                clean_markdown_cell(row.get("evidence id", ""))
-            )
+            if LITERATURE_EVIDENCE_ID_RE.fullmatch(clean_markdown_cell(row.get("evidence id", "")))
         }
         candidate_evidence_text = "\n".join(
             (
@@ -1884,7 +2153,9 @@ def check_literature_candidate_composition(
         referenced_ids = set(LITERATURE_EVIDENCE_ID_RE.findall(candidate_evidence_text))
         for evidence_id in sorted(referenced_ids - known_ids):
             findings.append(
-                Finding("WARN", f"candidates.md references unknown literature Evidence ID {evidence_id}")
+                Finding(
+                    "WARN", f"candidates.md references unknown literature Evidence ID {evidence_id}"
+                )
             )
         return
 
@@ -1916,31 +2187,29 @@ def check_literature_candidate_composition(
     known_ids = {
         clean_markdown_cell(row.get("evidence id", ""))
         for row in evidence_rows
-        if LITERATURE_EVIDENCE_ID_RE.fullmatch(
-            clean_markdown_cell(row.get("evidence id", ""))
-        )
+        if LITERATURE_EVIDENCE_ID_RE.fullmatch(clean_markdown_cell(row.get("evidence id", "")))
     }
     required_composition_ids = {
         clean_markdown_cell(row.get("evidence id", ""))
         for row in evidence_rows
-        if clean_markdown_cell(row.get("transfer fit / component decision", "")).lower().startswith(
-            "candidate:"
-        )
+        if clean_markdown_cell(row.get("transfer fit / component decision", ""))
+        .lower()
+        .startswith("candidate:")
     }
     required_control_ids = {
         clean_markdown_cell(row.get("evidence id", ""))
         for row in evidence_rows
-        if clean_markdown_cell(row.get("transfer fit / component decision", "")).lower().startswith(
-            "control:"
-        )
+        if clean_markdown_cell(row.get("transfer fit / component decision", ""))
+        .lower()
+        .startswith("control:")
     }
 
     composition_ids: set[str] = set()
     comparison_ids: set[str] = set()
-    candidate_comparison_schema = has_template_schema(
-        candidates_text, CANDIDATE_SCHEMA_V8
-    ) or has_template_schema(candidates_text, CANDIDATE_SCHEMA_V7) or has_template_schema(
-        candidates_text, CANDIDATE_SCHEMA_V6
+    candidate_comparison_schema = (
+        has_template_schema(candidates_text, CANDIDATE_SCHEMA_V8)
+        or has_template_schema(candidates_text, CANDIDATE_SCHEMA_V7)
+        or has_template_schema(candidates_text, CANDIDATE_SCHEMA_V6)
     )
     if candidate_comparison_schema:
         candidate_rows = [
@@ -2000,26 +2269,26 @@ def check_literature_candidate_composition(
         )
     for evidence_id in sorted((composition_ids | comparison_ids) - known_ids):
         findings.append(
-            Finding("WARN", f"candidates.md references unknown literature Evidence ID {evidence_id}")
+            Finding(
+                "WARN", f"candidates.md references unknown literature Evidence ID {evidence_id}"
+            )
         )
 
     challenge_text = read_text(challenge_dir / "challenge.md")
     pretrained_policy = clean_markdown_cell(
         read_field(challenge_text, "pretrained model policy")
     ).lower()
-    pretraining_allowed = (
-        any(term in pretrained_policy for term in ("allow", "permit"))
-        and not any(term in pretrained_policy for term in ("prohibit", "forbid", "not allowed"))
-    )
+    pretraining_allowed = any(
+        term in pretrained_policy for term in ("allow", "permit")
+    ) and not any(term in pretrained_policy for term in ("prohibit", "forbid", "not allowed"))
     if pretraining_allowed:
         carried_pretrained = [
             row
             for row in evidence_rows
-            if "foundation / pretraining"
-            in clean_markdown_cell(row.get("search lens", "")).lower()
-            and clean_markdown_cell(
-                row.get("transfer fit / component decision", "")
-            ).lower().startswith(("candidate:", "control:"))
+            if "foundation / pretraining" in clean_markdown_cell(row.get("search lens", "")).lower()
+            and clean_markdown_cell(row.get("transfer fit / component decision", ""))
+            .lower()
+            .startswith(("candidate:", "control:"))
             and actionable_pretraining_row(row)
         ]
         if not carried_pretrained:
@@ -2066,9 +2335,8 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
         )
     latest_stop_check = has_template_schema(text, STATE_SCHEMA_V6)
     prior_current_stop_check = has_template_schema(text, STATE_SCHEMA_V5)
-    legacy_stop_check = (
-        has_template_schema(text, STATE_SCHEMA_V4)
-        or has_template_schema(text, STATE_SCHEMA_V3)
+    legacy_stop_check = has_template_schema(text, STATE_SCHEMA_V4) or has_template_schema(
+        text, STATE_SCHEMA_V3
     )
     legacy_stop_gate = has_template_schema(text, STATE_SCHEMA_V2) or "## Stop Gate" in text
     if latest_stop_check or prior_current_stop_check:
@@ -2081,8 +2349,10 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
         stop_section = "## Auto-Continue Decision"
     else:
         stop_section = "## Stop Check"
-    if current_contract and state_path.parent.name != "challenge_template" and not (
-        latest_stop_check or prior_current_stop_check
+    if (
+        current_contract
+        and state_path.parent.name != "challenge_template"
+        and not (latest_stop_check or prior_current_stop_check)
     ):
         findings.append(
             Finding(
@@ -2119,7 +2389,11 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
         if section not in text:
             findings.append(Finding("WARN", f"state.md missing section: {section[3:]}"))
     focus_sections = [section for section in required_sections if section != stop_section]
-    if current_contract and state_path.parent.name != "challenge_template" and all(section in text for section in focus_sections):
+    if (
+        current_contract
+        and state_path.parent.name != "challenge_template"
+        and all(section in text for section in focus_sections)
+    ):
         focus_fields = (
             "focus ID / last changed",
             "active baseline / direction",
@@ -2136,51 +2410,94 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
         )
         missing = [field for field in focus_fields if not meaningful_value(read_field(text, field))]
         if missing:
-            findings.append(Finding("WARN", f"state.md Current Focus Contract is incomplete: {', '.join(missing)}"))
+            findings.append(
+                Finding(
+                    "WARN", f"state.md Current Focus Contract is incomplete: {', '.join(missing)}"
+                )
+            )
         focus_value = read_field(text, "focus ID / last changed")
         if meaningful_value(focus_value) and not FOCUS_ID_RE.search(focus_value):
             findings.append(Finding("WARN", "state.md current focus has no F0001-style ID"))
         authority = read_field(text, "focus decision / authority")
         if meaningful_value(authority) and not TRAJECTORY_ID_RE.search(authority):
-            findings.append(Finding("WARN", "state.md current focus authority has no T0001-style trajectory ID"))
+            findings.append(
+                Finding("WARN", "state.md current focus authority has no T0001-style trajectory ID")
+            )
         exploration_item = read_field(text, "baseline exploration item")
         if (
             meaningful_value(exploration_item)
             and not clean_markdown_cell(exploration_item).lower().startswith("not applicable:")
             and not EXPLORATION_ID_RE.search(exploration_item)
         ):
-            findings.append(Finding("WARN", "state.md current focus has no E001-style Exploration View ID"))
+            findings.append(
+                Finding("WARN", "state.md current focus has no E001-style Exploration View ID")
+            )
         active_baseline = read_field(text, "active baseline / direction")
         if meaningful_value(active_baseline) and not first_baseline_id(active_baseline):
-            findings.append(Finding("WARN", "state.md active baseline does not name a baselineXXX direction"))
+            findings.append(
+                Finding("WARN", "state.md active baseline does not name a baselineXXX direction")
+            )
         if latest_stop_check or prior_current_stop_check:
             next_move_rows = first_markdown_table_rows(
                 markdown_section(text, "Next Move Shortlist")
             )
             if len(next_move_rows) > 3:
-                findings.append(Finding("WARN", "state.md has more than three Next Move Shortlist items"))
+                findings.append(
+                    Finding("WARN", "state.md has more than three Next Move Shortlist items")
+                )
             for row in next_move_rows:
                 scope = clean_markdown_cell(row.get("scope", "")).lower()
                 item = clean_markdown_cell(row.get("item", ""))
                 trigger = row.get("trigger / why it may be next", "")
                 if scope not in ("internal", "external"):
-                    findings.append(Finding("WARN", f"state.md Next Move has unknown scope: {scope or '<missing>'}"))
+                    findings.append(
+                        Finding(
+                            "WARN", f"state.md Next Move has unknown scope: {scope or '<missing>'}"
+                        )
+                    )
                 elif scope == "internal" and not EXPLORATION_ID_RE.search(item):
-                    findings.append(Finding("WARN", f"state.md internal Next Move lacks an E001-style ID: {item}"))
+                    findings.append(
+                        Finding(
+                            "WARN", f"state.md internal Next Move lacks an E001-style ID: {item}"
+                        )
+                    )
                 elif scope == "external" and not first_baseline_id(item):
-                    findings.append(Finding("WARN", f"state.md external Next Move lacks a baselineXXX direction: {item}"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            f"state.md external Next Move lacks a baselineXXX direction: {item}",
+                        )
+                    )
                 if not meaningful_value(trigger):
-                    findings.append(Finding("WARN", f"state.md Next Move {item or '<unknown>'} is missing its trigger"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            f"state.md Next Move {item or '<unknown>'} is missing its trigger",
+                        )
+                    )
         else:
-            next_focus_rows = first_markdown_table_rows(markdown_section(text, "Next Focus Candidates"))
+            next_focus_rows = first_markdown_table_rows(
+                markdown_section(text, "Next Focus Candidates")
+            )
             if len(next_focus_rows) > 3:
-                findings.append(Finding("WARN", "state.md has more than three Next Focus Candidates"))
+                findings.append(
+                    Finding("WARN", "state.md has more than three Next Focus Candidates")
+                )
             for row in next_focus_rows:
                 item = clean_markdown_cell(row.get("exploration item", ""))
                 if not EXPLORATION_ID_RE.search(item):
-                    findings.append(Finding("WARN", f"state.md Next Focus Candidate lacks an E001-style ID: {item}"))
+                    findings.append(
+                        Finding(
+                            "WARN", f"state.md Next Focus Candidate lacks an E001-style ID: {item}"
+                        )
+                    )
                 if not meaningful_value(row.get("why it may be next", "")):
-                    findings.append(Finding("WARN", f"state.md Next Focus Candidate {item or '<unknown>'} is missing: why it may be next"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            f"state.md Next Focus Candidate {item or '<unknown>'} is missing: why it may be next",
+                        )
+                    )
         knowledge_rows = first_markdown_table_rows(
             markdown_section(text, "Current Knowledge Needed For This Focus")
         )
@@ -2203,7 +2520,9 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
 
         history_rows = first_markdown_table_rows(markdown_section(text, "How We Got Here"))
         if len(history_rows) > 4:
-            findings.append(Finding("WARN", "state.md How We Got Here has more than four causal milestones"))
+            findings.append(
+                Finding("WARN", "state.md How We Got Here has more than four causal milestones")
+            )
 
         if (latest_stop_check or prior_current_stop_check) and "## Stop Check" in text:
             stop_fields = (
@@ -2215,19 +2534,29 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                 "next action or stop rationale",
                 "continuity proof before yield",
             )
-            missing = [field for field in stop_fields if not meaningful_value(read_field(text, field))]
+            missing = [
+                field for field in stop_fields if not meaningful_value(read_field(text, field))
+            ]
             if missing:
-                findings.append(Finding("WARN", f"state.md Stop Check is incomplete: {', '.join(missing)}"))
+                findings.append(
+                    Finding("WARN", f"state.md Stop Check is incomplete: {', '.join(missing)}")
+                )
 
             result_check = read_field(text, "result versus target / validity")
             if meaningful_value(result_check) and not markdown_links(result_check):
-                findings.append(Finding("WARN", "state.md Stop Check result/target judgment needs an evidence link"))
+                findings.append(
+                    Finding(
+                        "WARN", "state.md Stop Check result/target judgment needs an evidence link"
+                    )
+                )
 
             compute_check = read_field(text, "compute used / remaining / decision")
             if meaningful_value(compute_check) and (
                 "dashboard.md" not in compute_check or not markdown_links(compute_check)
             ):
-                findings.append(Finding("WARN", "state.md Stop Check compute judgment must link dashboard.md"))
+                findings.append(
+                    Finding("WARN", "state.md Stop Check compute judgment must link dashboard.md")
+                )
 
             evidence_fields = (
                 "internal-loop exit gate",
@@ -2236,13 +2565,19 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
             for field in evidence_fields:
                 value = read_field(text, field)
                 value_lower = clean_markdown_cell(value).lower()
-                if meaningful_value(value) and not value_lower.startswith("not required:") and not (
-                    markdown_links(value)
-                    or EXPLORATION_ID_RE.search(value)
-                    or LITERATURE_EVIDENCE_ID_RE.search(value)
+                if (
+                    meaningful_value(value)
+                    and not value_lower.startswith("not required:")
+                    and not (
+                        markdown_links(value)
+                        or EXPLORATION_ID_RE.search(value)
+                        or LITERATURE_EVIDENCE_ID_RE.search(value)
+                    )
                 ):
                     findings.append(
-                        Finding("WARN", f"state.md Stop Check {field} needs linked or ID-based evidence")
+                        Finding(
+                            "WARN", f"state.md Stop Check {field} needs linked or ID-based evidence"
+                        )
                     )
 
             internal_gate = clean_markdown_cell(read_field(text, "internal-loop exit gate")).lower()
@@ -2253,8 +2588,14 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                 ("external-loop", external_gate, read_field(text, "external-loop exit gate")),
             ):
                 if meaningful_value(value) and not value.startswith(allowed_gate_statuses):
-                    findings.append(Finding("WARN", f"state.md {label} exit gate has unknown judgment: {value}"))
-                elif latest_stop_check and value.startswith("not required:") and not valid_stop_gate_exemption(raw_value):
+                    findings.append(
+                        Finding("WARN", f"state.md {label} exit gate has unknown judgment: {value}")
+                    )
+                elif (
+                    latest_stop_check
+                    and value.startswith("not required:")
+                    and not valid_stop_gate_exemption(raw_value)
+                ):
                     findings.append(
                         Finding(
                             "WARN",
@@ -2262,10 +2603,17 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                         )
                     )
             internal_raw = read_field(text, "internal-loop exit gate")
-            if meaningful_value(internal_raw) and not internal_gate.startswith("not required:") and (
-                "baseline" not in internal_gate or not markdown_links(internal_raw)
+            if (
+                meaningful_value(internal_raw)
+                and not internal_gate.startswith("not required:")
+                and ("baseline" not in internal_gate or not markdown_links(internal_raw))
             ):
-                findings.append(Finding("WARN", "state.md internal-loop exit gate must link the active baseline Exploration View"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        "state.md internal-loop exit gate must link the active baseline Exploration View",
+                    )
+                )
             if internal_gate.startswith("passed:"):
                 baseline_id = first_baseline_id(read_field(text, "active baseline / direction"))
                 baseline_path = state_path.parent / "baselines" / baseline_id / "baseline.md"
@@ -2289,7 +2637,9 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                             if latest_baseline
                             else ("open", "planned", "active")
                         ):
-                            unresolved_items.append(clean_markdown_cell(row.get("id", "")) or "<unknown>")
+                            unresolved_items.append(
+                                clean_markdown_cell(row.get("id", "")) or "<unknown>"
+                            )
                     if unresolved_items:
                         findings.append(
                             Finding(
@@ -2299,10 +2649,17 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                             )
                         )
             external_raw = read_field(text, "external-loop exit gate")
-            if meaningful_value(external_raw) and not external_gate.startswith("not required:") and (
-                "candidates.md" not in external_gate or not markdown_links(external_raw)
+            if (
+                meaningful_value(external_raw)
+                and not external_gate.startswith("not required:")
+                and ("candidates.md" not in external_gate or not markdown_links(external_raw))
             ):
-                findings.append(Finding("WARN", "state.md external-loop exit gate must link candidates.md Candidate Comparison"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        "state.md external-loop exit gate must link candidates.md Candidate Comparison",
+                    )
+                )
             if external_gate.startswith("passed:"):
                 candidates_path = state_path.parent / "candidates.md"
                 candidates_text = read_text(candidates_path)
@@ -2323,7 +2680,9 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                     ):
                         candidate_id = first_baseline_id(row.get("candidate / direction", ""))
                         status = clean_markdown_cell(row.get("status / evidence", "")).lower()
-                        if candidate_id and status.startswith(("open", "required", "selected", "active")):
+                        if candidate_id and status.startswith(
+                            ("open", "required", "selected", "active")
+                        ):
                             unresolved_candidates.append(candidate_id)
                 if unresolved_candidates:
                     findings.append(
@@ -2347,36 +2706,80 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                 "completed: final evaluation",
             )
             if meaningful_value(judgment) and not judgment.startswith(allowed_verdicts):
-                findings.append(Finding("WARN", f"state.md has unknown Stop Check judgment: {judgment}"))
+                findings.append(
+                    Finding("WARN", f"state.md has unknown Stop Check judgment: {judgment}")
+                )
 
-            if judgment.startswith("continue: internal") and not internal_gate.startswith("continue:"):
-                findings.append(Finding("WARN", "continue: internal requires an open internal-loop exit gate"))
+            if judgment.startswith("continue: internal") and not internal_gate.startswith(
+                "continue:"
+            ):
+                findings.append(
+                    Finding("WARN", "continue: internal requires an open internal-loop exit gate")
+                )
             if judgment.startswith("continue: external"):
                 if not internal_gate.startswith("passed:"):
-                    findings.append(Finding("WARN", "continue: external requires the internal-loop exit gate to pass"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            "continue: external requires the internal-loop exit gate to pass",
+                        )
+                    )
                 if not external_gate.startswith("continue:"):
-                    findings.append(Finding("WARN", "continue: external requires an open external-loop exit gate"))
+                    findings.append(
+                        Finding(
+                            "WARN", "continue: external requires an open external-loop exit gate"
+                        )
+                    )
 
             if judgment.startswith(("ready to freeze:", "completed: final evaluation")):
                 if not TRAJECTORY_ID_RE.search(judgment_raw):
-                    findings.append(Finding("WARN", "state.md ready/completed Stop Check judgment has no T0001-style trajectory ID"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            "state.md ready/completed Stop Check judgment has no T0001-style trajectory ID",
+                        )
+                    )
                 if "trajectory.md" not in judgment or not markdown_links(
                     read_field(text, "agent judgment / last checked")
                 ):
-                    findings.append(Finding("WARN", "state.md ready/completed Stop Check judgment must link trajectory.md"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            "state.md ready/completed Stop Check judgment must link trajectory.md",
+                        )
+                    )
 
-            if judgment.startswith(("paused: human", "stopped: human")) and not TRAJECTORY_ID_RE.search(judgment_raw):
-                findings.append(Finding("WARN", "state.md human pause/stop judgment has no T0001-style trajectory ID"))
+            if judgment.startswith(
+                ("paused: human", "stopped: human")
+            ) and not TRAJECTORY_ID_RE.search(judgment_raw):
+                findings.append(
+                    Finding(
+                        "WARN",
+                        "state.md human pause/stop judgment has no T0001-style trajectory ID",
+                    )
+                )
 
             if judgment.startswith(("continue:", "blocked:")):
-                continuity = clean_markdown_cell(read_field(text, "continuity proof before yield")).lower()
+                continuity = clean_markdown_cell(
+                    read_field(text, "continuity proof before yield")
+                ).lower()
                 if meaningful_value(continuity) and "heartbeat" not in continuity:
-                    findings.append(Finding("WARN", "state.md continuing/blocked run has no heartbeat in continuity proof"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            "state.md continuing/blocked run has no heartbeat in continuity proof",
+                        )
+                    )
                 if meaningful_value(continuity) and (
                     "dashboard.md" not in continuity
                     or not markdown_links(read_field(text, "continuity proof before yield"))
                 ):
-                    findings.append(Finding("WARN", "state.md continuing/blocked run continuity proof must link dashboard.md"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            "state.md continuing/blocked run continuity proof must link dashboard.md",
+                        )
+                    )
         elif "## Auto-Continue Decision" in text:
             loop_fields = (
                 "loop decision / last checked",
@@ -2385,9 +2788,16 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                 "next automatic action",
                 "freeze / stop authority",
             )
-            missing = [field for field in loop_fields if not meaningful_value(read_field(text, field))]
+            missing = [
+                field for field in loop_fields if not meaningful_value(read_field(text, field))
+            ]
             if missing:
-                findings.append(Finding("WARN", f"state.md Auto-Continue Decision is incomplete: {', '.join(missing)}"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"state.md Auto-Continue Decision is incomplete: {', '.join(missing)}",
+                    )
+                )
             decision = clean_markdown_cell(read_field(text, "loop decision / last checked")).lower()
             allowed_decisions = (
                 "continue: internal",
@@ -2399,11 +2809,25 @@ def check_state(state_path: pathlib.Path, findings: list[Finding]) -> None:
                 "completed: final evaluation",
             )
             if meaningful_value(decision) and not decision.startswith(allowed_decisions):
-                findings.append(Finding("WARN", f"state.md has unknown Auto-Continue Decision: {decision}"))
-            if decision.startswith(("ready to freeze", "paused: human", "stopped: human", "completed: final evaluation")):
+                findings.append(
+                    Finding("WARN", f"state.md has unknown Auto-Continue Decision: {decision}")
+                )
+            if decision.startswith(
+                (
+                    "ready to freeze",
+                    "paused: human",
+                    "stopped: human",
+                    "completed: final evaluation",
+                )
+            ):
                 authority = read_field(text, "freeze / stop authority")
                 if meaningful_value(authority) and not TRAJECTORY_ID_RE.search(authority):
-                    findings.append(Finding("WARN", "state.md freeze/stop authority has no T0001-style trajectory ID"))
+                    findings.append(
+                        Finding(
+                            "WARN",
+                            "state.md freeze/stop authority has no T0001-style trajectory ID",
+                        )
+                    )
     experiment_refs = set(re.findall(r"\bexp\d{3}\b", text, re.IGNORECASE))
     if len(experiment_refs) > 12:
         findings.append(
@@ -2437,13 +2861,16 @@ def check_current_state(
     )
     missing = [field for field in focus_fields if not meaningful_value(read_field(text, field))]
     if missing:
-        findings.append(Finding("WARN", f"state.md Current Focus is incomplete: {', '.join(missing)}"))
+        findings.append(
+            Finding("WARN", f"state.md Current Focus is incomplete: {', '.join(missing)}")
+        )
     if not read_field(text, "active human constraint").strip():
-        findings.append(Finding("WARN", "state.md Current Focus is incomplete: active human constraint"))
+        findings.append(
+            Finding("WARN", "state.md Current Focus is incomplete: active human constraint")
+        )
     human_constraint = read_field(text, "active human constraint")
-    if (
-        clean_markdown_cell(human_constraint).lower() != "none"
-        and not markdown_links(human_constraint)
+    if clean_markdown_cell(human_constraint).lower() != "none" and not markdown_links(
+        human_constraint
     ):
         findings.append(
             Finding("WARN", "state.md active human constraint must link its owning artifact")
@@ -2463,7 +2890,9 @@ def check_current_state(
     stage = clean_markdown_cell(read_field(text, "stage / active direction")).lower()
     if any(name in stage for name in ("implementation", "internal", "monitoring", "freeze")):
         if not first_baseline_id(stage):
-            findings.append(Finding("WARN", "state.md active stage does not name its baselineXXX direction"))
+            findings.append(
+                Finding("WARN", "state.md active stage does not name its baselineXXX direction")
+            )
 
     internal_pointer = read_field(text, "internal exploration pointer")
     internal_lower = clean_markdown_cell(internal_pointer).lower()
@@ -2473,13 +2902,20 @@ def check_current_state(
         if not EXPLORATION_ID_RE.search(internal_pointer):
             findings.append(Finding("WARN", "state.md internal pointer has no E001-style item"))
         if "baseline" not in internal_lower or not markdown_links(internal_pointer):
-            findings.append(Finding("WARN", "state.md internal pointer must link the active baseline Internal Exploration"))
+            findings.append(
+                Finding(
+                    "WARN",
+                    "state.md internal pointer must link the active baseline Internal Exploration",
+                )
+            )
 
     external_pointer = read_field(text, "external exploration pointer")
     external_lower = clean_markdown_cell(external_pointer).lower()
     if meaningful_value(external_pointer) and not external_lower.startswith("not applicable:"):
         if not first_baseline_id(external_pointer):
-            findings.append(Finding("WARN", "state.md external pointer has no baselineXXX direction"))
+            findings.append(
+                Finding("WARN", "state.md external pointer has no baselineXXX direction")
+            )
         if "candidates.md" not in external_lower or not markdown_links(external_pointer):
             findings.append(Finding("WARN", "state.md external pointer must link candidates.md"))
 
@@ -2516,13 +2952,19 @@ def check_current_state(
             continue
         if value.startswith("continue:"):
             if not markdown_links(raw):
-                findings.append(Finding("WARN", f"state.md {field} needs a linked exploration owner"))
+                findings.append(
+                    Finding("WARN", f"state.md {field} needs a linked exploration owner")
+                )
             if (
                 scope == "internal"
                 and not EXPLORATION_ID_RE.search(raw)
                 and not awaiting_first_baseline_result(state_path, stage, internal_lower)
             ):
-                findings.append(Finding("WARN", "state.md continuing internal potential needs an E001-style item"))
+                findings.append(
+                    Finding(
+                        "WARN", "state.md continuing internal potential needs an E001-style item"
+                    )
+                )
         elif value.startswith("no likely large gain:"):
             if any(
                 phrase in value
@@ -2536,7 +2978,10 @@ def check_current_state(
                 )
             ):
                 findings.append(
-                    Finding("WARN", f"state.md {field} uses an operational event as scientific exit evidence")
+                    Finding(
+                        "WARN",
+                        f"state.md {field} uses an operational event as scientific exit evidence",
+                    )
                 )
         elif value.startswith("not applicable:") and not valid_current_potential_exemption(raw):
             findings.append(
@@ -2566,10 +3011,18 @@ def check_current_state(
     )
     if meaningful_value(verdict) and not verdict.startswith(allowed_verdicts):
         findings.append(Finding("WARN", f"state.md has unknown scientific judgment: {verdict}"))
-    if verdict.startswith("continue: internal") and not potentials["internal"][1].startswith("continue:"):
-        findings.append(Finding("WARN", "continue: internal requires continuing internal improvement potential"))
-    if verdict.startswith("continue: external") and not potentials["external"][1].startswith("continue:"):
-        findings.append(Finding("WARN", "continue: external requires continuing external improvement potential"))
+    if verdict.startswith("continue: internal") and not potentials["internal"][1].startswith(
+        "continue:"
+    ):
+        findings.append(
+            Finding("WARN", "continue: internal requires continuing internal improvement potential")
+        )
+    if verdict.startswith("continue: external") and not potentials["external"][1].startswith(
+        "continue:"
+    ):
+        findings.append(
+            Finding("WARN", "continue: external requires continuing external improvement potential")
+        )
     if verdict.startswith(("ready to freeze:", "completed: final evaluation")):
         for scope, (raw, value) in potentials.items():
             if not (
@@ -2577,15 +3030,22 @@ def check_current_state(
                 or (value.startswith("not applicable:") and valid_current_potential_exemption(raw))
             ):
                 findings.append(
-                    Finding("WARN", f"ready to freeze requires resolved {scope} improvement potential")
+                    Finding(
+                        "WARN", f"ready to freeze requires resolved {scope} improvement potential"
+                    )
                 )
         if not TRAJECTORY_ID_RE.search(verdict_raw) or not markdown_links(
             read_field(text, current_judgment_field)
         ):
-            findings.append(Finding("WARN", "ready/completed judgment must link a T0001 trajectory decision"))
+            findings.append(
+                Finding("WARN", "ready/completed judgment must link a T0001 trajectory decision")
+            )
+
 
 def awaiting_first_baseline_result(
-    state_path: pathlib.Path, stage: str, internal_pointer: str,
+    state_path: pathlib.Path,
+    stage: str,
+    internal_pointer: str,
 ) -> bool:
     """Allow the workflow's unseeded exploration state only before any Outcome."""
     if not internal_pointer.startswith("not yet created:"):
@@ -2639,13 +3099,17 @@ def check_state_steering_refs(
             continue
         match = re.fullmatch(r"\[[^\]]+\]\(([^)]+)\)", value.strip())
         if not match:
-            findings.append(Finding("WARN", f"state.md active steering source is not a Markdown link: {value}"))
+            findings.append(
+                Finding("WARN", f"state.md active steering source is not a Markdown link: {value}")
+            )
             continue
         href = match.group(1)
         path_part, _, _ = href.partition("#")
         target = (state_path.parent / path_part).resolve()
         if not target.is_file():
-            findings.append(Finding("WARN", f"state.md active steering target does not exist: {path_part}"))
+            findings.append(
+                Finding("WARN", f"state.md active steering target does not exist: {path_part}")
+            )
 
 
 def check_trajectory(trajectory_path: pathlib.Path, findings: list[Finding]) -> None:
@@ -2665,7 +3129,9 @@ def check_trajectory(trajectory_path: pathlib.Path, findings: list[Finding]) -> 
     }
     header = set(first_markdown_table_header(section))
     for column in sorted(required - header):
-        findings.append(Finding("WARN", f"trajectory.md Decision Trace is missing column: {column}"))
+        findings.append(
+            Finding("WARN", f"trajectory.md Decision Trace is missing column: {column}")
+        )
     seen: set[str] = set()
     is_raw_template = trajectory_path.parent.name == "challenge_template"
     for row in first_markdown_table_rows(section):
@@ -2673,7 +3139,9 @@ def check_trajectory(trajectory_path: pathlib.Path, findings: list[Finding]) -> 
         if not meaningful_value(trajectory_id):
             continue
         if not TRAJECTORY_ID_RE.fullmatch(trajectory_id):
-            findings.append(Finding("WARN", f"trajectory.md has invalid decision ID: {trajectory_id}"))
+            findings.append(
+                Finding("WARN", f"trajectory.md has invalid decision ID: {trajectory_id}")
+            )
         if trajectory_id in seen:
             findings.append(Finding("WARN", f"trajectory.md repeats decision ID: {trajectory_id}"))
         seen.add(trajectory_id)
@@ -2716,7 +3184,12 @@ def check_trajectory_references(
     state_path = challenge_dir / "state.md"
     if state_path.is_file():
         state_text = read_text(state_path)
-        references.append(("state.md focus decision / authority", read_field(state_text, "focus decision / authority")))
+        references.append(
+            (
+                "state.md focus decision / authority",
+                read_field(state_text, "focus decision / authority"),
+            )
+        )
         steering = markdown_section(state_text, "Active Human Steering")
         for row_number, row in enumerate(first_markdown_table_rows(steering), start=1):
             references.append(
@@ -2738,7 +3211,9 @@ def check_trajectory_references(
     candidates_path = challenge_dir / "candidates.md"
     if candidates_path.is_file():
         selected = markdown_section(read_text(candidates_path), "Selected Workflow")
-        references.append(("candidates.md Selected Workflow", read_field(selected, "trajectory ID")))
+        references.append(
+            ("candidates.md Selected Workflow", read_field(selected, "trajectory ID"))
+        )
 
     for baseline_path in collect_baseline_files(challenge_dir):
         for experiment_path in collect_experiment_files(baseline_path.parent):
@@ -2793,7 +3268,9 @@ def check_local_link(
         return
     candidate = pathlib.Path(path_text)
     if candidate.is_absolute():
-        findings.append(Finding("WARN", f"{label} uses a non-portable absolute Markdown link: {path_text}"))
+        findings.append(
+            Finding("WARN", f"{label} uses a non-portable absolute Markdown link: {path_text}")
+        )
         return
     target = (source_path.parent / candidate).resolve()
     if not target.exists():
@@ -2807,13 +3284,23 @@ def check_shared_visualization(
     shared_dir = challenge_dir / "shared" / "visualization"
     contract = shared_dir / "README.md"
     if not contract.is_file():
-        findings.append(Finding("WARN", "missing shared visualization contract: shared/visualization/README.md"))
+        findings.append(
+            Finding("WARN", "missing shared visualization contract: shared/visualization/README.md")
+        )
         return
     if challenge_dir.name == "challenge_template":
         return
     contract_text = read_text(contract)
-    required_fields = ("task type", "implementation", "canonical command", "normalized inputs", "validated by")
-    missing = [field for field in required_fields if not meaningful_value(read_field(contract_text, field))]
+    required_fields = (
+        "task type",
+        "implementation",
+        "canonical command",
+        "normalized inputs",
+        "validated by",
+    )
+    missing = [
+        field for field in required_fields if not meaningful_value(read_field(contract_text, field))
+    ]
     if missing:
         findings.append(
             Finding(
@@ -2849,9 +3336,7 @@ def check_shared_visualization(
         return
 
     function_names = {
-        node.name
-        for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        node.name for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     }
     missing_api = sorted({"visualize_case", "visualize_run"} - function_names)
     if missing_api:
@@ -2861,7 +3346,10 @@ def check_shared_visualization(
                 f"shared visualization is missing callable API: {', '.join(missing_api)}",
             )
         )
-    if 'if __name__ == "__main__"' not in implementation_text and "if __name__ == '__main__'" not in implementation_text:
+    if (
+        'if __name__ == "__main__"' not in implementation_text
+        and "if __name__ == '__main__'" not in implementation_text
+    ):
         findings.append(Finding("WARN", "shared visualization has no canonical CLI entry point"))
 
 
@@ -2962,7 +3450,10 @@ def check_promotion_obligations(
         candidate_id = first_baseline_id(row.get("candidate", ""))
         if not candidate_id or candidate_id not in candidate_blocks:
             findings.append(
-                Finding("WARN", f"Promotion Obligation row {row_number} does not name one candidate baseline")
+                Finding(
+                    "WARN",
+                    f"Promotion Obligation row {row_number} does not name one candidate baseline",
+                )
             )
             continue
         if candidate_id in obligation_rows:
@@ -2973,21 +3464,34 @@ def check_promotion_obligations(
         status = clean_markdown_cell(row.get("status", "")).lower()
         evidence = row.get("evidence", "")
         if not meaningful_value(probe):
-            findings.append(Finding("WARN", f"Promotion Obligation {candidate_id} has no bounded probe"))
+            findings.append(
+                Finding("WARN", f"Promotion Obligation {candidate_id} has no bounded probe")
+            )
         if not status.startswith(allowed_statuses):
-            findings.append(Finding("WARN", f"Promotion Obligation {candidate_id} has unknown status: {status}"))
+            findings.append(
+                Finding("WARN", f"Promotion Obligation {candidate_id} has unknown status: {status}")
+            )
             continue
         if status.startswith("rejected") and not has_experiment_evidence_link(evidence):
             findings.append(
-                Finding("WARN", f"Promotion Obligation {candidate_id} rejection lacks linked experiment evidence")
+                Finding(
+                    "WARN",
+                    f"Promotion Obligation {candidate_id} rejection lacks linked experiment evidence",
+                )
             )
         elif status.startswith("blocked") and not verified_hard_blocker(status, evidence):
             findings.append(
-                Finding("WARN", f"Promotion Obligation {candidate_id} lacks verified hard-blocker evidence")
+                Finding(
+                    "WARN",
+                    f"Promotion Obligation {candidate_id} lacks verified hard-blocker evidence",
+                )
             )
         elif status.startswith("promoted") and not markdown_links(evidence):
             findings.append(
-                Finding("WARN", f"Promotion Obligation {candidate_id} promotion lacks a decision or experiment link")
+                Finding(
+                    "WARN",
+                    f"Promotion Obligation {candidate_id} promotion lacks a decision or experiment link",
+                )
             )
 
     selected_rank = candidate_ranks.get(selected_id)
@@ -3062,7 +3566,9 @@ def candidate_feasibility_is_blocked(
     )
 
 
-def check_dashboard_readability(dashboard_path: pathlib.Path, dashboard_text: str, findings: list[Finding]) -> None:
+def check_dashboard_readability(
+    dashboard_path: pathlib.Path, dashboard_text: str, findings: list[Finding]
+) -> None:
     lines = dashboard_text.splitlines()
     if len(lines) > DASHBOARD_SOFT_MAX_LINES:
         findings.append(
@@ -3108,7 +3614,9 @@ def check_dashboard_readiness(
     )
     rows = first_markdown_table_rows(section)
     labels = " ".join(
-        clean_markdown_cell(row.get("gate", "") or row.get("component", "") or row.get("item", "")).lower()
+        clean_markdown_cell(
+            row.get("gate", "") or row.get("component", "") or row.get("item", "")
+        ).lower()
         for row in rows
     )
     required_concepts = {
@@ -3121,19 +3629,21 @@ def check_dashboard_readiness(
     }
     for label, alternatives in required_concepts.items():
         if not any(term in labels for term in alternatives):
-            findings.append(Finding("WARN", f"dashboard.md readiness checklist is missing: {label}"))
+            findings.append(
+                Finding("WARN", f"dashboard.md readiness checklist is missing: {label}")
+            )
     if require_status:
         for row in rows:
             gate = clean_markdown_cell(
                 row.get("gate", "") or row.get("component", "") or row.get("item", "")
             )
             status = (
-                row.get("status / evidence", "")
-                or row.get("status", "")
-                or row.get("answer", "")
+                row.get("status / evidence", "") or row.get("status", "") or row.get("answer", "")
             )
             if gate and not meaningful_value(status):
-                findings.append(Finding("WARN", f"dashboard.md readiness gate has no status/evidence: {gate}"))
+                findings.append(
+                    Finding("WARN", f"dashboard.md readiness gate has no status/evidence: {gate}")
+                )
             elif gate and not gate_is_complete(status):
                 findings.append(
                     Finding(
@@ -3160,7 +3670,9 @@ def check_dashboard_baseline_sections(dashboard_text: str, findings: list[Findin
 
     for baseline, body in sections:
         for subsection_name, row_limit in DASHBOARD_BASELINE_SUBSECTION_ROW_LIMITS.items():
-            subsection = markdown_subsection(body, f"### {subsection_name}") or markdown_subsection(body, f"#### {subsection_name}")
+            subsection = markdown_subsection(body, f"### {subsection_name}") or markdown_subsection(
+                body, f"#### {subsection_name}"
+            )
             if not subsection:
                 continue
             rows = count_markdown_table_data_rows(subsection)
@@ -3171,18 +3683,28 @@ def check_dashboard_baseline_sections(dashboard_text: str, findings: list[Findin
                         f"{baseline} {subsection_name} has {rows} rows; target at most {row_limit}",
                     )
                 )
-        completed = markdown_subsection(body, "### Important Completed Runs") or markdown_subsection(body, "#### Important Completed Runs")
+        completed = markdown_subsection(
+            body, "### Important Completed Runs"
+        ) or markdown_subsection(body, "#### Important Completed Runs")
         if completed:
             header = first_markdown_table_header(completed)
             if header and "result" not in header:
-                findings.append(Finding("WARN", f"{baseline} Important Completed Runs table is missing a Result column"))
-        active = markdown_subsection(body, "### Active Jobs") or markdown_subsection(body, "#### Active Jobs")
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"{baseline} Important Completed Runs table is missing a Result column",
+                    )
+                )
+        active = markdown_subsection(body, "### Active Jobs") or markdown_subsection(
+            body, "#### Active Jobs"
+        )
         if active:
             exp_ids = [
-                first_exp_id(" | ".join(row.values()))
-                for row in first_markdown_table_rows(active)
+                first_exp_id(" | ".join(row.values())) for row in first_markdown_table_rows(active)
             ]
-            duplicates = sorted({exp_id for exp_id in exp_ids if exp_id and exp_ids.count(exp_id) > 1})
+            duplicates = sorted(
+                {exp_id for exp_id in exp_ids if exp_id and exp_ids.count(exp_id) > 1}
+            )
             if duplicates:
                 findings.append(
                     Finding(
@@ -3198,7 +3720,9 @@ def check_dashboard_baseline_sections(dashboard_text: str, findings: list[Findin
             and has_template_schema(dashboard_text, DASHBOARD_SCHEMA)
             and "launch group" not in first_markdown_table_header(planned)
         ):
-            findings.append(Finding("WARN", f"{baseline} Planned Jobs is missing a Launch Group column"))
+            findings.append(
+                Finding("WARN", f"{baseline} Planned Jobs is missing a Launch Group column")
+            )
 
 
 def check_dashboard_single_active_baseline(
@@ -3225,7 +3749,9 @@ def check_dashboard_single_active_baseline(
         )
 
 
-def check_dashboard_planned_experiments(challenge_dir: pathlib.Path, dashboard_text: str, findings: list[Finding]) -> None:
+def check_dashboard_planned_experiments(
+    challenge_dir: pathlib.Path, dashboard_text: str, findings: list[Finding]
+) -> None:
     current_baseline = ""
     in_planned = False
     header: list[str] = []
@@ -3272,22 +3798,34 @@ def check_dashboard_planned_experiments(challenge_dir: pathlib.Path, dashboard_t
             continue
         lower_cells = [cell.lower() for cell in cells]
         record_headers = {"experiment record", "record", "intent"}
-        if ("exp" in lower_cells or "run" in lower_cells or "experiment" in lower_cells) and record_headers.intersection(lower_cells):
+        if (
+            "exp" in lower_cells or "run" in lower_cells or "experiment" in lower_cells
+        ) and record_headers.intersection(lower_cells):
             header = lower_cells
             continue
         exp = first_exp_id(" | ".join(cells))
         if not exp:
             continue
         record = next(
-            (cell_by_header(cells, header, name) for name in record_headers if cell_by_header(cells, header, name)),
+            (
+                cell_by_header(cells, header, name)
+                for name in record_headers
+                if cell_by_header(cells, header, name)
+            ),
             "",
         )
         if not meaningful_value(record):
-            findings.append(Finding("WARN", f"{exp} planned experiment has no experiment.md path in dashboard.md"))
+            findings.append(
+                Finding(
+                    "WARN", f"{exp} planned experiment has no experiment.md path in dashboard.md"
+                )
+            )
             continue
         record_path = resolve_dashboard_path(challenge_dir, current_baseline, record)
         if record_path and not record_path.exists():
-            findings.append(Finding("WARN", f"{exp} dashboard experiment path does not exist: {record}"))
+            findings.append(
+                Finding("WARN", f"{exp} dashboard experiment path does not exist: {record}")
+            )
         elif record_path:
             check_experiment_admission(exp, record_path, challenge_dir, findings)
 
@@ -3323,7 +3861,9 @@ def check_experiment_admission(
         "question / hypothesis": read_field(text, "question / hypothesis"),
         "intervention": read_field(text, "intervention"),
         "reasoning / alternatives": read_field(text, "reasoning / alternatives"),
-        "distinguishing evidence / falsifier": read_field(text, "distinguishing evidence / falsifier"),
+        "distinguishing evidence / falsifier": read_field(
+            text, "distinguishing evidence / falsifier"
+        ),
         "training / evaluation contract": read_field(text, "training / evaluation contract"),
         "execution / evidence plan": read_field(text, "execution / evidence plan"),
     }
@@ -3357,18 +3897,22 @@ def check_experiment_admission(
     requires_exploration_id = (
         not completed_outcome
         and "smoke" not in exp_id.lower()
-        and (
-            not state_uses_living_exploration
-            or bool(EXPLORATION_ID_RE.search(internal_pointer))
-        )
+        and (not state_uses_living_exploration or bool(EXPLORATION_ID_RE.search(internal_pointer)))
     )
     if (
         meaningful_value(focus_value)
         and requires_exploration_id
         and not EXPLORATION_ID_RE.search(focus_value)
     ):
-        findings.append(Finding("WARN", f"{exp_id} Intent has no E001-style Internal Exploration ID"))
-    if enforce_current_focus and experiment_focus and state_focus and experiment_focus.group(0) != state_focus.group(0):
+        findings.append(
+            Finding("WARN", f"{exp_id} Intent has no E001-style Internal Exploration ID")
+        )
+    if (
+        enforce_current_focus
+        and experiment_focus
+        and state_focus
+        and experiment_focus.group(0) != state_focus.group(0)
+    ):
         findings.append(
             Finding(
                 "WARN",
@@ -3377,7 +3921,9 @@ def check_experiment_admission(
         )
     focus_remainder = FOCUS_ID_RE.sub("", EXPLORATION_ID_RE.sub("", focus_value))
     if experiment_focus and not re.sub(r"[\W_]+", "", focus_remainder):
-        findings.append(Finding("WARN", f"{exp_id} Intent names its focus but has no relevance or evidence"))
+        findings.append(
+            Finding("WARN", f"{exp_id} Intent names its focus but has no relevance or evidence")
+        )
 
 
 def check_dashboard_key_visualizations(
@@ -3402,9 +3948,9 @@ def check_dashboard_key_visualizations(
             )
 
     for baseline, body in baseline_sections:
-        completed = markdown_subsection(body, "### Important Completed Runs") or markdown_subsection(
-            body, "#### Important Completed Runs"
-        )
+        completed = markdown_subsection(
+            body, "### Important Completed Runs"
+        ) or markdown_subsection(body, "#### Important Completed Runs")
         baseline_dir = challenge_dir / "baselines" / baseline
         viewer_exp_ids = {
             viewer.parent.name
@@ -3447,7 +3993,9 @@ def check_dashboard_key_visualizations(
 
             record_text = read_text(record_path)
             outcome = markdown_section(record_text, "Outcome")
-            if not outcome or not meaningful_value(read_field(outcome, "result status / limitations")):
+            if not outcome or not meaningful_value(
+                read_field(outcome, "result status / limitations")
+            ):
                 missing_outcome.append(exp_id)
                 continue
             viewer_path = record_path.parent / "result_viewer.html"
@@ -3455,7 +4003,9 @@ def check_dashboard_key_visualizations(
                 read_field(outcome, "result viewer / diagnostic evidence")
             )
             answer_lower = viewer_answer.lower()
-            waived = ("waiv" in answer_lower and "human" in answer_lower) or "no prediction" in answer_lower
+            waived = (
+                "waiv" in answer_lower and "human" in answer_lower
+            ) or "no prediction" in answer_lower
             if not viewer_path.is_file() and not waived:
                 missing_viewer.append(exp_id)
 
@@ -3465,7 +4015,12 @@ def check_dashboard_key_visualizations(
             ("missing result_viewer.html or an explicit human waiver", missing_viewer),
         ):
             if exp_ids:
-                findings.append(Finding("WARN", f"{baseline}: Important Completed Runs {label}: {', '.join(exp_ids)}"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"{baseline}: Important Completed Runs {label}: {', '.join(exp_ids)}",
+                    )
+                )
 
 
 def markdown_subsections(markdown: str, marker: str) -> list[tuple[str, str]]:
@@ -3497,7 +4052,9 @@ def markdown_subsection(markdown: str, header: str) -> str:
     return markdown[start : start + len(header) + match.start()]
 
 
-def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, findings: list[Finding]) -> None:
+def check_baseline(
+    challenge_dir: pathlib.Path, baseline_path: pathlib.Path, findings: list[Finding]
+) -> None:
     baseline_text = read_text(baseline_path)
     baseline_dir = baseline_path.parent
     baseline_id = read_field(baseline_text, "baseline id") or baseline_dir.name
@@ -3505,7 +4062,9 @@ def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, fin
     check_human_steering(baseline_path, f"{baseline_id} baseline.md", findings)
     experiment_files = collect_experiment_files(baseline_dir)
     for experiment_path in experiment_files:
-        check_human_steering(experiment_path, f"{baseline_id} {experiment_path.parent.name} experiment.md", findings)
+        check_human_steering(
+            experiment_path, f"{baseline_id} {experiment_path.parent.name} experiment.md", findings
+        )
         check_experiment_admission(
             experiment_path.parent.name,
             experiment_path,
@@ -3520,7 +4079,9 @@ def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, fin
         "## Visualization And Logging For Human Inspection",
         "## Implementation Acceptance",
     )
-    missing_sections = [section[3:] for section in required_sections if section not in baseline_text]
+    missing_sections = [
+        section[3:] for section in required_sections if section not in baseline_text
+    ]
     if missing_sections:
         findings.append(
             Finding(
@@ -3563,7 +4124,9 @@ def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, fin
                 )
             )
         missing_direction = [
-            field for field in direction_fields if not meaningful_value(read_field(baseline_text, field))
+            field
+            for field in direction_fields
+            if not meaningful_value(read_field(baseline_text, field))
         ]
         if missing_direction:
             findings.append(
@@ -3574,8 +4137,12 @@ def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, fin
             )
         has_decision_result = any(
             clean_markdown_cell(
-                read_field(markdown_section(read_text(path), "Outcome"), "result status / limitations")
-            ).lower().startswith("completed")
+                read_field(
+                    markdown_section(read_text(path), "Outcome"), "result status / limitations"
+                )
+            )
+            .lower()
+            .startswith("completed")
             for path in experiment_files
         )
         check_exploration_map(
@@ -3595,11 +4162,18 @@ def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, fin
         )
         if not outcome:
             if metric_files:
-                findings.append(Finding("WARN", f"{exp_id} has metric files but no Outcome; complete result analysis"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"{exp_id} has metric files but no Outcome; complete result analysis",
+                    )
+                )
             continue
         raw_status = clean_markdown_cell(read_field(outcome, "result status / limitations"))
         status_lower = raw_status.lower()
-        has_valid_outcome = status_lower == "completed" or status_lower.startswith("completed with limitations")
+        has_valid_outcome = status_lower == "completed" or status_lower.startswith(
+            "completed with limitations"
+        )
         if not has_valid_outcome:
             if meaningful_value(raw_status):
                 findings.append(
@@ -3609,20 +4183,31 @@ def check_baseline(challenge_dir: pathlib.Path, baseline_path: pathlib.Path, fin
                     )
                 )
             else:
-                findings.append(Finding("WARN", f"{exp_id} has an empty Outcome section; omit it until a valid result exists"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"{exp_id} has an empty Outcome section; omit it until a valid result exists",
+                    )
+                )
             continue
         required_outcome_fields = {
             "execution / artifact evidence": read_field(outcome, "execution / artifact evidence"),
-            "actual model / checkpoint / config": read_field(outcome, "actual model / checkpoint / config"),
+            "actual model / checkpoint / config": read_field(
+                outcome, "actual model / checkpoint / config"
+            ),
             "actual training data / split": read_field(outcome, "actual training data / split"),
             "actual evaluation provenance": read_field(outcome, "actual evaluation provenance"),
             "numerical result / comparison": read_field(outcome, "numerical result / comparison"),
-            "result viewer / diagnostic evidence": read_field(outcome, "result viewer / diagnostic evidence"),
+            "result viewer / diagnostic evidence": read_field(
+                outcome, "result viewer / diagnostic evidence"
+            ),
             "interpretation / uncertainty": read_field(outcome, "interpretation / uncertainty"),
             "decision / next action": read_field(outcome, "decision / next action"),
         }
         if current_experiment_schema:
-            required_outcome_fields["downstream updates"] = read_field(outcome, "downstream updates")
+            required_outcome_fields["downstream updates"] = read_field(
+                outcome, "downstream updates"
+            )
         else:
             required_outcome_fields.update(
                 {
@@ -3693,22 +4278,37 @@ def check_exploration_map(
                     )
             if item and not EXPLORATION_ID_RE.fullmatch(item):
                 findings.append(
-                    Finding("WARN", f"{baseline_id} Internal Exploration item lacks an E001-style ID: {item}")
+                    Finding(
+                        "WARN",
+                        f"{baseline_id} Internal Exploration item lacks an E001-style ID: {item}",
+                    )
                 )
             judgment_lower = judgment.lower()
-            if judgment_lower.startswith(("testing", "adopted", "rejected by evidence")) and not has_experiment_evidence_link(evidence):
+            if judgment_lower.startswith(
+                ("testing", "adopted", "rejected by evidence")
+            ) and not has_experiment_evidence_link(evidence):
                 findings.append(
-                    Finding("WARN", f"{baseline_id} Internal Exploration {item} needs linked experiment evidence")
+                    Finding(
+                        "WARN",
+                        f"{baseline_id} Internal Exploration {item} needs linked experiment evidence",
+                    )
                 )
             if judgment_lower.startswith("not worthwhile now:") and not meaningful_value(
                 judgment.split(":", 1)[1] if ":" in judgment else ""
             ):
                 findings.append(
-                    Finding("WARN", f"{baseline_id} Internal Exploration {item} needs a causal judgment")
+                    Finding(
+                        "WARN", f"{baseline_id} Internal Exploration {item} needs a causal judgment"
+                    )
                 )
-            if judgment_lower.startswith("blocked:") and not verified_hard_blocker(judgment, evidence):
+            if judgment_lower.startswith("blocked:") and not verified_hard_blocker(
+                judgment, evidence
+            ):
                 findings.append(
-                    Finding("WARN", f"{baseline_id} Internal Exploration {item} lacks verified blocker evidence")
+                    Finding(
+                        "WARN",
+                        f"{baseline_id} Internal Exploration {item} lacks verified blocker evidence",
+                    )
                 )
         return
 
@@ -3724,7 +4324,9 @@ def check_exploration_map(
         .strip()
     )
     if not meaningful_value(view_text):
-        findings.append(Finding("WARN", f"{baseline_id} Exploration View has no agent-defined research agenda"))
+        findings.append(
+            Finding("WARN", f"{baseline_id} Exploration View has no agent-defined research agenda")
+        )
     rows = first_markdown_table_rows(section)
     if not rows:
         findings.append(Finding("WARN", f"{baseline_id} Exploration View has no items"))
@@ -3745,15 +4347,40 @@ def check_exploration_map(
         status = clean_markdown_cell(row.get("status", ""))
         evidence = row.get("evidence / experiment", "")
         if not EXPLORATION_ID_RE.search(item):
-            findings.append(Finding("WARN", f"{baseline_id} Exploration View item lacks an E001-style ID: {item}"))
-        for field, value in (("Area / Question", area), ("Why It Could Matter", row.get("why it could matter", "")), ("Priority / Trigger", row.get("priority / trigger", "")), ("Status", status)):
+            findings.append(
+                Finding(
+                    "WARN", f"{baseline_id} Exploration View item lacks an E001-style ID: {item}"
+                )
+            )
+        for field, value in (
+            ("Area / Question", area),
+            ("Why It Could Matter", row.get("why it could matter", "")),
+            ("Priority / Trigger", row.get("priority / trigger", "")),
+            ("Status", status),
+        ):
             if not meaningful_value(value):
-                findings.append(Finding("WARN", f"{baseline_id} Exploration View {item or '<unknown>'} is missing: {field}"))
+                findings.append(
+                    Finding(
+                        "WARN",
+                        f"{baseline_id} Exploration View {item or '<unknown>'} is missing: {field}",
+                    )
+                )
         status_lower = status.lower()
         if meaningful_value(status) and not status_lower.startswith(allowed):
-            findings.append(Finding("WARN", f"{baseline_id} Exploration View {item} has unknown status: {status}"))
-        if status_lower.startswith(("planned", "active", "supported", "rejected")) and not meaningful_value(evidence):
-            findings.append(Finding("WARN", f"{baseline_id} Exploration View {item} needs evidence or an experiment link for status {status}"))
+            findings.append(
+                Finding(
+                    "WARN", f"{baseline_id} Exploration View {item} has unknown status: {status}"
+                )
+            )
+        if status_lower.startswith(
+            ("planned", "active", "supported", "rejected")
+        ) and not meaningful_value(evidence):
+            findings.append(
+                Finding(
+                    "WARN",
+                    f"{baseline_id} Exploration View {item} needs evidence or an experiment link for status {status}",
+                )
+            )
         if status_lower.startswith("blocked") and not verified_hard_blocker(status, evidence):
             findings.append(
                 Finding(
@@ -3761,8 +4388,17 @@ def check_exploration_map(
                     f"{baseline_id} Exploration View {item} lacks verified hard-blocker evidence",
                 )
             )
-        if status_lower.startswith(("deferred", "not applicable")) and ":" not in status and not meaningful_value(evidence):
-            findings.append(Finding("WARN", f"{baseline_id} Exploration View {item} needs a reason for status {status}"))
+        if (
+            status_lower.startswith(("deferred", "not applicable"))
+            and ":" not in status
+            and not meaningful_value(evidence)
+        ):
+            findings.append(
+                Finding(
+                    "WARN",
+                    f"{baseline_id} Exploration View {item} needs a reason for status {status}",
+                )
+            )
     areas = " ".join(clean_markdown_cell(row.get("area / question", "")) for row in rows).lower()
     coverage = {
         "data/domain/external data": r"\bdata\b|domain|external",
@@ -3777,7 +4413,9 @@ def check_exploration_map(
     }
     for label, pattern in coverage.items():
         if not re.search(pattern, areas):
-            findings.append(Finding("WARN", f"{baseline_id} Exploration View does not disposition: {label}"))
+            findings.append(
+                Finding("WARN", f"{baseline_id} Exploration View does not disposition: {label}")
+            )
 
 
 def check_final_freeze_readiness(
@@ -3786,9 +4424,7 @@ def check_final_freeze_readiness(
     findings: list[Finding],
 ) -> None:
     latest_dashboard = has_template_schema(dashboard_text, DASHBOARD_SCHEMA)
-    current_dashboard = latest_dashboard or has_template_schema(
-        dashboard_text, DASHBOARD_SCHEMA_V5
-    )
+    current_dashboard = latest_dashboard or has_template_schema(dashboard_text, DASHBOARD_SCHEMA_V5)
     if not current_dashboard and not (
         has_template_schema(dashboard_text, DASHBOARD_SCHEMA_V4)
         or has_template_schema(dashboard_text, DASHBOARD_SCHEMA_V3)
@@ -3799,19 +4435,25 @@ def check_final_freeze_readiness(
     readiness_lower = readiness.lower()
     run_state = clean_markdown_cell(read_field(dashboard_text, "Run state")).lower()
     run_authorization = clean_markdown_cell(read_field(dashboard_text, "Run authorization")).lower()
-    run_is_complete = run_state.startswith(("complete", "completed")) or run_authorization.startswith(
+    run_is_complete = run_state.startswith(
         ("complete", "completed")
-    )
+    ) or run_authorization.startswith(("complete", "completed"))
     if run_is_complete and not readiness_lower.startswith("ready:"):
         findings.append(Finding("WARN", "completed run has not passed Final freeze readiness"))
     if not readiness_lower.startswith("ready:"):
         return
     if not TRAJECTORY_ID_RE.search(readiness):
-        findings.append(Finding("WARN", "Final freeze readiness must cite its T0001-style trajectory decision"))
+        findings.append(
+            Finding("WARN", "Final freeze readiness must cite its T0001-style trajectory decision")
+        )
     if current_dashboard:
         canary_match = re.search(r"final-path canary:\s*(.+)$", readiness, re.IGNORECASE)
         if not canary_match:
-            findings.append(Finding("WARN", "Final freeze readiness must record the final-path train-only canary"))
+            findings.append(
+                Finding(
+                    "WARN", "Final freeze readiness must record the final-path train-only canary"
+                )
+            )
         else:
             canary = canary_match.group(1)
             if not markdown_links(canary) and not clean_markdown_cell(canary).lower().startswith(
@@ -3827,9 +4469,9 @@ def check_final_freeze_readiness(
     state_text = read_text(challenge_dir / "state.md")
     latest_state = has_template_schema(state_text, STATE_SCHEMA)
     prior_living_state = has_template_schema(state_text, STATE_SCHEMA_V7)
-    prior_current_state = has_template_schema(
-        state_text, STATE_SCHEMA_V6
-    ) or has_template_schema(state_text, STATE_SCHEMA_V5)
+    prior_current_state = has_template_schema(state_text, STATE_SCHEMA_V6) or has_template_schema(
+        state_text, STATE_SCHEMA_V5
+    )
     current_state = latest_state or prior_living_state or prior_current_state
     if not current_state:
         findings.append(Finding("WARN", f"Final freeze readiness requires state.md {STATE_SCHEMA}"))
@@ -3839,18 +4481,32 @@ def check_final_freeze_readiness(
             (
                 "agent judgment"
                 if latest_state
-                else "agent judgment / last checked"
-                if current_state
-                else "loop decision / last checked"
+                else (
+                    "agent judgment / last checked"
+                    if current_state
+                    else "loop decision / last checked"
+                )
             ),
         )
     )
     stop_verdict = stop_verdict_raw.lower()
     if not stop_verdict.startswith(("ready to freeze", "completed: final evaluation")):
-        findings.append(Finding("WARN", f"Final freeze readiness conflicts with state.md Stop Check: {stop_verdict or 'missing'}"))
-    stop_authority = stop_verdict_raw if current_state else read_field(state_text, "freeze / stop authority")
+        findings.append(
+            Finding(
+                "WARN",
+                f"Final freeze readiness conflicts with state.md Stop Check: {stop_verdict or 'missing'}",
+            )
+        )
+    stop_authority = (
+        stop_verdict_raw if current_state else read_field(state_text, "freeze / stop authority")
+    )
     if not TRAJECTORY_ID_RE.search(stop_authority):
-        findings.append(Finding("WARN", "Final freeze readiness requires state.md Stop Check authority with a T0001-style trajectory ID"))
+        findings.append(
+            Finding(
+                "WARN",
+                "Final freeze readiness requires state.md Stop Check authority with a T0001-style trajectory ID",
+            )
+        )
 
     if latest_state or prior_living_state:
         for field in ("internal improvement potential", "external improvement potential"):
@@ -3880,7 +4536,11 @@ def check_final_freeze_readiness(
                         f"Final freeze readiness requires a passed or target/human-stop exemption for {field}: {gate or 'missing'}",
                     )
                 )
-            elif latest_state and gate.startswith("not required:") and not valid_stop_gate_exemption(gate_raw):
+            elif (
+                latest_state
+                and gate.startswith("not required:")
+                and not valid_stop_gate_exemption(gate_raw)
+            ):
                 findings.append(
                     Finding(
                         "WARN",
@@ -3905,10 +4565,14 @@ def check_final_freeze_readiness(
                 )
                 if meaningful_value(row.get("candidate / direction", ""))
             ]
-            external_gate = clean_markdown_cell(read_field(state_text, "external-loop exit gate")).lower()
+            external_gate = clean_markdown_cell(
+                read_field(state_text, "external-loop exit gate")
+            ).lower()
             if not latest_state and external_gate.startswith("passed:"):
                 for row in candidate_rows:
-                    candidate_id = first_baseline_id(row.get("candidate / direction", "")) or "<unknown>"
+                    candidate_id = (
+                        first_baseline_id(row.get("candidate / direction", "")) or "<unknown>"
+                    )
                     status = clean_markdown_cell(row.get("status / evidence", "")).lower()
                     if status.startswith(("open", "required", "selected", "active")):
                         findings.append(
@@ -3923,7 +4587,9 @@ def check_final_freeze_readiness(
         read_field(dashboard_text, "Active baseline")
     )
     if not baseline_id:
-        findings.append(Finding("WARN", "Final freeze readiness has no selected baseline to verify"))
+        findings.append(
+            Finding("WARN", "Final freeze readiness has no selected baseline to verify")
+        )
         return
     if has_template_schema(candidates_text, CANDIDATE_SCHEMA):
         selected_row = next(
@@ -3959,7 +4625,10 @@ def check_final_freeze_readiness(
     baseline_path = challenge_dir / "baselines" / baseline_id / "baseline.md"
     if not baseline_path.is_file():
         findings.append(
-            Finding("WARN", f"Final freeze readiness cannot find selected baseline artifact: {baseline_id}")
+            Finding(
+                "WARN",
+                f"Final freeze readiness cannot find selected baseline artifact: {baseline_id}",
+            )
         )
         return
 
@@ -3972,11 +4641,16 @@ def check_final_freeze_readiness(
     high_priority_rows = [
         row
         for row in first_markdown_table_rows(exploration)
-        if re.search(r"\bP[01]\b", clean_markdown_cell(row.get("priority / trigger", "")), re.IGNORECASE)
+        if re.search(
+            r"\bP[01]\b", clean_markdown_cell(row.get("priority / trigger", "")), re.IGNORECASE
+        )
     ]
     if not high_priority_rows:
         findings.append(
-            Finding("WARN", f"Final freeze readiness has no P0/P1 Exploration View items in {baseline_id}")
+            Finding(
+                "WARN",
+                f"Final freeze readiness has no P0/P1 Exploration View items in {baseline_id}",
+            )
         )
         return
 
@@ -3993,7 +4667,10 @@ def check_final_freeze_readiness(
         evidence = row.get("evidence / experiment", "")
         if not status_lower.startswith(resolved_statuses):
             findings.append(
-                Finding("WARN", f"Final freeze readiness leaves {baseline_id} Exploration View {item} unresolved: {status}")
+                Finding(
+                    "WARN",
+                    f"Final freeze readiness leaves {baseline_id} Exploration View {item} unresolved: {status}",
+                )
             )
             continue
         if status_lower.startswith("blocked") and not verified_hard_blocker(status, evidence):
@@ -4003,7 +4680,11 @@ def check_final_freeze_readiness(
                     f"Final freeze readiness lacks verified hard-blocker evidence for {baseline_id} {item}",
                 )
             )
-        elif latest_baseline and status_lower.startswith(("supported", "rejected")) and not has_experiment_evidence_link(evidence):
+        elif (
+            latest_baseline
+            and status_lower.startswith(("supported", "rejected"))
+            and not has_experiment_evidence_link(evidence)
+        ):
             findings.append(
                 Finding(
                     "WARN",
@@ -4029,11 +4710,11 @@ def check_baseline_acceptance(
     section = markdown_section(baseline_text, "Implementation Acceptance")
     rows = first_markdown_table_rows(section)
     if not rows:
-        findings.append(Finding("WARN", f"{baseline_id} Implementation Acceptance has no checklist rows"))
+        findings.append(
+            Finding("WARN", f"{baseline_id} Implementation Acceptance has no checklist rows")
+        )
         return
-    committed_gate = (
-        "selected candidate's complete committed composition and every defining component implemented; no control-only substitute"
-    )
+    committed_gate = "selected candidate's complete committed composition and every defining component implemented; no control-only substitute"
     if require_committed_composition and not any(
         clean_markdown_cell(row.get("gate", "") or row.get("component", "")).lower()
         == committed_gate
@@ -4049,7 +4730,9 @@ def check_baseline_acceptance(
         gate = clean_markdown_cell(row.get("gate", "") or row.get("component", ""))
         status = row.get("status / evidence", "") or row.get("status", "") or row.get("answer", "")
         if require_committed_composition and gate.lower() == committed_gate:
-            if not clean_markdown_cell(status).lower().startswith("done:") or not markdown_links(status):
+            if not clean_markdown_cell(status).lower().startswith("done:") or not markdown_links(
+                status
+            ):
                 findings.append(
                     Finding(
                         "WARN",
@@ -4058,13 +4741,11 @@ def check_baseline_acceptance(
                 )
             continue
         if gate and not meaningful_value(status):
-            findings.append(Finding("WARN", f"{baseline_id} implementation gate has no status/evidence: {gate}"))
-        elif gate and not (
-            gate_is_complete(status)
-            or (
-                "deferred" in gate.lower()
-                and gate_is_deferred(status)
+            findings.append(
+                Finding("WARN", f"{baseline_id} implementation gate has no status/evidence: {gate}")
             )
+        elif gate and not (
+            gate_is_complete(status) or ("deferred" in gate.lower() and gate_is_deferred(status))
         ):
             findings.append(
                 Finding(
@@ -4093,8 +4774,7 @@ def check_filled_template_contracts(
         )
     )
     paths: list[tuple[pathlib.Path, str]] = [
-        (challenge_dir / name, f"assets/challenge_template/{name}")
-        for name in top_level_names
+        (challenge_dir / name, f"assets/challenge_template/{name}") for name in top_level_names
     ]
     if discovery_only:
         check_filled_template_pointer_rows(paths, challenge_dir, findings)
@@ -4146,7 +4826,9 @@ def check_filled_template_pointer_rows(
             continue
         text = read_text(path)
         label = str(path.relative_to(challenge_dir))
-        legacy_source = expected_source.replace("assets/challenge_template/", "challenge/challenge_template/")
+        legacy_source = expected_source.replace(
+            "assets/challenge_template/", "challenge/challenge_template/"
+        )
         if expected_source not in text and legacy_source not in text:
             findings.append(
                 Finding(
@@ -4185,9 +4867,15 @@ def check_template_contracts(
         path = challenge_dir / relative_path
         text = read_text(path)
         if expected_source not in text:
-            findings.append(Finding("ERROR", f"raw template {relative_path} has no correct miagent-template-source"))
+            findings.append(
+                Finding(
+                    "ERROR", f"raw template {relative_path} has no correct miagent-template-source"
+                )
+            )
         if "miagent-template-contract: active" not in text:
-            findings.append(Finding("ERROR", f"raw template {relative_path} has no active template contract"))
+            findings.append(
+                Finding("ERROR", f"raw template {relative_path} has no active template contract")
+            )
     schema_templates = {
         "dashboard.md": DASHBOARD_SCHEMA,
         "state.md": STATE_SCHEMA,
@@ -4199,7 +4887,9 @@ def check_template_contracts(
     for relative_path, schema in schema_templates.items():
         path = challenge_dir / relative_path
         if not has_template_schema(read_text(path), schema):
-            findings.append(Finding("ERROR", f"raw template {relative_path} has no schema marker: {schema}"))
+            findings.append(
+                Finding("ERROR", f"raw template {relative_path} has no schema marker: {schema}")
+            )
 
     state_text = read_text(challenge_dir / "state.md")
     for section in (
@@ -4272,7 +4962,9 @@ def check_template_contracts(
         "status / evidence",
     ):
         if not has_table_column(comparison, field):
-            findings.append(Finding("ERROR", f"candidates template Candidate Comparison missing field: {field}"))
+            findings.append(
+                Finding("ERROR", f"candidates template Candidate Comparison missing field: {field}")
+            )
     for field in (
         "pre-search thesis direction",
         "pre-search thesis disposition",
@@ -4283,7 +4975,9 @@ def check_template_contracts(
         "approval status",
     ):
         if not has_table_field(markdown_section(candidates_text, "Selected Workflow"), field):
-            findings.append(Finding("ERROR", f"candidates template Selected Workflow missing field: {field}"))
+            findings.append(
+                Finding("ERROR", f"candidates template Selected Workflow missing field: {field}")
+            )
 
     dashboard_text = read_text(challenge_dir / "dashboard.md")
     for field in (
@@ -4322,7 +5016,9 @@ def check_template_contracts(
         "revisit trigger",
     ):
         if not has_table_column(internal_exploration, field):
-            findings.append(Finding("ERROR", f"baseline template Internal Exploration missing field: {field}"))
+            findings.append(
+                Finding("ERROR", f"baseline template Internal Exploration missing field: {field}")
+            )
 
     planned_jobs = markdown_section(dashboard_text, "baseline001_nnunet")
     if "Launch Group" not in markdown_subsection(planned_jobs, "### Planned Jobs"):
@@ -4333,7 +5029,9 @@ def check_template_contracts(
         "quality-affecting compute changes are controlled experiments, or explicitly deferred",
     ):
         if required_gate not in baseline_text:
-            findings.append(Finding("ERROR", f"baseline template missing implementation gate: {required_gate}"))
+            findings.append(
+                Finding("ERROR", f"baseline template missing implementation gate: {required_gate}")
+            )
 
     experiment_text = read_text(
         challenge_dir / "baseline_template" / "runs" / "exp_template" / "experiment.md"
@@ -4393,7 +5091,9 @@ def check_human_steering(path: pathlib.Path, label: str, findings: list[Finding]
                 )
 
 
-def check_template_human_steering_shape(section: str, label: str, section_name: str, findings: list[Finding]) -> None:
+def check_template_human_steering_shape(
+    section: str, label: str, section_name: str, findings: list[Finding]
+) -> None:
     header = first_markdown_table_header(section)
     if not header:
         return
@@ -4461,7 +5161,9 @@ def first_markdown_table_rows(section: str) -> list[dict[str, str]]:
         if not header:
             header = [clean_markdown_cell(cell).lower() for cell in cells]
             continue
-        rows.append({key: cells[index] if index < len(cells) else "" for index, key in enumerate(header)})
+        rows.append(
+            {key: cells[index] if index < len(cells) else "" for index, key in enumerate(header)}
+        )
     return rows
 
 
@@ -4525,7 +5227,9 @@ def cell_by_header(cells: list[str], header: list[str], wanted: str) -> str:
     return ""
 
 
-def resolve_dashboard_path(challenge_dir: pathlib.Path, baseline: str, value: str) -> pathlib.Path | None:
+def resolve_dashboard_path(
+    challenge_dir: pathlib.Path, baseline: str, value: str
+) -> pathlib.Path | None:
     text = markdown_link_target(value)
     if not text or URL_RE.match(text):
         return None
@@ -4710,8 +5414,7 @@ def check_current_method_evidence(
     recent_foundation = [
         row
         for _, row in serious_rows
-        if "foundation / pretraining"
-        in clean_markdown_cell(row.get("search lens", "")).lower()
+        if "foundation / pretraining" in clean_markdown_cell(row.get("search lens", "")).lower()
         and has_recent_literature_year(row.get("year / venue", ""))
         and has_external_markdown_link(row.get("paper / primary source", ""))
     ]
@@ -4769,7 +5472,9 @@ def component_has_local_skill_grounding(
     initial_analysis: str,
     rows: list[dict[str, str]],
 ) -> bool:
-    return mentions_local_skill(initial_analysis) or any(row_mentions_local_skill(row) for row in rows)
+    return mentions_local_skill(initial_analysis) or any(
+        row_mentions_local_skill(row) for row in rows
+    )
 
 
 def check_local_method_inventory(
@@ -4801,7 +5506,10 @@ def check_local_method_inventory(
     }
     for evidence_id in sorted(inventory_ids - evidence_ids):
         findings.append(
-            Finding("WARN", f"literature.md MIAgent-method inventory references unknown Evidence ID {evidence_id}")
+            Finding(
+                "WARN",
+                f"literature.md MIAgent-method inventory references unknown Evidence ID {evidence_id}",
+            )
         )
     for evidence_id in sorted(inventory_ids - local_row_ids):
         findings.append(
@@ -4824,7 +5532,9 @@ def check_local_method_inventory(
         if not row_mentions_local_skill(row):
             continue
         decision = clean_markdown_cell(row.get("transfer fit / component decision", "")).lower()
-        if decision.startswith("reject:") and any(term in decision for term in soft_rejection_terms):
+        if decision.startswith("reject:") and any(
+            term in decision for term in soft_rejection_terms
+        ):
             evidence_id = clean_markdown_cell(row.get("evidence id", "")) or component
             findings.append(
                 Finding(
@@ -4843,7 +5553,9 @@ def row_mentions_vision_foundation_skill(row: dict[str, str]) -> bool:
 
 
 def mentions_local_skill(value: str) -> bool:
-    return bool(re.search(r"(?:^|[^A-Za-z0-9_-])(?:\.\./)*skills/[^)\s|]+", clean_markdown_cell(value)))
+    return bool(
+        re.search(r"(?:^|[^A-Za-z0-9_-])(?:\.\./)*skills/[^)\s|]+", clean_markdown_cell(value))
+    )
 
 
 def mentions_vision_foundation_skill(value: str) -> bool:
