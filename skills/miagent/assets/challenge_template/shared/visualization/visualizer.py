@@ -10,7 +10,6 @@ import argparse
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-
 Artifact = str | Path
 Artifacts = Artifact | Sequence[Artifact] | Mapping[str, Artifact]
 
