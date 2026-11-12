@@ -2,8 +2,7 @@
 name: skill-completeness-v1
 description: Grades a skill or verifier directory for required files, valid manifest structure, side-effect declarations, validation gates, paired-verifier resolution, fixtures, and authoring hygiene. Engineering verification only.
 license: Apache-2.0
-allowed-tools:
-  - Bash
+allowed-tools: Bash
 ---
 
 # skill_completeness_v1
