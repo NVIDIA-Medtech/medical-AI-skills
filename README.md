@@ -120,6 +120,10 @@ make list-skills    # regenerates SKILL_INDEX.md at repo root
 The index filters by declared shape and observed gate behavior. It does not
 order skills by clinical or benchmark performance.
 
+For medical-imaging research planning and resumable experiments, see
+[MIAgent](skills/miagent/SKILL.md). The host agent follows its workflow; the
+Python entrypoint initializes the research records.
+
 Scope rules for new catalog entries are in
 [`docs/skill-scope.md`](docs/skill-scope.md). In short: wrap real upstream
 medtech tools, solve engineering tasks, ship safe fixtures, and avoid clinical
