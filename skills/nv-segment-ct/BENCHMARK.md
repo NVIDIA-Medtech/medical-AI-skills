@@ -1,83 +1,156 @@
-# Evaluation Report
+# Skill Benchmark: nv-segment-ct
 
-Evaluation of the `nv-segment-ct` skill before publication through NVSkills-Eval.
+> ❌ **Overall verdict: FAIL — Publication blocked**
 
-This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the skill. The goal is to document whether the skill is safe, discoverable, effective, and useful for agents before it is published for broader workflow use.
+The skill should be reviewed before publication. Address the blocking findings below, then rerun Skill Evaluator.
 
-## Evaluation Summary
+## Evaluation Metadata
 
 - Skill: `nv-segment-ct`
-- Evaluation date: 2026-07-08
-- NVSkills-Eval profile: `external`
-- Environment: `astra-sandbox`
-- Dataset: 2 evaluation tasks
+- Validation status: `failed`
+- Evaluation date: 2026-11-20
+- Evaluator version: `1.6.10`
+- Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-5-5`), Codex (`openai/openai/gpt-6.1-sol`)
+- Tasks: 2 evaluation tasks (1 positive, 1 negative)
+- Dataset digest: `sha256:fe2616bf147710f421fe920ecf7ea8bda036fd8aed9b8670e63460ca5c063c7a` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
-- Pass threshold: 50%
-- Overall verdict: PASS
+- Environment: `k8s-sandbox`
+- Tier 2 evidence: required for publication
+- Tier 3 evidence: required for publication
 
-## Agents Used
+Each task attempt ran in its own isolated sandbox pod.
 
-- `claude-code`
-- `codex`
+## Tier 1 LLM Provenance
 
-## Metrics Used
+SkillSpector provider, model, analyzer revision, and determinism evidence retained for this scan.
 
-Reported benchmark dimensions:
+| Skill | Provider | Adapter | Analyzer | Model | Revision | Determinism |
+| --- | --- | --- | --- | --- | --- | --- |
+| nv-segment-ct | nv_inference | openai | mcp_tool_poisoning | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-segment-ct | nv_inference | openai | semantic_developer_intent | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-segment-ct | nv_inference | openai | semantic_quality_policy | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-segment-ct | nv_inference | openai | semantic_security_discovery | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-segment-ct | nv_inference | openai | meta_analyzer | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
 
-- Security: checks whether skill-assisted execution avoids unsafe behavior such as secret leakage, destructive commands, or unauthorized access.
-- Correctness: checks whether the agent follows the expected workflow and produces the correct final output.
-- Discoverability: checks whether the agent loads the skill when relevant and avoids using it when irrelevant.
-- Effectiveness: checks whether the agent performs measurably better with the skill than without it.
-- Efficiency: checks whether the agent uses fewer tokens and avoids redundant work.
+- Controls for `nv-segment-ct`: temperature=not set (source=provider_default, forwarded=no); seed=not set (source=unset, forwarded=no); reasoning_effort=not set (source=provider_default, forwarded=no)
 
-Underlying evaluation signals used in this run:
+## What This Report Answers
 
-- `security` (Security): checks for unsafe operations, secret leakage, and unauthorized access.
-- `skill_execution` (Skill Execution): verifies that the agent loaded the expected skill and workflow.
-- `skill_efficiency` (Efficiency): checks routing quality, decoy avoidance, and redundant tool usage.
-- `accuracy` (Accuracy): grades final-answer correctness against the reference answer.
-- `goal_accuracy` (Goal Accuracy): checks whether the overall user task completed successfully.
-- `behavior_check` (Behavior Check): verifies expected behavior steps, including safety expectations.
-- `token_efficiency` (Token Efficiency): compares token usage with and without the skill.
+The three-tier evaluation checks whether the skill:
 
-## Test Tasks
+- is safe to use;
+- produces correct answers;
+- is discovered and activated when needed;
+- helps the agent complete the user's goal and expected workflow; and
+- avoids wasted skill and tool usage.
 
-The benchmark dataset contained 2 evaluation tasks:
+## Results at a Glance
 
-- Positive tasks: 1 tasks where the skill was expected to activate.
-- Negative tasks: 1 tasks where no skill was expected.
-- Unlabeled tasks: 0 tasks where positive/negative intent could not be inferred.
+| Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
+|---|---:|---:|
+| Overall | 82.2% — baseline ran, but no comparable score was available; uplift unavailable | 82.0% — baseline ran, but no comparable score was available; uplift unavailable |
+| Security | 100.0% → 100.0% (±0.0 points) | 100.0% → 100.0% (±0.0 points) |
+| Correctness | 60.0% → 90.0% (+30.0 points) | 60.0% → 90.0% (+30.0 points) |
+| Discoverability | 100.0% — baseline ran, but no comparable score was available; uplift unavailable | 95.0% — baseline ran, but no comparable score was available; uplift unavailable |
+| Effectiveness | 50.0% → 56.3% (+6.3 points) | 50.0% → 50.0% (±0.0 points) |
+| Efficiency | 65.0% — baseline ran, but no comparable score was available; uplift unavailable | 75.2% — baseline ran, but no comparable score was available; uplift unavailable |
 
-Task composition is derived from the evaluation dataset when possible. Entries with `expected_skill` set are treated as positive skill-activation cases, while entries with `expected_skill: null` are treated as negative activation cases.
+**How to read this table:** baseline is the same task attempted without the target skill. Scores are rounded to one decimal; threshold-adjacent values use additional precision so their displayed band matches the verdict. Uplift is derived from those displayed scores and shown in percentage points.
 
-## Results
+Example: `47.0% → 92.0% (+45.0 points)` means the skill-assisted run scored 92.0%, 45.0 percentage points above its 47.0% no-skill baseline.
 
-| Dimension | Num | `claude-code` | `codex` |
-|---|---:|---:|---:|
-| Security | 2 | 100% (+50%) | 100% (+0%) |
-| Correctness | 2 | 100% (+32%) | 95% (+36%) |
-| Discoverability | 2 | 98% (+35%) | 89% (+21%) |
-| Effectiveness | 2 | 78% (+26%) | 80% (+37%) |
-| Efficiency | 2 | 90% (+33%) | 83% (+14%) |
+A partial dimension was calculated from only the available configured signals; review the detailed report before relying on it.
 
-Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
+### Comparison details
 
-## Tier 1: Static Validation Summary
+Shared-source comparisons use the same signals and weights on both conditions. They do not replace the full dimension scores above or change the publication verdict.
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 1 checks and found 6 total findings.
+| Agent | Dimension | Basis | Baseline → With skill (uplift) | Explanation |
+| --- | --- | --- | --- | --- |
+| claude-code | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
+| claude-code | Efficiency | Token-only comparison | 98.7% → 96.6% (-2.1 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
+| codex | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
+| codex | Efficiency | Token-only comparison | 89.8% → 90.4% (+0.6 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
 
-Top findings:
+## Token Usage
 
-- MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-segment-ct/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-segment-ct/validators`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-segment-ct/skill_manifest.yaml`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-segment-ct/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-segment-ct/tests`)
+Actual Tier 3 execution usage is reported for every observed agent/case pair and both conditions.
 
-## Tier 2: Deduplication Summary
+| Agent | Dataset case | With skill | Without skill | Delta | Change | Coverage |
+|---|---|---:|---:|---:|---:|---|
+| claude-code | All cases | 235,252 | 216,189 | +19,063 | +8.82% | skill 2/2; base 2/2 |
+| claude-code | reject-non-ct-modality | 74,232 | 108,475 | -34,243 | -31.57% | skill 1/1; base 1/1 |
+| claude-code | segment-common-abdominal-organs | 161,020 | 107,714 | +53,306 | +49.49% | skill 1/1; base 1/1 |
+| codex | All cases | 153,495 | 99,560 | +53,935 | +54.17% | skill 2/2; base 2/2 |
+| codex | reject-non-ct-modality | 50,894 | 53,872 | -2,978 | -5.53% | skill 1/1; base 1/1 |
+| codex | segment-common-abdominal-organs | 102,601 | 45,688 | +56,913 | +124.57% | skill 1/1; base 1/1 |
+| ALL AGENTS | Dataset aggregate | 388,747 | 315,749 | +72,998 | +23.12% | skill 4/4; base 4/4 |
 
-This tier was not run or did not produce findings in this report.
+Prompt tokens include cached reads, so total tokens are `prompt + completion` (cached is not added twice). The Efficiency score uses `(prompt - cached) + completion`. Change is `100 * (with - without) / without`; negative means fewer tokens. N/A comparisons include their reason in the coverage column; coverage is never estimated.
 
-## Publication Recommendation
+## Tier Status
 
-The skill is suitable to proceed toward NVSkills-Eval publication based on this benchmark. Skill owners should keep this file with the skill and refresh it when the evaluation dataset, skill behavior, or target agents materially change.
+| Tier | Purpose | Status | Evidence |
+|---|---|---|---|
+| Tier 1 | Static validation | **FAILED** | 11 validator(s); 11 finding(s) |
+| Tier 2 | Semantic deduplication | **PASSED WITH OBSERVATIONS** | 2 validator(s); 2 finding(s) |
+| Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 2 task(s) |
+
+## Blocking Findings
+
+- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-segment-ct/fixtures/fetch_spleen_fixture.py:71`)
+
+## Findings and Observations
+
+<details>
+<summary>Show detailed findings and successful checks</summary>
+
+- **HIGH** DUPLICATE/duplicate: Duplicate content found within SKILL.md:
+  "## Prerequisites" in SKILL.md (lines 20-30)
+  vs "## Preconditions" in SKILL.md (lines 61-72) (`SKILL.md:20`)
+- **HIGH** DUPLICATE/duplicate: Duplicate content found within SKILL.md:
+  "## Available Scripts" in SKILL.md (lines 15-19)
+  vs "## Exact Runnable Surface" in SKILL.md (lines 51-60)
+  vs "## Usage" in SKILL.md (lines 85-150) (`SKILL.md:15`)
+- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-segment-ct/fixtures/fetch_spleen_fixture.py:71`)
+- **MEDIUM** SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-segment-ct/SKILL.md`)
+- **LOW** QUALITY/quality_reliability: Inputs are used but no dedicated Inputs section is documented (`skills/nv-segment-ct/SKILL.md`)
+- 8 additional finding(s) are available in the full evaluation artifacts.
+
+</details>
+
+## Scoring Methodology
+
+<details>
+<summary>Show dimension definitions, source signals, and thresholds</summary>
+
+| Dimension | Question | Scored signals |
+|---|---|---|
+| Security | Is it safe to use? | `security` (100%) |
+| Correctness | Is the answer correct? | `accuracy` (100%) |
+| Discoverability | Was the right skill loaded when needed? | `skill_execution` (100%) |
+| Effectiveness | Did the skill help complete the task? | `goal_accuracy` (50%) + `behavior_check` (50%) |
+| Efficiency | Did it avoid wasted tool calls and token usage? | `skill_efficiency` (50%) + `token_efficiency` (50%) |
+
+- Dimension bands: PASS at 50% or above; NEUTRAL from 40% to below 50%; FAIL below 40%.
+- Overall Tier 3 lift: PASS at +5 points or more; FAIL at -10 points or less; values between those bands are NEUTRAL.
+- Overall verdict: PASS only when every configured dimension passes for at least one supported agent. Lift is reported as diagnostic evidence and does not override this gate.
+- The 50% attempt pass threshold is a separate per-task gate; it is not the dimension pass threshold.
+- Effectiveness is the equal-weight mean of goal completion (`goal_accuracy`) and expected workflow adherence (`behavior_check`).
+- Efficiency is 50% tool-call productivity (the backward-compatible `skill_efficiency` wire id) and 50% `token_efficiency`. Positive-case skill routing is scored under Discoverability, not Efficiency; a negative case without a routing target is N/A. N/A sources are omitted, remaining weights are renormalized, and the dimension is marked partial.
+
+Signals present in this run:
+
+- `security` (Security): unsafe operations, secret leakage, and unauthorized access.
+- `skill_execution` (Skill Execution): whether the expected skill was selected, decoys were avoided, and the workflow executed.
+- `skill_efficiency` (Tool Productivity): tool-call productivity (legacy wire id; routing is scored under Discoverability).
+- `accuracy` (Accuracy): final-answer correctness against the reference answer.
+- `goal_accuracy` (Goal Accuracy): whether the user's goal was achieved.
+- `behavior_check` (Behavior Check): whether the expected workflow behavior was followed.
+- `token_efficiency` (Token Efficiency): actual uncached prompt plus completion usage (50% of Efficiency).
+
+</details>
+
+## Freshness
+
+Regenerate this benchmark when the skill, evaluation dataset, target agent/model, evaluator version, environment, or scoring policy changes.
