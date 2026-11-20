@@ -429,7 +429,9 @@ def _run_training(
     ).to(device)
 
     if cfg.finetune:
-        checkpoint_autoencoder = torch.load(cfg.trained_autoencoder_path, map_location=device)
+        checkpoint_autoencoder = torch.load(
+            cfg.trained_autoencoder_path, map_location=device, weights_only=True
+        )
         if "unet_state_dict" in checkpoint_autoencoder:
             checkpoint_autoencoder = checkpoint_autoencoder["unet_state_dict"]
         autoencoder.load_state_dict(checkpoint_autoencoder)
