@@ -17,6 +17,6 @@ schema_version: 1
 harbor:
   pre_agent_setup:
     - >-
-      python -m venv --system-site-packages /tmp/ct-request-python &&
+      python3 -m venv --system-site-packages /tmp/ct-request-python &&
       /tmp/ct-request-python/bin/python -m pip install --disable-pip-version-check
       'nibabel>=5.4,<6' 'numpy>=1.25,<3' 'typer>=0.9'
