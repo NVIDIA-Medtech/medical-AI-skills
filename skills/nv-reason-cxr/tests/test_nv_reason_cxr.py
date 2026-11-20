@@ -22,20 +22,24 @@ They do not download or run the NV-Reason-CXR model.
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SCRIPT = SKILL_DIR / "scripts" / "run_nv_reason_cxr.py"
 FIXTURE = SKILL_DIR / "fixtures" / "synthetic_cxr_input.json"
 
 
-def _run(*args: str | Path) -> subprocess.CompletedProcess[str]:
+def _run(*args: str | Path, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(SCRIPT), *(str(a) for a in args)],
+        cwd=cwd,
         capture_output=True,
         text=True,
         timeout=30,
@@ -81,10 +85,17 @@ def test_check_setup_reports_json() -> None:
     assert "recommendation" in payload["setup"]
 
 
+def _generated_png(tmp_path: Path) -> Path:
+    directory = tmp_path / "fixture_out"
+    proc = _run(FIXTURE, "--out-dir", directory)
+    assert proc.returncode == 0, proc.stderr
+    generated = directory / "input_synthetic_chest_xray.png"
+    assert Path(json.loads(proc.stdout)["input"]["image"]["path"]) == generated
+    return generated
+
+
 def test_direct_png_mock_path(tmp_path: Path) -> None:
-    first = _run(FIXTURE, "--out-dir", tmp_path / "fixture_out")
-    assert first.returncode == 0, first.stderr
-    generated = Path(json.loads(first.stdout)["input"]["image"]["path"])
+    generated = _generated_png(tmp_path)
 
     proc = _run(
         generated,
@@ -102,17 +113,9 @@ def test_direct_png_mock_path(tmp_path: Path) -> None:
 
 
 def test_direct_png_mock_without_out_dir_does_not_create_default_runs(tmp_path: Path) -> None:
-    first = _run(FIXTURE, "--out-dir", tmp_path / "fixture_out")
-    assert first.returncode == 0, first.stderr
-    generated = Path(json.loads(first.stdout)["input"]["image"]["path"])
+    generated = _generated_png(tmp_path)
 
-    proc = subprocess.run(
-        [sys.executable, str(SCRIPT), str(generated), "--mock"],
-        cwd=tmp_path,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
+    proc = _run(generated, "--mock", cwd=tmp_path)
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["input"]["image"]["source"] == "file"
@@ -126,9 +129,7 @@ def test_generated_fixture_requires_out_dir() -> None:
 
 
 def test_prompt_preset_for_direct_image(tmp_path: Path) -> None:
-    first = _run(FIXTURE, "--out-dir", tmp_path / "fixture_out")
-    assert first.returncode == 0, first.stderr
-    generated = Path(json.loads(first.stdout)["input"]["image"]["path"])
+    generated = _generated_png(tmp_path)
 
     proc = _run(
         generated,
@@ -221,3 +222,49 @@ def test_missing_input_fails_cleanly(tmp_path: Path) -> None:
     proc = _run(tmp_path / "missing.png", "--mock", "--out-dir", tmp_path / "out")
     assert proc.returncode == 2
     assert "input not found" in proc.stderr
+
+
+def test_hosted_upload_contains_only_displayed_pixels(tmp_path: Path, monkeypatch) -> None:
+    from PIL import Image, PngImagePlugin
+
+    module = _script_module()
+    path = tmp_path / "private-source-name.png"
+    original = Image.new("L", (2, 3))
+    original.putdata([10, 20, 30, 40, 50, 60])
+    metadata = PngImagePlugin.PngInfo()
+    metadata.add_text("Description", "private-text-marker")
+    exif = Image.Exif()
+    exif[274] = 6  # Display rotated 90 degrees clockwise.
+    original.save(path, pnginfo=metadata, exif=exif)
+    with path.open("ab") as file:
+        file.write(b"private-trailer-marker")
+
+    def capture_upload(url, *, data, headers, timeout):
+        assert url == module.HF_SPACE_URL + "/gradio_api/upload"
+        assert path.name.encode() not in data
+        assert b"private-text-marker" not in data and b"private-trailer-marker" not in data
+        header, rest = data.split(b"\r\n\r\n", 1)
+        assert b'filename="image.png"' in header and b"image/png" in header
+        boundary = headers["Content-Type"].split("boundary=")[1].encode()
+        png, ending = rest.split(b"\r\n--" + boundary + b"--", 1)
+        assert ending == b"\r\n"
+        with Image.open(io.BytesIO(png)) as decoded:
+            assert decoded.info == {}
+            assert decoded.size == (3, 2)
+            assert list(decoded.getdata()) == [50, 30, 10, 60, 40, 20]
+        return b'["/remote/image.png"]'
+
+    monkeypatch.setattr(module, "_http_fetch", capture_upload)
+    result = module._hf_space_image_payload(module.HF_SPACE_URL, path, timeout=1)
+    assert result["orig_name"] == "image.png"
+    assert result["mime_type"] == "image/png"
+    assert result["size"] == len(module._hosted_png(path))
+
+
+def test_hosted_upload_rejects_invalid_image_before_network(tmp_path: Path, monkeypatch) -> None:
+    module = _script_module()
+    path = tmp_path / "invalid.png"
+    path.write_bytes(b"invalid image")
+    monkeypatch.setattr(module, "_http_fetch", lambda *a, **kw: pytest.fail("unexpected upload"))
+    with pytest.raises(module.SkillError, match="Could not prepare"):
+        module._hf_space_image_payload(module.HF_SPACE_URL, path, timeout=1)

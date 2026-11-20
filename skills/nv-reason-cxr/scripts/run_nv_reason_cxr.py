@@ -27,9 +27,9 @@ import argparse
 import binascii
 import hashlib
 import importlib.metadata
+import io
 import json
 import math
-import mimetypes
 import os
 import struct
 import sys
@@ -590,18 +590,36 @@ def _http_fetch(
         raise SkillError(f"network error: {e.reason}") from e
 
 
-# Upload the local image and shape the response as Gradio FileData.
+def _hosted_png(image_path: Path) -> bytes:
+    """Encode only the displayed pixels for the public Space."""
+    try:
+        from PIL import Image, ImageOps
+    except ImportError as exc:
+        raise SkillError("The hf-space-api backend requires Pillow>=10.") from exc
+
+    try:
+        with Image.open(image_path, formats=("JPEG", "PNG")) as source:
+            pixels = ImageOps.exif_transpose(source)
+            if pixels.mode == "P" or pixels.mode == "CMYK" or "transparency" in pixels.info:
+                pixels = pixels.convert("RGBA")
+            pixels.info.clear()
+            with io.BytesIO() as encoded:
+                pixels.save(encoded, format="PNG")
+                return encoded.getvalue()
+    except (OSError, ValueError, Image.DecompressionBombError) as exc:
+        raise SkillError(f"Could not prepare the PNG/JPEG for the public Space: {exc}") from exc
+
+
 def _hf_space_image_payload(base_url: str, image_path: Path, *, timeout: int) -> dict[str, Any]:
+    png = _hosted_png(image_path)
     boundary = f"----gradio-upload-{uuid.uuid4().hex}"
-    mime = mimetypes.guess_type(image_path.name)[0] or "application/octet-stream"
-    filename = image_path.name.replace('"', "%22")
     body = (
         (
             f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="files"; filename="{filename}"\r\n'
-            f"Content-Type: {mime}\r\n\r\n"
+            'Content-Disposition: form-data; name="files"; filename="image.png"\r\n'
+            "Content-Type: image/png\r\n\r\n"
         ).encode()
-        + image_path.read_bytes()
+        + png
         + f"\r\n--{boundary}--\r\n".encode()
     )
     headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
@@ -613,9 +631,9 @@ def _hf_space_image_payload(base_url: str, image_path: Path, *, timeout: int) ->
 
     item = uploaded[0] if isinstance(uploaded, list) and uploaded else uploaded
     payload = dict(item) if isinstance(item, dict) else {"path": item}
-    payload.setdefault("orig_name", image_path.name)
-    payload.setdefault("size", image_path.stat().st_size)
-    payload.setdefault("mime_type", mime)
+    payload["orig_name"] = "image.png"
+    payload["size"] = len(png)
+    payload["mime_type"] = "image/png"
     payload.setdefault("is_stream", False)
     payload.setdefault("meta", {"_type": "gradio.FileData"})
     return payload
@@ -780,7 +798,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--backend",
         choices=["local", "hf-space-api"],
         default="local",
-        help="Inference backend. Defaults to local Hugging Face Transformers.",
+        help="Defaults to local. hf-space-api sends the prompt and image pixels to a public Space.",
     )
     parser.add_argument(
         "--out-dir",
