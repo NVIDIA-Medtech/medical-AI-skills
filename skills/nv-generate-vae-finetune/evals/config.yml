@@ -16,8 +16,4 @@
 schema_version: 1
 harbor:
   pre_agent_setup:
-    - >-
-      python3 -m venv --system-site-packages /tmp/vae-input-python &&
-      /tmp/vae-input-python/bin/python -m pip install --disable-pip-version-check
-      'nibabel>=5.4,<6' 'numpy>=1.25,<3' &&
-      /tmp/vae-input-python/bin/python /workspace/input/prepare_volumes.py /tmp/ctmr-input
+    - python3 /workspace/input/prepare_volumes.py /tmp/ctmr-input

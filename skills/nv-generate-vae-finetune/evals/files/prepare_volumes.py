@@ -13,27 +13,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Materialize a synthetic CT/MR input bundle for both sides of the evaluation."""
+"""Write a small synthetic CT/MR input bundle in single-file NIfTI-1 format."""
 
+import gzip
 import json
+import struct
 import sys
+from array import array
 from pathlib import Path
 
-import nibabel as nib
-import numpy as np
+
+def write_volume(path: Path, center: int, background: int, peak: int) -> None:
+    header = bytearray(352)  # NIfTI-1 header followed by its four-byte extension flag.
+    struct.pack_into("<i", header, 0, 348)
+    struct.pack_into("<8h", header, 40, 3, 64, 64, 64, 1, 1, 1, 1)
+    struct.pack_into("<hh", header, 70, 4, 16)  # signed 16-bit voxels
+    struct.pack_into("<8f", header, 76, 1, 1.5, 1.5, 2, 1, 1, 1, 1)
+    struct.pack_into("<ff", header, 108, 352, 1)  # data offset and intensity scale
+    header[123] = 2  # millimetres
+    struct.pack_into("<h", header, 254, 1)  # scanner-coordinate sform
+    struct.pack_into("<12f", header, 280, 1.5, 0, 0, 0, 0, 1.5, 0, 0, 0, 0, 2, 0)
+    header[344:348] = b"n+1\0"
+
+    voxels = array("h")
+    for z in range(64):
+        for y in range(64):
+            for x in range(64):
+                radius = (x - center) ** 2 + (y - 32) ** 2 + (z - 32) ** 2
+                voxels.append(peak - radius // 12 if radius < 24**2 else background)
+    if sys.byteorder != "little":
+        voxels.byteswap()
+    with path.open("wb") as stream:
+        with gzip.GzipFile(filename="", fileobj=stream, mode="wb", mtime=0) as compressed:
+            compressed.write(header)
+            compressed.write(voxels.tobytes())
 
 
 def main(root: Path) -> None:
     root.mkdir(parents=True, exist_ok=True)
-    x, y, z = np.ogrid[:64, :64, :64]
     datalist = {}
     for split, center in (("training", 28), ("validation", 34)):
-        radius = (x - center) ** 2 + (y - 32) ** 2 + (z - 32) ** 2
         entries = []
         for modality, background, peak in (("ct", -1000, 80), ("mri", 0, 400)):
-            pixels = np.where(radius < 24**2, peak - radius // 12, background).astype(np.int16)
             name = f"{split}_{modality}.nii.gz"
-            nib.save(nib.Nifti1Image(pixels, np.diag([1.5, 1.5, 2, 1])), root / name)
+            write_volume(root / name, center, background, peak)
             entries.append({"image": name, "modality": modality})
         datalist[split] = entries
     (root / "vae_datalist.json").write_text(json.dumps(datalist, indent=2))

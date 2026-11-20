@@ -1,7 +1,7 @@
 [
   {
     "id": "finetune-vae-from-datalist",
-    "question": "Fine-tune the NV-Generate VAE using CT and MRI images listed in /tmp/ctmr-input/vae_datalist.json. The synthetic images are relative to /tmp/ctmr-input. If that input has not been materialized, the supplied recipe /workspace/input/prepare_volumes.py takes that directory as its argument and uses NumPy and NiBabel.",
+    "question": "Fine-tune the NV-Generate VAE using CT and MRI images listed in /tmp/ctmr-input/vae_datalist.json. The synthetic images are relative to /tmp/ctmr-input. If that input has not been materialized, the supplied recipe /workspace/input/prepare_volumes.py takes that directory as its argument.",
     "expected_skill": "nv-generate-vae-finetune",
     "ground_truth": "The agent uses scripts/run_vae_finetune.py with --data-base-dir, --output-dir, and the datalist path.",
     "expected_behavior": [
@@ -16,7 +16,7 @@
   },
   {
     "id": "preflight-before-gpu-run",
-    "question": "Check whether my VAE finetune datalist at /tmp/ctmr-input/vae_datalist.json is runnable before launching the GPU job. The synthetic images are relative to /tmp/ctmr-input. If that input has not been materialized, the supplied recipe /workspace/input/prepare_volumes.py takes that directory as its argument and uses NumPy and NiBabel.",
+    "question": "Check whether my VAE finetune datalist at /tmp/ctmr-input/vae_datalist.json is runnable before launching the GPU job. The synthetic images are relative to /tmp/ctmr-input. If that input has not been materialized, the supplied recipe /workspace/input/prepare_volumes.py takes that directory as its argument.",
     "expected_skill": "nv-generate-vae-finetune",
     "ground_truth": "The agent runs the wrapper with --preflight and does not start training.",
     "expected_behavior": [
