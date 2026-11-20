@@ -2,7 +2,7 @@
 name: nv-reason-ct
 description: Run NV-Reason-CT inference on user-provided 3D NIfTI chest or abdominal CT volumes for engineering and research workflows. Not for diagnosis, treatment, or clinical reporting.
 license: Apache-2.0
-allowed-tools: Bash, Read, Write, Env
+allowed-tools: Bash Read Write Env
 metadata:
   author: "NVIDIA MedTech <noreply@nvidia.com>"
   tags:
