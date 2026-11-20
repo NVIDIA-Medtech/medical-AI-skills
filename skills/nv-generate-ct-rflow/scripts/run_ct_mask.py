@@ -354,7 +354,7 @@ def _run_mask_generation(
     mask_ae.load_state_dict(checkpoint_ae)
 
     mask_unet = define_instance(args, "mask_generation_diffusion").to(device)
-    checkpoint_unet = torch.load(args.trained_mask_generation_diffusion_path, weights_only=False)
+    checkpoint_unet = torch.load(args.trained_mask_generation_diffusion_path, weights_only=True)
     mask_unet.load_state_dict(checkpoint_unet["unet_state_dict"])
     scale_factor = checkpoint_unet["scale_factor"]
     scheduler = define_instance(args, "mask_generation_noise_scheduler")
