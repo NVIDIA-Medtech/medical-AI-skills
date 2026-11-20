@@ -284,7 +284,7 @@ python skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py PATH_TO_CXR.jpg \
 Flags:
 
 - `--backend local|hf-space-api` — inference backend, default `local`.
-- `--model-id` — Hugging Face model id, default `nvidia/NV-Reason-CXR-3B`.
+- `--model-id` — Hugging Face model ID or local directory, default `nvidia/NV-Reason-CXR-3B`. Model and processor load the same pinned revision. The result records that revision for Hub models.
 - `--device auto|cuda|cpu` — default `auto`, using CUDA when available.
 - `--allow-cpu` — required for live CPU inference; CPU runs can be very slow.
 - `--torch-dtype auto|float16|bfloat16|float32` — default `auto`, using

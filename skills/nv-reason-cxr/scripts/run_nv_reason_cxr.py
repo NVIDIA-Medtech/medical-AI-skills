@@ -31,6 +31,7 @@ import io
 import json
 import math
 import os
+import re
 import struct
 import sys
 import time
@@ -40,8 +41,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.parse import urlencode, urlsplit
+from urllib.request import (
+    HTTPDefaultErrorHandler,
+    HTTPErrorProcessor,
+    HTTPSHandler,
+    OpenerDirector,
+    ProxyHandler,
+    Request,
+)
 
 DEFAULT_MODEL = "nvidia/NV-Reason-CXR-3B"
 DEFAULT_MODEL_REVISION = "056bd0383b35226554da9dc5866e095df174ae19"
@@ -474,6 +482,27 @@ def _select_torch_dtype(torch_module: Any, dtype_name: str, device: str) -> Any:
     }[dtype_name]
 
 
+def _model_revision(model_id: str, local_files_only: bool, token: str | None) -> str | None:
+    """Pin model and processor to the same revision, including cache-only runs."""
+    if Path(model_id).is_dir():
+        return None
+    if model_id == DEFAULT_MODEL:
+        return DEFAULT_MODEL_REVISION
+
+    from huggingface_hub import HfApi, try_to_load_from_cache
+
+    if local_files_only:
+        cached = try_to_load_from_cache(model_id, "config.json")
+        if not isinstance(cached, str):
+            raise SkillError(f"No cached config.json for {model_id} in local-files-only mode.")
+        revision = Path(cached).parent.name
+    else:
+        revision = HfApi().model_info(model_id, token=token).sha
+    if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise SkillError(f"Could not resolve an immutable model revision for {model_id}.")
+    return revision
+
+
 def _run_transformers_inference(
     *,
     image_path: Path,
@@ -500,13 +529,16 @@ def _run_transformers_inference(
     device = _select_device(device_request, allow_cpu=allow_cpu)
     dtype = _select_torch_dtype(torch, torch_dtype_name, device)
     token = os.environ.get("HF_TOKEN") or None
-    revision = DEFAULT_MODEL_REVISION if model_id == DEFAULT_MODEL else None
+    try:
+        revision = _model_revision(model_id, local_files_only, token)
+    except SkillError:
+        raise
+    except Exception as exc:
+        raise SkillError(f"Could not resolve the model revision for {model_id}: {exc}") from exc
     load_kwargs: dict[str, Any] = {
-        "local_files_only": local_files_only,
+        "local_files_only": local_files_only or revision is None,
         "token": token,
     }
-    if revision is not None:
-        load_kwargs["revision"] = revision
 
     try:
         image = Image.open(image_path).convert("RGB")
@@ -518,6 +550,7 @@ def _run_transformers_inference(
             model = AutoModelForImageTextToText.from_pretrained(
                 model_id,
                 dtype=dtype,
+                revision=revision,
                 **load_kwargs,
             ).eval()
         except TypeError as e:
@@ -526,12 +559,14 @@ def _run_transformers_inference(
             model = AutoModelForImageTextToText.from_pretrained(
                 model_id,
                 torch_dtype=dtype,
+                revision=revision,
                 **load_kwargs,
             ).eval()
         model = model.to(device)
         processor = AutoProcessor.from_pretrained(
             model_id,
             use_fast=True,
+            revision=revision,
             **load_kwargs,
         )
         messages = [
@@ -572,6 +607,22 @@ def _run_transformers_inference(
     return generated_text, runtime
 
 
+def _open_space(request: Request, timeout: int):
+    """Send only to the fixed HTTPS origin and reject redirects."""
+    origin = urlsplit(request.full_url)
+    if origin.scheme != "https" or origin.netloc != urlsplit(HF_SPACE_URL).netloc:
+        raise SkillError("The hosted backend accepts only the configured HTTPS Space.")
+    opener = OpenerDirector()
+    for handler in (
+        ProxyHandler(),
+        HTTPSHandler(),
+        HTTPDefaultErrorHandler(),
+        HTTPErrorProcessor(),
+    ):
+        opener.add_handler(handler)
+    return opener.open(request, timeout=timeout)
+
+
 # Normalize HTTP and network errors from Gradio API calls.
 def _http_fetch(
     url: str,
@@ -581,7 +632,7 @@ def _http_fetch(
     timeout: int,
 ) -> bytes:
     try:
-        with urlopen(Request(url, data=data, headers=headers or {}), timeout=timeout) as response:
+        with _open_space(Request(url, data=data, headers=headers or {}), timeout) as response:
             return response.read()
     except HTTPError as e:
         detail = e.read().decode("utf-8", "replace")
@@ -734,7 +785,7 @@ def _call_hf_space_endpoint(
 
     stream_url = f"{base_url}/gradio_api/queue/data?{urlencode({'session_hash': session_hash})}"
     try:
-        with urlopen(Request(stream_url), timeout=timeout) as response:
+        with _open_space(Request(stream_url), timeout) as response:
             return _stream_hf_space_response(response)
     except HTTPError as e:
         detail = e.read().decode("utf-8", "replace")

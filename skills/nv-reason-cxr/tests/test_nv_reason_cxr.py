@@ -27,7 +27,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 
 import pytest
 
@@ -268,3 +268,36 @@ def test_hosted_upload_rejects_invalid_image_before_network(tmp_path: Path, monk
     monkeypatch.setattr(module, "_http_fetch", lambda *a, **kw: pytest.fail("unexpected upload"))
     with pytest.raises(module.SkillError, match="Could not prepare"):
         module._hf_space_image_payload(module.HF_SPACE_URL, path, timeout=1)
+
+
+def test_model_and_processor_use_immutable_revisions(tmp_path, monkeypatch):
+    module = _script_module()
+    sha = "a" * 40
+    hub = ModuleType("huggingface_hub")
+    hub.try_to_load_from_cache = lambda repo, name: str(tmp_path / "snapshots" / sha / name)
+    hub.HfApi = lambda: SimpleNamespace(model_info=lambda repo, token: SimpleNamespace(sha=sha))
+    monkeypatch.setitem(sys.modules, "huggingface_hub", hub)
+    assert (
+        module._model_revision(module.DEFAULT_MODEL, False, None) == module.DEFAULT_MODEL_REVISION
+    )
+    assert module._model_revision(str(tmp_path), True, None) is None
+    assert module._model_revision("example/model", False, None) == sha
+    monkeypatch.setattr(hub, "HfApi", lambda: pytest.fail("unexpected network client"))
+    assert module._model_revision("example/model", True, None) == sha
+    monkeypatch.setattr(hub, "try_to_load_from_cache", lambda *args: None)
+    with pytest.raises(module.SkillError, match="No cached"):
+        module._model_revision("example/model", True, None)
+
+
+def test_space_transport_accepts_only_its_https_origin(monkeypatch):
+    module = _script_module()
+
+    def open_fixed(opener, request, *, timeout):
+        assert not any(hasattr(h, "redirect_request") for h in opener.handlers)
+        assert request.full_url == module.HF_SPACE_URL + "/config"
+        return io.BytesIO(b"public config")
+
+    monkeypatch.setattr(module.OpenerDirector, "open", open_fixed)
+    assert module._http_fetch(module.HF_SPACE_URL + "/config", timeout=1) == b"public config"
+    with pytest.raises(module.SkillError, match="configured HTTPS Space"):
+        module._http_fetch("https://example.org/config", timeout=1)
