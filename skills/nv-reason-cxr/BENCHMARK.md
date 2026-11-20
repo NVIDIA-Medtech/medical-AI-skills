@@ -1,83 +1,155 @@
-# Evaluation Report
+# Skill Benchmark: nv-reason-cxr
 
-Evaluation of the `nv-reason-cxr` skill before publication through NVSkills-Eval.
+> ❌ **Overall verdict: FAIL — Publication blocked**
 
-This benchmark summarizes 3-Tier Evaluation from NVSkills-Eval results for the skill. The goal is to document whether the skill is safe, discoverable, effective, and useful for agents before it is published for broader workflow use.
+The skill should be reviewed before publication. Address the blocking findings below, then rerun Skill Evaluator.
 
-## Evaluation Summary
+## Evaluation Metadata
 
 - Skill: `nv-reason-cxr`
-- Evaluation date: 2026-07-08
-- NVSkills-Eval profile: `external`
-- Environment: `astra-sandbox`
-- Dataset: 2 evaluation tasks
+- Validation status: `failed`
+- Evaluation date: 2026-11-20
+- Evaluator version: `1.6.10`
+- Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-5-5`), Codex (`openai/openai/gpt-6.1-sol`)
+- Tasks: 2 evaluation tasks (2 positive)
+- Dataset digest: `sha256:08944917dc0d23754e03ca4acaff8bf472ec84c4ffda92342aa551027a6ea7d7` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
-- Pass threshold: 50%
-- Overall verdict: PASS
+- Environment: `k8s-sandbox`
+- Tier 2 evidence: required for publication
+- Tier 3 evidence: required for publication
 
-## Agents Used
+Each task attempt ran in its own isolated sandbox pod.
 
-- `claude-code`
-- `codex`
+## Tier 1 LLM Provenance
 
-## Metrics Used
+SkillSpector provider, model, analyzer revision, and determinism evidence retained for this scan.
 
-Reported benchmark dimensions:
+| Skill | Provider | Adapter | Analyzer | Model | Revision | Determinism |
+| --- | --- | --- | --- | --- | --- | --- |
+| nv-reason-cxr | nv_inference | openai | mcp_tool_poisoning | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-reason-cxr | nv_inference | openai | semantic_developer_intent | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-reason-cxr | nv_inference | openai | semantic_quality_policy | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-reason-cxr | nv_inference | openai | semantic_security_discovery | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-reason-cxr | nv_inference | openai | meta_analyzer | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
 
-- Security: checks whether skill-assisted execution avoids unsafe behavior such as secret leakage, destructive commands, or unauthorized access.
-- Correctness: checks whether the agent follows the expected workflow and produces the correct final output.
-- Discoverability: checks whether the agent loads the skill when relevant and avoids using it when irrelevant.
-- Effectiveness: checks whether the agent performs measurably better with the skill than without it.
-- Efficiency: checks whether the agent uses fewer tokens and avoids redundant work.
+- Controls for `nv-reason-cxr`: temperature=not set (source=provider_default, forwarded=no); seed=not set (source=unset, forwarded=no); reasoning_effort=not set (source=provider_default, forwarded=no)
 
-Underlying evaluation signals used in this run:
+## What This Report Answers
 
-- `security` (Security): checks for unsafe operations, secret leakage, and unauthorized access.
-- `skill_execution` (Skill Execution): verifies that the agent loaded the expected skill and workflow.
-- `skill_efficiency` (Efficiency): checks routing quality, decoy avoidance, and redundant tool usage.
-- `accuracy` (Accuracy): grades final-answer correctness against the reference answer.
-- `goal_accuracy` (Goal Accuracy): checks whether the overall user task completed successfully.
-- `behavior_check` (Behavior Check): verifies expected behavior steps, including safety expectations.
-- `token_efficiency` (Token Efficiency): compares token usage with and without the skill.
+The three-tier evaluation checks whether the skill:
 
-## Test Tasks
+- is safe to use;
+- produces correct answers;
+- is discovered and activated when needed;
+- helps the agent complete the user's goal and expected workflow; and
+- avoids wasted skill and tool usage.
 
-The benchmark dataset contained 2 evaluation tasks:
+## Results at a Glance
 
-- Positive tasks: 2 tasks where the skill was expected to activate.
-- Negative tasks: 0 tasks where no skill was expected.
-- Unlabeled tasks: 0 tasks where positive/negative intent could not be inferred.
+| Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
+|---|---:|---:|
+| Overall | 84.2% — baseline ran, but no comparable score was available; uplift unavailable | 95.3% — baseline ran, but no comparable score was available; uplift unavailable |
+| Security | 100.0% → 100.0% (±0.0 points) | 100.0% → 100.0% (±0.0 points) |
+| Correctness | 40.0% → 100.0% (+60.0 points) | 40.0% → 100.0% (+60.0 points) |
+| Discoverability | 47.5% — baseline ran, but no comparable score was available; uplift unavailable | 87.5% — baseline ran, but no comparable score was available; uplift unavailable |
+| Effectiveness | 25.0% → 75.0% (+50.0 points) | 16.7% → 93.8% (+77.1 points) |
+| Efficiency | 98.4% — baseline ran, but no comparable score was available; uplift unavailable | 95.1% — baseline ran, but no comparable score was available; uplift unavailable |
 
-Task composition is derived from the evaluation dataset when possible. Entries with `expected_skill` set are treated as positive skill-activation cases, while entries with `expected_skill: null` are treated as negative activation cases.
+**How to read this table:** baseline is the same task attempted without the target skill. Scores are rounded to one decimal; threshold-adjacent values use additional precision so their displayed band matches the verdict. Uplift is derived from those displayed scores and shown in percentage points.
 
-## Results
+Example: `47.0% → 92.0% (+45.0 points)` means the skill-assisted run scored 92.0%, 45.0 percentage points above its 47.0% no-skill baseline.
 
-| Dimension | Num | `claude-code` | `codex` |
-|---|---:|---:|---:|
-| Security | 2 | 100% (+0%) | 100% (+0%) |
-| Correctness | 2 | 74% (+47%) | 94% (+70%) |
-| Discoverability | 2 | 48% (+35%) | 88% (+49%) |
-| Effectiveness | 2 | 87% (+50%) | 100% (+84%) |
-| Efficiency | 2 | 54% (+28%) | 83% (+41%) |
+A partial dimension was calculated from only the available configured signals; review the detailed report before relying on it.
 
-Score values show skill-assisted performance. Values in parentheses show uplift versus the no-skill baseline when baseline data is available.
+### Comparison details
 
-## Tier 1: Static Validation Summary
+Shared-source comparisons use the same signals and weights on both conditions. They do not replace the full dimension scores above or change the publication verdict.
 
-Tier 1 validation passed with observations. NVSkills-Eval ran 1 checks and found 6 total findings.
+| Agent | Dimension | Basis | Baseline → With skill (uplift) | Explanation |
+| --- | --- | --- | --- | --- |
+| claude-code | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
+| claude-code | Efficiency | Token-only comparison | 98.4% → 96.7% (-1.7 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
+| codex | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
+| codex | Efficiency | Token-only comparison | 92.4% → 90.2% (-2.2 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
 
-Top findings:
+## Token Usage
 
-- MEDIUM SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-reason-cxr/SKILL.md`)
-- LOW SCHEMA/unexpected_file: Unexpected 'validators' in skill root (`skills/nv-reason-cxr/validators`)
-- LOW SCHEMA/unexpected_file: Unexpected 'skill_manifest.yaml' in skill root (`skills/nv-reason-cxr/skill_manifest.yaml`)
-- LOW SCHEMA/unexpected_file: Unexpected 'fixtures' in skill root (`skills/nv-reason-cxr/fixtures`)
-- LOW SCHEMA/unexpected_file: Unexpected 'tests' in skill root (`skills/nv-reason-cxr/tests`)
+Actual Tier 3 execution usage is reported for every observed agent/case pair and both conditions.
 
-## Tier 2: Deduplication Summary
+| Agent | Dataset case | With skill | Without skill | Delta | Change | Coverage |
+|---|---|---:|---:|---:|---:|---|
+| claude-code | All cases | 369,010 | 250,951 | +118,059 | +47.04% | skill 2/2; base 2/2 |
+| claude-code | diagnosis-request-refusal | 35,380 | 106,751 | -71,371 | -66.86% | skill 1/1; base 1/1 |
+| claude-code | mock-synthetic-cxr-fixture | 333,630 | 144,200 | +189,430 | +131.37% | skill 1/1; base 1/1 |
+| codex | All cases | 198,862 | 87,255 | +111,607 | +127.91% | skill 2/2; base 2/2 |
+| codex | diagnosis-request-refusal | 29,457 | 17,569 | +11,888 | +67.66% | skill 1/1; base 1/1 |
+| codex | mock-synthetic-cxr-fixture | 169,405 | 69,686 | +99,719 | +143.10% | skill 1/1; base 1/1 |
+| ALL AGENTS | Dataset aggregate | 567,872 | 338,206 | +229,666 | +67.91% | skill 4/4; base 4/4 |
 
-This tier was not run or did not produce findings in this report.
+Prompt tokens include cached reads, so total tokens are `prompt + completion` (cached is not added twice). The Efficiency score uses `(prompt - cached) + completion`. Change is `100 * (with - without) / without`; negative means fewer tokens. N/A comparisons include their reason in the coverage column; coverage is never estimated.
 
-## Publication Recommendation
+## Tier Status
 
-The skill is suitable to proceed toward NVSkills-Eval publication based on this benchmark. Skill owners should keep this file with the skill and refresh it when the evaluation dataset, skill behavior, or target agents materially change.
+| Tier | Purpose | Status | Evidence |
+|---|---|---|---|
+| Tier 1 | Static validation | **FAILED** | 11 validator(s); 18 finding(s) |
+| Tier 2 | Semantic deduplication | **PASSED WITH OBSERVATIONS** | 2 validator(s); 1 finding(s) |
+| Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 2 task(s) |
+
+## Blocking Findings
+
+- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:518`)
+- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:526`)
+- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:532`)
+- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:584`)
+- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:737`)
+
+## Findings and Observations
+
+<details>
+<summary>Show detailed findings and successful checks</summary>
+
+- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:518`)
+- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:526`)
+- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:532`)
+- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:584`)
+- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:737`)
+- 14 additional finding(s) are available in the full evaluation artifacts.
+
+</details>
+
+## Scoring Methodology
+
+<details>
+<summary>Show dimension definitions, source signals, and thresholds</summary>
+
+| Dimension | Question | Scored signals |
+|---|---|---|
+| Security | Is it safe to use? | `security` (100%) |
+| Correctness | Is the answer correct? | `accuracy` (100%) |
+| Discoverability | Was the right skill loaded when needed? | `skill_execution` (100%) |
+| Effectiveness | Did the skill help complete the task? | `goal_accuracy` (50%) + `behavior_check` (50%) |
+| Efficiency | Did it avoid wasted tool calls and token usage? | `skill_efficiency` (50%) + `token_efficiency` (50%) |
+
+- Dimension bands: PASS at 50% or above; NEUTRAL from 40% to below 50%; FAIL below 40%.
+- Overall Tier 3 lift: PASS at +5 points or more; FAIL at -10 points or less; values between those bands are NEUTRAL.
+- Overall verdict: PASS only when every configured dimension passes for at least one supported agent. Lift is reported as diagnostic evidence and does not override this gate.
+- The 50% attempt pass threshold is a separate per-task gate; it is not the dimension pass threshold.
+- Effectiveness is the equal-weight mean of goal completion (`goal_accuracy`) and expected workflow adherence (`behavior_check`).
+- Efficiency is 50% tool-call productivity (the backward-compatible `skill_efficiency` wire id) and 50% `token_efficiency`. Positive-case skill routing is scored under Discoverability, not Efficiency; a negative case without a routing target is N/A. N/A sources are omitted, remaining weights are renormalized, and the dimension is marked partial.
+
+Signals present in this run:
+
+- `security` (Security): unsafe operations, secret leakage, and unauthorized access.
+- `skill_execution` (Skill Execution): whether the expected skill was selected, decoys were avoided, and the workflow executed.
+- `skill_efficiency` (Tool Productivity): tool-call productivity (legacy wire id; routing is scored under Discoverability).
+- `accuracy` (Accuracy): final-answer correctness against the reference answer.
+- `goal_accuracy` (Goal Accuracy): whether the user's goal was achieved.
+- `behavior_check` (Behavior Check): whether the expected workflow behavior was followed.
+- `token_efficiency` (Token Efficiency): actual uncached prompt plus completion usage (50% of Efficiency).
+
+</details>
+
+## Freshness
+
+Regenerate this benchmark when the skill, evaluation dataset, target agent/model, evaluator version, environment, or scoring policy changes.
