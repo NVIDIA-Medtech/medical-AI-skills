@@ -27,9 +27,11 @@ import re
 import sys
 
 import gitutils
+from add_copyright_headers import NVIDIA_COPYRIGHT
 
 FilesToCheck = [
-    re.compile(r"[.](cmake|cpp|cu|cuh|h|hpp|sh|pxd|py|pyx|yaml)$"),
+    re.compile(r"[.](cmake|cpp|css|cu|cuh|h|hpp|js|sh|pxd|py|pyx|ya?ml)$"),
+    re.compile(r"(^|/)Makefile$"),
     re.compile(r"CMakeLists[.]txt$"),
     re.compile(r"Dockerfile$"),
     re.compile(r"[.]dockerfile$"),
@@ -40,17 +42,13 @@ FilesToCheck = [
 ]
 ExemptFiles = []
 
-CheckSPDXWithCopyright = re.compile(
-    r"(^|\s*[#*/*]\s*)?SPDX-FileCopyrightText: Copyright(?: \(c\))? *(\d{4})(?:-(\d{4}))?,? ([\w\s&.,'-]+)\.?",
-    re.MULTILINE | re.DOTALL | re.IGNORECASE,
-)
-CheckSPDXREUSE = re.compile(
-    r"(^|\s*[#*/*]\s*)?SPDX-FileCopyrightText: *(\d{4})(?:-(\d{4}))? ([\w\s&.,@<>'-]+)",
-    re.MULTILINE | re.DOTALL | re.IGNORECASE,
-)
-CheckNonSPDX = re.compile(
-    r"(^|\s*[#*/*]\s*)?Copyright(?: \(c\))? *(\d{4})(?:-(\d{4}))?,? ([\w\s&.,'-]+)\.?",
-    re.MULTILINE | re.DOTALL | re.IGNORECASE,
+# Match a notice on its own line, including in a comment or Python docstring.
+CopyrightHeader = re.compile(
+    r"""^\s*(?:[#/*]+|"{3}|'{3})?\s*"""
+    r"(?P<notice>(?:SPDX-FileCopyrightText:\s*(?:Copyright\s*)?|Copyright\s*)"
+    r"(?:\(c\)\s*)?(?P<start>\d{4})(?:\s*-\s*(?P<end>\d{4}))?[\s,]+(?P<holder>.+?))"
+    r"""\s*(?:\*/|"{3}|'{3})?\s*$""",
+    re.IGNORECASE,
 )
 
 
@@ -66,107 +64,55 @@ def check_this_file(f):
     return any(checker.search(f) for checker in FilesToCheck)
 
 
-def get_copyright_years(line):
-    # Check all three patterns
-    for pattern in [CheckSPDXWithCopyright, CheckSPDXREUSE, CheckNonSPDX]:
-        res = pattern.search(line)
-        if res:
-            start_year = int(res.group(2))
-            end_year = int(res.group(3)) if res.group(3) else start_year
-            return (start_year, end_year)
-
-    return (None, None)
-
-
-def replace_current_year(line, start, end):
-    def replace_spdx_with_copyright(match):
-        comment_prefix = match.group(1) or ""
-        affiliation = match.group(4)
-        return f"{comment_prefix}SPDX-FileCopyrightText: Copyright (c) {start}-{end} {affiliation}"
-
-    def replace_spdx_reuse(match):
-        comment_prefix = match.group(1) or ""
-        affiliation = match.group(4)
-        return f"{comment_prefix}SPDX-FileCopyrightText: {start}-{end} {affiliation}"
-
-    def replace_non_spdx(match):
-        comment_prefix = match.group(1) or ""
-        affiliation = match.group(4)
-        return f"{comment_prefix}Copyright (c) {start}-{end}, {affiliation}"
-
-    # Apply each pattern's replacement
-    res = CheckSPDXWithCopyright.sub(replace_spdx_with_copyright, line)
-    res = CheckSPDXREUSE.sub(replace_spdx_reuse, res)
-    res = CheckNonSPDX.sub(replace_non_spdx, res)
-
-    return res
-
-
 def check_copyright(f, update_current_year, ignore_year_mismatch=False):
-    """
-    Checks for copyright headers and their years
-    """
-    errs = []
-    this_year = datetime.datetime.now().year
-    line_num = 0
-    cr_found = False
-    year_matched = False
-    with open(f, encoding="utf-8") as fp:
+    """Check NVIDIA notice formatting and the copyright year range."""
+    with open(f, encoding="utf-8", newline="") as fp:
         lines = fp.readlines()
-        content = "".join(lines)
 
-    # Check the entire file content for copyright headers
-    start, end = get_copyright_years(content)
-    if start is not None:
-        cr_found = True
+    errs = []
+    nvidia_headers = []
+    first_header = None
+    for line_no, line in enumerate(lines, 1):
+        match = CopyrightHeader.match(line)
+        if not match:
+            continue
+        if first_header is None:
+            first_header = (line_no, match)
+        if re.match(r"NVIDIA\b", match["holder"], re.IGNORECASE):
+            nvidia_headers.append((line_no, match))
+            years = match["start"] + ("-" + match["end"] if match["end"] else "")
+            expected = NVIDIA_COPYRIGHT.format(years=years)
+            if match["notice"] != expected:
+                errs.append((f, line_no, f"Expected NVIDIA copyright notice: {expected}", None))
+    if first_header is None:
+        return [
+            (f, 0, "Copyright header missing or formatted incorrectly (manual fix required)", None)
+        ]
+    if errs:
+        return errs
+
+    this_year = datetime.date.today().year
+    updated = False
+    for line_no, match in nvidia_headers or [first_header]:
+        start = int(match["start"])
+        end = int(match["end"] or start)
         if start > end:
-            e = [
-                f,
-                1,
-                "First year after second year in the copyright header (manual fix required)",
-                None,
-            ]
-            errs.append(e)
-        if not ignore_year_mismatch and (this_year < start or this_year > end):
-            e = [f, 1, "Current year not included in the copyright header", None]
-            if this_year < start:
-                e[-1] = replace_current_year(content, this_year, end)
-            if this_year > end:
-                e[-1] = replace_current_year(content, start, this_year)
-            errs.append(e)
-        else:
-            year_matched = True
-    fp.close()
-    # copyright header itself not found
-    if not cr_found:
-        e = [f, 0, "Copyright header missing or formatted incorrectly (manual fix required)", None]
-        errs.append(e)
-    # even if the year matches a copyright header, make the check pass
-    if year_matched:
-        errs = []
-
-    if update_current_year:
-        errs_update = [x for x in errs if x[-1] is not None]
-        if len(errs_update) > 0:
-            print(
-                "File: {}. Changing line(s) {}".format(
-                    f, ", ".join(str(x[1]) for x in errs if x[-1] is not None)
-                )
-            )
-            # Check if we're updating the entire file content (line_num == 1 and replacement is entire content)
-            if len(errs_update) == 1 and errs_update[0][1] == 1 and "\n" in errs_update[0][3]:
-                # This is a full file content replacement
-                with open(f, "w", encoding="utf-8") as out_file:
-                    out_file.write(errs_update[0][3])
+            errs.append((f, line_no, "First year after second year in the copyright header", None))
+        elif not ignore_year_mismatch and not start <= this_year <= end:
+            years = f"{min(start, this_year)}-{max(end, this_year)}"
+            if update_current_year:
+                after_years = match.end("end") if match["end"] else match.end("start")
+                line = lines[line_no - 1]
+                lines[line_no - 1] = line[: match.start("start")] + years + line[after_years:]
+                print(f"File: {f}. Changing line {line_no}")
+                updated = True
             else:
-                # This is line-by-line replacement
-                for _, line_num, __, replacement in errs_update:
-                    lines[line_num - 1] = replacement
-                with open(f, "w", encoding="utf-8") as out_file:
-                    for new_line in lines:
-                        out_file.write(new_line)
-        errs = [x for x in errs if x[-1] is None]
-
+                errs.append(
+                    (f, line_no, "Current year not included in the copyright header", years)
+                )
+    if updated:
+        with open(f, "w", encoding="utf-8", newline="") as out_file:
+            out_file.writelines(lines)
     return errs
 
 
