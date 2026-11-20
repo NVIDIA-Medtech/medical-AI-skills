@@ -30,9 +30,15 @@ from __future__ import annotations
 import argparse
 import os
 import re
+from datetime import date
+
+NVIDIA_COPYRIGHT = (
+    "SPDX-FileCopyrightText: Copyright (c) {years} NVIDIA CORPORATION & AFFILIATES. "
+    "All rights reserved."
+)
 
 HEADER_TEXT = [
-    "SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.",
+    NVIDIA_COPYRIGHT.format(years=date.today().year),
     "SPDX-License-Identifier: Apache-2.0",
     "",
     'Licensed under the Apache License, Version 2.0 (the "License");',
@@ -48,7 +54,7 @@ HEADER_TEXT = [
     "limitations under the License.",
 ]
 
-# Same set of source extensions check_copyright.py validates.
+# Source formats into which this script can insert a hash-comment header.
 FILES_TO_CHECK = [
     re.compile(r"[.](cmake|cpp|cu|cuh|h|hpp|sh|pxd|py|pyx|yaml|yml)$"),
     re.compile(r"CMakeLists[.]txt$"),
