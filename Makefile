@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
 # Medical AI Skills — one-command flows.
 #
 # These wrap the scaffolding scripts in eval_engine/. They are not a public CLI.

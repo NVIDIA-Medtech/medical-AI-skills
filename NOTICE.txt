@@ -1,12 +1,13 @@
 Medical AI Skills
 
-Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
 This product includes software developed at NVIDIA CORPORATION (https://www.nvidia.com/).
-The wrapper and verifier specifications in this repository are licensed under
-Apache-2.0. Model weights, upstream repositories, Python packages, and other
-artifacts downloaded or invoked by individual skills remain governed by their
-own license terms.
+Source code in this repository is licensed under Apache-2.0. Documentation,
+skills, and other content are licensed under CC-BY-4.0. See LICENSE. Model
+weights, upstream repositories, Python packages, and other artifacts
+downloaded or invoked by individual skills remain governed by their own
+license terms.
 
 Medical AI Skills uses the following upstream software and model resources:
 
