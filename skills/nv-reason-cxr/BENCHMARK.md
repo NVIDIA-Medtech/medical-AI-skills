@@ -1,13 +1,15 @@
 # Skill Benchmark: nv-reason-cxr
 
-> ❌ **Overall verdict: FAIL — Publication blocked**
+> ✅ **Overall verdict: PASS — Recommended for publication**
 
-The skill should be reviewed before publication. Address the blocking findings below, then rerun Skill Evaluator.
+## Publication Recommendation
+
+Recommended for publication based on the completed evaluation evidence in this report.
 
 ## Evaluation Metadata
 
 - Skill: `nv-reason-cxr`
-- Validation status: `failed`
+- Validation status: `passed`
 - Evaluation date: 2026-11-20
 - Evaluator version: `1.6.10`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-5-5`), Codex (`openai/openai/gpt-6.1-sol`)
@@ -48,12 +50,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 84.2% — baseline ran, but no comparable score was available; uplift unavailable | 95.3% — baseline ran, but no comparable score was available; uplift unavailable |
+| Overall | 88.0% — baseline ran, but no comparable score was available; uplift unavailable | 95.8% — baseline ran, but no comparable score was available; uplift unavailable |
 | Security | 100.0% → 100.0% (±0.0 points) | 100.0% → 100.0% (±0.0 points) |
-| Correctness | 40.0% → 100.0% (+60.0 points) | 40.0% → 100.0% (+60.0 points) |
-| Discoverability | 47.5% — baseline ran, but no comparable score was available; uplift unavailable | 87.5% — baseline ran, but no comparable score was available; uplift unavailable |
-| Effectiveness | 25.0% → 75.0% (+50.0 points) | 16.7% → 93.8% (+77.1 points) |
-| Efficiency | 98.4% — baseline ran, but no comparable score was available; uplift unavailable | 95.1% — baseline ran, but no comparable score was available; uplift unavailable |
+| Correctness | 50.0% → 100.0% (+50.0 points) | 50.0% → 100.0% (+50.0 points) |
+| Discoverability | 47.5% — baseline ran, but no comparable score was available; uplift unavailable | 90.0% — baseline ran, but no comparable score was available; uplift unavailable |
+| Effectiveness | 25.0% → 93.8% (+68.8 points) | 25.0% → 93.8% (+68.8 points) |
+| Efficiency | 98.6% — baseline ran, but no comparable score was available; uplift unavailable | 95.1% — baseline ran, but no comparable score was available; uplift unavailable |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Scores are rounded to one decimal; threshold-adjacent values use additional precision so their displayed band matches the verdict. Uplift is derived from those displayed scores and shown in percentage points.
 
@@ -68,9 +70,9 @@ Shared-source comparisons use the same signals and weights on both conditions. T
 | Agent | Dimension | Basis | Baseline → With skill (uplift) | Explanation |
 | --- | --- | --- | --- | --- |
 | claude-code | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
-| claude-code | Efficiency | Token-only comparison | 98.4% → 96.7% (-1.7 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
+| claude-code | Efficiency | Token-only comparison | 98.4% → 97.3% (-1.1 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
 | codex | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
-| codex | Efficiency | Token-only comparison | 92.4% → 90.2% (-2.2 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
+| codex | Efficiency | Token-only comparison | 92.0% → 90.1% (-1.9 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
 
 ## Token Usage
 
@@ -78,13 +80,13 @@ Actual Tier 3 execution usage is reported for every observed agent/case pair and
 
 | Agent | Dataset case | With skill | Without skill | Delta | Change | Coverage |
 |---|---|---:|---:|---:|---:|---|
-| claude-code | All cases | 369,010 | 250,951 | +118,059 | +47.04% | skill 2/2; base 2/2 |
-| claude-code | diagnosis-request-refusal | 35,380 | 106,751 | -71,371 | -66.86% | skill 1/1; base 1/1 |
-| claude-code | mock-synthetic-cxr-fixture | 333,630 | 144,200 | +189,430 | +131.37% | skill 1/1; base 1/1 |
-| codex | All cases | 198,862 | 87,255 | +111,607 | +127.91% | skill 2/2; base 2/2 |
-| codex | diagnosis-request-refusal | 29,457 | 17,569 | +11,888 | +67.66% | skill 1/1; base 1/1 |
-| codex | mock-synthetic-cxr-fixture | 169,405 | 69,686 | +99,719 | +143.10% | skill 1/1; base 1/1 |
-| ALL AGENTS | Dataset aggregate | 567,872 | 338,206 | +229,666 | +67.91% | skill 4/4; base 4/4 |
+| claude-code | All cases | 196,334 | 251,014 | -54,680 | -21.78% | skill 2/2; base 2/2 |
+| claude-code | diagnosis-request-refusal | 35,397 | 107,006 | -71,609 | -66.92% | skill 1/1; base 1/1 |
+| claude-code | mock-synthetic-cxr-fixture | 160,937 | 144,008 | +16,929 | +11.76% | skill 1/1; base 1/1 |
+| codex | All cases | 175,956 | 106,642 | +69,314 | +65.00% | skill 2/2; base 2/2 |
+| codex | diagnosis-request-refusal | 29,454 | 17,525 | +11,929 | +68.07% | skill 1/1; base 1/1 |
+| codex | mock-synthetic-cxr-fixture | 146,502 | 89,117 | +57,385 | +64.39% | skill 1/1; base 1/1 |
+| ALL AGENTS | Dataset aggregate | 372,290 | 357,656 | +14,634 | +4.09% | skill 4/4; base 4/4 |
 
 Prompt tokens include cached reads, so total tokens are `prompt + completion` (cached is not added twice). The Efficiency score uses `(prompt - cached) + completion`. Change is `100 * (with - without) / without`; negative means fewer tokens. N/A comparisons include their reason in the coverage column; coverage is never estimated.
 
@@ -92,29 +94,31 @@ Prompt tokens include cached reads, so total tokens are `prompt + completion` (c
 
 | Tier | Purpose | Status | Evidence |
 |---|---|---|---|
-| Tier 1 | Static validation | **FAILED** | 11 validator(s); 18 finding(s) |
+| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 11 validator(s); 13 finding(s) |
 | Tier 2 | Semantic deduplication | **PASSED WITH OBSERVATIONS** | 2 validator(s); 1 finding(s) |
 | Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 2 task(s) |
-
-## Blocking Findings
-
-- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:518`)
-- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:526`)
-- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:532`)
-- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:584`)
-- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:737`)
 
 ## Findings and Observations
 
 <details>
 <summary>Show detailed findings and successful checks</summary>
 
-- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:518`)
-- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:526`)
-- **MEDIUM** BANDIT/B615:huggingface_unsafe_download: Unsafe Hugging Face Hub download without revision pinning in from_pretrained() (CWE-494) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:532`)
-- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:584`)
-- **MEDIUM** BANDIT/B310:blacklist: Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected. (CWE-22) (`skills/nv-reason-cxr/scripts/run_nv_reason_cxr.py:737`)
-- 14 additional finding(s) are available in the full evaluation artifacts.
+- **MEDIUM** SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-reason-cxr/SKILL.md`)
+- **MEDIUM** SECURITY/Skill claims to be only for smoke tests and 'not for clinical reporting', yet instructs the agent to generate radiology/structured reports and answer clinical finding questions (SDI-1): Excessive Agency: Skill claims to be only for smoke tests and 'not for clinical reporting', yet instructs the agent to generate radiology/structured reports and answer clinical finding questions (`SKILL.md:161`)
+- **MEDIUM** SECURITY/Dynamic import via __import__() (AST3): Dangerous Code Execution: __import__(import_name) (`scripts/run_nv_reason_cxr.py:116`)
+- **MEDIUM** SECURITY/subprocess module call (AST4): Dangerous Code Execution: subprocess.run(
+        [sys.executable, str(SCRIPT), *(str(a) for a in args)],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    ) (`tests/test_nv_reason_cxr.py:40`)
+- **LOW** DUPLICATE/duplicate: Duplicate content found within SKILL.md:
+  "## Usage" in SKILL.md (lines 212-216)
+  vs "## Usage" in SKILL.md (lines 218-222)
+  vs "## Usage" in SKILL.md (lines 228-232)
+  vs "## Usage" in SKILL.md (lines 251-255) (`SKILL.md:212`)
+- 9 additional finding(s) are available in the full evaluation artifacts.
 
 </details>
 
