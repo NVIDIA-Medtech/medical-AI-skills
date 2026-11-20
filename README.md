@@ -312,7 +312,7 @@ Medical AI Skills is not a clinical, diagnostic, or regulatory tool.
 
 ## License
 
-Apache License 2.0. Copyright 2026 NVIDIA Corporation. See [`LICENSE`](LICENSE).
+Documentation, skills, and other content are under CC-BY-4.0. Source code is under Apache-2.0. Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. See [`LICENSE`](LICENSE).
 Each shipping spec declares its own license.
 
 ## References
