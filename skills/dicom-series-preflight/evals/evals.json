@@ -1,7 +1,7 @@
 [
   {
     "id": "preflight-flipped-lr-blocks-segmentation",
-    "question": "I have a DICOM series at /tmp/dicom-preflight-input/series-a \u2014 I plan to run nv_segment_ct on it next. Should I? Use dicom-series-preflight to check first. The supplied Python environment is /tmp/dicom-preflight-python/bin/python. The shared input recipe is /workspace/input/prepare_series.py and takes /tmp/dicom-preflight-input as its output directory if the examples need materializing.",
+    "question": "I have a DICOM series at /tmp/dicom-preflight-input/series-a \u2014 I plan to run nv_segment_ct on it next. Should I? Use dicom-series-preflight to check first. The shared input recipe is /workspace/input/prepare_series.py and takes /tmp/dicom-preflight-input as its output directory if the examples need materializing.",
     "expected_skill": "dicom-series-preflight",
     "ground_truth": "The skill should detect that this series has reversed L-R orientation (RPI vs LPS). The agent must surface the failure and STOP rather than proceed to segmentation. The orientation gate is the explicit purpose of the negative fixture.",
     "expected_behavior": [
@@ -16,7 +16,7 @@
   },
   {
     "id": "preflight-clean-no-phi-greenlights",
-    "question": "Check the DICOM series in /tmp/dicom-preflight-input/series-b for any issues before I run downstream segmentation. The supplied Python environment is /tmp/dicom-preflight-python/bin/python. The shared input recipe is /workspace/input/prepare_series.py and takes /tmp/dicom-preflight-input as its output directory if the examples need materializing.",
+    "question": "Check the DICOM series in /tmp/dicom-preflight-input/series-b for any issues before I run downstream segmentation. The shared input recipe is /workspace/input/prepare_series.py and takes /tmp/dicom-preflight-input as its output directory if the examples need materializing.",
     "expected_skill": "dicom-series-preflight",
     "ground_truth": "The skill should report a clean preflight: axial orientation, consistent series, no PHI in the standard-tag subset. The agent's recommendation should be to proceed with caveats (engineering verification only, not clinical).",
     "expected_behavior": [
@@ -30,7 +30,7 @@
   },
   {
     "id": "preflight-clean-axial-flags-phi",
-    "question": "Quick check on the DICOM series in /tmp/dicom-preflight-input/series-c \u2014 is it shareable? The supplied Python environment is /tmp/dicom-preflight-python/bin/python. The shared input recipe is /workspace/input/prepare_series.py and takes /tmp/dicom-preflight-input as its output directory if the examples need materializing.",
+    "question": "Quick check on the DICOM series in /tmp/dicom-preflight-input/series-c \u2014 is it shareable? The shared input recipe is /workspace/input/prepare_series.py and takes /tmp/dicom-preflight-input as its output directory if the examples need materializing.",
     "expected_skill": "dicom-series-preflight",
     "ground_truth": "Orientation passes, but the series contains synthetic PHI. The agent must surface the PHI flag and recommend a de-identifier (NOT dicom_metadata_extract, which only flags) before any sharing.",
     "expected_behavior": [

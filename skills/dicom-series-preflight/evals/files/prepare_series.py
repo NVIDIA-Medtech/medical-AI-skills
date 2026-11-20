@@ -13,16 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Materialize three small synthetic DICOM series for the shared evaluation input."""
+"""Write three tiny Explicit VR Little Endian DICOM series using only Python."""
 
+import struct
 import sys
+import uuid
 from pathlib import Path
 
-from pydicom.dataset import FileDataset, FileMetaDataset
-from pydicom.uid import CTImageStorage, ExplicitVRLittleEndian, generate_uid
+
+def uid(name: str) -> str:
+    return f"2.25.{uuid.uuid5(uuid.NAMESPACE_URL, 'medical-AI-skills/test/' + name).int}"
+
+
+def element(group: int, tag: int, vr: str, value: str | bytes) -> bytes:
+    data = value.encode("ascii") if isinstance(value, str) else value
+    if len(data) % 2:
+        data += b"\0" if vr == "UI" else b" "
+    prefix = struct.pack("<HH2s", group, tag, vr.encode("ascii"))
+    length = (
+        struct.pack("<HI", 0, len(data)) if vr in ("OB", "OW") else struct.pack("<H", len(data))
+    )
+    return prefix + length + data
 
 
 def main(root: Path) -> None:
+    ct_storage = "1.2.840.10008.5.1.4.1.1.2"
     for name, x_axis, subject in (
         ("series-a", -1, ""),
         ("series-b", 1, ""),
@@ -30,29 +45,39 @@ def main(root: Path) -> None:
     ):
         folder = root / name
         folder.mkdir(parents=True, exist_ok=True)
-        study, series = generate_uid(), generate_uid()
         for index in range(4):
-            meta = FileMetaDataset()
-            meta.TransferSyntaxUID = ExplicitVRLittleEndian
-            meta.MediaStorageSOPClassUID = CTImageStorage
-            meta.MediaStorageSOPInstanceUID = generate_uid()
-            path = folder / f"slice_{index}.dcm"
-            ds = FileDataset(str(path), {}, file_meta=meta, preamble=bytes(128))
-            ds.SOPClassUID, ds.SOPInstanceUID = CTImageStorage, meta.MediaStorageSOPInstanceUID
-            ds.StudyInstanceUID, ds.SeriesInstanceUID = study, series
-            ds.PatientName = subject
-            ds.Modality = "CT"
-            ds.InstanceNumber = index + 1
-            ds.ImageOrientationPatient = [x_axis, 0, 0, 0, 1, 0]
-            ds.ImagePositionPatient = [0, 0, 2 * index * x_axis]
-            ds.PixelSpacing, ds.SliceThickness = [1, 1], 2
-            ds.Rows = ds.Columns = 8
-            ds.SamplesPerPixel = 1
-            ds.PhotometricInterpretation = "MONOCHROME2"
-            ds.BitsAllocated = ds.BitsStored = 16
-            ds.HighBit, ds.PixelRepresentation = 15, 1
-            ds.PixelData = bytes(8 * 8 * 2)
-            ds.save_as(path, enforce_file_format=True)
+            instance = uid(f"{name}/{index}")
+            meta = b"".join(
+                (
+                    element(2, 1, "OB", b"\0\1"),
+                    element(2, 2, "UI", ct_storage),
+                    element(2, 3, "UI", instance),
+                    element(2, 0x10, "UI", "1.2.840.10008.1.2.1"),
+                    element(2, 0x12, "UI", uid("writer")),
+                )
+            )
+            fields = [
+                element(8, 0x16, "UI", ct_storage),
+                element(8, 0x18, "UI", instance),
+                element(8, 0x60, "CS", "CT"),
+                element(0x10, 0x10, "PN", subject),
+                element(0x18, 0x50, "DS", "2"),
+                element(0x20, 0x0D, "UI", uid(name + "/study")),
+                element(0x20, 0x0E, "UI", uid(name + "/series")),
+                element(0x20, 0x13, "IS", str(index + 1)),
+                element(0x20, 0x32, "DS", f"0\\0\\{index * 2 * x_axis}"),
+                element(0x20, 0x37, "DS", str(x_axis) + r"\0\0\0\1\0"),
+                element(0x28, 2, "US", struct.pack("<H", 1)),
+                element(0x28, 4, "CS", "MONOCHROME2"),
+                element(0x28, 0x10, "US", struct.pack("<H", 8)),
+                element(0x28, 0x11, "US", struct.pack("<H", 8)),
+                element(0x28, 0x30, "DS", r"1\1"),
+            ]
+            for tag, value in ((0x100, 16), (0x101, 16), (0x102, 15), (0x103, 1)):
+                fields.append(element(0x28, tag, "US", struct.pack("<H", value)))
+            fields.append(element(0x7FE0, 0x10, "OW", bytes(8 * 8 * 2)))
+            prefix = bytes(128) + b"DICM" + element(2, 0, "UL", struct.pack("<I", len(meta)))
+            (folder / f"slice_{index}.dcm").write_bytes(prefix + meta + b"".join(fields))
 
 
 if __name__ == "__main__":
