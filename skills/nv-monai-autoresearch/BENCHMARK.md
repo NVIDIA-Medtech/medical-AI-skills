@@ -1,4 +1,4 @@
-# Skill Benchmark: miagent
+# Skill Benchmark: nv-monai-autoresearch
 
 > ✅ **Overall verdict: PASS — Recommended for publication**
 
@@ -8,13 +8,13 @@ Recommended for publication based on the completed evaluation evidence in this r
 
 ## Evaluation Metadata
 
-- Skill: `miagent`
+- Skill: `nv-monai-autoresearch`
 - Validation status: `passed`
-- Evaluation date: 2026-11-20
+- Evaluation date: 2026-11-25
 - Evaluator version: `1.6.10`
 - Agents: Claude Code (`aws/anthropic/bedrock-claude-opus-5-5`), Codex (`openai/openai/gpt-6.1-sol`)
 - Tasks: 8 evaluation tasks (6 positive, 2 negative)
-- Dataset digest: `sha256:0c31f8fd3e3d2f6540f475e24bff2496decaeb7884a728ef61f62258267f2e3d` (skill-evaluator-dataset-snapshot/1)
+- Dataset digest: `sha256:09f4cf8c4007172a5d80be1b2be449dd58cb53ed812787cb0d7b8d775f638c98` (skill-evaluator-dataset-snapshot/1)
 - Attempts per task: 1
 - Environment: `k8s-sandbox`
 - Tier 2 evidence: required for publication
@@ -28,13 +28,13 @@ SkillSpector provider, model, analyzer revision, and determinism evidence retain
 
 | Skill | Provider | Adapter | Analyzer | Model | Revision | Determinism |
 | --- | --- | --- | --- | --- | --- | --- |
-| miagent | nv_inference | openai | mcp_tool_poisoning | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
-| miagent | nv_inference | openai | semantic_developer_intent | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
-| miagent | nv_inference | openai | semantic_quality_policy | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
-| miagent | nv_inference | openai | semantic_security_discovery | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
-| miagent | nv_inference | openai | meta_analyzer | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-monai-autoresearch | nv_inference | openai | mcp_tool_poisoning | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-monai-autoresearch | nv_inference | openai | semantic_developer_intent | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-monai-autoresearch | nv_inference | openai | semantic_quality_policy | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-monai-autoresearch | nv_inference | openai | semantic_security_discovery | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
+| nv-monai-autoresearch | nv_inference | openai | meta_analyzer | `aws/anthropic/bedrock-claude-opus-5-5` | `2.13.5` | nondeterministic / provider_defaults |
 
-- Controls for `miagent`: temperature=not set (source=provider_default, forwarded=no); seed=not set (source=unset, forwarded=no); reasoning_effort=not set (source=provider_default, forwarded=no)
+- Controls for `nv-monai-autoresearch`: temperature=not set (source=provider_default, forwarded=no); seed=not set (source=unset, forwarded=no); reasoning_effort=not set (source=provider_default, forwarded=no)
 
 ## What This Report Answers
 
@@ -50,12 +50,12 @@ The three-tier evaluation checks whether the skill:
 
 | Measure | Claude Code (Baseline → Skill Uplift) | Codex (Baseline → Skill Uplift) |
 |---|---:|---:|
-| Overall | 84.5% — baseline ran, but no comparable score was available; uplift unavailable | 89.6% — baseline ran, but no comparable score was available; uplift unavailable |
-| Security | 100.0% → 75.0% (-25.0 points) | 100.0% → 87.5% (-12.5 points) |
-| Correctness | 60.0% → 97.5% (+37.5 points) | 57.5% → 97.5% (+40.0 points) |
-| Discoverability | 81.7% — baseline ran, but no comparable score was available; uplift unavailable | 90.0% — baseline ran, but no comparable score was available; uplift unavailable |
-| Effectiveness | 53.6% → 71.9% (+18.3 points) | 64.6% → 82.3% (+17.7 points) |
-| Efficiency | 96.4% — baseline ran, but no comparable score was available; uplift unavailable | 90.6% — baseline ran, but no comparable score was available; uplift unavailable |
+| Overall | 92.1% — baseline ran, but no comparable score was available; uplift unavailable | 90.2% — baseline ran, but no comparable score was available; uplift unavailable |
+| Security | 100.0% → 100.0% (±0.0 points) | 87.5% → 100.0% (+12.5 points) |
+| Correctness | 62.5% → 97.5% (+35.0 points) | 57.5% → 97.5% (+40.0 points) |
+| Discoverability | 96.7% — baseline ran, but no comparable score was available; uplift unavailable | 89.2% — baseline ran, but no comparable score was available; uplift unavailable |
+| Effectiveness | 59.9% → 70.3% (+10.4 points) | 59.9% → 72.9% (+13.0 points) |
+| Efficiency | 95.9% — baseline ran, but no comparable score was available; uplift unavailable | 91.4% — baseline ran, but no comparable score was available; uplift unavailable |
 
 **How to read this table:** baseline is the same task attempted without the target skill. Scores are rounded to one decimal; threshold-adjacent values use additional precision so their displayed band matches the verdict. Uplift is derived from those displayed scores and shown in percentage points.
 
@@ -70,9 +70,9 @@ Shared-source comparisons use the same signals and weights on both conditions. T
 | Agent | Dimension | Basis | Baseline → With skill (uplift) | Explanation |
 | --- | --- | --- | --- | --- |
 | claude-code | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
-| claude-code | Efficiency | Token-only comparison | 98.4% → 95.2% (-3.2 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
+| claude-code | Efficiency | Token-only comparison | 98.0% → 94.6% (-3.4 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
 | codex | Discoverability | Dimension comparison | N/A | Discoverability is not applicable to the no-skill baseline; there is no installed skill to discover. |
-| codex | Efficiency | Token-only comparison | 91.4% → 88.0% (-3.4 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
+| codex | Efficiency | Token-only comparison | 91.0% → 89.2% (-1.8 points) | Only Token Efficiency is comparable; the full dimension scores use different evaluator sources. |
 
 ## Token Usage
 
@@ -80,25 +80,25 @@ Actual Tier 3 execution usage is reported for every observed agent/case pair and
 
 | Agent | Dataset case | With skill | Without skill | Delta | Change | Coverage |
 |---|---|---:|---:|---:|---:|---|
-| claude-code | All cases | 1,360,288 | 901,819 | +458,469 | +50.84% | skill 8/8; base 8/8 |
-| claude-code | execution-failure-is-not-result | 212,011 | 107,030 | +104,981 | +98.09% | skill 1/1; base 1/1 |
-| claude-code | initialize-only | 392,010 | 106,934 | +285,076 | +266.59% | skill 1/1; base 1/1 |
-| claude-code | negative-clinical-decision | 35,333 | 106,810 | -71,477 | -66.92% | skill 1/1; base 1/1 |
-| claude-code | negative-single-inference | 186,125 | 143,224 | +42,901 | +29.95% | skill 1/1; base 1/1 |
-| claude-code | plateau-external-loop | 163,479 | 107,477 | +56,002 | +52.11% | skill 1/1; base 1/1 |
-| claude-code | protected-label-proposal | 35,632 | 35,544 | +88 | +0.25% | skill 1/1; base 1/1 |
-| claude-code | research-before-method | 121,118 | 72,062 | +49,056 | +68.07% | skill 1/1; base 1/1 |
-| claude-code | resume-existing-authority | 214,580 | 222,738 | -8,158 | -3.66% | skill 1/1; base 1/1 |
-| codex | All cases | 1,178,993 | 368,162 | +810,831 | +220.24% | skill 8/8; base 8/8 |
-| codex | execution-failure-is-not-result | 68,730 | 55,357 | +13,373 | +24.16% | skill 1/1; base 1/1 |
-| codex | initialize-only | 84,076 | 55,081 | +28,995 | +52.64% | skill 1/1; base 1/1 |
-| codex | negative-clinical-decision | 29,143 | 17,578 | +11,565 | +65.79% | skill 1/1; base 1/1 |
-| codex | negative-single-inference | 56,433 | 42,319 | +14,114 | +33.35% | skill 1/1; base 1/1 |
-| codex | plateau-external-loop | 67,569 | 41,145 | +26,424 | +64.22% | skill 1/1; base 1/1 |
-| codex | protected-label-proposal | 61,753 | 13,407 | +48,346 | +360.60% | skill 1/1; base 1/1 |
-| codex | research-before-method | 693,061 | 86,701 | +606,360 | +699.37% | skill 1/1; base 1/1 |
-| codex | resume-existing-authority | 118,228 | 56,574 | +61,654 | +108.98% | skill 1/1; base 1/1 |
-| ALL AGENTS | Dataset aggregate | 2,539,281 | 1,269,981 | +1,269,300 | +99.95% | skill 16/16; base 16/16 |
+| claude-code | All cases | 1,692,223 | 1,121,376 | +570,847 | +50.91% | skill 8/8; base 8/8 |
+| claude-code | execution-failure-is-not-result | 206,849 | 107,796 | +99,053 | +91.89% | skill 1/1; base 1/1 |
+| claude-code | initialize-only | 447,070 | 143,363 | +303,707 | +211.84% | skill 1/1; base 1/1 |
+| claude-code | negative-clinical-decision | 35,461 | 107,310 | -71,849 | -66.95% | skill 1/1; base 1/1 |
+| claude-code | negative-single-inference | 144,401 | 180,388 | -35,987 | -19.95% | skill 1/1; base 1/1 |
+| claude-code | plateau-external-loop | 212,736 | 182,096 | +30,640 | +16.83% | skill 1/1; base 1/1 |
+| claude-code | protected-label-proposal | 78,332 | 35,546 | +42,786 | +120.37% | skill 1/1; base 1/1 |
+| claude-code | research-before-method | 312,965 | 143,945 | +169,020 | +117.42% | skill 1/1; base 1/1 |
+| claude-code | resume-existing-authority | 254,409 | 220,932 | +33,477 | +15.15% | skill 1/1; base 1/1 |
+| codex | All cases | 953,106 | 484,721 | +468,385 | +96.63% | skill 8/8; base 8/8 |
+| codex | execution-failure-is-not-result | 91,293 | 63,311 | +27,982 | +44.20% | skill 1/1; base 1/1 |
+| codex | initialize-only | 104,246 | 85,549 | +18,697 | +21.86% | skill 1/1; base 1/1 |
+| codex | negative-clinical-decision | 29,138 | 17,625 | +11,513 | +65.32% | skill 1/1; base 1/1 |
+| codex | negative-single-inference | 57,232 | 94,097 | -36,865 | -39.18% | skill 1/1; base 1/1 |
+| codex | plateau-external-loop | 66,931 | 45,153 | +21,778 | +48.23% | skill 1/1; base 1/1 |
+| codex | protected-label-proposal | 63,338 | 13,414 | +49,924 | +372.18% | skill 1/1; base 1/1 |
+| codex | research-before-method | 451,383 | 75,792 | +375,591 | +495.55% | skill 1/1; base 1/1 |
+| codex | resume-existing-authority | 89,545 | 89,780 | -235 | -0.26% | skill 1/1; base 1/1 |
+| ALL AGENTS | Dataset aggregate | 2,645,329 | 1,606,097 | +1,039,232 | +64.71% | skill 16/16; base 16/16 |
 
 Prompt tokens include cached reads, so total tokens are `prompt + completion` (cached is not added twice). The Efficiency score uses `(prompt - cached) + completion`. Change is `100 * (with - without) / without`; negative means fewer tokens. N/A comparisons include their reason in the coverage column; coverage is never estimated.
 
@@ -106,7 +106,7 @@ Prompt tokens include cached reads, so total tokens are `prompt + completion` (c
 
 | Tier | Purpose | Status | Evidence |
 |---|---|---|---|
-| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 11 validator(s); 16 finding(s) |
+| Tier 1 | Static validation | **PASSED WITH OBSERVATIONS** | 11 validator(s); 18 finding(s) |
 | Tier 2 | Semantic deduplication | **PASSED** | 2 validator(s); 0 finding(s) |
 | Tier 3 | Live agent evaluation | **PASS** | 2 agent(s); 8 task(s) |
 
@@ -115,25 +115,12 @@ Prompt tokens include cached reads, so total tokens are `prompt + completion` (c
 <details>
 <summary>Show detailed findings and successful checks</summary>
 
-- **MEDIUM** QUALITY/quality_efficiency: Large skill (5312 tokens, recommended max <5000). Per agentskills.io, SKILL.md should be concise (~500 lines) — large skill bodies increase token cost after invocation; long or unfocused top-level descriptions can degrade agent routing accuracy (`skills/miagent/SKILL.md`)
-- **MEDIUM** SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/miagent/SKILL.md`)
-- **MEDIUM** SCRIPT_LINT/deep_nesting: check_consistency.py has deeply nested code (depth 7, max 6) (`skills/miagent/scripts/check_consistency.py`)
-- **MEDIUM** SECURITY/subprocess module call (AST4): Dangerous Code Execution: subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / name), *map(str, args)],
-        cwd=cwd,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    ) (`tests/test_skill.py:32`)
-- **MEDIUM** SECURITY/subprocess module call (AST4): Dangerous Code Execution: subprocess.run(
-        [
-            sys.executable,
-            str(package / "scripts/init_challenge.py"),
-            str(package / "fixtures/request.json"),
-            "--output-dir",
-           (`tests/test_skill.py:117`)
-- 11 additional finding(s) are available in the full evaluation artifacts.
+- **MEDIUM** QUALITY/quality_efficiency: Large skill (5326 tokens, recommended max <5000). Per agentskills.io, SKILL.md should be concise (~500 lines) — large skill bodies increase token cost after invocation; long or unfocused top-level descriptions can degrade agent routing accuracy (`skills/nv-monai-autoresearch/SKILL.md`)
+- **MEDIUM** SCHEMA/body_recommended_section: Missing recommended section: '## Examples' (`skills/nv-monai-autoresearch/SKILL.md`)
+- **MEDIUM** SCRIPT_LINT/deep_nesting: check_consistency.py has deeply nested code (depth 7, max 6) (`skills/nv-monai-autoresearch/scripts/check_consistency.py`)
+- **MEDIUM** SECURITY/Skill Enumeration (AS3): Agent Snooping: skills/miagent/SKILL.md (`BENCHMARK.md:118`)
+- **MEDIUM** SECURITY/Skill Enumeration (AS3): Agent Snooping: skills/miagent/SKILL.md (`BENCHMARK.md:119`)
+- 13 additional finding(s) are available in the full evaluation artifacts.
 
 </details>
 
