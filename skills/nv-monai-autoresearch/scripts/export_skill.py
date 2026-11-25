@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
-"""Export only the portable MIAgent skill, excluding local data and archives."""
+"""Export only the portable NV-MONAI-Autoresearch skill, excluding local data and archives."""
 
 from __future__ import annotations
 
@@ -28,8 +28,8 @@ def export(output_dir: Path) -> dict:
     if output_dir.exists() or output_dir.is_symlink():
         raise ValueError("output directory already exists; choose a fresh path")
     destination = output_dir.resolve()
-    if destination.name != "miagent":
-        raise ValueError("installed skill directory must be named miagent")
+    if destination.name != "nv-monai-autoresearch":
+        raise ValueError("installed skill directory must be named nv-monai-autoresearch")
     if destination == SKILL_ROOT or SKILL_ROOT in destination.parents:
         raise ValueError("export outside the source checkout")
     sources = [SKILL_ROOT / name for name in PACKAGE_FILES]
@@ -51,7 +51,7 @@ def export(output_dir: Path) -> dict:
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
     return {
-        "skill": "miagent",
+        "skill": "nv-monai-autoresearch",
         "operation": "export",
         "destination": str(destination),
         "files": len(sources),

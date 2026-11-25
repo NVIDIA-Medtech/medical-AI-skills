@@ -593,7 +593,9 @@ def choose_port(host: str, requested: int) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Read-only MIAgent challenge file browser.")
+    parser = argparse.ArgumentParser(
+        description="Read-only NV-MONAI-Autoresearch challenge file browser."
+    )
     parser.add_argument(
         "--challenge", default="challenge/challenge_template", help="Challenge folder."
     )
@@ -616,7 +618,7 @@ def main() -> None:
     handler = type("ConfiguredWebUIHandler", (WebUIHandler,), {"challenge_dir": challenge_dir})
     server = ReusableThreadingHTTPServer((args.host, port), handler)
     host, actual_port = server.server_address
-    print(f"MIAgent files: http://{host}:{actual_port}/")
+    print(f"NV-MONAI-Autoresearch files: http://{host}:{actual_port}/")
     print(f"Challenge: {challenge_dir}")
     try:
         server.serve_forever()

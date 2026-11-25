@@ -33,7 +33,7 @@ async function load() {
     const response = await fetch("/api/tree", { cache: "no-store" });
     if (!response.ok) throw new Error("File request failed (" + response.status + ")");
     DATA = await response.json();
-    document.getElementById("challenge-title").textContent = DATA.name || "MIAgent";
+    document.getElementById("challenge-title").textContent = DATA.name || "NV-MONAI-Autoresearch";
     document.getElementById("challenge-root").textContent = DATA.root || "";
     document.getElementById("file-count").textContent = String(DATA.file_count || 0);
     renderTree();

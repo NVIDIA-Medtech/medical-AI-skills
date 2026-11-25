@@ -4,7 +4,7 @@
   "required": ["skill", "operation", "status", "workspace_path", "artifacts", "phase", "research_completed", "experiments_launched"],
   "additionalProperties": false,
   "properties": {
-    "skill": {"const": "miagent"},
+    "skill": {"const": "nv-monai-autoresearch"},
     "operation": {"const": "initialize"},
     "status": {"const": "initialized"},
     "workspace_path": {"type": "string", "minLength": 1},

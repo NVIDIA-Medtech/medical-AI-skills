@@ -1,6 +1,6 @@
 ---
-name: miagent
-description: Used for MIAgent medical-imaging research, experiment planning, diagnosis, and resumable optimization. Not for clinical decisions or standalone model inference.
+name: nv-monai-autoresearch
+description: Used for NV-MONAI-Autoresearch medical-imaging research, experiment planning, diagnosis, and resumable optimization. Not for clinical decisions or standalone model inference.
 license: Apache-2.0
 allowed-tools: Read Write Edit Bash WebSearch WebFetch
 metadata:
@@ -10,7 +10,7 @@ metadata:
 ---
 
 
-# MIAgent
+# NV-MONAI-Autoresearch
 
 ## Purpose
 
@@ -67,7 +67,7 @@ handoff. Never claim monitoring will continue after the host stops running.
 | `scripts/init_challenge.py` | Initialize the first three research records; JSON on stdout. | `request.json --output-dir challenge/my-task` |
 | `scripts/check_consistency.py` | Existing v3.5 artifact checker and discovery seal. | `challenge/my-task --strict --json`; discovery: `challenge/my-task --phase discovery --strict --seal --json` |
 | `scripts/webui/app.py` | Optional read-only localhost artifact browser. | `--challenge challenge/my-task --port 8765` |
-| `scripts/export_skill.py` | Export only the distributable skill files into a fresh directory. | `--output-dir /path/to/skills/miagent` |
+| `scripts/export_skill.py` | Export only the distributable skill files into a fresh directory. | `--output-dir /path/to/skills/nv-monai-autoresearch` |
 
 Use these checker commands at the corresponding workflow gates, replacing
 `challenge/my-task` with the actual workspace. Seal discovery only after the

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
-"""Initialize MIAgent's task, dashboard, and trajectory before discovery."""
+"""Initialize the NV-MONAI-Autoresearch task, dashboard, and trajectory before discovery."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def initial_record(filename: str, request: dict[str, str]) -> str:
         end = text.index("## Human Queue Steering")
         text = text[:start] + text[end:]
     values = {
-        "MIAgent harness version": "v3.5 workflow; miagent skill 0.1.0",
+        "MIAgent harness version": "v3.5 workflow; nv-monai-autoresearch skill 0.1.0",
         "challenge name": request["name"],
         "objective/core problem class": request["task"],
         "Challenge Name": request["name"],
@@ -85,7 +85,7 @@ def initialize(request_path: Path, output_dir: Path) -> dict:
         if source_workspace not in resolved_output.parents or not (SKILL_ROOT / ".git").exists():
             raise ValueError("choose a workspace outside the installed skill")
     output_dir.parent.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix=".miagent-init-", dir=output_dir.parent))
+    staging = Path(tempfile.mkdtemp(prefix=".nv-monai-autoresearch-init-", dir=output_dir.parent))
     try:
         for filename in INITIAL_RECORDS:
             (staging / filename).write_text(initial_record(filename, request), encoding="utf-8")
@@ -96,7 +96,7 @@ def initialize(request_path: Path, output_dir: Path) -> dict:
     finally:
         shutil.rmtree(staging)
     return {
-        "skill": "miagent",
+        "skill": "nv-monai-autoresearch",
         "operation": "initialize",
         "status": "initialized",
         "workspace_path": str(output_dir.resolve()),
@@ -118,7 +118,7 @@ def main() -> None:
         print(
             json.dumps(
                 {
-                    "skill": "miagent",
+                    "skill": "nv-monai-autoresearch",
                     "operation": "initialize",
                     "status": "error",
                     "error": str(error),
