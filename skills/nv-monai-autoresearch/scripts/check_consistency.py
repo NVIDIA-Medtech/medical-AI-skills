@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
-"""Check a MIAgent challenge folder for common traceability drift."""
+"""Check an NV-MONAI-Autoresearch challenge folder for common traceability drift."""
 
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ def main() -> None:
         print(
             json.dumps(
                 {
-                    "skill": "miagent",
+                    "skill": "nv-monai-autoresearch",
                     "operation": "check",
                     "phase": args.phase,
                     "strict": args.strict,

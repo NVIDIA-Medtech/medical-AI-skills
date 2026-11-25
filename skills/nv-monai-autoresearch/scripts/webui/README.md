@@ -1,4 +1,4 @@
-# MIAgent Web UI
+# NV-MONAI-Autoresearch Web UI
 
 Read-only localhost file browser for a challenge folder.
 

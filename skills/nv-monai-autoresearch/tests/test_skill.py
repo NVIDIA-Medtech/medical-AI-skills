@@ -105,7 +105,7 @@ def test_symlink_workspace_is_not_overwritten(tmp_path):
 
 
 def test_export_is_independent_and_excludes_research_runs(tmp_path):
-    package = tmp_path / "skills" / "miagent"
+    package = tmp_path / "skills" / "nv-monai-autoresearch"
     report = exporter.export(package)
     assert report["files"] > 0
     assert not (package / "challenge").exists()
