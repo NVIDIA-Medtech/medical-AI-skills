@@ -34,4 +34,4 @@ node_modules/
 # Test-skill fixtures: deliberately structured as skills (own skill_manifest.yaml) so the
 # completeness verifier can grade them. Headering them makes NVCARPS detect-changes treat
 # them as nested resource roots (disallowed). Mirrors eval_engine/manifest.py.
-verifiers/skill_completeness_v1/fixtures/
+verifiers/skill-completeness-v1/fixtures/

@@ -36,7 +36,7 @@ def test_dicom_preflight_contract_summary_surfaces_core_contract() -> None:
 
 
 def test_contract_summary_handles_verifier_contract() -> None:
-    markdown = render_contract_summary(REPO_ROOT / "verifiers" / "dicom_preflight_quality_v1")
+    markdown = render_contract_summary(REPO_ROOT / "verifiers" / "dicom-preflight-quality-v1")
 
     assert "# Contract Summary: dicom-preflight-quality-v1" in markdown
     assert "medagent.verifiers.dicom_preflight_quality_v1" in markdown

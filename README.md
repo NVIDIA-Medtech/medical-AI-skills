@@ -182,13 +182,13 @@ To grade the resulting CT/mask pair afterwards, point the paired verifier
 at the output dir:
 
 ```bash
-python eval_engine/run.py verifiers/ct_synthesis_quality_v1 \
+python eval_engine/run.py verifiers/ct-synthesis-quality-v1 \
   --fixture runs/nv_generate_ct_rflow_demo \
   --out runs/nv_generate_ct_rflow_demo_quality
 ```
 
 Skill contract: [`skills/nv-generate-ct-rflow/SKILL.md`](skills/nv-generate-ct-rflow/SKILL.md).
-Paired verifier: [`verifiers/ct_synthesis_quality_v1/`](verifiers/ct_synthesis_quality_v1/).
+Paired verifier: [`verifiers/ct-synthesis-quality-v1/`](verifiers/ct-synthesis-quality-v1/).
 Trusted anchor:
 [`examples/evidence_packs/nv_generate_ct_rflow_trusted_inventory_pass/`](examples/evidence_packs/nv_generate_ct_rflow_trusted_inventory_pass/)
 records a CUDA rflow-ct run plus verifier pack. The generated NIfTI volumes
@@ -246,15 +246,15 @@ make verify
 | [`skills/nv-reason-cxr`](skills/nv-reason-cxr/) | NV-Reason-CXR-3B inference on a user-provided chest X-ray PNG/JPEG |
 | [`skills/nv-reason-pathwsi`](skills/nv-reason-pathwsi/) | NV-Reason-PathWSI inference on a user-provided PNG/JPEG pathology patch or tile |
 | [`skills/medtech-model-evidence-export`](skills/medtech-model-evidence-export/) | Post-hoc MLflow export for sanitized medtech model-inference metadata, metrics, provenance, and approved review artifacts |
-| [`verifiers/skill_completeness_v1`](verifiers/skill_completeness_v1/) | structural and manifest-spec verifier |
-| [`verifiers/dicom_metadata_quality_v1`](verifiers/dicom_metadata_quality_v1/) | paired verifier for DICOM metadata evidence packs and PHI-scope disclosure |
-| [`verifiers/dicom_preflight_quality_v1`](verifiers/dicom_preflight_quality_v1/) | paired verifier for DICOM preflight evidence packs |
-| [`verifiers/dicom_volume_quality_v1`](verifiers/dicom_volume_quality_v1/) | paired verifier for DICOM-to-NIfTI geometry and voxel evidence |
-| [`verifiers/ct_segmentation_quality_v1`](verifiers/ct_segmentation_quality_v1/) | paired verifier for nv_segment_ct anatomy plausibility + optional GT Dice |
-| [`verifiers/ct_segmentation_finetune_quality_v1`](verifiers/ct_segmentation_finetune_quality_v1/) | paired verifier for nv_segment_ct_finetune checkpoint + training trajectory + dataset audit |
-| [`verifiers/ct_synthesis_quality_v1`](verifiers/ct_synthesis_quality_v1/) | paired verifier for nv_generate_ct_rflow image/mask pair geometry, HU plausibility, label-set sanity |
-| [`verifiers/mr_synthesis_quality_v1`](verifiers/mr_synthesis_quality_v1/) | paired verifier for nv_generate_mr and nv_generate_mr_brain image artifact geometry and numeric sanity |
-| [`verifiers/nv_reason_cxr_quality_v1`](verifiers/nv_reason_cxr_quality_v1/) | paired verifier for nv_reason_cxr image/hash binding, runtime identity, and forbidden-phrase guardrails |
+| [`verifiers/skill-completeness-v1`](verifiers/skill-completeness-v1/) | structural and manifest-spec verifier |
+| [`verifiers/dicom-metadata-quality-v1`](verifiers/dicom-metadata-quality-v1/) | paired verifier for DICOM metadata evidence packs and PHI-scope disclosure |
+| [`verifiers/dicom-preflight-quality-v1`](verifiers/dicom-preflight-quality-v1/) | paired verifier for DICOM preflight evidence packs |
+| [`verifiers/dicom-volume-quality-v1`](verifiers/dicom-volume-quality-v1/) | paired verifier for DICOM-to-NIfTI geometry and voxel evidence |
+| [`verifiers/ct-segmentation-quality-v1`](verifiers/ct-segmentation-quality-v1/) | paired verifier for nv_segment_ct anatomy plausibility + optional GT Dice |
+| [`verifiers/ct-segmentation-finetune-quality-v1`](verifiers/ct-segmentation-finetune-quality-v1/) | paired verifier for nv_segment_ct_finetune checkpoint + training trajectory + dataset audit |
+| [`verifiers/ct-synthesis-quality-v1`](verifiers/ct-synthesis-quality-v1/) | paired verifier for nv_generate_ct_rflow image/mask pair geometry, HU plausibility, label-set sanity |
+| [`verifiers/mr-synthesis-quality-v1`](verifiers/mr-synthesis-quality-v1/) | paired verifier for nv_generate_mr and nv_generate_mr_brain image artifact geometry and numeric sanity |
+| [`verifiers/nv-reason-cxr-quality-v1`](verifiers/nv-reason-cxr-quality-v1/) | paired verifier for nv_reason_cxr image/hash binding, runtime identity, and forbidden-phrase guardrails |
 
 ## Repository map
 

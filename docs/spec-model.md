@@ -19,7 +19,7 @@ This page is only the placement guide for deciding where a check belongs.
 | Contract summary | `tools/render_contract_summary.py` output, usually under `runs/` | Generated read-only view over a skill/verifier contract before execution; not a source of truth |
 | Review packet | `tools/render_review_packet.py` output, usually under `runs/` | Generated human review view over existing pack files; not a source of truth |
 | Trace inventory | `tools/inventory_trace_shapes.py` output, usually under `runs/` | Generated compatibility report for current `agent_run_trace.jsonl` records before schema work |
-| Capability lifecycle | `verifiers/skill_completeness_v1` output | Derived status (`draft` -> `runnable` -> `gated` -> `verified` -> `published`) for review; not a manifest field |
+| Capability lifecycle | `verifiers/skill-completeness-v1` output | Derived status (`draft` -> `runnable` -> `gated` -> `verified` -> `published`) for review; not a manifest field |
 
 ## Enforcement map
 
@@ -40,7 +40,7 @@ This page is only the placement guide for deciding where a check belongs.
 | `validation.reproducibility` | `eval_engine/reproducibility.py`, `make verify-skills` |
 | `runtime.side_effects` | declared and audited; full measurement is tech debt |
 | `runtime.side_effects.environment` | declared policy for caller environment mutation; audited in reviews |
-| `paired_verifiers[]` | `verifiers/skill_completeness_v1` |
+| `paired_verifiers[]` | `verifiers/skill-completeness-v1` |
 | `cost` (advisory) | documented only; measured via `tools/nat_audit/` |
 | `transport` | packaging hint only; not enforced by eval_engine |
 

@@ -24,4 +24,4 @@ while [ ! -e "$REPO_ROOT/Makefile" ] && [ "$REPO_ROOT" != "/" ]; do
 done
 [ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root (looked for Makefile)"; exit 1; }
 cd "$REPO_ROOT"
-python3 verifiers/mr_synthesis_quality_v1/scripts/grade.py runs/nv_generate_mr_trusted_hash_current/skill_run
+python3 verifiers/mr-synthesis-quality-v1/scripts/grade.py runs/nv_generate_mr_trusted_hash_current/skill_run

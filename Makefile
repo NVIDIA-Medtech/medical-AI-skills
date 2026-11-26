@@ -325,7 +325,7 @@ list-skills:
 	$(PYTHON) -m eval_engine.list_skills --out SKILL_INDEX.md
 
 audit-skill:
-	$(PYTHON) eval_engine/run.py verifiers/skill_completeness_v1 \
+	$(PYTHON) eval_engine/run.py verifiers/skill-completeness-v1 \
 	  --fixture skills/$(SKILL_DIR) \
 	  --out $(AUDIT_OUT)
 	$(PYTHON) -m eval_engine.skill_audit_summary $(AUDIT_OUT)/output.json

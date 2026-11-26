@@ -24,4 +24,4 @@ while [ ! -e "$REPO_ROOT/Makefile" ] && [ "$REPO_ROOT" != "/" ]; do
 done
 [ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root (looked for Makefile)"; exit 1; }
 cd "$REPO_ROOT"
-python3 verifiers/dicom_metadata_quality_v1/scripts/grade.py examples/evidence_packs/dicom_metadata_trusted_warn/skill_run
+python3 verifiers/dicom-metadata-quality-v1/scripts/grade.py examples/evidence_packs/dicom_metadata_trusted_warn/skill_run

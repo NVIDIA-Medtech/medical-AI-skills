@@ -118,7 +118,9 @@ def paired_verifier_dir(
     *,
     verifiers_root: Path = VERIFIERS_ROOT,
 ) -> Path:
-    return verifiers_root / verifier_id.split(".")[-1]
+    # IDs keep snake_case (medagent.verifiers.<id>); directories use the
+    # kebab-case frontmatter name, as skills do.
+    return verifiers_root / verifier_id.split(".")[-1].replace("_", "-")
 
 
 def paired_verifier_resolution_errors(

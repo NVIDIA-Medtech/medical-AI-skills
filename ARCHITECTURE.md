@@ -59,9 +59,9 @@ Readable deterministic files:
 | [`eval_engine/gates.py`](eval_engine/gates.py) | schema-adjacent gates: sanity, runtime, cost, env, factual echo, model identity |
 | [`eval_engine/integrity.py`](eval_engine/integrity.py) | static integrity scan |
 | [`eval_engine/manifest.py`](eval_engine/manifest.py) | manifest loading, schema validation, spec discovery |
-| [`verifiers/skill_completeness_v1/scripts/grade.py`](verifiers/skill_completeness_v1/scripts/grade.py) | structural and manifest verifier |
-| [`verifiers/ct_segmentation_quality_v1/scripts/grade.py`](verifiers/ct_segmentation_quality_v1/scripts/grade.py) | domain verifier for CT-segmentation anatomy plausibility and optional Dice |
-| [`verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill/`](verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill/) | known-bad calibration fixture |
+| [`verifiers/skill-completeness-v1/scripts/grade.py`](verifiers/skill-completeness-v1/scripts/grade.py) | structural and manifest verifier |
+| [`verifiers/ct-segmentation-quality-v1/scripts/grade.py`](verifiers/ct-segmentation-quality-v1/scripts/grade.py) | domain verifier for CT-segmentation anatomy plausibility and optional Dice |
+| [`verifiers/skill-completeness-v1/fixtures/negative_sloppy_skill/`](verifiers/skill-completeness-v1/fixtures/negative_sloppy_skill/) | known-bad calibration fixture |
 
 `make verify` smoke-tests the harness against a canonical pack. `make verify-skills`,
 and `make verify-negative-fixtures` are broader local trust checks.

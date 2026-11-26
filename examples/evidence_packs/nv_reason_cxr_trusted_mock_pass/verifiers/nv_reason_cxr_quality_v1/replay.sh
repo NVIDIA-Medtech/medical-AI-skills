@@ -24,4 +24,4 @@ while [ ! -e "$REPO_ROOT/Makefile" ] && [ "$REPO_ROOT" != "/" ]; do
 done
 [ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root (looked for Makefile)"; exit 1; }
 cd "$REPO_ROOT"
-python3 verifiers/nv_reason_cxr_quality_v1/scripts/grade.py examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run
+python3 verifiers/nv-reason-cxr-quality-v1/scripts/grade.py examples/evidence_packs/nv_reason_cxr_trusted_mock_pass/skill_run

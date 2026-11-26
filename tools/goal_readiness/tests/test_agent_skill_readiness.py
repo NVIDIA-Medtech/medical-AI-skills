@@ -133,7 +133,7 @@ def test_build_report_surfaces_lifecycle_counts(tmp_path: Path, monkeypatch) -> 
                     },
                     {
                         "target": "negative_sloppy_skill",
-                        "target_path": "verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill",
+                        "target_path": "verifiers/skill-completeness-v1/fixtures/negative_sloppy_skill",
                         "lifecycle": "draft",
                     },
                 ],

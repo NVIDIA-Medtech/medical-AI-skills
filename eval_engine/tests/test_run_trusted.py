@@ -129,7 +129,7 @@ def test_resolver_finds_real_verifier_dir():
 
     vdir = _resolve_verifier_dir("medagent.verifiers.ct_segmentation_quality_v1")
     assert vdir is not None
-    assert vdir.name == "ct_segmentation_quality_v1"
+    assert vdir.name == "ct-segmentation-quality-v1"
     assert (vdir / "skill_manifest.yaml").exists()
 
 

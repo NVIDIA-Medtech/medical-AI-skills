@@ -21,7 +21,8 @@ Layout:
     <out>/
       trust_summary.json
       skill_run/                  # full skill evidence pack
-      verifiers/<verifier_dir>/   # full verifier evidence pack(s)
+      verifiers/<verifier_id>/    # full verifier evidence pack(s), named by the
+                                  # snake_case end of the verifier ID
 
 Steps:
   1. Run the target skill (eval_engine.run) into ``<out>/skill_run``.
@@ -365,7 +366,9 @@ def main(
                 }
             )
             continue
-        short = vdir.name
+        # Name sub-packs by the ID (snake_case), not the kebab-case directory,
+        # so the evidence-pack layout stays the same.
+        short = str(vid).split(".")[-1]
         vpack = verifiers_root / short
         vrc = _run_pack(vdir, skill_pack, vpack)
         voverall = _read_verifier_overall(vpack)
