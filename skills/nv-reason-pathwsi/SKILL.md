@@ -2,7 +2,7 @@
 name: nv-reason-pathwsi
 description: Run NV-Reason-PathWSI inference on user-provided PNG/JPEG pathology patches or tiles for engineering and research workflows. Not for diagnosis, treatment, clinical reporting, or whole-slide files.
 license: Apache-2.0
-allowed-tools: Bash, Read, Write, Env
+allowed-tools: Bash Read Write Env
 metadata:
   author: "NVIDIA MedTech <noreply@nvidia.com>"
   tags:
