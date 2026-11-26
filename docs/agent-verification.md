@@ -18,7 +18,7 @@ make verify-skills           # skill_completeness_v1 on all specs
 ```
 
 `make verify-skills` treats
-`verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill` as an expected
+`verifiers/skill-completeness-v1/fixtures/negative_sloppy_skill` as an expected
 calibration failure. The command still exits nonzero if any real skill or
 verifier fails the audit, if any real spec has advisory usability issues, or
 if that known-bad fixture unexpectedly passes.

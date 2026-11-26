@@ -22,7 +22,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERIFIER_DIR=verifiers/skill_completeness_v1
+VERIFIER_DIR=verifiers/skill-completeness-v1
 OUT_ROOT=runs/skill_audit
 rm -rf "$OUT_ROOT"
 mkdir -p "$OUT_ROOT"
@@ -63,7 +63,7 @@ print(json.dumps(row))
     name="verifiers_$(basename "$d")"
     audit_one "$d" "$name"
   done
-  audit_one verifiers/skill_completeness_v1/fixtures/negative_sloppy_skill negative_sloppy_skill
+  audit_one verifiers/skill-completeness-v1/fixtures/negative_sloppy_skill negative_sloppy_skill
 } > "$OUT_ROOT/_rows.jsonl"
 
 python3 -m eval_engine.skill_audit_summary "$OUT_ROOT"

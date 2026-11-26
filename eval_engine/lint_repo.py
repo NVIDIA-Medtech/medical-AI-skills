@@ -95,10 +95,10 @@ BLOCKED_ARTIFACT_SUFFIXES = (
     ".gxf_index",
 )
 TRACKED_STUB_ALLOWLIST = {
-    "verifiers/ct_segmentation_quality_v1/fixtures/pass_pack/predicted_seg.nii.gz",
-    "verifiers/ct_segmentation_quality_v1/fixtures/fragmented_pack/predicted_seg.nii.gz",
-    "verifiers/ct_segmentation_quality_v1/fixtures/gt_pass_pack/predicted_seg.nii.gz",
-    "verifiers/ct_segmentation_quality_v1/fixtures/gt_pass_pack/reference_seg.nii.gz",
+    "verifiers/ct-segmentation-quality-v1/fixtures/pass_pack/predicted_seg.nii.gz",
+    "verifiers/ct-segmentation-quality-v1/fixtures/fragmented_pack/predicted_seg.nii.gz",
+    "verifiers/ct-segmentation-quality-v1/fixtures/gt_pass_pack/predicted_seg.nii.gz",
+    "verifiers/ct-segmentation-quality-v1/fixtures/gt_pass_pack/reference_seg.nii.gz",
 }
 GENERATED_RECORD_RE = re.compile(
     r"^(?:"

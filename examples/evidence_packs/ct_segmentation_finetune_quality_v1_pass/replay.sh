@@ -24,4 +24,4 @@ while [ ! -e "$REPO_ROOT/Makefile" ] && [ "$REPO_ROOT" != "/" ]; do
 done
 [ -e "$REPO_ROOT/Makefile" ] || { echo "could not find repo root (looked for Makefile)"; exit 1; }
 cd "$REPO_ROOT"
-python3 verifiers/ct_segmentation_finetune_quality_v1/scripts/grade.py verifiers/ct_segmentation_finetune_quality_v1/fixtures/pass_pack
+python3 verifiers/ct-segmentation-finetune-quality-v1/scripts/grade.py verifiers/ct-segmentation-finetune-quality-v1/fixtures/pass_pack

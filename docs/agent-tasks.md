@@ -35,8 +35,8 @@ evidence pack + verifier       -> verifier evidence pack
 | **Inspect a pack** | `docs/trust-and-evidence.md` | `workflow_run_record.md`, `validation_summary.json`, `output.json`, `trust_summary.json` if present | `make review-packet PACK=<pack>` |
 | **Compare runs** | `docs/replay.md` | Both pack dirs | `make diff RUN_A=… RUN_B=…` |
 | **Add a skill** | `docs/authoring-skills.md`, `skills/dicom-metadata-extract/` | `docs/skill-scope.md` | `make verify-skills` after authoring |
-| **Add a verifier** | `CONTRIBUTING.md` § Verifier | `verifiers/skill_completeness_v1/` | `make run-skill` with verifier path |
-| **Audit one skill** | `verifiers/skill_completeness_v1/SKILL.md` | Target `skills/<name>/` | `make audit-skill SKILL=<name>` |
+| **Add a verifier** | `CONTRIBUTING.md` § Verifier | `verifiers/skill-completeness-v1/` | `make run-skill` with verifier path |
+| **Audit one skill** | `verifiers/skill-completeness-v1/SKILL.md` | Target `skills/<name>/` | `make audit-skill SKILL=<name>` |
 | **Release readiness** | `docs/release-readiness.md` | `runs/skill_audit/_summary.json`, candidate evidence packs | `make status-agent-skills` then `make review-packet PACK=<pack>` |
 | **Add with-vs-without comparison** | `docs/with-vs-without-authoring.md` | `tools/with_vs_without/run_nv_model_studies.py`, target `SKILL.md`, upstream README/model card | `python tools/with_vs_without/run_nv_model_studies.py --skills <name> --mode prompts --prompt-style path` |
 | **Change a gate / harness** | `eval_engine/AGENTS.md`, `docs/spec-model.md` | `spec/skill_manifest.schema.json` | `make lint` then `make verify-skills` and `make verify` |
